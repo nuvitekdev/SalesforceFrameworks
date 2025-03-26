@@ -1,0 +1,290 @@
+{
+  "type" : "sfdc_cms__themeLayout",
+  "title" : "Nuvitek Theme Layout",
+  "contentBody" : {
+    "component" : {
+      "attributes" : {
+        "accentColor" : "#D5DF23",
+        "applyThemeToSlots" : true,
+        "backgroundVideoDarkness" : 0,
+        "backgroundVideoFallbackUrl" : "Nuvitek_Background_Image",
+        "backgroundVideoUrl" : "",
+        "companyName" : "Nuvitek",
+        "ensureHomeNavItem" : false,
+        "fabUrl" : "",
+        "footerColumnCount" : 3,
+        "footerColumnMenus" : "",
+        "footerColumnTitles" : "Products, Resources, Company",
+        "footerLegalText" : "All rights reserved. Terms and conditions apply.",
+        "footerNavigationMenuName" : "null",
+        "footerStyle" : "minimal",
+        "footerTagline" : "Delivering innovative solutions since 2012",
+        "globalThemeOverride" : false,
+        "headerContainerWidth" : 100,
+        "headerNavigationMenuName" : "",
+        "headerSticky" : false,
+        "headerVariant" : "standard",
+        "heroBackgroundDarkness" : -60,
+        "heroBackgroundImage" : "Nuvitek_PortalDemoCenter_Hero_Background_Image",
+        "heroCTAPrimaryLabel" : "Connect with us",
+        "heroCTAPrimaryUrl" : "https://nuvitek.com/",
+        "heroCTASecondaryLabel" : "",
+        "heroCTASecondaryUrl" : "",
+        "heroLayout" : "fullwidth",
+        "heroSubtitle" : "Discover innovative solutions designed with you in mind",
+        "heroTitle" : "Experience the Future of Government Solutions, Today",
+        "logoAltText" : "Nuvitek",
+        "logoUrl" : "",
+        "primaryColor" : "#22BDC1",
+        "profilePageUrl" : "/profile",
+        "showBackgroundVideo" : false,
+        "showFab" : true,
+        "showHeroSection" : true,
+        "showProfileIcon" : false,
+        "showSearchInHeader" : false,
+        "socialLinkTitles" : "Facebook, Twitter, LinkedIn, Instagram",
+        "socialLinkUrls" : "",
+        "socialLinksCount" : 0,
+        "textColor" : "#1d1d1f",
+        "themeName" : "dark",
+        "useDefaultFooter" : true,
+        "useDefaultHeader" : true
+      },
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : {
+              "isVisible" : true
+            },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"b998e9a2-61f9-4726-b7f8-f94fdee09847\",\"columns\":[{\"UUID\":\"5061b12e-c15e-4d5a-b944-4ab53c57138b\",\"columnName\":\"Column 1\",\"columnKey\":\"44d93\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "70px",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : {
+                  "margin" : {
+                    "bottom" : "",
+                    "left" : "",
+                    "right" : "",
+                    "top" : ""
+                  },
+                  "padding" : {
+                    "bottom" : "",
+                    "left" : "",
+                    "right" : "50px",
+                    "top" : ""
+                  }
+                },
+                "headerLayout" : "LogoLeft",
+                "slotOneWidth" : "",
+                "slotThreeWidth" : "",
+                "slotTwoWidth" : "",
+                "spaceBetweenSlots" : "16px"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "alignment" : "center",
+                    "imageInfo" : "{\"imageInfoV1\":{\"url\":\"/sfsites/c/cms/delivery/media/MCPWGQKN4XBZHEZBQL6JBCJ5EEVY?lastModifiedDate=Thu Mar 20 21:00:44 GMT 2025\",\"altText\":\"\",\"contentKey\":\"MCPWGQKN4XBZHEZBQL6JBCJ5EEVY\",\"contentType\":null}}",
+                    "imageInfoMobile" : "",
+                    "logoWidth" : 250
+                  },
+                  "definition" : "dxp_content_layout:siteLogo",
+                  "id" : "6906920d-6bab-4bbc-9335-d0b04e73199a",
+                  "type" : "component"
+                } ],
+                "id" : "d34f3c4f-bef1-4946-8418-6eddfd751676",
+                "name" : "siteLogo",
+                "title" : "Add component",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "dxpStyle" : {
+                      "padding" : {
+                        "bottom" : "5px",
+                        "left" : "5px",
+                        "right" : "5px",
+                        "top" : "5px"
+                      }
+                    }
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "activeLineWeight" : "3px",
+                        "backgroundColor" : "rgba(255, 255, 255, 0)",
+                        "dropdownAccordionIconSize" : "xx-small",
+                        "dropdownActiveLineWeight" : "5px",
+                        "dropdownBackgroundActiveColor" : "rgba(0, 0, 0, 0)",
+                        "dropdownBackgroundColor" : "",
+                        "dropdownBackgroundHoverColor" : "",
+                        "dropdownBottomBorderRadius" : "5px",
+                        "dropdownFontSizeOverride" : "",
+                        "dropdownFontWeightOverride" : "300",
+                        "dropdownItemPadding" : "{\"top\":\"10px\",\"right\":\"10px\",\"bottom\":\"10px\",\"left\":\"10px\"}",
+                        "dropdownLineHeightOverride" : "",
+                        "dropdownMenuPadding" : "{\"top\":\"0px\",\"right\":\"0px\",\"bottom\":\"0px\",\"left\":\"0px\"}",
+                        "dropdownOverrideTextStyle" : true,
+                        "dropdownShowDividerLines" : false,
+                        "dropdownTextDecorationOverride" : "",
+                        "dropdownTextStyle" : "body-regular",
+                        "dropdownTopBorderRadius" : "5px",
+                        "fontSizeOverride" : "",
+                        "fontWeightOverride" : "",
+                        "iconSize" : "xx-small",
+                        "itemBackgroundActiveColor" : "rgba(255, 255, 255, 0)",
+                        "itemBackgroundHoverColor" : "rgba(255, 255, 255, 0)",
+                        "lineHeightOverride" : "",
+                        "menuHorizontalAlignment" : "left",
+                        "overrideTextStyle" : false,
+                        "showHomeLink" : true,
+                        "showParentMenuIcon" : true,
+                        "spaceBetweenMenuItems" : "30px",
+                        "textDecorationOverride" : "",
+                        "textStyle" : "body-regular"
+                      },
+                      "definition" : "community_navigation:customizableNavigationBarContainer",
+                      "id" : "94006df3-004d-4350-be18-0d1d5cc0960f",
+                      "type" : "component"
+                    } ],
+                    "id" : "a289b7b8-447f-414d-bf30-178d73922775",
+                    "name" : "desktop",
+                    "title" : "Desktop View",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "burgerIconHorizontalAlignment" : "left",
+                        "modalAccordionIconSize" : "xx-small",
+                        "modalActiveBackgroundColor" : "rgba(255, 255, 255, 0)",
+                        "modalActiveLineWeight" : "5px",
+                        "modalFontSizeOverride" : "",
+                        "modalFontWeightOverride" : "",
+                        "modalItemPadding" : "{\"top\":\"10px\",\"right\":\"10px\",\"bottom\":\"10px\",\"left\":\"15px\"}",
+                        "modalLineHeightOverride" : "",
+                        "modalMenuPadding" : "{\"top\":\"0px\",\"right\":\"0px\",\"bottom\":\"0px\",\"left\":\"0px\"}",
+                        "modalOverrideTextStyle" : false,
+                        "modalShowDividerLines" : true,
+                        "modalSubmenuFontSizeOverride" : "",
+                        "modalSubmenuFontWeightOverride" : "300",
+                        "modalSubmenuLineHeightOverride" : "",
+                        "modalSubmenuOverrideTextStyle" : true,
+                        "modalSubmenuTextDecorationOverride" : "",
+                        "modalSubmenuTextStyle" : "body-regular",
+                        "modalTextDecorationOverride" : "",
+                        "modalTextStyle" : "body-regular",
+                        "showHomeLink" : true
+                      },
+                      "definition" : "community_navigation:customizableNavigationHamburgerMenuContainer",
+                      "id" : "c5bcdaa3-d5a5-4c79-a88b-3191246708b2",
+                      "type" : "component"
+                    } ],
+                    "id" : "527c4174-d5f1-4c73-80d4-4d275a744dd7",
+                    "name" : "mobile",
+                    "title" : "Mobile View",
+                    "type" : "region"
+                  } ],
+                  "definition" : "community_navigation:customizableNavigationMenu",
+                  "id" : "abc80fe0-6372-427b-8744-90cf763f0d74",
+                  "type" : "component"
+                } ],
+                "id" : "81c14c7d-91b7-4987-9ddf-6f898b008047",
+                "name" : "navigation",
+                "title" : "Add component",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "alignment" : "center",
+                    "dxpStyle" : {
+                      "isVisible" : false
+                    },
+                    "size" : "standard",
+                    "stretch" : "standard",
+                    "text" : "Login",
+                    "type" : "primary",
+                    "url" : "{\"linkInfo\":{\"pageReference\":{\"type\":\"comm__namedPage\",\"attributes\":{\"name\":\"Login\"}}}}"
+                  },
+                  "definition" : "dxp_base:button",
+                  "id" : "66276775-df5a-4f23-a1fa-a776b8cd5b1c",
+                  "type" : "component"
+                } ],
+                "id" : "3edbfc22-edf3-4d73-ac1e-5a1da3e7f296",
+                "name" : "actions",
+                "title" : "Add component",
+                "type" : "region"
+              } ],
+              "definition" : "community_builder:customizableHeader",
+              "id" : "3dea7b9e-482a-4e0a-9e0c-89388bb83151",
+              "type" : "component"
+            } ],
+            "id" : "5061b12e-c15e-4d5a-b944-4ab53c57138b",
+            "name" : "44d93",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "b998e9a2-61f9-4726-b7f8-f94fdee09847",
+          "scopedBrandingSetId" : "Nuvitek_home",
+          "type" : "component"
+        } ],
+        "id" : "52b5b359-b205-4c24-9104-7835da000ab3",
+        "name" : "header",
+        "title" : "Theme Header",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"17ed841d-1bf1-4a8d-838e-b1dd8dc68c9e\",\"columns\":[{\"UUID\":\"7aad68c7-f9ff-4d0b-a74d-baddb9b97b6b\",\"columnName\":\"Column 1\",\"columnKey\":\"footerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "id" : "7aad68c7-f9ff-4d0b-a74d-baddb9b97b6b",
+            "name" : "footerSection",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "17ed841d-1bf1-4a8d-838e-b1dd8dc68c9e",
+          "type" : "component"
+        } ],
+        "id" : "2bb04210-73a7-48a9-b0c4-5c8ac42cb2c0",
+        "name" : "footer",
+        "title" : "Theme Footer",
+        "type" : "region"
+      }, {
+        "id" : "d6093dc7-1262-4ba0-9078-18ef462e5072",
+        "name" : "default",
+        "type" : "region"
+      }, {
+        "id" : "41e1ea6e-b31c-4b44-879d-f7ba1ad1c84f",
+        "name" : "hero-media",
+        "type" : "region"
+      } ],
+      "definition" : "c:nuvitekThemeLayout",
+      "id" : "05386e54-a865-42e7-a47e-0ea6edeb2eca",
+      "type" : "component"
+    }
+  },
+  "urlName" : "nuvitek-theme-layout"
+}

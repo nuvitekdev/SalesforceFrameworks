@@ -1,0 +1,37 @@
+/* WhistleblowerReportViewer.css */
+.slds-form-element__label {
+    font-weight: bold; /* Ensure labels are bold */
+}
+
+.lightning-combobox {
+    max-width: 100%; /* Ensure the combobox takes the full width of its container */
+}
+
+.slds-grid {
+    margin: 0; /* Remove any default margins */
+}
+
+.slds-size_1-of-3 {
+    padding: 0.5rem; /* Add padding around the combobox for spacing */
+}
+
+.slds-size_2-of-3 {
+    padding: 0.5rem; /* Add padding around the report details for spacing */
+}
+
+.lightning-datatable {
+    border: 1px solid #d8dde6; /* Add a border around the datatable for definition */
+}
+
+/* Additional styling for your record view form */
+lightning-record-view-form {
+    /* Add any specific styles you want for the record view form */
+}
+
+/* You can also add media queries if you want to handle different screen sizes */
+@media (max-width: 768px) {
+    .slds-size_1-of-3,
+    .slds-size_2-of-3 {
+        flex-basis: 100%; /* Stack the combobox and report details on smaller screens */
+    }
+}

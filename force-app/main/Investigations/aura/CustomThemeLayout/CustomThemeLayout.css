@@ -1,0 +1,167 @@
+.THIS {
+    position:relative;
+    z-index:1;
+    font-size:.8125rem;
+    width:100%;
+    touch-action:manipulation;
+}
+
+.THIS :root {
+    --lwc-colorBackgroundAlt: black !important;
+}
+
+.THIS *{box-sizing:border-box}
+.THIS ::-moz-selection{background:#b4d5fe!important}
+.THIS ::selection{background:#b4d5fe!important}
+.THIS.no-scroll{position:fixed}
+.THIS .header{transition:background .5s ease}
+.THIS .hero{position:relative}
+.THIS.isHeroUnderHeader-true>.a11y-banner>.header{position:absolute;top:0;left:0;right:0;z-index:5}
+.THIS.isHeaderPinned-true>.a11y-banner>.header{position:fixed;top:0;left:0;right:0;z-index:5}
+.THIS>.body.isPageWidthFixed-true{margin:0 auto;max-width:100%}
+.THIS>.body:focus{outline:none}
+
+.THIS .mainContentArea flowruntime-flow,
+.THIS .mainContentArea select,
+.THIS .mainContentArea textarea,
+.THIS .mainContentArea input,
+.THIS .mainContentArea article,
+.THIS .mainContentArea table,
+.THIS .mainContentArea thead,
+.THIS .mainContentArea .flowruntimeBody.flowruntimeBody__lwc.slds-card__body.slds-p-horizontal_small,
+.THIS .mainContentArea .slds-page-header__detail-row,
+.THIS .mainContentArea .slds-card,
+/* .THIS .mainContentArea .slds-grid, */
+.THIS .mainContentArea .slds-table,
+.THIS .mainContentArea .slds-button,
+.THIS .mainContentArea .slds-input,
+.THIS .mainContentArea .slds-cell-fixed,
+.THIS .mainContentArea .slds-th__action,
+.THIS .mainContentArea .loadingOverlay.slds-spinner_container,
+.THIS .mainContentArea .ql-editor.ql-blank.slds-rich-text-area__content.slds-text-color_weak.slds-grow,
+.THIS .mainContentArea .slds-shrink-none.slds-rich-text-editor__toolbar_bottom,
+.THIS .mainContentArea .orderedList,
+.THIS .mainContentArea .cuf-auxBody.cuf-auxBodyRecordSnapshot,
+.THIS .mainContentArea .slds-button.slds-button--icon.iconTrigger.cuf-publisherAttachmentButton.slds-p-bottom--xx-small.slds-p-left--xxx-small.slds-p-right--xxx-small.uiButton,
+.THIS .mainContentArea [class^="slds-table--"],
+.THIS .mainContentArea [class*="slds-table--"],
+.THIS .mainContentArea [class^="slds-table_"],
+.THIS .mainContentArea [class*="slds-table_"] {
+    background-color: var(--lwc-colorPageBackground);
+}
+
+.THIS .mainContentArea textarea {
+    background-color: var(--lwc-colorPageBackground) !important;
+    color: var(--lwc-colorTextLabel) !important;
+}
+
+
+.THIS .mainContentArea .commentInputArea,
+.THIS .mainContentArea .homeTab.uiTabset--base.uiTabset--default.uiTabset.forceCommunityHomeTabs,
+.THIS .mainContentArea .uiTabset--base.uiTabset--default.uiTabset,
+.THIS .mainContentArea .record-home-details.record-home-tab.tabs__content.active.uiTab,
+.THIS .mainContentArea .tabs__content.active.uiTab,
+.THIS .mainContentArea .tabs__nav,
+.THIS .mainContentArea .siteforceDesignTimeRegion,
+.THIS .mainContentArea .uiTabItem a {
+    background-color: var(--lwc-colorPageBackground);
+}
+
+.THIS .mainContentArea .tabs__item.active.uiTabItem,
+.THIS .mainContentArea .forceCommunityFeedPublisher.oneActionsComposer.uiTabBar.tabs__nav {
+    background-color: var(--lwc-colorPageBackground);
+    border-bottom: 1px solid var(--lwc-colorPageBackground);
+}
+
+.THIS .mainContentArea .uiTabset--task,
+.THIS .mainContentArea .tabs__item.active.uiTabItem.active::before {
+    background-color: var(--lwc-colorBorder) !important;
+}
+
+/* .THIS .mainContentArea th:focus span,
+.THIS .mainContentArea td:focus span, */
+/* .THIS .mainContentArea th:hover span,
+.THIS .mainContentArea td:hover span, */
+.THIS .mainContentArea th:focus,
+.THIS .mainContentArea td:focus,
+.THIS .mainContentArea th:hover,
+.THIS .mainContentArea td:hover,
+.THIS .mainContentArea .slds-table_edit_container:focus:before, 
+.THIS .mainContentArea .slds-table--edit_container:focus:before,
+.THIS .mainContentArea .slds-th__action:hover,
+.THIS .mainContentArea td.slds-cell-edit.cellContainer.slds-has-focus:focus,
+.THIS .mainContentArea td.slds-cell-edit.cellContainer.slds-has-focus:hover,
+.THIS .mainContentArea th.slds-cell-edit.cellContainer.slds-has-focus:focus,
+.THIS .mainContentArea th.slds-cell-edit.cellContainer.slds-has-focus:hover,
+.THIS .mainContentArea td.slds-cell-edit.cellContainer:focus,
+.THIS .mainContentArea td.slds-cell-edit.cellContainer:hover,
+.THIS .mainContentArea th.slds-cell-edit.cellContainer:focus,
+.THIS .mainContentArea th.slds-cell-edit.cellContainer:hover,
+.THIS .mainContentArea .forceListViewManagerGrid .slds-no-cell-focus .slds-has-focus.slds-is-resizable .slds-cell-fixed:hover,
+.THIS .mainContentArea .forceListViewManagerGrid .slds-no-cell-focus .slds-has-focus.slds-is-resizable:hover .slds-th__action,
+.THIS .mainContentArea .forceListViewManagerGrid .slds-is-resizable .slds-cell-fixed:hover,
+.THIS .mainContentArea .forceListViewManagerGrid .slds-is-resizable .slds-th__action:focus, 
+.THIS .mainContentArea .forceListViewManagerGrid .slds-is-resizable .slds-th__action:hover, 
+.THIS .mainContentArea .forceListViewManagerGrid .slds-is-resizable .slds-th__action:focus:hover,
+.THIS .mainContentArea .forceListViewManagerGrid .slds-has-focus.slds-is-resizable .slds-th__action, 
+.THIS .mainContentArea .forceListViewManagerGrid .slds-has-focus.slds-is-resizable .slds-th__action:focus, 
+.THIS .mainContentArea .forceListViewManagerGrid .slds-has-focus.slds-is-resizable .slds-th__action:hover, 
+.THIS .mainContentArea .forceListViewManagerGrid .slds-has-focus.slds-is-resizable .slds-th__action:focus:hover, 
+.THIS .mainContentArea .forceListViewManagerGrid .slds-has-focus.slds-is-resizable .slds-cell-fixed, 
+.THIS .mainContentArea .forceListViewManagerGrid .slds-has-focus.slds-is-resizable .slds-cell-fixed:focus, 
+.THIS .mainContentArea .forceListViewManagerGrid .slds-has-focus.slds-is-resizable .slds-cell-fixed:hover, 
+.THIS .mainContentArea .forceListViewManagerGrid .slds-has-focus.slds-is-resizable .slds-cell-fixed:focus:hover,
+.THIS .mainContentArea th.slds-grid.slds-grid--align-spread.forceInlineEditCell span {
+    background-color: var(--lwc-colorBackgroundRowHover) !important;
+}
+
+.THIS .mainContentArea .slds-box.slds-theme_default.slds-theme--shade,
+.THIS .mainContentArea .rsLink.cuf-morerss {
+    background-color: var(--lwc-colorPageBackground);
+}
+
+.THIS .mainContentArea .slds-cell-edit.cellContainer.slds-has-focus {
+    background-color: var(--lwc-colorPageBackground) !important;
+    box-shadow: var(--lwc-colorBorder) !important;
+}
+
+.THIS .mainContentArea .slds-resizable__divider:before,
+.THIS .mainContentArea .slds-resizable__divider:after {
+    box-shadow: var(--lwc-colorBorder);
+    background-color: var(--lwc-colorBorder);
+}
+
+.THIS .mainContentArea [class^="slds-button--"],
+.THIS .mainContentArea [class*="slds-button--"],
+.THIS .mainContentArea [class^="slds-button_"],
+.THIS .mainContentArea [class*="slds-button_"],
+.THIS .mainContentArea [class^="slds-input--"],
+.THIS .mainContentArea [class*="slds-input--"],
+.THIS .mainContentArea [class^="slds-input_"],
+.THIS .mainContentArea [class*="slds-input_"] {
+    background-color: var(--lwc-colorPageBackground);
+    color: var(--lwc-colorTextLabel);
+    fill: var(--lwc-colorTextLabel);
+}
+
+.THIS .mainContentArea .slds-button.trigger span svg,
+.THIS .mainContentArea .slds-cell-fixed svg,
+.THIS .mainContentArea .toggle.slds-th__action.slds-text-link--reset,
+.THIS .mainContentArea .slds-cell-fixed:hover .toggle.slds-th__action.slds-text-link--reset {
+    background-color: transparent !important;
+}
+
+
+.THIS .mainContentArea .askCommunityBtn.slds-button,
+.THIS .mainContentArea .slds-button_brand,
+.THIS .mainContentArea .uiButton,
+.THIS .mainContentArea .slds-icon-utility-add.slds-button__icon.slds-button__icon--left.slds-icon_container.forceIcon,
+.THIS .mainContentArea button .slds-button__icon.slds-button__icon_left {
+    background-color: var(--lwc-buttonColorBorderBrandPrimary);
+    color: var(--lwc-colorTextBrandPrimary);
+}
+
+.THIS .mainContentArea .askCommunityBtn.slds-button:hover,
+.THIS .mainContentArea .slds-button_brand:hover {
+    background-color: var(--lwc-colorBackgroundButtonBrandHover);
+}

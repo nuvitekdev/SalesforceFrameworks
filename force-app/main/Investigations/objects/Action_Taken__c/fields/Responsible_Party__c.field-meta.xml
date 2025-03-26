@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Responsible_Party__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>User or team responsible for implementing the action.</description>
+    <inlineHelpText>User or team responsible for implementing the action.</inlineHelpText>
+    <label>Responsible Party</label>
+    <referenceTo>User</referenceTo>
+    <relationshipName>Actions_Taken</relationshipName>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

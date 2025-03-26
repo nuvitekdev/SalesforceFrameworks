@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Whistleblower Submit A Report",
+  "contentBody" : {
+    "activeViewId" : "Whistleblower_SLA",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-whistleblower-sla",
+    "urlPrefix" : "whistleblower-submit-report"
+  },
+  "urlName" : "whistleblower-sla"
+}

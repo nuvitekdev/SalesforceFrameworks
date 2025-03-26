@@ -1,0 +1,126 @@
+{
+  "type" : "sfdc_cms__themeLayout",
+  "title" : "Routing Home Page",
+  "contentBody" : {
+    "component" : {
+      "attributes" : {
+        "accentColor" : "rgb(213, 223, 35)",
+        "applyThemeToSlots" : true,
+        "backgroundVideoDarkness" : 0,
+        "backgroundVideoFallbackUrl" : "",
+        "backgroundVideoUrl" : "",
+        "companyName" : "Nuvitek",
+        "ensureHomeNavItem" : false,
+        "fabUrl" : "",
+        "footerColumnCount" : 3,
+        "footerColumnMenus" : "",
+        "footerColumnTitles" : "Products, Resources, Company",
+        "footerLegalText" : "All rights reserved. Terms and conditions apply.",
+        "footerNavigationMenuName" : "",
+        "footerStyle" : "minimal",
+        "footerTagline" : "Delivering innovative solutions since 2010",
+        "globalThemeOverride" : true,
+        "headerContainerWidth" : 100,
+        "headerNavigationMenuName" : "",
+        "headerSticky" : false,
+        "headerVariant" : "standard",
+        "heroBackgroundDarkness" : -20,
+        "heroBackgroundImage" : "Document_Routing_HeroImage",
+        "heroCTAPrimaryLabel" : "",
+        "heroCTAPrimaryUrl" : "",
+        "heroCTASecondaryLabel" : "",
+        "heroCTASecondaryUrl" : "",
+        "heroLayout" : "fullwidth",
+        "heroSubtitle" : "Transform static paperwork into dynamic workflows—automate routing, track approvals, and eliminate bottlenecks with precision and speed",
+        "heroTitle" : "Command Your Document Ecosystem",
+        "logoAltText" : "Nuvitek",
+        "logoUrl" : "",
+        "primaryColor" : "rgb(34, 189, 193)",
+        "profilePageUrl" : "/profile",
+        "showBackgroundVideo" : false,
+        "showFab" : false,
+        "showHeroSection" : true,
+        "showProfileIcon" : false,
+        "showSearchInHeader" : false,
+        "socialLinkTitles" : "Facebook, Twitter, LinkedIn, Instagram",
+        "socialLinkUrls" : "",
+        "socialLinksCount" : 0,
+        "textColor" : "#1d1d1f",
+        "themeName" : "light",
+        "useDefaultFooter" : true,
+        "useDefaultHeader" : true
+      },
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"76abb959-4d0d-4bc6-a5ce-544ae07da3ab\",\"columns\":[{\"UUID\":\"f7820f6b-4b69-4926-ba57-6b9c71869773\",\"columnName\":\"Column 1\",\"columnKey\":\"headerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "id" : "f7820f6b-4b69-4926-ba57-6b9c71869773",
+            "name" : "headerSection",
+            "title" : "Theme Header",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "76abb959-4d0d-4bc6-a5ce-544ae07da3ab",
+          "type" : "component"
+        } ],
+        "id" : "b7f3d05b-3eb6-4194-a9e5-891969fc3ec7",
+        "name" : "header",
+        "title" : "Theme Header",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"412285e0-e2ce-439b-8eb5-bfcc906adcda\",\"columns\":[{\"UUID\":\"a3074696-fb7b-4215-a3f8-5db5829271fa\",\"columnName\":\"Column 1\",\"columnKey\":\"footerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "id" : "a3074696-fb7b-4215-a3f8-5db5829271fa",
+            "name" : "footerSection",
+            "title" : "Theme Footer",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "412285e0-e2ce-439b-8eb5-bfcc906adcda",
+          "type" : "component"
+        } ],
+        "id" : "9c623501-caac-4e4d-9f7d-5a95e584d03c",
+        "name" : "footer",
+        "title" : "Theme Footer",
+        "type" : "region"
+      }, {
+        "id" : "ee824824-eec5-4ca7-916d-723c97bf30f9",
+        "name" : "default",
+        "type" : "region"
+      }, {
+        "id" : "c09b378a-0de0-4fa0-b467-3040056895ae",
+        "name" : "hero-media",
+        "type" : "region"
+      } ],
+      "definition" : "c:nuvitekThemeLayout",
+      "id" : "c88a49b8-90d5-4bc4-9055-53ed30a69622",
+      "type" : "component"
+    }
+  },
+  "urlName" : "routing-home-page"
+}

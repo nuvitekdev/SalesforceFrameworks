@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DigitalExperienceConfig xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>HR &amp; Administrative Portal</label>
+    <site>
+        <urlPathPrefix>hradmin</urlPathPrefix>
+    </site>
+    <space>site/HR_Administrative_Portal1</space>
+</DigitalExperienceConfig>

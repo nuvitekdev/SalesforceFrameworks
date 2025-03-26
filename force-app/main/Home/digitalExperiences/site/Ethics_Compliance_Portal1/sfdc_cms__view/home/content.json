@@ -1,0 +1,75 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Home",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"2d0026aa-827c-410c-a7ef-1203bf8b33ab\",\"columns\":[{\"UUID\":\"0ecdf266-91e1-4f06-a51e-0ee487417278\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "colors" : "#34c759, #5856d6",
+                "columns" : 2,
+                "descriptions" : "Streamline OGE 450 reporting with smart form generation plus validation checks and comprehensive reviewer workflows, Manage all ethics disclosures with conflict analysis tools plus determination tracking and recusal management",
+                "icons" : "utility:money, utility:shield",
+                "links" : "/page1, /page2, /page3",
+                "tileStyle" : "gradient",
+                "titles" : "Financial Disclosure Portal, Ethics Submissions Center"
+              },
+              "definition" : "c:nuvitekNavigationTiles",
+              "id" : "e724204c-d020-4b43-901c-ba0e37568d67",
+              "type" : "component"
+            } ],
+            "id" : "0ecdf266-91e1-4f06-a51e-0ee487417278",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "2d0026aa-827c-410c-a7ef-1203bf8b33ab",
+          "type" : "component"
+        } ],
+        "id" : "7f6a7d6a-6322-4a04-9a5d-441e3f98999d",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "pageTitle" : "Home",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "d098a9fe-3ed3-41ec-b74e-fa0f18334204",
+          "type" : "component"
+        } ],
+        "id" : "538f9344-75f8-43c3-8026-577e33d8065d",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "14502899-c478-4c38-8e16-d51bb5bd6595",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "aJqgzeTdWrBmv2ZMnOVWZ7P8HkHClV",
+    "viewType" : "home"
+  },
+  "urlName" : "home"
+}

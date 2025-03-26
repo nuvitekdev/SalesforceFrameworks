@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Queue xmlns="http://soap.sforce.com/2006/04/metadata">
+    <doesSendEmailToMembers>false</doesSendEmailToMembers>
+    <name>Submission Follow-Up Queue</name>
+    <queueMembers>
+        <users>
+            <user>shahzeb.khan@nuvitek.com</user>
+        </users>
+    </queueMembers>
+    <queueSobject>
+        <sobjectType>Whistleblower_Report__c</sobjectType>
+    </queueSobject>
+</Queue>

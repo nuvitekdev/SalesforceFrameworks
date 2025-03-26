@@ -1,0 +1,8 @@
+{
+  "type" : "sfdc_cms__site",
+  "title" : "Functional Frameworks Demo Center",
+  "contentBody" : {
+    "authenticationType" : "AUTHENTICATED"
+  },
+  "urlName" : "functional-frameworks-demo-center"
+}

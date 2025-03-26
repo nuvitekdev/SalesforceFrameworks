@@ -1,0 +1,8 @@
+{
+  "type" : "sfdc_cms__site",
+  "title" : "Government Documents Portal",
+  "contentBody" : {
+    "authenticationType" : "AUTHENTICATED"
+  },
+  "urlName" : "government-documents-portal"
+}

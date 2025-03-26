@@ -1,0 +1,75 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Home",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"058530cb-c01f-4e4c-99d0-af2fb1a970cf\",\"columns\":[{\"UUID\":\"be4d4e54-a80f-4af6-a5da-887235a62e8f\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "colors" : "#00C4B4, #D47500, #FFB900, #00B294",
+                "columns" : 4,
+                "descriptions" : "Optimize your vehicle fleet with maintenance scheduling plus fuel tracking and cost analysis with geographic visualization tools, Streamline vehicle usage with reservation systems plus condition verification and mileage logging with digital key management, Monitor all government assets with barcode integration plus assignment tracking and maintenance management with lifecycle analysis, Manage property transfers with documentation tools plus valuation tracking and legal review integration with geographic visualization",
+                "icons" : "utility:away, utility:travel_and_places, utility:quick_text, utility:location",
+                "links" : "/page1, /page2, /page3",
+                "tileStyle" : "elevated",
+                "titles" : "Fleet Management, Vehicle Reservations, Equipment Tracking, Real Estate Conveyance"
+              },
+              "definition" : "c:nuvitekNavigationTiles",
+              "id" : "c4dce097-606b-4820-a15e-87cf66937ca9",
+              "type" : "component"
+            } ],
+            "id" : "be4d4e54-a80f-4af6-a5da-887235a62e8f",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "058530cb-c01f-4e4c-99d0-af2fb1a970cf",
+          "type" : "component"
+        } ],
+        "id" : "086334fa-eed2-4de0-90d0-842f22da4a38",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "pageTitle" : "Home",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "c86607e4-cd2f-41f8-8357-64cece32749d",
+          "type" : "component"
+        } ],
+        "id" : "70fb3f3b-3f54-4dd2-b4c4-30121fd2e381",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "8bd30084-0c28-46d5-aff9-e6836f53fd9b",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "43BaiNIzlrFQBL58IB48ilLnl3IQry",
+    "viewType" : "home"
+  },
+  "urlName" : "home"
+}

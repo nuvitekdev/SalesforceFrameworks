@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>decorate</name>
+                    <value>true</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>richTextValue</name>
+                    <value>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 24px; color: rgb(0, 0, 0);&quot;&gt;Investigations Application&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px; color: rgb(0, 0, 0);&quot;&gt;The Investigations application provides comprehensive case management tools for oversight, compliance, and security functions. From initial intake to final resolution, our secure platform safeguards sensitive information while enabling thorough investigations across multiple domains including OIG, EEO, law enforcement, legal counsel, and whistleblower protection. With advanced evidence tracking, interview management, and compliance reporting, investigators can efficiently pursue cases while maintaining proper documentation and audit trails.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:richText</componentName>
+                <identifier>flexipage_richText</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>region1</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>runtime_approval_process:pendingApprovalCard</componentName>
+                <identifier>runtime_approval_process_pendingApprovalCard</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>accentColor</name>
+                    <value>#D5DF23</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>cardTitle</name>
+                    <value>AI Assistant</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>defaultModelName</name>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>hideModelSelector</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>primaryColor</name>
+                    <value>#22BDC1</value>
+                </componentInstanceProperties>
+                <componentName>llmAssistant</componentName>
+                <identifier>c_llmAssistant</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>region2</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>colors</name>
+                    <value>#3A7CA5, #4D9DE0, #2E8B57, #1F6AA6, #7E56B3, #F77E30</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>columns</name>
+                    <value>3</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>descriptions</name>
+                    <value>Manage investigation of fraud, waste, and misconduct, Handle discrimination complaints and compliance, Manage facility security processes and incidents, Manage law enforcement cases and evidence, Streamline legal case and advisory management, Access whistleblower reporting and management</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>icons</name>
+                    <value>utility:search, utility:identity, utility:lock, utility:shield, utility:contract, utility:announcement</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>links</name>
+                    <value>/one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=OIG, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=EEO, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=Physical_Security, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=Law_Enforcement, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=General_Counsel, /one/one.app?source=aloha#/n/Whistleblower_Home</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>tileStyle</name>
+                    <value>gradient</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>titles</name>
+                    <value>OIG, EEO, Physical Security, Office of Law Enforcement, Office of General Counsel, Whistleblower Management</value>
+                </componentInstanceProperties>
+                <componentName>nuvitekNavigationTiles</componentName>
+                <identifier>c_nuvitekNavigationTiles</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>region3</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <masterLabel>Investigations Home</masterLabel>
+    <template>
+        <name>flowsapp:homePageTemplateHeaderTwoColumnLeftSidebar</name>
+    </template>
+    <type>HomePage</type>
+</FlexiPage>

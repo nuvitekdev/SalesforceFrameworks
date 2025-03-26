@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Initial_Evaluation_Queue_Urgent_Whistleblower_Report</fullName>
+    <columns>NAME</columns>
+    <columns>Visibility_Desired__c</columns>
+    <columns>Category__c</columns>
+    <columns>Severity__c</columns>
+    <columns>Status__c</columns>
+    <filterScope>Queue</filterScope>
+    <label>Initial Evaluation Queue - Urgent</label>
+    <queue>Initial_Evaluation_Queue_Urgent</queue>
+    <sharedTo>
+        <allInternalUsers></allInternalUsers>
+    </sharedTo>
+</ListView>

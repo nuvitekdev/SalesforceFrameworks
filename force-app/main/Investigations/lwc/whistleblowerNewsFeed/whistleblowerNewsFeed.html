@@ -1,0 +1,34 @@
+<template>
+    <lightning-card title="Whistleblower News Feed" icon-name="custom:custom63">
+        <div class="slds-m-around_medium">
+            <template if:true={newsItems}>
+                <div class="carousel-container">
+                    <div class="carousel">
+                        <template for:each={newsItems} for:item="news">
+                            <div key={news.url} class="carousel-slide">
+                                <a href={news.url} target="_blank">
+                                    <img src={news.imageUrl} alt="News Image" class="news-image"/>
+                                </a>
+                                <div class="text-container">
+                                    <p class="news-title">
+                                        <a href={news.url} target="_blank">{news.title}</a>
+                                    </p>
+                                    <p class="news-description">{news.description}</p>
+                                    <p class="news-source">Source: {news.source}</p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="carousel-navigation">
+                        <button class="nav-arrow left-arrow" onclick={prevSlide}>❮</button>
+                        <button class="nav-arrow right-arrow" onclick={nextSlide}>❯</button>
+                    </div>
+                </div>
+            </template>
+            
+            <template if:true={error}>
+                <p class="slds-text-color_error">Error: {error}</p>
+            </template>
+        </div>
+    </lightning-card>
+</template>

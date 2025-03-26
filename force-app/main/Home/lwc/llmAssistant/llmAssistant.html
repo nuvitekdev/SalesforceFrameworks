@@ -1,0 +1,164 @@
+<template>
+    <lightning-card>
+        <div slot="title">
+            <div class="title-container">
+                <div class="title-left">
+                    <lightning-icon icon-name="standard:bot" size="small" class="slds-m-right_small"></lightning-icon>
+                    <span class="title-text">{cardTitle}</span>
+                </div>
+                <div class="title-right" if:true={recordId}>
+                    <span class="scan-badge" if:true={pageComponentsScanned}>
+                        <lightning-icon icon-name="utility:success" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                        Page scanned
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+            <template if:true={showModelSelector}>
+                <lightning-combobox
+                    label="Select AI Model"
+                    options={llmOptions}
+                    value={selectedLLM}
+                    onchange={handleModelChange}
+                    class="slds-m-bottom_small">
+                </lightning-combobox>
+            </template>
+
+            <lightning-textarea
+                label="Your Question"
+                value={userPrompt}
+                onchange={handlePromptChange}
+                placeholder="Type your question here..."
+                class="slds-m-bottom_small">
+            </lightning-textarea>
+
+            <div class="action-buttons-container slds-m-bottom_medium">
+                <lightning-button
+                    label="Ask Question"
+                    variant="brand"
+                    icon-name="utility:question_mark"
+                    onclick={handleAsk}
+                    disabled={isLoading}
+                    class="ask-button">
+                </lightning-button>
+                <lightning-button
+                    if:true={showAnalyzeButton}
+                    label="Analyze Record"
+                    variant="neutral"
+                    icon-name="utility:summary"
+                    onclick={handleSummarize}
+                    disabled={isLoading}
+                    class="analyze-button">
+                </lightning-button>
+                <lightning-button
+                    label="Clear Chat"
+                    variant="neutral"
+                    icon-name="utility:refresh"
+                    onclick={clearConversation}
+                    disabled={isLoading}
+                    class="clear-button slds-m-left_x-small">
+                </lightning-button>
+            </div>
+
+            <div if:true={isLoading} class="loading-container">
+                <lightning-spinner alternative-text="Processing" size="medium"></lightning-spinner>
+                <p class="loading-text">Analyzing data and generating response...</p>
+            </div>
+
+            <div if:true={hasError} class="slds-text-color_error slds-m-bottom_small slds-p-around_small slds-border_left slds-border_red slds-border_left-4">
+                <lightning-icon icon-name="utility:error" alternative-text="Error" size="small" class="slds-m-right_small"></lightning-icon>
+                {errorMessage}
+            </div>
+
+            <!-- Latest response display -->
+            <template if:true={response}>
+                <div class="response-container">
+                    <div class="slds-grid slds-grid_align-center slds-gutters slds-m-bottom_small">
+                        <div class="slds-col slds-size_12-of-12">
+                            <span class="slds-badge slds-theme_success slds-m-bottom_small">
+                                Response generated using {selectedLLMLabel}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="response-text">
+                        <lightning-formatted-rich-text value={formattedResponse}></lightning-formatted-rich-text>
+                    </div>
+                    <div class="slds-grid slds-grid_align-end slds-m-top_medium">
+                        <lightning-button-icon 
+                            icon-name="utility:copy_to_clipboard" 
+                            alternative-text="Copy to clipboard" 
+                            title="Copy to clipboard"
+                            onclick={copyResponseToClipboard}
+                            class="slds-m-left_x-small">
+                        </lightning-button-icon>
+                    </div>
+                </div>
+            </template>
+            
+            <!-- Chat history section -->
+            <div class="conversation-header slds-m-top_medium" if:true={conversationHistory.length}>
+                <div class="slds-grid slds-grid_align-spread">
+                    <div class="slds-col">
+                        <h3 class="slds-text-heading_small">Conversation History</h3>
+                    </div>
+                    <div class="slds-col slds-text-align_right">
+                        <lightning-button-icon
+                            icon-name={toggleIconName}
+                            alternative-text="Toggle Conversation"
+                            title="Toggle Conversation"
+                            onclick={toggleConversationHistory}
+                            class="toggle-chat-button">
+                        </lightning-button-icon>
+                    </div>
+                </div>
+                
+                <!-- History limit info -->
+                <div class="history-info slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+                    {historyLimitMessage}
+                </div>
+                
+                <!-- Conversation summary if available -->
+                <div class="summary-container slds-m-top_small slds-p-around_small" if:true={conversationSummary}>
+                    <div class="summary-header">
+                        <lightning-icon icon-name="utility:summary" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                        <span class="summary-title">Conversation Summary</span>
+                    </div>
+                    <div class="summary-content slds-p-top_x-small">
+                        <lightning-formatted-rich-text value={formattedSummary}></lightning-formatted-rich-text>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="conversation-container" if:true={showConversationHistory}>
+                <template for:each={conversationHistory} for:item="message">
+                    <div key={message.id} class="chat-message" data-user={message.isUser}>
+                        <div class="message-header">
+                            <span class="message-sender">{message.sender}</span>
+                            <span class="message-timestamp">{message.timestamp}</span>
+                            <template if:false={message.isUser}>
+                                <span class="message-model">{message.model}</span>
+                            </template>
+                        </div>
+                        <div class="message-content">
+                            <lightning-formatted-rich-text value={message.formattedContent}></lightning-formatted-rich-text>
+                        </div>
+                        <template if:false={message.isUser}>
+                            <div class="message-actions">
+                                <lightning-button-icon
+                                    icon-name="utility:copy_to_clipboard"
+                                    alternative-text="Copy to clipboard" 
+                                    title="Copy to clipboard"
+                                    onclick={copyMessageToClipboard}
+                                    data-message={message.content}
+                                    class="copy-message-button">
+                                </lightning-button-icon>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </lightning-card>
+</template>

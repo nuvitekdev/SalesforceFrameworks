@@ -1,0 +1,40 @@
+{
+  "type" : "sfdc_cms__theme",
+  "title" : "Build Your Own (LWR)",
+  "contentBody" : {
+    "activeBrandingSetId" : "Build_Your_Own_LWR",
+    "definitionName" : "byo",
+    "layouts" : [ {
+      "layoutId" : "Investigation_Home_Page",
+      "layoutType" : "GD4W4K6mefLmb3VTNFIyyTwkSZz3Qo"
+    }, {
+      "layoutId" : "snaThemeLayout",
+      "layoutType" : "ServiceNotAvailable"
+    }, {
+      "layoutId" : "scopedHeaderAndFooter",
+      "layoutType" : "Inner"
+    }, {
+      "layoutId" : "Whistleblower_Home_Page",
+      "layoutType" : "9JPzo36797M3pAPW7KQda3IWclC6Si"
+    }, {
+      "layoutId" : "OIG_Home_Page",
+      "layoutType" : "OIGInvestigations"
+    }, {
+      "layoutId" : "EEO_Home_Page",
+      "layoutType" : "EEOInvestigations"
+    }, {
+      "layoutId" : "Physical_Security_Home_Page",
+      "layoutType" : "SecurityInvestigations"
+    }, {
+      "layoutId" : "Law_Enforcement_Home_Page",
+      "layoutType" : "LawEnforcementInvestigations"
+    }, {
+      "layoutId" : "General_Counsel_Home_Page",
+      "layoutType" : "LegalInvestigations"
+    }, {
+      "layoutId" : "Whistleblower_Report_Page",
+      "layoutType" : "WhistleblowerReport"
+    } ]
+  },
+  "urlName" : "build-your-own-lwr"
+}

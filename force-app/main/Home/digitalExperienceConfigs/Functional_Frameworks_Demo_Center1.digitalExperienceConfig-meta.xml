@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DigitalExperienceConfig xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>Functional Frameworks Demo Center</label>
+    <site>
+        <urlPathPrefix>DemoHome</urlPathPrefix>
+    </site>
+    <space>site/Functional_Frameworks_Demo_Center1</space>
+</DigitalExperienceConfig>

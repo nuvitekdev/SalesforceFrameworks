@@ -1,0 +1,63 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Whistleblower Protection Home",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"9911b6a0-ba44-4c45-9551-4cfb426709e1\",\"columns\":[{\"UUID\":\"eeb9639f-18ba-42d7-9fdb-3aa098258325\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "id" : "eeb9639f-18ba-42d7-9fdb-3aa098258325",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "9911b6a0-ba44-4c45-9551-4cfb426709e1",
+          "type" : "component"
+        } ],
+        "id" : "9d9e5363-72be-48f9-979e-9196017b57cd",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Whistleblower Protection Home",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "58c41c0a-e1b2-454d-8ab2-71c519be440c",
+          "type" : "component"
+        } ],
+        "id" : "52a3bbd3-08ce-4ec3-b025-6bc3a454d8e2",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "c6300855-9c69-4cf6-a02a-4700089c9c7b",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "9JPzo36797M3pAPW7KQda3IWclC6Si",
+    "viewType" : "custom-whistleblower-protection-home"
+  },
+  "urlName" : "whistleblower-protection-home"
+}

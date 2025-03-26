@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Claude-3 Haiku</label>
+    <protected>false</protected>
+    <values>
+        <field>API_Key__c</field>
+        <value xsi:type="xsd:string">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</value>
+    </values>
+    <values>
+        <field>Base_URL__c</field>
+        <value xsi:type="xsd:string">https://api.anthropic.com/v1/messages</value>
+    </values>
+    <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Max_Tokens__c</field>
+        <value xsi:type="xsd:double">4000.0</value>
+    </values>
+    <values>
+        <field>Model_Name__c</field>
+        <value xsi:type="xsd:string">claude-3-haiku-20240307</value>
+    </values>
+    <values>
+        <field>Provider__c</field>
+        <value xsi:type="xsd:string">Anthropic</value>
+    </values>
+    <values>
+        <field>Supports_Files__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Temperature__c</field>
+        <value xsi:type="xsd:double">0.7</value>
+    </values>
+</CustomMetadata>

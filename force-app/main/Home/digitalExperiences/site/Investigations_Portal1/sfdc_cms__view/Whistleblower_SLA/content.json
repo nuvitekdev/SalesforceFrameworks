@@ -1,0 +1,72 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Whistleblower SLA",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"2ac50560-f6bc-4f3e-8fa3-ec38a24de02f\",\"columns\":[{\"UUID\":\"af419621-c2be-4e07-8e06-49b14f46ac01\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "dxpStyle" : { },
+                "flowName" : "{\"flowName\":\"Whistleblower_Report_Submission\",\"flowLabel\":\"Whistleblower Report Submission\"}"
+              },
+              "definition" : "dxp_flow:flow",
+              "id" : "8726b66e-b4cf-40c9-84b0-8720eb71c7ad",
+              "type" : "component"
+            } ],
+            "id" : "af419621-c2be-4e07-8e06-49b14f46ac01",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "2ac50560-f6bc-4f3e-8fa3-ec38a24de02f",
+          "type" : "component"
+        } ],
+        "id" : "50608be9-c065-4a5a-b993-e51e2869f293",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Whistleblower SLA",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "f25f1d09-6a55-4312-894d-9fbc21b41a1d",
+          "type" : "component"
+        } ],
+        "id" : "10fdb230-7e56-4814-8b00-b1b65ce4efea",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "c7b5d378-c78c-4127-86a8-65c76ca23552",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-whistleblower-sla"
+  },
+  "urlName" : "whistleblower-sla"
+}

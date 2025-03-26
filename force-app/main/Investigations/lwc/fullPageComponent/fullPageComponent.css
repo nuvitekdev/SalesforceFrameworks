@@ -1,0 +1,5 @@
+.full-page {
+    height: 100vh; /* Full height of the viewport */
+    width: 100vw;  /* Full width of the viewport */
+    background-color: #f0f0f0; /* Example background color */
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>My_Actions_Taken</fullName>
+    <columns>NAME</columns>
+    <columns>OWNER.ALIAS</columns>
+    <columns>Action_Date__c</columns>
+    <columns>Follow_Up_Required__c</columns>
+    <columns>Effectiveness__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Has_Access__c</field>
+        <operation>equals</operation>
+        <value>1</value>
+    </filters>
+    <label>My Actions Taken</label>
+</ListView>

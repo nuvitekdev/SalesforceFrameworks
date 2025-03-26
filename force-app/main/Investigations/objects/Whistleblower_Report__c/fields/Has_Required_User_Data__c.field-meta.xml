@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Has_Required_User_Data__c</fullName>
+    <formula>IF(
+    AND(
+        NOT(ISBLANK($User.FirstName)),
+        NOT(ISBLANK($User.LastName)),
+        NOT(ISBLANK($User.Phone)),
+        NOT(ISBLANK($User.Email)),
+        NOT(ISBLANK($User.CompanyName))
+    ), 
+TRUE, 
+FALSE
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Has Required User Data</label>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

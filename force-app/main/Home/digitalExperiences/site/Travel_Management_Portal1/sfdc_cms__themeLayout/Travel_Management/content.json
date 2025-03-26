@@ -1,0 +1,127 @@
+{
+  "type" : "sfdc_cms__themeLayout",
+  "title" : "Travel Management",
+  "contentBody" : {
+    "component" : {
+      "attributes" : {
+        "accentColor" : "#D5DF23",
+        "applyThemeToSlots" : true,
+        "backgroundVideoDarkness" : 35,
+        "backgroundVideoFallbackUrl" : "",
+        "backgroundVideoUrl" : "Travel_Portal_Hero_Video",
+        "companyName" : "Nuvitek",
+        "ensureHomeNavItem" : false,
+        "fabUrl" : "",
+        "footerColumnCount" : 3,
+        "footerColumnMenus" : "",
+        "footerColumnTitles" : "Products, Resources, Company",
+        "footerLegalText" : "All rights reserved. Terms and conditions apply.",
+        "footerNavigationMenuName" : "",
+        "footerStyle" : "minimal",
+        "footerTagline" : "Delivering innovative solutions since 2012",
+        "globalThemeOverride" : true,
+        "headerContainerWidth" : 100,
+        "headerNavigationMenuName" : "",
+        "headerSticky" : false,
+        "headerVariant" : "standard",
+        "heroBackgroundDarkness" : 30,
+        "heroBackgroundImage" : "Travel_Portal_Video",
+        "heroCTAPrimaryLabel" : "",
+        "heroCTAPrimaryUrl" : "",
+        "heroCTASecondaryLabel" : "",
+        "heroCTASecondaryUrl" : "",
+        "heroLayout" : "fullwidth",
+        "heroSubtitle" : "Eliminate travel administration headaches with automated approvals, digital expense management, and comprehensive tracking—from initial request to final reimbursement",
+        "heroTitle" : "Streamlined Travel, Unmatched Efficiency",
+        "logoAltText" : "Nuvitek",
+        "logoUrl" : "",
+        "primaryColor" : "#22BDC1",
+        "profilePageUrl" : "/profile",
+        "searchObjects" : "Account,Contact",
+        "showBackgroundVideo" : true,
+        "showFab" : false,
+        "showHeroSection" : true,
+        "showProfileIcon" : false,
+        "showSearchInHeader" : false,
+        "socialLinkTitles" : "Facebook, Twitter, LinkedIn, Instagram",
+        "socialLinkUrls" : "",
+        "socialLinksCount" : 0,
+        "textColor" : "#1d1d1f",
+        "themeName" : "dark",
+        "useDefaultFooter" : true,
+        "useDefaultHeader" : true
+      },
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"5df1734d-41f7-4c12-9885-6d26f2dafa71\",\"columns\":[{\"UUID\":\"c69410fc-2947-402f-88d9-cb2b5c7362d2\",\"columnName\":\"Column 1\",\"columnKey\":\"headerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "id" : "c69410fc-2947-402f-88d9-cb2b5c7362d2",
+            "name" : "headerSection",
+            "title" : "Theme Header",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "5df1734d-41f7-4c12-9885-6d26f2dafa71",
+          "type" : "component"
+        } ],
+        "id" : "d9392071-62bb-4aa2-9bcc-5206fd12228d",
+        "name" : "header",
+        "title" : "Theme Header",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"fe5bcc47-cf0c-405f-b8b4-00920f3d58ee\",\"columns\":[{\"UUID\":\"8ff408d2-a0d2-413e-82a7-fa282e40a06d\",\"columnName\":\"Column 1\",\"columnKey\":\"footerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "id" : "8ff408d2-a0d2-413e-82a7-fa282e40a06d",
+            "name" : "footerSection",
+            "title" : "Theme Footer",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "fe5bcc47-cf0c-405f-b8b4-00920f3d58ee",
+          "type" : "component"
+        } ],
+        "id" : "269306a3-50d1-49da-92db-02a069696e55",
+        "name" : "footer",
+        "title" : "Theme Footer",
+        "type" : "region"
+      }, {
+        "id" : "0115430b-43a5-4da5-8812-73046506ade4",
+        "name" : "default",
+        "type" : "region"
+      }, {
+        "id" : "61f6e08f-e606-4218-9a66-5dc10b0f0379",
+        "name" : "hero-media",
+        "type" : "region"
+      } ],
+      "definition" : "c:nuvitekThemeLayout",
+      "id" : "1447e99f-6b89-4133-8b16-113330d4bbfd",
+      "type" : "component"
+    }
+  },
+  "urlName" : "travel-management"
+}

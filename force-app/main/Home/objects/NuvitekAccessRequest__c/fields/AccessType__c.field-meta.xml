@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>AccessType__c</fullName>
+    <description>The type of access being requested (Admin, User, etc.)</description>
+    <externalId>false</externalId>
+    <inlineHelpText>The role/level of access being requested</inlineHelpText>
+    <label>Access Type</label>
+    <length>100</length>
+    <required>true</required>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField> 

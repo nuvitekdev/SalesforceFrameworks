@@ -1,0 +1,75 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Home",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"f8c28af2-f116-46e2-b13c-fa8e0ae48344\",\"columns\":[{\"UUID\":\"c449dd4d-cdb1-43a8-937e-321a413afa97\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "colors" : "#1DA1F2, #00BA8F, #6B52DD, #FF9E1B",
+                "columns" : 4,
+                "descriptions" : "Plan and approve official travel with streamlined request forms plus policy compliance checks and integrated risk assessment with booking system integration, Simplify reimbursement with mobile receipt capture plus automated expense categorization and policy verification with real-time processing status, Monitor passport applications with document upload capabilities plus status tracking and deadline management with renewal forecasting, Secure approval for conferences with justification tools plus cost estimation and travel coordination with ROI tracking dashboards",
+                "icons" : "utility:travel_and_places, utility:money, utility:record, utility:event",
+                "links" : "/page1, /page2, /page3",
+                "tileStyle" : "gradient",
+                "titles" : "Travel Request Portal, Expense Processing Center, Passport Tracking System, Conference Approval Hub"
+              },
+              "definition" : "c:nuvitekNavigationTiles",
+              "id" : "b78ed3d3-e6ca-4d42-9f2d-2a9e5750f66e",
+              "type" : "component"
+            } ],
+            "id" : "c449dd4d-cdb1-43a8-937e-321a413afa97",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "f8c28af2-f116-46e2-b13c-fa8e0ae48344",
+          "type" : "component"
+        } ],
+        "id" : "d4862f85-3dd1-427b-8b70-69bafb8a531f",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "pageTitle" : "Home",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "23c488af-8a43-4770-b40a-0ca60d0c5e99",
+          "type" : "component"
+        } ],
+        "id" : "79c9dcfd-5668-4ece-8e0f-5c1ce52882b5",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "5877cc08-8e58-4fe1-982d-ede71fcff846",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "LotlGFodfBWSj7TMoWhDY5w3FlpTV5",
+    "viewType" : "home"
+  },
+  "urlName" : "home"
+}

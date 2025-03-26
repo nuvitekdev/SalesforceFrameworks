@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Supports_Files__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Indicates if the LLM supports base64 files</description>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Supports Files</label>
+    <type>Checkbox</type>
+</CustomField>

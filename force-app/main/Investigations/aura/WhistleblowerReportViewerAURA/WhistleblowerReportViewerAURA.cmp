@@ -1,0 +1,50 @@
+<aura:component controller="WhistleblowerController">
+    <aura:attribute name="selectedReportId" type="String" />
+    <aura:attribute name="reportOptions" type="List" />
+
+    <div class="slds-grid slds-p-around_medium">
+        <!-- Whistleblower Report Selection -->
+        <div class="slds-size_1-of-3">
+            <label class="slds-form-element__label" for="selectReport">Select Whistleblower Report</label>
+            <lightning:combobox
+                class="slds-form-element"
+                id="selectReport"
+                label=""
+                value="{!v.selectedReportId}"
+                options="{!v.reportOptions}"
+                onchange="{!c.handleReportChange}"
+            />
+        </div>
+
+        <!-- Display Whistleblower Report Details, Investigations, and Actions -->
+        <aura:if isTrue="{!not(empty(v.selectedReportId))}">
+            <div class="slds-size_2-of-3">
+                <!-- Display Whistleblower Report Details -->
+                <lightning:recordViewForm
+                    recordId="{!v.selectedReportId}"
+                    objectApiName="Whistleblower_Report__c"
+                    density="compact"
+                >
+                    <div class="slds-grid slds-wrap">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:outputField fieldName="Report_Details__c" class="slds-p-around_small"/>
+                            <lightning:outputField fieldName="Status__c" class="slds-p-around_small"/>
+                            <lightning:outputField fieldName="Severity__c" class="slds-p-around_small"/>
+                            <!-- Add more fields as needed -->
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <!-- Display related investigations -->
+                            <h2 class="slds-p-around_medium">Related Investigations</h2>
+                            <lightning:datatable
+                                keyField="Id"
+                                data="{!v.investigations}"
+                                columns="{!v.investigationColumns}"
+                            />
+                            <!-- Add a section for displaying related actions taken -->
+                        </div>
+                    </div>
+                </lightning:recordViewForm>
+            </div>
+        </aura:if>
+    </div>
+</aura:component>

@@ -1,0 +1,222 @@
+<template>
+    <lightning-card title={mainTitle} icon-name="custom:custom63">
+        <div class="slds-card__body slds-card__body_inner">
+
+            <div class="slds-m-top_large slds-m-horizontal_medium">
+                <!-- Conditional rendering for guest users -->
+                <template if:true={isGuestUser}>
+                    <div class="slds-grid slds-wrap">
+                        <!-- Left Column: -->
+                        <div class="slds-col slds-size_2-of-2 slds-p-around_small">
+                            <div class="slds-box slds-theme_default slds-theme--shade">
+                                <h3 class="slds-text-heading_small slds-m-bottom_medium">Report Submissions & Results</h3>
+                                <div class="slds-form-element slds-m-bottom_medium">
+                                    <div class="slds-form-element__control">
+                                        <lightning-input type="text" 
+                                                        name="uniqueIdentifier" 
+                                                        label="Enter Unique Identifier"
+                                                        field-level-help="This is the Unique Identifier that was provided to you upon submission."
+                                                        placeholder="Enter your identifier here"
+                                                        value={uniqueIdentifier}
+                                                        onchange={handleUniqueIdentifierChange}
+                                                        class="slds-m-bottom_small"
+                                                        >
+                                        </lightning-input>
+                                    </div>
+                                    <div class="slds-form-element__control">
+                                        <lightning-input type="checkbox"
+                                            label="Exclude My Support Tickets"
+                                            field-level-help="Check this box if you want to exclude any support tickets you may have submitted."
+                                            checked={excludeMySupportTickets}
+                                            onchange={handleExcludeSupportTicketsChange}
+                                            class="slds-m-bottom_small">
+                                        </lightning-input>
+                                    </div>
+                                </div>
+                                <div class="slds-align_absolute-center">
+                                    <lightning-button label="Find Results"
+                                                    title="Find Results"
+                                                    onclick={findReportForGuest}
+                                                    variant="brand"
+                                                    class="slds-m-top_small"
+                                                    >
+                                    </lightning-button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Right Column: -->
+                        <!-- <div class="slds-col slds-size_1-of-2 slds-p-around_small">
+                            <div class="slds-box slds-theme_default slds-theme--shade">
+                                <h3 class="slds-text-heading_small slds-m-bottom_medium">Support Cases</h3>
+                                <div class="slds-form-element slds-m-bottom_medium">
+                                    <div class="slds-form-element__control">
+                                        <lightning-input type="text" 
+                                                        name="uniqueIdentifier" 
+                                                        label="Enter Unique Identifier"
+                                                        field-level-help="This is the Unique Identifier that was provided to you upon submission."
+                                                        placeholder="Enter your identifier here"
+                                                        value={uniqueIdentifier}
+                                                        onchange={handleUniqueIdentifierChange}
+                                                        class="slds-m-bottom_small"></lightning-input>
+                                    </div>
+                                </div>
+                                <div class="slds-align_absolute-center">
+                                    <lightning-button label="Find Support Cases"
+                                                    title="Find Support Cases"
+                                                    onclick={findReportForGuest}
+                                                    variant="brand"
+                                                    class="slds-m-top_small"></lightning-button>
+                                </div>
+                            </div>
+                        </div> -->
+                    </div>
+
+
+                </template>
+                <!-- Section for logged-in users to select a report -->
+                <template if:false={isGuestUser}>
+                    <div class="slds-box slds-theme_default slds-theme--shade">
+                        <h3 class="slds-text-heading_small slds-m-bottom_medium">Select a Report</h3>
+                        <div class="slds-form-element slds-m-bottom_medium">
+                            <div class="slds-form-element__control">
+                                <lightning-combobox name="selectReport"
+                                                    label="Select Whistleblower Report"
+                                                    placeholder="Choose a report"
+                                                    value={selectedReportId}
+                                                    options={reportOptions}
+                                                    onchange={handleReportChange}
+                                                    class="slds-m-bottom_small"></lightning-combobox>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="slds-m-top_large slds-m-horizontal_medium">
+                <template if:true={selectedReportId}>
+                        <div class="slds-grid slds-wrap">
+                            <!-- Left Column: -->
+                            <div class="slds-col slds-size_2-of-2 slds-p-around_small">
+                                
+                                <div class="slds-box slds-theme_default slds-theme--shade">
+                                    
+                                    <h3 class="slds-text-heading_small slds-m-bottom_medium" style="margin-bottom: 0;">Whistleblower Report</h3>
+                                    <lightning-record-view-form record-id={selectedReportId}
+                                                                object-api-name="Whistleblower_Report__c"
+                                                                density="compact">
+                                        <div class="slds-grid slds-wrap">
+                                            <!-- Left Column: Report Information -->
+                                            <div class="slds-col slds-size_1-of-2 slds-p-around_small">
+                                                <lightning-output-field field-name="Name"></lightning-output-field>
+                                                <lightning-output-field field-name="Status__c"></lightning-output-field>
+                                                <lightning-output-field field-name="Severity__c"></lightning-output-field>
+                                                <lightning-output-field field-name="Reported_Date__c"></lightning-output-field>
+                                                <lightning-output-field field-name="Reporter_Email__c"></lightning-output-field>
+                                                <lightning-output-field field-name="Reporter_Phone_Number__c"></lightning-output-field>
+                                            </div>
+                                            <!-- Right Column: Additional Details -->
+                                            <div class="slds-col slds-size_1-of-2 slds-p-around_small">
+                                                <lightning-output-field field-name="Anonymous__c"></lightning-output-field>
+                                                <lightning-output-field field-name="Category__c"></lightning-output-field>
+                                                <lightning-output-field field-name="Report_Details__c"></lightning-output-field>
+                                                <lightning-output-field field-name="CreatedById"></lightning-output-field>
+                                                <lightning-output-field field-name="LastModifiedById"></lightning-output-field>
+                                                <lightning-output-field field-name="OwnerId"></lightning-output-field>
+                                            </div>
+                                        </div>
+                                    </lightning-record-view-form>
+
+
+                                    <h3 class="slds-m-top_medium slds-text-heading_small slds-m-bottom_medium" style="margin-bottom: 0;">Related Investigations</h3>
+                                    <div>
+                                        <div class="slds-m-horizontal_medium">
+                                            <!-- <label class="slds-form-element__label" for="selectInvestigation">Select Investigation</label> -->
+                                            <div class="slds-form-element__control">
+                                                <lightning-combobox label=""
+                                                                    placeholder="Select Investigation"
+                                                                    value={selectedInvestigationId}
+                                                                    options={investigations}
+                                                                    onchange={handleInvestigationChange}>
+                                                </lightning-combobox>
+                                            </div>
+                                        </div>
+                                        <div class="slds-m-top_small slds-m-horizontal_medium">
+                                            <template if:true={selectedInvestigationId}>
+                                                    <lightning-record-view-form record-id={selectedInvestigationId}
+                                                                                object-api-name="Investigation__c"
+                                                                                density="compact">
+                                                        <!-- Investigation Details Grid -->
+                                                        <div class="slds-grid slds-wrap">
+                                                            <!-- Left Column: Basic Investigation Details -->
+                                                            <div class="slds-col slds-size_1-of-2 slds-p-around_small">
+                                                                <lightning-output-field field-name="Name"></lightning-output-field>
+                                                                <lightning-output-field field-name="Start_Date__c"></lightning-output-field>
+                                                                <lightning-output-field field-name="End_Date__c"></lightning-output-field>
+                                                                <lightning-output-field field-name="Outcome__c"></lightning-output-field>
+                                                                <lightning-output-field field-name="Investigator__c"></lightning-output-field>
+                                                                <lightning-output-field field-name="Investigation_Details__c"></lightning-output-field>
+                                                            </div>
+                                                            <!-- Right Column: System Fields and Report Link -->
+                                                            <div class="slds-col slds-size_1-of-2 slds-p-around_small">
+                                                                <lightning-output-field field-name="Whistleblower_Report__c"></lightning-output-field>
+                                                                <lightning-output-field field-name="CreatedById"></lightning-output-field>
+                                                                <lightning-output-field field-name="LastModifiedById"></lightning-output-field>
+                                                                <lightning-output-field field-name="OwnerId"></lightning-output-field>
+                                                            </div>
+                                                        </div>
+                                                    </lightning-record-view-form>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <h3 class="slds-m-top_medium slds-text-heading_small slds-m-bottom_medium" style="margin-bottom: 0;">Related Actions Taken</h3>
+                                    <div>
+                                        <div class="slds-m-horizontal_medium">
+                                            <!-- <label class="slds-form-element__label" for="selectAction">Select Action Taken</label> -->
+                                            <div class="slds-form-element__control">
+                                                <lightning-combobox label=""
+                                                                    placeholder="Select Action Taken"
+                                                                    value={selectedActionId}
+                                                                    options={actions}
+                                                                    onchange={handleActionChange}>
+                                                </lightning-combobox>
+                                            </div>
+                                        </div>
+                                        <div class="slds-m-top_small slds-m-horizontal_medium">
+                                            <template if:true={selectedActionId}>
+                                                <lightning-record-view-form record-id={selectedActionId}
+                                                                            object-api-name="Action_Taken__c"
+                                                                            density="compact">
+                                                    <!-- Action Details Grid -->
+                                                    <div class="slds-grid slds-wrap">
+                                                        <!-- Left Column: Action Information -->
+                                                        <div class="slds-col slds-size_1-of-2 slds-p-around_small">
+                                                            <lightning-output-field field-name="Name"></lightning-output-field>
+                                                            <lightning-output-field field-name="Action_Date__c"></lightning-output-field>
+                                                            <lightning-output-field field-name="Action_Details__c"></lightning-output-field>
+                                                            <lightning-output-field field-name="Effectiveness__c"></lightning-output-field>
+                                                            <lightning-output-field field-name="Follow_Up_Required__c"></lightning-output-field>
+                                                        </div>
+                                                        <!-- Right Column: Related Information -->
+                                                        <div class="slds-col slds-size_1-of-2 slds-p-around_small">
+                                                            <lightning-output-field field-name="Investigation__c"></lightning-output-field>
+                                                            <lightning-output-field field-name="Responsible_Party__c"></lightning-output-field>
+                                                            <lightning-output-field field-name="CreatedById"></lightning-output-field>
+                                                            <lightning-output-field field-name="LastModifiedById"></lightning-output-field>
+                                                            <lightning-output-field field-name="OwnerId"></lightning-output-field>
+                                                        </div>
+                                                    </div>
+                                                </lightning-record-view-form>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                
+                            </div>
+                        </div>
+                </template>
+            </div>
+        </div>
+    </lightning-card>
+</template>

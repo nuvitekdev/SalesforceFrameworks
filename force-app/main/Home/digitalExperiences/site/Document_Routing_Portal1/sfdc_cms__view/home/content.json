@@ -1,0 +1,75 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Home",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"5f008504-b77f-49f8-bea9-8e1aac89cb1a\",\"columns\":[{\"UUID\":\"b1ab8f59-00ba-496a-a060-260664496e40\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "colors" : "#ff3b30, #0071e3, #5856d6, #34c759, #007aff, #ff9500, #9c27b0, #8e8e93",
+                "columns" : 4,
+                "descriptions" : "Streamline all official communications with intelligent routing plus approval workflows and comprehensive archiving, Track and manage critical tasks with smart assignment routing plus deadline monitoring and workload analytics, Review and process policy documents with collaborative editing plus approval routing and version control, Set goals and track performance initiatives with milestone management plus resource allocation and impact measurement, Build and process digital forms with validation logic plus workflow routing and mobile accessibility, Manage public inquiries with case routing plus response tracking and satisfaction monitoring, Administer fellowship programs with application processing plus performance tracking and program evaluation, Process public records requests with automated routing plus document search and compliance verification",
+                "icons" : "utility:email, utility:task, utility:note, utility:chart, utility:form, utility:customer, utility:education, utility:record",
+                "links" : "/page1, /page2, /page3",
+                "tileStyle" : "flat",
+                "titles" : "Correspondence Hub, Task Command Center, Directive Portal, Improvement Tracker, Forms Builder, Constituent Services, Fellowship Portal, FOIA Center"
+              },
+              "definition" : "c:nuvitekNavigationTiles",
+              "id" : "6f6e9ee0-7fd0-40e8-9a72-ae76d3efec8b",
+              "type" : "component"
+            } ],
+            "id" : "b1ab8f59-00ba-496a-a060-260664496e40",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "5f008504-b77f-49f8-bea9-8e1aac89cb1a",
+          "type" : "component"
+        } ],
+        "id" : "05d67b1e-3546-45af-b090-14a97a3e70fe",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "pageTitle" : "Home",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "df30f23b-210d-460d-9cb2-14ad351177ba",
+          "type" : "component"
+        } ],
+        "id" : "46cb78a4-77e3-40bb-91b4-693431691e91",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "620a590f-6aee-483b-a5c7-f9fa29778d83",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "kzh8PV01NjR9Gx3sfziDHNA3AlC2eh",
+    "viewType" : "home"
+  },
+  "urlName" : "home"
+}
