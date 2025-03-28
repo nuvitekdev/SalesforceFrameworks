@@ -20,6 +20,23 @@
             "sectionVerticalAlign" : "flex-start"
           },
           "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "accentColor" : "#D5DF23",
+                "colors" : "#1a73e8, #2e844a, #a556F2",
+                "columns" : 3,
+                "descriptions" : "Securely and anonymously report workplace misconduct or concerns. Your privacy is our priority., Monitor the progress of your submitted reports through our secure case tracking system., Access resources, guidelines and protection information for whistleblowers.",
+                "icons" : "utility:record, utility:trail, utility:shield",
+                "links" : "/whistleblower-protection-home/whistleblower-submit-report, /whistleblower-protection-home/whistleblower-report, /whistleblower-protection-home/whistleblower-support",
+                "primaryColor" : "#22BDC1",
+                "textColor" : "#1d1d1f",
+                "tileStyle" : "elevated",
+                "titles" : "Submit Report, Track Status, Get Support"
+              },
+              "definition" : "c:nuvitekNavigationTiles",
+              "id" : "d3be3bbc-d414-45b7-80f4-d89e11b44a40",
+              "type" : "component"
+            } ],
             "id" : "eeb9639f-18ba-42d7-9fdb-3aa098258325",
             "name" : "col1",
             "title" : "Column 1",

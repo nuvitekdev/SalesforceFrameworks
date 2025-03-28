@@ -5,6 +5,27 @@
     "activeBrandingSetId" : "Build_Your_Own_LWR",
     "definitionName" : "byo",
     "layouts" : [ {
+      "layoutId" : "Whistleblower_Support_Page",
+      "layoutType" : "9X51K0veljBCVyNLoqX6XO2ceStXVv"
+    }, {
+      "layoutId" : "OIG_Home_Page",
+      "layoutType" : "OIGInvestigations"
+    }, {
+      "layoutId" : "Login_page",
+      "layoutType" : "F7l9Y6GNfzg4cqqyDoWDBw1w8Or8A6"
+    }, {
+      "layoutId" : "Whistleblower_Home_Page",
+      "layoutType" : "9JPzo36797M3pAPW7KQda3IWclC6Si"
+    }, {
+      "layoutId" : "Physical_Security_Home_Page",
+      "layoutType" : "SecurityInvestigations"
+    }, {
+      "layoutId" : "General_Counsel_Home_Page",
+      "layoutType" : "LegalInvestigations"
+    }, {
+      "layoutId" : "Whistleblower_Report_Page",
+      "layoutType" : "WhistleblowerReport"
+    }, {
       "layoutId" : "Investigation_Home_Page",
       "layoutType" : "GD4W4K6mefLmb3VTNFIyyTwkSZz3Qo"
     }, {
@@ -14,26 +35,14 @@
       "layoutId" : "scopedHeaderAndFooter",
       "layoutType" : "Inner"
     }, {
-      "layoutId" : "Whistleblower_Home_Page",
-      "layoutType" : "9JPzo36797M3pAPW7KQda3IWclC6Si"
-    }, {
-      "layoutId" : "OIG_Home_Page",
-      "layoutType" : "OIGInvestigations"
-    }, {
       "layoutId" : "EEO_Home_Page",
       "layoutType" : "EEOInvestigations"
-    }, {
-      "layoutId" : "Physical_Security_Home_Page",
-      "layoutType" : "SecurityInvestigations"
     }, {
       "layoutId" : "Law_Enforcement_Home_Page",
       "layoutType" : "LawEnforcementInvestigations"
     }, {
-      "layoutId" : "General_Counsel_Home_Page",
-      "layoutType" : "LegalInvestigations"
-    }, {
-      "layoutId" : "Whistleblower_Report_Page",
-      "layoutType" : "WhistleblowerReport"
+      "layoutId" : "Whistleblower_Submit_Report_Page",
+      "layoutType" : "ETRzenpdasRCMJClRPdze4H05FMqUM"
     } ]
   },
   "urlName" : "build-your-own-lwr"

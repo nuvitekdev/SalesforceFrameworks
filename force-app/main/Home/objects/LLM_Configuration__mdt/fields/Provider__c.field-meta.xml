@@ -29,6 +29,11 @@
                 <default>false</default>
                 <label>Google</label>
             </value>
+            <value>
+                <fullName>OpenRouter</fullName>
+                <default>false</default>
+                <label>OpenRouter</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

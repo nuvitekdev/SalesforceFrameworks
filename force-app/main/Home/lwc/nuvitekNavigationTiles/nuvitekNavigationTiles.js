@@ -61,8 +61,10 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
         // Add event listener for clicks outside the menu
         document.addEventListener('click', this.handleClickOutside.bind(this));
         
-        // Apply theme variables to host
-        this.applyThemeVariables();
+        // Apply theme variables in the next microtask after the component is fully initialized
+        Promise.resolve().then(() => {
+            this.applyThemeVariables();
+        });
     }
     
     disconnectedCallback() {
@@ -92,7 +94,7 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
     // Apply theme CSS variables to the host element
     applyThemeVariables() {
         const hostElement = this.template.host;
-        if (hostElement) {
+        if (hostElement && hostElement.style) {
             hostElement.style.setProperty('--theme-primary-color', this.primaryColor || '#22BDC1');
             hostElement.style.setProperty('--theme-accent-color', this.accentColor || '#D5DF23');
             hostElement.style.setProperty('--theme-text-color', this.textColor || '#1d1d1f');

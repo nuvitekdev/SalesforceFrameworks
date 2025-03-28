@@ -1,4 +1,0 @@
-<design:component >
-    <design:attribute type="Color" name="componentBackgroundColor" label="Component Background Color" default="rgb(255, 255, 255)" />
-    <design:attribute name="showHero" label="Show hero" default="false"/>
-</design:component>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <!-- Action Override for the Home Tab -->
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <content>Ethics_Compliance_Home</content> <!-- Points to the FlexiPage -->
+        <formFactor>Large</formFactor> <!-- Apply override for desktop -->
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Flexipage</type>
+        <pageOrSobjectType>standard-home</pageOrSobjectType> <!-- Target the standard Home tab -->
+    </actionOverrides>
+    <brand>
+        <!-- Placeholder Branding - Update these! -->
+        <headerColor>#4CAF50</headerColor> <!-- Example Green -->
+        <logo>Investigation_1</logo>
+        <logoVersion>1</logoVersion>
+        <shouldOverrideOrgTheme>true</shouldOverrideOrgTheme>
+    </brand>
+    <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
+    <label>Ethics Compliance</label> <!-- App Label -->
+    <navType>Standard</navType>
+    <!-- Include standard-home -->
+    <tabs>standard-home</tabs>
+    <tabs>standard-Account</tabs>
+    <tabs>standard-Contact</tabs>
+    <!-- Add other relevant tabs for this app here -->
+    <uiType>Lightning</uiType>
+    <!-- Placeholder Utility Bar - Update this! -->
+    <!-- <utilityBar>Ethics_Compliance_UtilityBar</utilityBar> --> <!-- Removed placeholder -->
+</CustomApplication> 

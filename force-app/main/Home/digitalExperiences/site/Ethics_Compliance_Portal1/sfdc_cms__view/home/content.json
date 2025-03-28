@@ -24,13 +24,13 @@
                 "colors" : "#34c759, #5856d6",
                 "columns" : 2,
                 "descriptions" : "Streamline OGE 450 reporting with smart form generation plus validation checks and comprehensive reviewer workflows, Manage all ethics disclosures with conflict analysis tools plus determination tracking and recusal management",
-                "icons" : "utility:money, utility:shield",
+                "icons" : " utility:money, utility:shield",
                 "links" : "/page1, /page2, /page3",
-                "tileStyle" : "gradient",
+                "tileStyle" : "elevated",
                 "titles" : "Financial Disclosure Portal, Ethics Submissions Center"
               },
               "definition" : "c:nuvitekNavigationTiles",
-              "id" : "e724204c-d020-4b43-901c-ba0e37568d67",
+              "id" : "2be601a7-e089-42e6-95bd-d8ef5087b8e7",
               "type" : "component"
             } ],
             "id" : "0ecdf266-91e1-4f06-a51e-0ee487417278",

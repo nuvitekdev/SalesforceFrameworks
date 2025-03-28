@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>59.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Nuvitek Messaging</masterLabel>
+    <description>Nuvitek Messaging App - Modern messaging interface for communication with users, contacts, accounts and more.</description>
+    
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__RecordPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage,lightning__RecordPage,lightning__HomePage,lightningCommunity__Default">
+            <property name="cardTitle" type="String" label="Card Title" default="Messaging" description="Title displayed at the top of the component"/>
+            <property name="primaryColor" type="String" label="Primary Color" default="#22BDC1" description="Primary theme color for the messaging component"/>
+            <property name="accentColor" type="String" label="Accent Color" default="#D5DF23" description="Accent color for highlights and secondary elements"/>
+            <property name="backgroundColor" type="String" label="Background Color" default="#FFFFFF" description="Main background color for the component"/>
+            <property name="fontFamily" type="String" label="Font Family" default="Arial, sans-serif" description="Font family to use for text (example: Arial, sans-serif)"/>
+            <property name="fontSize" type="String" label="Font Size" default="14px" description="Base font size (example: 14px)"/>
+            <property name="componentHeight" type="Integer" label="Component Height" default="400" min="250" max="800" description="Height of the messaging component in pixels"/>
+            <property name="sidebarWidth" type="String" label="Sidebar Width" default="30%" description="Width of the sidebar as percentage (example: 30%) or pixels (example: 250px)"/>
+            <property name="defaultLLMName" type="String" label="AI Model" default="GPT4o" description="Default AI model to use for chat summarization"/>
+            <property name="searchObjects" type="String" label="Searchable Objects" default="User,Contact,Account,Lead" description="Comma-separated list of objects to search for recipients"/>
+            <property name="checkNotificationsInterval" type="Integer" label="Notifications Check Interval" default="60" min="30" max="300" description="Time in seconds between notification checks"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

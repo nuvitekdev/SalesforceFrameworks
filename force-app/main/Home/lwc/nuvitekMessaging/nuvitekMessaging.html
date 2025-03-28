@@ -1,0 +1,222 @@
+<template>
+    <div class="nuvitek-messaging-container" onclick={handleCloseSearchResults}>
+        <lightning-card>
+            <div slot="title">
+                <div class="title-container">
+                    <div class="title-left">
+                        <lightning-icon icon-name="standard:messaging_conversation" size="small" class="slds-m-right_small"></lightning-icon>
+                        <span class="title-text">{cardTitle}</span>
+                    </div>
+                    <div class="title-right">
+                        <!-- Notification Bell -->
+                        <div if:true={showNotificationBell} class="notification-bell-container" onclick={handleNotificationBellClick}>
+                            <div class="notification-bell">
+                                <lightning-icon icon-name="utility:notification" size="small"></lightning-icon>
+                                <span if:true={hasUnreadMessages} class="notification-badge">{unreadCountDisplay}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="messaging-body">
+                <!-- Sidebar: Search & Recipient Selection -->
+                <div class="sidebar">
+                    <div class="search-container">
+                        <lightning-input
+                            type="search"
+                            label="Search"
+                            placeholder="Search users, contacts, accounts..."
+                            value={searchTerm}
+                            onchange={handleSearchChange}
+                            variant="label-hidden"
+                            class="search-input">
+                        </lightning-input>
+                        
+                        <!-- Search Results -->
+                        <div if:true={showSearchResults} class="search-results-container">
+                            <div if:true={isSearching} class="search-loading">
+                                <lightning-spinner alternative-text="Searching..." size="small"></lightning-spinner>
+                            </div>
+                            
+                            <ul if:false={isSearching} class="search-results-list">
+                                <template if:true={searchResults.length}>
+                                    <template for:each={searchResults} for:item="result">
+                                        <li key={result.id} class="search-result-item" data-id={result.id} onclick={handleRecipientSelect}>
+                                            <div class="result-avatar">
+                                                <img src={result.photoUrl} alt={result.name} />
+                                            </div>
+                                            <div class="result-details">
+                                                <div class="result-name">{result.name}</div>
+                                                <div class="result-type">{result.title} • {result.objectType}</div>
+                                            </div>
+                                        </li>
+                                    </template>
+                                </template>
+                                <li if:false={searchResults.length} class="no-results">
+                                    No results found
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Recently Messaged (placeholder for future implementation) -->
+                    <div class="recent-recipients">
+                        <h3 class="section-title">Recent</h3>
+                        <div class="placeholder-message">Recent conversations will appear here</div>
+                    </div>
+                </div>
+                
+                <!-- Main Conversation Area -->
+                <div class="conversation-area">
+                    <!-- Mobile Toggle for Sidebar -->
+                    <div class="mobile-toggle-container">
+                        <button class="mobile-toggle" onclick={toggleSidebar}>
+                            <lightning-icon icon-name="utility:rows" size="small"></lightning-icon>
+                        </button>
+                    </div>
+                    
+                    <template if:true={showMessages}>
+                        <!-- Conversation Header -->
+                        <div class="conversation-header">
+                            <div class="recipient-info">
+                                <div class="recipient-avatar">
+                                    <img src={recipientPhotoUrl} alt={recipientName} />
+                                </div>
+                                <div class="recipient-details">
+                                    <div class="recipient-name">{recipientName}</div>
+                                    <div if:true={recipientTitle} class="recipient-title">{recipientTitle}</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Conversation Actions -->
+                            <div class="conversation-actions">
+                                <button class="icon-button" title="Summarize Conversation" onclick={summarizeChat} disabled={isSummarizingChat}>
+                                    <lightning-icon icon-name="utility:summary" size="small"></lightning-icon>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Summary (conditional display) -->
+                        <div if:true={showChatSummary} class="chat-summary">
+                            <div class="summary-header">
+                                <lightning-icon icon-name="utility:summary" size="small" class="summary-icon"></lightning-icon>
+                                <span class="summary-title">AI Summary</span>
+                                <button class="close-summary-button" onclick={toggleChatSummary}>
+                                    <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                </button>
+                            </div>
+                            <div class="summary-content">
+                                <template if:true={isSummarizingChat}>
+                                    <div class="summary-loading">
+                                        <lightning-spinner alternative-text="Generating summary..." size="small"></lightning-spinner>
+                                        <p>Analyzing conversation...</p>
+                                    </div>
+                                </template>
+                                <template if:false={isSummarizingChat}>
+                                    <p>{chatSummary}</p>
+                                </template>
+                            </div>
+                        </div>
+                        
+                        <!-- Messages Container -->
+                        <div class="message-container" onscroll={handleScroll}>
+                            <!-- Loading More Indicator -->
+                            <div if:true={loadingMoreMessages} class="loading-more">
+                                <lightning-spinner alternative-text="Loading more messages..." size="small"></lightning-spinner>
+                            </div>
+                            
+                            <!-- All Messages Loaded Indicator -->
+                            <div if:true={allMessagesLoaded} class="all-messages-loaded">
+                                <span>Beginning of conversation</span>
+                            </div>
+                            
+                            <!-- Messages -->
+                            <template if:true={hasMessages}>
+                                <template for:each={messages} for:item="message">
+                                    <div key={message.id} class={message.messageClass} data-from-user={message.isFromUser}>
+                                        <div class="message-bubble">
+                                            <div class="message-content">{message.content}</div>
+                                            <div class="message-timestamp">{message.formattedTimestamp}</div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            
+                            <!-- No Messages Placeholder -->
+                            <template if:false={hasMessages}>
+                                <div class="no-messages-placeholder">
+                                    <div class="placeholder-icon">
+                                        <lightning-icon icon-name="utility:chat" size="large"></lightning-icon>
+                                    </div>
+                                    <p>{noMessagesMessage}</p>
+                                </div>
+                            </template>
+                        </div>
+                        
+                        <!-- New Message Input -->
+                        <div class="message-input-container">
+                            <!-- Emoji Picker -->
+                            <div class="emoji-button-container">
+                                <button class="emoji-button" onclick={toggleEmojiPicker}>
+                                    <lightning-icon icon-name="utility:emoji" size="small"></lightning-icon>
+                                </button>
+                                
+                                <!-- Emoji Picker Popover -->
+                                <div if:true={showEmojiPicker} class="emoji-picker">
+                                    <template for:each={emojiGroups} for:item="group">
+                                        <div key={group.name} class="emoji-group">
+                                            <h4 class="emoji-group-title">{group.name}</h4>
+                                            <div class="emoji-list">
+                                                <template for:each={group.emojis} for:item="emoji">
+                                                    <button key={emoji} class="emoji" data-emoji={emoji} onclick={insertEmoji}>
+                                                        {emoji}
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                            
+                            <div class="message-input-wrapper">
+                                <lightning-textarea
+                                    name="message"
+                                    placeholder="Type a message..."
+                                    value={newMessage}
+                                    onchange={handleMessageChange}
+                                    onkeydown={handleKeyDown}
+                                    class={messageInputClasses}
+                                    variant="label-hidden"
+                                    disabled={isLoading}>
+                                </lightning-textarea>
+                            </div>
+                            
+                            <div class="send-button-container">
+                                <button class="send-button" disabled={isComposeDisabled} onclick={sendNewMessage}>
+                                    <lightning-icon icon-name="utility:send" size="small"></lightning-icon>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    <!-- No Conversation Selected -->
+                    <template if:false={showMessages}>
+                        <div class="no-conversation-selected">
+                            <div class="placeholder-icon large">
+                                <lightning-icon icon-name="utility:announcement" size="large"></lightning-icon>
+                            </div>
+                            <h2>No conversation selected</h2>
+                            <p>Search for a user, contact, or account to start messaging</p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            
+            <!-- Loading Overlay -->
+            <div if:true={isLoading} class="loading-overlay">
+                <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+            </div>
+        </lightning-card>
+    </div>
+</template>

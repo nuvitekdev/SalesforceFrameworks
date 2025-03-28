@@ -35,7 +35,7 @@
         "heroTitle" : "Integrity Without Compromise",
         "logoAltText" : "Nuvitek",
         "logoUrl" : "",
-        "primaryColor" : "#22BDC1",
+        "primaryColor" : "rgb(34, 189, 193)",
         "profilePageUrl" : "/profile",
         "showBackgroundVideo" : true,
         "showFab" : false,

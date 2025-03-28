@@ -27,13 +27,6 @@
               "definition" : "c:whistleblowerReportViewerLWC",
               "id" : "16f29056-1142-45f4-b5e8-9fc362199314",
               "type" : "component"
-            }, {
-              "attributes" : {
-                "dxpStyle" : { }
-              },
-              "definition" : "c:whistleblowerSlaTracker",
-              "id" : "1f0dfa92-d88e-4e9a-989f-16bde631ff73",
-              "type" : "component"
             } ],
             "id" : "86aaea6f-5ab7-4c5b-b9b2-c2ce8f79caa8",
             "name" : "col1",

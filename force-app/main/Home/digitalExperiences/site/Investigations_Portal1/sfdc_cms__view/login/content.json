@@ -20,41 +20,6 @@
             "sectionVerticalAlign" : "flex-start"
           },
           "children" : [ {
-            "children" : [ {
-              "attributes" : {
-                "alignment" : "left",
-                "dxpStyle" : { },
-                "imageInfo" : "",
-                "imageInfoMobile" : "",
-                "logoWidth" : 250
-              },
-              "definition" : "dxp_content_layout:siteLogo",
-              "id" : "b4b0b217-55dc-4bfa-a41e-a1f4f8df59ca",
-              "type" : "component"
-            }, {
-              "attributes" : {
-                "dxpStyle" : { },
-                "forgotPasswordLabel" : "Forgot your password?",
-                "forgotPasswordUrl" : "/ForgotPassword",
-                "loginButtonLabel" : "Log In",
-                "passwordLabel" : "Password",
-                "selfRegisterLabel" : "Not a member?",
-                "selfRegisterUrl" : "/SelfRegister",
-                "startUrl" : "",
-                "usernameLabel" : "Username"
-              },
-              "definition" : "community_login:loginForm",
-              "id" : "e5f9dcb5-46df-4e94-8901-206a5088a1a0",
-              "type" : "component"
-            }, {
-              "attributes" : {
-                "dxpStyle" : { },
-                "employeeLoginLinkLabel" : "Are you an employee? Log in"
-              },
-              "definition" : "community_login:employeeLoginLink",
-              "id" : "89ac48aa-98f8-4591-a29a-80876a7b67a5",
-              "type" : "component"
-            } ],
             "id" : "76fb94e5-329d-4952-a0ca-d89d4614d3b6",
             "name" : "col1",
             "title" : "Column 1",
@@ -91,7 +56,7 @@
       "type" : "component"
     },
     "dataProviders" : [ ],
-    "themeLayoutType" : "Inner",
+    "themeLayoutType" : "F7l9Y6GNfzg4cqqyDoWDBw1w8Or8A6",
     "viewType" : "login-main"
   },
   "urlName" : "login"

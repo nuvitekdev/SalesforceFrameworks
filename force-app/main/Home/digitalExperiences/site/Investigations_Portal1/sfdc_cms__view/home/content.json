@@ -28,7 +28,7 @@
                 "dxpStyle" : { },
                 "icons" : "utility:identity, utility:checkin, utility:lock, utility:record, utility:contract, utility:alert",
                 "links" : "/page1, /page2, /page3, /page4, /page5, /whistleblower-protection-home",
-                "tileStyle" : "elevated",
+                "tileStyle" : "flat",
                 "titles" : "Inspector General Office, EEO Compliance Center, Physical Security Portal, Law Enforcement Operations, General Counsel Hub, Whistleblower Protection"
               },
               "definition" : "c:nuvitekNavigationTiles",

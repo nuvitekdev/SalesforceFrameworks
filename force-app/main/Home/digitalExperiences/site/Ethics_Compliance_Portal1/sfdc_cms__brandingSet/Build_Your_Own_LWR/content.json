@@ -170,7 +170,7 @@
       "LinkTextDecorationHover" : "underline",
       "MaxContentWidthDesktop" : "1800px",
       "MaxContentWidthMobile" : "none",
-      "MobileBaseFontSize" : "0.9375rem",
+      "MobileBaseFontSize" : "1rem",
       "PrimaryAccentColor" : "#005fb2",
       "PrimaryAccentForegroundColor" : "#ffffff",
       "SecondaryButtonBorderColor" : "var(--dxp-s-button-color)",

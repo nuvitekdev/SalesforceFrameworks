@@ -15,7 +15,7 @@
             "layoutDirectionTablet" : "column",
             "maxContentWidth" : "",
             "sectionColumnGutterWidth" : "",
-            "sectionConfig" : "{\"UUID\":\"c958315f-e7d9-41d9-96f2-066e880a6593\",\"columns\":[{\"UUID\":\"8bee8eae-7763-487f-8a9c-d80680919f5b\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionConfig" : "{\"UUID\":\"c958315f-e7d9-41d9-96f2-066e880a6593\",\"columns\":[{\"UUID\":\"8bee8eae-7763-487f-8a9c-d80680919f5b\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"8\",\"seedComponents\":[]},{\"UUID\":\"b0020238-c504-486c-aa5f-c3d566210d66\",\"columnName\":\"Column 2\",\"columnKey\":\"aefaf\",\"columnWidth\":\"4\",\"seedComponents\":[]}]}",
             "sectionMinHeight" : "",
             "sectionVerticalAlign" : "flex-start"
           },
@@ -32,6 +32,17 @@
             "id" : "8bee8eae-7763-487f-8a9c-d80680919f5b",
             "name" : "col1",
             "title" : "Column 1",
+            "type" : "region"
+          }, {
+            "children" : [ {
+              "attributes" : { },
+              "definition" : "c:faqAccordion",
+              "id" : "c0305187-64ad-4c4c-a568-abf953e932ab",
+              "type" : "component"
+            } ],
+            "id" : "b0020238-c504-486c-aa5f-c3d566210d66",
+            "name" : "aefaf",
+            "title" : "Column 2",
             "type" : "region"
           } ],
           "definition" : "community_layout:section",
@@ -65,7 +76,7 @@
       "type" : "component"
     },
     "dataProviders" : [ ],
-    "themeLayoutType" : "Inner",
+    "themeLayoutType" : "9X51K0veljBCVyNLoqX6XO2ceStXVv",
     "viewType" : "custom-whistleblower-support"
   },
   "urlName" : "whistleblower-support"

@@ -52,6 +52,80 @@ public with sharing class LLMController {
         }
     }
     
+    /**
+     * @description Checks a given record for potential anomalies, conflicts of interest, or inconsistencies using an AI model.
+     * @param recordId The Id of the Salesforce record to analyze.
+     * @param configName The DeveloperName of the LLM_Configuration__mdt to use.
+     * @return String The AI's assessment (e.g., "YES - Conflict of interest detected: Submitter and Investigator are the same." or "NO").
+     * @throws AuraHandledException if an error occurs during processing.
+     */
+    @AuraEnabled
+    public static String checkRecordForAnomalies(String recordId, String configName) {
+        System.debug('Anomaly check started for recordId: ' + recordId + ' using config: ' + configName);
+
+        // Validate inputs
+        if (String.isBlank(recordId) || String.isBlank(configName)) {
+            System.debug('ERROR in checkRecordForAnomalies: Missing recordId or configName.');
+            throw new AuraHandledException('Error: Record ID and AI Model Configuration Name are required.');
+        }
+
+        try {
+            // Fetch the specified LLM configuration
+            System.debug('Fetching LLM configuration for anomaly check');
+            LLM_Configuration__mdt config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, 
+                                             Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
+                                             FROM LLM_Configuration__mdt 
+                                             WHERE DeveloperName = :configName 
+                                             LIMIT 1];
+            System.debug('Found configuration for anomaly check: ' + config);
+
+            // Get the context for the specified record
+            // This includes field values, related records, tasks, discussions, and document summaries.
+            System.debug('Getting record context for anomaly check');
+            String context = getRecordContext(recordId);
+            System.debug('Context length for anomaly check: ' + context.length());
+            
+            // --- Future Enhancement: Optionally include attachment analysis ---
+            // String attachments = config.Supports_Files__c ? getAttachmentsBase64(recordId) : '';
+            // if(String.isNotBlank(attachments)) {
+            //     context += '\n\nATTACHMENT DATA (BASE64 ENCODED - Only include if essential for analysis):\n' + attachments; 
+            // }
+            // --- End Future Enhancement ---
+
+            // Construct the prompt specifically for anomaly detection
+            // Updated prompt to request HTML formatting for better display in LWC
+            String anomalyPrompt = 'Analyze the following Salesforce record data. Look specifically for potential issues such as: \n' + 
+                                 '- Anomalies (e.g., unusual values, missing required information for the stage)\n' +
+                                 '- Conflicts of Interest (e.g., the same person involved in conflicting roles like submitter and approver)\n' + 
+                                 '- Inconsistencies (e.g., dates out of order, contradictory statements)\n' +
+                                 '- Any other red flags or data points that seem incorrect or warrant further investigation.\n\n' +
+                                 'Your response MUST start with either "YES - " followed by the explanation, or "NO" if no significant issues are detected.\n\n' +
+                                 'IMPORTANT FORMATTING INSTRUCTIONS: If issues are found (starting with "YES - "), format the explanation using basic HTML:\n' +
+                                 '  - Use <b> tags to highlight main points or titles (e.g., <b>Conflict of Interest</b>).\n' +
+                                 '  - Use <ol> and <li> for numbered lists of main findings.\n' +
+                                 '  - Use <ul> and <li> for bullet points under each finding or for recommendations.\n' +
+                                 '  - Use <br> for line breaks where appropriate. Do NOT include the markdown `-` for bullets, use <li> instead.\n\n' +
+                                 'RECORD DATA:\n' + context;
+
+            System.debug('Anomaly check prompt length: ' + anomalyPrompt.length());
+
+            // Call the LLM with the specific anomaly detection prompt
+            System.debug('Making LLM call for anomaly check');
+            String assessment = makeLLMCall(config, anomalyPrompt);
+            System.debug('Anomaly check assessment received: ' + assessment);
+            
+            // Return the raw assessment from the LLM
+            return assessment;
+
+        } catch(Exception e) {
+            // Log detailed error information
+            System.debug('ERROR in checkRecordForAnomalies: ' + e.getMessage());
+            System.debug('Stack trace: ' + e.getStackTraceString());
+            // Throw a user-friendly exception
+            throw new AuraHandledException('Error performing AI anomaly check: ' + e.getMessage());
+        }
+    }
+    
     private static String getRecordContext(String recordId) {
         try {
             // Identify object type from record ID
@@ -406,9 +480,14 @@ public with sharing class LLMController {
                             }
                         };
                     }
-                    when 'OpenAI', 'DeepSeek' {
-                        System.debug('Preparing OpenAI/DeepSeek request');
+                    when 'OpenAI', 'DeepSeek', 'OpenRouter' {
+                        System.debug('Preparing OpenAI/DeepSeek/OpenRouter request');
                         req.setHeader('Authorization', 'Bearer ' + config.API_Key__c);
+                        
+                        // Add HTTP-Referer for OpenRouter
+                        if (config.Provider__c == 'OpenRouter') {
+                            req.setHeader('HTTP-Referer', 'https://salesforce.com');
+                        }
                         
                         List<Map<String,Object>> messages = new List<Map<String,Object>>();
                         
@@ -561,15 +640,19 @@ public with sharing class LLMController {
                     List<Object> content = (List<Object>)response.get('content');
                     Map<String,Object> firstContent = (Map<String,Object>)content[0];
                     String text = (String)firstContent.get('text');
+                    // Remove markdown formatting and replace asterisks with dashes
+                    text = text.replaceAll('\\*\\*', '').replaceAll('\\*', '-');
                     System.debug('Extracted text: ' + text);
                     return text;
                 }
-                when 'OpenAI', 'DeepSeek' {
-                    System.debug('Parsing OpenAI/DeepSeek response');
+                when 'OpenAI', 'DeepSeek', 'OpenRouter' {
+                    System.debug('Parsing OpenAI/DeepSeek/OpenRouter response');
                     List<Object> choices = (List<Object>)response.get('choices');
                     Map<String,Object> firstChoice = (Map<String,Object>)choices[0];
                     Map<String,Object> message = (Map<String,Object>)firstChoice.get('message');
                     String content = (String)message.get('content');
+                    // Remove markdown formatting and replace asterisks with dashes
+                    content = content.replaceAll('\\*\\*', '').replaceAll('\\*', '-');
                     System.debug('Content extracted: ' + content);
                     return content;
                 }
@@ -590,6 +673,8 @@ public with sharing class LLMController {
                                             Map<String,Object> firstPart = (Map<String,Object>)parts[0];
                                             if (firstPart.containsKey('text')) {
                                                 String text = (String)firstPart.get('text');
+                                                // Remove markdown formatting and replace asterisks with dashes
+                                                text = text.replaceAll('\\*\\*', '').replaceAll('\\*', '-');
                                                 System.debug('Extracted text from Google/Gemini: ' + text);
                                                 return text;
                                             }

@@ -3,7 +3,6 @@
     <fullName>Requester__c</fullName>
     <deleteConstraint>SetNull</deleteConstraint>
     <description>User who requested access</description>
-    <externalId>false</externalId>
     <label>Requester</label>
     <referenceTo>User</referenceTo>
     <relationshipName>AccessRequests</relationshipName>
@@ -11,4 +10,4 @@
     <trackHistory>true</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Lookup</type>
-</CustomField> 
+</CustomField>

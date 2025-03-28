@@ -3,9 +3,8 @@
     <fullName>IsDefault__c</fullName>
     <defaultValue>false</defaultValue>
     <description>Indicates if this is the default role option for this app</description>
-    <externalId>false</externalId>
     <fieldManageability>DeveloperControlled</fieldManageability>
     <inlineHelpText>Check if this is the default role option for this app</inlineHelpText>
     <label>Is Default</label>
     <type>Checkbox</type>
-</CustomField> 
+</CustomField>

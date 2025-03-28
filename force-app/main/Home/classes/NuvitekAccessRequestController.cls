@@ -184,4 +184,4 @@ public without sharing class NuvitekAccessRequestController {
             throw new AuraHandledException('Error processing approval: ' + e.getMessage());
         }
     }
-} 
+}

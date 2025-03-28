@@ -850,8 +850,15 @@
     height: 100%;
     min-height: 400px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    gap: var(--spacing-md);
+}
+
+/* Ensure each direct child of hero-media takes full width */
+.hero-media > * {
+    width: 100%;
 }
 
 .media-placeholder {
@@ -1467,6 +1474,59 @@
 @media (max-width: 992px) {
     .header-container {
         padding: 16px 16px;
+    }
+
+    /* Hero section mobile styles */
+    .hero-section.layout-split .hero-container {
+        flex-direction: column;
+        gap: var(--spacing-lg);
+    }
+
+    .hero-section.layout-split .hero-content {
+        max-width: 100%;
+        text-align: center;
+        align-items: center;
+        order: 0;
+    }
+
+    .hero-media {
+        max-width: 100%;
+        order: 1;
+        margin-top: var(--spacing-lg);
+    }
+
+    .hero-section.layout-split .hero-title,
+    .hero-section.layout-split .hero-subtitle {
+        text-align: center;
+    }
+
+    .hero-section.layout-split .hero-title-text::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    /* Ensure components stack vertically with proper spacing */
+    .hero-section > * {
+        width: 100%;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .hero-section > *:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Adjust padding for better mobile viewing */
+    .hero-section {
+        padding-top: 80px;
+        padding-bottom: var(--spacing-xl);
+    }
+
+    .hero-title {
+        font-size: var(--font-size-4xl);
+    }
+
+    .hero-subtitle {
+        font-size: var(--font-size-lg);
     }
 }
 

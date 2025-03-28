@@ -35,7 +35,7 @@
         "heroTitle" : "Experience the Future of Workforce Management",
         "logoAltText" : "Nuvitek",
         "logoUrl" : "",
-        "primaryColor" : "#22BDC1",
+        "primaryColor" : "rgb(34, 189, 193)",
         "profilePageUrl" : "/profile",
         "searchObjects" : "Account,Contact",
         "showBackgroundVideo" : true,

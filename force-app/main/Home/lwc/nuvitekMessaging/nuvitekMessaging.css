@@ -1,0 +1,886 @@
+/* Nuvitek Messaging - Modern Message UI inspired by Apple Human Interface Guidelines */
+
+:host {
+    /* Theme Variables - These will be dynamically set from JS */
+    --primary-color: #22BDC1;
+    --primary-dark: #189196;
+    --primary-light: #63d1d4;
+    --primary-color-rgb: 34, 189, 193;
+    --accent-color: #D5DF23;
+    --accent-dark: #b8c11e;
+    --accent-light: #e1e95c;
+    --accent-color-rgb: 213, 223, 35;
+    --background-color: #FFFFFF;
+    --background-color-rgb: 255, 255, 255;
+    --font-family: Arial, sans-serif;
+    --font-size: 14px;
+    --chat-bubble-user: #e1f5fe;
+    --chat-bubble-recipient: #f5f5f7;
+    
+    /* Fixed Theme Colors */
+    --text-color: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #a1a1a6;
+    --background: #ffffff;
+    --background-alt: #f5f5f7;
+    --background-elevated: #fbfbfd;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-subtle: rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+    
+    /* Component dimensions - Salesforce optimized */
+    --sidebar-width: 30%;
+    --sidebar-min-width: 200px;
+    --sidebar-max-width: 300px;
+    --header-height: 56px;
+    --message-input-height: 60px;
+    --component-height: 400px;
+    --component-min-height: 300px;
+    --component-max-height: 500px;
+}
+
+/* Dark theme support */
+:host.theme-dark {
+    --text-color: #f5f5f7;
+    --text-secondary: #a1a1a6;
+    --text-tertiary: #6e6e73;
+    --background: #1d1d1f;
+    --background-alt: #2d2d2f;
+    --background-elevated: #3d3d3f;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-subtle: rgba(255, 255, 255, 0.05);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.4);
+    --chat-bubble-user: #173739;
+    --chat-bubble-recipient: #292b2f;
+}
+
+/* Main container */
+.nuvitek-messaging-container {
+    font-family: var(--font-family);
+    font-size: var(--font-size);
+    color: var(--text-color);
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+/* Card styling using modern design - fit parent container */
+lightning-card {
+    --sds-c-card-color-background: var(--background);
+    --sds-c-card-shadow: var(--shadow-md);
+    --sds-c-card-radius-border: var(--radius-md);
+    border: none !important;
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Title container styling */
+.title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.title-left {
+    display: flex;
+    align-items: center;
+}
+
+.title-text {
+    font-weight: var(--font-weight-semibold);
+    font-size: 16px;
+    color: var(--text-color);
+}
+
+.title-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Notification Bell */
+.notification-bell-container {
+    position: relative;
+    cursor: pointer;
+    padding: 6px;
+}
+
+.notification-bell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background-color: #FF3B30;
+    color: white;
+    font-size: 11px;
+    font-weight: var(--font-weight-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    animation: pulse 2s infinite;
+}
+
+/* Mobile toggle for sidebar */
+.mobile-toggle-container {
+    display: none;
+    padding: 8px;
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 10;
+}
+
+.mobile-toggle {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: background-color var(--transition-fast);
+}
+
+.mobile-toggle:hover {
+    background: var(--primary-dark);
+}
+
+/* Messaging body layout - Salesforce optimized */
+.messaging-body {
+    display: grid;
+    grid-template-columns: minmax(var(--sidebar-min-width), var(--sidebar-width)) 1fr;
+    gap: 0;
+    height: var(--component-height);
+    min-height: var(--component-min-height);
+    max-height: var(--component-max-height);
+    flex: 1;
+    margin-top: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Sidebar styling */
+.sidebar {
+    background-color: var(--background-alt);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-width: var(--sidebar-max-width);
+    min-width: 0;
+    overflow: hidden;
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.search-container {
+    padding: 10px;
+    position: relative;
+}
+
+.search-input {
+    --slds-c-input-radius-border: 20px;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+    padding: 10px 12px 6px;
+    margin: 0;
+}
+
+.recent-recipients {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.placeholder-message {
+    color: var(--text-tertiary);
+    font-size: 13px;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+}
+
+/* Search results */
+.search-results-container {
+    position: absolute;
+    top: 46px;
+    left: 10px;
+    right: 10px;
+    background-color: var(--background);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    z-index: 10;
+    max-height: 300px;
+    overflow-y: auto;
+    animation: slideDown 0.2s ease-out;
+}
+
+.search-loading {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.search-results-list {
+    list-style: none;
+    margin: 0;
+    padding: 8px 0;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.search-result-item:hover {
+    background-color: var(--background-alt);
+}
+
+.result-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.result-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.result-details {
+    overflow: hidden;
+}
+
+.result-name {
+    font-weight: var(--font-weight-medium);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.result-type {
+    font-size: calc(var(--font-size) - 2px);
+    color: var(--text-secondary);
+}
+
+.no-results {
+    padding: 15px;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-style: italic;
+}
+
+/* Conversation area */
+.conversation-area {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    background-color: var(--background);
+}
+
+/* Conversation header */
+.conversation-header {
+    height: var(--header-height);
+    min-height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.recipient-info {
+    display: flex;
+    align-items: center;
+}
+
+.recipient-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.recipient-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.recipient-name {
+    font-weight: var(--font-weight-semibold);
+    font-size: calc(var(--font-size) + 1px);
+}
+
+.recipient-title {
+    color: var(--text-secondary);
+    font-size: var(--font-size);
+    margin-top: 2px;
+}
+
+.conversation-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.chat-summary {
+    background-color: var(--primary-light);
+    padding: 10px 16px;
+    margin: 0;
+    border-bottom: 1px solid var(--border-color);
+    animation: fadeIn 0.3s ease;
+}
+
+.summary-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.summary-icon {
+    margin-right: 6px;
+}
+
+.summary-title {
+    font-weight: var(--font-weight-medium);
+    font-size: calc(var(--font-size) + 1px);
+    color: var(--primary-dark);
+    margin-right: auto;
+}
+
+.close-summary-button {
+    background: transparent;
+    border: none;
+    color: var(--primary-dark);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.close-summary-button:hover {
+    color: var(--text-color);
+}
+
+.summary-content {
+    font-size: var(--font-size);
+    line-height: 1.5;
+}
+
+.summary-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 10px 0;
+}
+
+.summary-loading p {
+    margin-top: 8px;
+    color: var(--primary-dark);
+    font-style: italic;
+}
+
+/* Message container */
+.message-container {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+    min-height: 0;
+}
+
+.loading-more {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.all-messages-loaded {
+    position: relative;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: calc(var(--font-size) - 2px);
+    margin: 16px 0;
+    padding: 6px 0;
+}
+
+.all-messages-loaded span {
+    background-color: var(--background);
+    padding: 0 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.all-messages-loaded:before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--border-subtle);
+    z-index: 0;
+}
+
+/* Message styling */
+.message {
+    display: flex;
+    margin-bottom: 8px;
+    max-width: 80%;
+    animation: popUp 0.3s cubic-bezier(0.28, 0.84, 0.42, 1);
+}
+
+.user-message {
+    align-self: flex-end;
+}
+
+.recipient-message {
+    align-self: flex-start;
+}
+
+.message-bubble {
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+}
+
+.user-message .message-bubble {
+    background-color: var(--chat-bubble-user);
+    border-bottom-right-radius: 4px;
+}
+
+.recipient-message .message-bubble {
+    background-color: var(--chat-bubble-recipient);
+    border-bottom-left-radius: 4px;
+}
+
+.message-content {
+    font-size: var(--font-size);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.message-timestamp {
+    font-size: calc(var(--font-size) - 3px);
+    color: var(--text-tertiary);
+    margin-top: 4px;
+    text-align: right;
+}
+
+/* Message input */
+.message-input-container {
+    height: var(--message-input-height);
+    min-height: var(--message-input-height);
+    border-top: 1px solid var(--border-color);
+    padding: 8px 12px;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.emoji-button-container {
+    position: relative;
+}
+
+.emoji-button {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.emoji-button:hover {
+    background-color: var(--background-alt);
+    color: var(--primary-color);
+}
+
+.emoji-picker {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    background-color: var(--background);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    width: 280px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 10px;
+    z-index: 100;
+    animation: slideDown 0.2s ease-out;
+}
+
+.emoji-group {
+    margin-bottom: 12px;
+}
+
+.emoji-group-title {
+    font-size: calc(var(--font-size) - 1px);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.emoji-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.emoji {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--font-size) + 4px);
+    cursor: pointer;
+    padding: 0;
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.emoji:hover {
+    background-color: var(--background-alt);
+    transform: scale(1.1);
+}
+
+.message-input-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+.message-input {
+    --slds-c-textarea-shadow-focus: 0 0 0 1px var(--primary-color);
+    --slds-c-textarea-color-border-focus: var(--primary-color);
+    --slds-c-textarea-radius-border: var(--radius-md);
+    --slds-c-textarea-sizing-min-height: 38px;
+}
+
+.message-input textarea {
+    resize: none;
+    transition: height var(--transition-fast);
+    min-height: 38px;
+    max-height: 100px;
+}
+
+.message-input.is-composing textarea {
+    height: 70px;
+}
+
+.send-button-container {
+    padding-bottom: 4px;
+}
+
+.send-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.send-button:disabled {
+    background-color: var(--border-color);
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.send-button:not(:disabled):hover {
+    background-color: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+/* Placeholder states */
+.no-conversation-selected {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 16px;
+    text-align: center;
+}
+
+.placeholder-icon {
+    width: 50px;
+    height: 50px;
+    background-color: var(--background-alt);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.placeholder-icon.large {
+    width: 60px;
+    height: 60px;
+}
+
+.placeholder-icon lightning-icon {
+    --lwc-colorTextIconDefault: var(--primary-color);
+}
+
+.no-conversation-selected h2 {
+    font-size: 18px;
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: 6px;
+}
+
+.no-conversation-selected p {
+    color: var(--text-secondary);
+    font-size: var(--font-size);
+    max-width: 280px;
+}
+
+.no-messages-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+}
+
+.no-messages-placeholder p {
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 8px;
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(var(--background-color-rgb), 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(2px);
+}
+
+/* Button Styles */
+.icon-button {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.icon-button:hover {
+    background-color: var(--background-alt);
+    color: var(--primary-color);
+}
+
+.icon-button:disabled {
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes popUp {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Responsive Media Queries - Optimized for Salesforce */
+/* Mobile & Small Tablets */
+@media (max-width: 767px) {
+    .messaging-body {
+        grid-template-columns: 1fr;
+        height: 450px;
+    }
+    
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 80%;
+        max-width: 300px;
+        z-index: 9999;
+        transform: translateX(-100%);
+        opacity: 0;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .sidebar.mobile-visible {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    
+    .mobile-toggle-container {
+        display: block;
+    }
+    
+    .message {
+        max-width: 85%;
+    }
+    
+    .emoji-picker {
+        width: 240px;
+    }
+    
+    .messaging-body {
+        height: 400px;
+    }
+    
+    .message-input-container {
+        padding: 8px;
+    }
+    
+    .message-container {
+        padding: 8px;
+    }
+}
+
+/* Medium (Salesforce standard column) */
+@media (min-width: 768px) and (max-width: 991px) {
+    :host {
+        --sidebar-width: 35%;
+    }
+    
+    .messaging-body {
+        height: 400px;
+    }
+    
+    .message {
+        max-width: 85%;
+    }
+}
+
+/* Large (Salesforce full width) */
+@media (min-width: 992px) {
+    :host {
+        --sidebar-width: 30%;
+    }
+    
+    .messaging-body {
+        height: 400px;
+    }
+}
+
+/* CSS classes that can be applied programmatically for different column widths */
+.slds-size_6-of-12-container .messaging-body,
+.slds-size_4-of-12-container .messaging-body {
+    height: 400px;
+}
+
+.slds-size_6-of-12-container .sidebar,
+.slds-size_4-of-12-container .sidebar {
+    --sidebar-width: 40%;
+}
+
+/* Handle dark theme loading overlay */
+:host.theme-dark .loading-overlay {
+    background-color: rgba(29, 29, 31, 0.7);
+}

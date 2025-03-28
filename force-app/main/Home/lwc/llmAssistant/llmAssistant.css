@@ -4,10 +4,12 @@
     --primary-color-rgb: 34, 189, 193;
     --primary-dark: #1a9599;
     --primary-light: #63d1d4;
+    --primary-text-color: #FFFFFF;
     --accent-color: #D5DF23;
     --accent-color-rgb: 213, 223, 35;
     --accent-dark: #b8c11e;
     --accent-light: #e1e95c;
+    --accent-text-color: #000000;
     --text-color: #1d1d1f;
     --text-secondary: #6e6e73;
     --text-tertiary: #a1a1a6;
@@ -34,16 +36,10 @@
     --border-radius: 8px;
     --chat-bubble-user: var(--primary-light);
     --chat-bubble-ai: #f3f4f6;
-    --chat-text-user: var(--text-color);
+    --chat-text-user: var(--primary-text-color);
     --chat-text-ai: var(--text-color);
-    --slds-c-button-brand-color-background: var(--primary-color);
-    --slds-c-button-brand-color-background-hover: var(--primary-dark);
-    --slds-c-button-brand-color-border: var(--primary-color);
-    --slds-c-button-brand-color-border-hover: var(--primary-dark);
-    --lwc-brandAccessible: var(--primary-color);
-    --lwc-brandAccessibleActive: var(--primary-dark);
-    --lwc-buttonColorBackgroundPrimary: var(--primary-color);
-    --lwc-buttonBrandBorderColor: var(--primary-color);
+    --model-badge-color: var(--primary-color);
+    --model-badge-text-color: var(--primary-text-color);
 }
 
 /* Dark theme support */
@@ -63,100 +59,148 @@
     --primary-light: #173739;
     --chat-bubble-user: var(--primary-dark);
     --chat-bubble-ai: #292b2f;
-    --chat-text-user: #ffffff;
+    --chat-text-user: var(--primary-text-color);
     --chat-text-ai: #e6e8ea;
 }
 
-/* Title container styling */
+/* Override Lightning Design System icon colors */
+:host lightning-icon.slds-icon-standard-bot > lightning-primitive-icon > svg {
+    fill: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
+}
+
+/* Title container styling - Fixed positioning issue */
 .title-container {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
     width: 100%;
+    align-items: center;
 }
 
 .title-left {
     display: flex;
     align-items: center;
+    min-width: fit-content; /* Prevent shrinking */
 }
 
 .title-text {
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-lg);
     color: var(--text-color);
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.title-spacer {
+    flex-grow: 1; /* This pushes the right side all the way to the right */
 }
 
 .title-right {
-    margin-left: auto;
+    margin-left: auto; /* Extra safety to push to the right */
+    display: flex;
+    align-items: center;
 }
 
 .scan-badge {
     display: flex;
     align-items: center;
-    background: var(--primary-light);
+    background: rgba(var(--primary-color-rgb), 0.15) !important;
     border-radius: 12px;
-    padding: 0.25rem 0.5rem;
+    padding: 0.25rem 0.75rem;
     font-size: 12px;
-    color: var(--primary-dark);
-    opacity: 0.8;
+    color: var(--primary-color) !important;
+    font-weight: var(--font-weight-medium);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-in-out;
+    transition: all 0.2s ease;
+    margin-left: 12px; /* Add more space between title and badge */
+}
+
+.scan-badge:hover {
+    background: rgba(var(--primary-color-rgb), 0.25) !important;
+    transform: translateY(-1px);
 }
 
 /* Card styling using Nuvitek theme */
 lightning-card {
-    --sds-c-card-color-background: var(--background);
-    --sds-c-card-shadow: var(--shadow-md);
-    --sds-c-card-radius-border: var(--radius-md);
+    --sds-c-card-color-background: var(--background) !important;
+    --sds-c-card-shadow: var(--shadow-md) !important;
+    --sds-c-card-radius-border: var(--radius-md) !important;
     border: none !important;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-md) !important;
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 lightning-card:hover {
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-lg) !important;
     transform: translateY(-2px);
 }
 
-/* Action buttons container */
-.action-buttons-container {
-    display: flex;
-    gap: 12px;
+/* Button global styling */
+.slds-button {
+    border-radius: var(--radius-sm) !important;
 }
 
-/* Button styling */
-lightning-button {
-    --sds-c-button-radius-border: var(--radius-sm);
-    --sds-c-button-text-color: var(--text-color);
-    --sds-c-button-brand-color-background: var(--primary-color);
-    --sds-c-button-brand-color-background-hover: var(--primary-dark);
-    --sds-c-button-brand-color-border: var(--primary-color);
+/* Brand variant buttons (ask question) */
+lightning-button.ask-button button {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-text-color) !important;
 }
 
-/* Make buttons more compact */
-.ask-button, .analyze-button {
-    min-width: 0;
-    width: auto;
+lightning-button.ask-button button:hover {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+}
+
+/* Neutral variant buttons with primary color accents */
+lightning-button.analyze-button button, 
+lightning-button.clear-button button {
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+}
+
+lightning-button.analyze-button button:hover,
+lightning-button.clear-button button:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.1) !important;
+    border-color: var(--primary-dark) !important;
+}
+
+/* Button hover effect */
+.ask-button, .analyze-button, .clear-button {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.ask-button:hover, .analyze-button:hover, .clear-button:hover {
+    transform: translateY(-2px);
 }
 
 /* Input field styling */
 lightning-textarea, lightning-combobox {
-    --slds-c-input-radius-border: var(--radius-sm);
-    --slds-c-input-color-border: var(--border-color);
-    --slds-c-input-color-background: var(--background);
-    --slds-c-input-shadow-focus: 0 0 0 1px var(--primary-color);
-    --slds-c-input-color-border-focus: var(--primary-color);
+    --slds-c-input-radius-border: var(--radius-sm) !important;
+    --slds-c-input-color-border: var(--border-color) !important;
+    --slds-c-input-color-background: var(--background) !important;
+    --slds-c-input-shadow-focus: 0 0 0 1px var(--primary-color) !important;
+    --slds-c-input-color-border-focus: var(--primary-color) !important;
+}
+
+/* Enhanced input field focus */
+.question-input textarea:focus {
+    box-shadow: 0 0 0 2px var(--primary-color) !important;
+    transition: box-shadow 0.2s ease;
 }
 
 /* Labels */
 lightning-textarea label, lightning-combobox label {
-    color: var(--text-color);
-    font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-sm);
+    color: var(--text-color) !important;
+    font-weight: var(--font-weight-medium) !important;
+    font-size: var(--font-size-sm) !important;
 }
 
 /* Loading spinner */
 lightning-spinner {
-    --slds-c-spinner-color-background: var(--primary-color);
-    --slds-c-spinner-color-brand: var(--primary-color);
+    --slds-c-spinner-color-background: var(--primary-color) !important;
+    --slds-c-spinner-color-brand: var(--primary-color) !important;
 }
 
 /* Loading styles */
@@ -173,6 +217,15 @@ lightning-spinner {
     color: var(--text-secondary);
     font-size: var(--font-size-sm);
     font-style: italic;
+    animation: pulse 1.5s infinite;
+}
+
+/* Error container with shake animation */
+.error-container {
+    animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    transform: translateX(0);
+    background-color: rgba(255, 59, 48, 0.1);
+    border-radius: var(--radius-sm);
 }
 
 /* Results container */
@@ -189,6 +242,63 @@ lightning-spinner {
     animation: fadeInUp 0.5s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
 }
 
+/* Typing animation container */
+.typing-indicator-container {
+    margin-top: 1rem;
+}
+
+/* Typing indicator animation */
+.typing-indicator {
+    display: flex;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.typing-animation {
+    display: flex;
+    align-items: center;
+}
+
+.typing-animation span {
+    height: 8px;
+    width: 8px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    animation: bounce 1.2s infinite ease-in-out;
+}
+
+.typing-animation span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-animation span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+/* Typing version of response container */
+.response-container.typing {
+    animation: none;
+    opacity: 0.95;
+    border-left: 3px solid var(--primary-color);
+    background: rgba(var(--primary-color-rgb), 0.05);
+}
+
+/* Model badge styling */
+.model-badge {
+    display: inline-block;
+    max-width: 100%;
+    white-space: normal;
+    word-wrap: break-word;
+    line-height: 1.4;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+    background-color: var(--model-badge-color) !important;
+    color: var(--model-badge-text-color) !important;
+    transition: all 0.3s ease;
+}
+
 /* Response text styling */
 .response-text {
     color: var(--text-color);
@@ -196,18 +306,40 @@ lightning-spinner {
     font-size: var(--font-size-md);
 }
 
-/* Error message */
-.slds-text-color_error {
-    color: #ff3b30 !important;
-    font-weight: var(--font-weight-medium);
-    animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+/* Copy button enhancement */
+.copy-button, .copy-message-button {
+    transition: transform 0.2s ease;
+}
+
+.copy-button:hover, .copy-message-button:hover {
+    transform: scale(1.2);
+}
+
+/* Ripple effect for buttons */
+.ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple 0.5s linear;
+    pointer-events: none;
+}
+
+/* Lightning button icon overrides */
+lightning-button-icon {
+    --sds-c-button-color-background: transparent !important;
+    --sds-c-button-color-border: transparent !important;
+}
+
+lightning-button-icon .slds-button {
+    color: var(--primary-color) !important;
 }
 
 /* Animation keyframes */
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
@@ -227,33 +359,158 @@ lightning-spinner {
     40%, 60% { transform: translateX(3px); }
 }
 
-/* Responsive adjustments */
-@media (max-width: 480px) {
+@keyframes pulse {
+    0% { opacity: 0.6; color: var(--primary-color); }
+    50% { opacity: 1; color: var(--primary-dark); }
+    100% { opacity: 0.6; color: var(--primary-color); }
+}
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-8px); }
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+/* Action buttons container - Updated for better responsiveness */
+.action-buttons-container {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap; /* Allow buttons to wrap */
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+/* Custom button styling - Updated for better text handling */
+.custom-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: auto;
+    height: auto;
+    min-height: 32px;
+    position: relative;
+    overflow: visible;
+    border: 1px solid transparent;
+    gap: 0.5rem;
+    white-space: normal; /* Allow text to wrap */
+    flex: 0 1 auto; /* Don't force growth, allow shrinking */
+    max-width: 100%; /* Ensure button doesn't exceed container width */
+    margin-bottom: 0.5rem; /* Space between wrapped buttons */
+}
+
+.custom-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.custom-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Primary button (Ask Question) */
+.primary-button {
+    background-color: var(--primary-color);
+    color: var(--primary-text-color);
+    border-color: var(--primary-color);
+}
+
+.primary-button:hover:not(:disabled) {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+/* Secondary buttons (Analyze, Clear) */
+.secondary-button {
+    background-color: transparent;
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.secondary-button:hover:not(:disabled) {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+    border-color: var(--primary-dark);
+}
+
+/* Button icon styling */
+.button-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.button-icon svg {
+    fill: currentColor;
+}
+
+/* Button label needs to be visible */
+.button-label {
+    overflow: visible;
+    text-overflow: initial;
+    white-space: normal; /* Allow text wrapping in button labels */
+}
+
+/* Responsive adjustments for different screen sizes */
+@media (max-width: 600px) {
     .action-buttons-container {
-        flex-direction: column;
+        flex-direction: column; /* Stack buttons on very small screens */
+        gap: 8px;
     }
     
-    .scan-badge {
-        font-size: 10px;
-        padding: 0.2rem 0.4rem;
+    .custom-button {
+        width: 100%; /* Full width on mobile */
+        justify-content: center; /* Center text on mobile */
     }
+}
+
+/* For medium screens where buttons might wrap */
+@media (min-width: 601px) and (max-width: 768px) {
+    .custom-button {
+        flex: 1 1 calc(50% - 12px); /* Two buttons per row with gap considered */
+        max-width: calc(50% - 12px);
+    }
+}
+
+/* Bot icon color fix */
+.bot-icon svg {
+    fill: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
 }
 
 /* Conversation History Styling */
 .conversation-header {
     padding: 0.75rem 0;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--border-subtle);
     margin-bottom: 0.5rem;
 }
 
 .conversation-container {
-    max-height: 400px;
-    overflow-y: auto;
+    max-height: 0;
+    overflow: hidden;
     padding-right: 0.5rem;
     margin-bottom: 1rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.conversation-container[data-expanded="true"] {
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 .chat-message {
@@ -265,12 +522,18 @@ lightning-spinner {
     position: relative;
     animation: fadeIn 0.3s ease-in-out;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chat-message:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
 }
 
 .chat-message[data-user="true"] {
     align-self: flex-end;
     background-color: var(--chat-bubble-user);
-    color: var(--text-color);
+    color: var(--chat-text-user);
     border-bottom-right-radius: 4px;
 }
 
@@ -294,13 +557,14 @@ lightning-spinner {
 }
 
 .message-timestamp {
-    color: #666;
+    color: inherit;
+    opacity: 0.7;
     font-size: 0.7rem;
 }
 
 .message-model {
     background-color: var(--model-badge-color);
-    color: white;
+    color: var(--model-badge-text-color);
     padding: 2px 8px;
     border-radius: 8px;
     font-size: 0.65rem;
@@ -310,6 +574,7 @@ lightning-spinner {
 .message-content {
     word-break: break-word;
     line-height: 1.5;
+    color: inherit;
 }
 
 .message-actions {
@@ -326,21 +591,18 @@ lightning-spinner {
 
 .toggle-chat-button {
     color: var(--primary-color);
-}
-
-/* Animation for the chevron icon */
-.toggle-chat-button lightning-button-icon {
     transition: transform 0.3s ease;
 }
 
-.toggle-chat-button[data-expanded="true"] lightning-button-icon {
+/* Animation for the chevron icon */
+.toggle-chat-button[data-expanded="true"] {
     transform: rotate(180deg);
 }
 
 /* History info and summary styling */
 .history-info {
     font-size: 0.75rem;
-    color: #706e6b;
+    color: var(--text-secondary);
     padding: 0.25rem 0;
 }
 
@@ -349,6 +611,12 @@ lightning-spinner {
     border-radius: var(--border-radius);
     border-left: 3px solid var(--primary-color);
     margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.summary-container:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .summary-header {
@@ -368,9 +636,12 @@ lightning-spinner {
     line-height: 1.4;
 }
 
-/* Update loading animation color */
-@keyframes pulse {
-    0% { opacity: 0.6; color: var(--primary-color); }
-    50% { opacity: 1; color: var(--primary-dark); }
-    100% { opacity: 0.6; color: var(--primary-color); }
+/* Ripple effect for custom buttons */
+.custom-button .ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple 0.5s linear;
+    pointer-events: none;
 }

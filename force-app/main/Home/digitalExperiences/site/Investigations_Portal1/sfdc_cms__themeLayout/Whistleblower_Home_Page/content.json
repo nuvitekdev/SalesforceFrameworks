@@ -21,10 +21,11 @@
         "footerTagline" : "Delivering innovative solutions since 2010",
         "globalThemeOverride" : true,
         "headerContainerWidth" : 100,
-        "headerNavigationMenuName" : "Whistleblower_Navigation",
+        "headerNavigationMenuName" : "",
         "headerSticky" : false,
         "headerVariant" : "standard",
-        "heroBackgroundImage" : "",
+        "heroBackgroundDarkness" : -30,
+        "heroBackgroundImage" : "Whistleblower_HomePage_HeroImage",
         "heroCTAPrimaryLabel" : "",
         "heroCTAPrimaryUrl" : "",
         "heroCTASecondaryLabel" : "",
@@ -115,11 +116,9 @@
         "type" : "region"
       }, {
         "children" : [ {
-          "attributes" : {
-            "dxpStyle" : { }
-          },
+          "attributes" : { },
           "definition" : "c:whistleblowerNewsFeed",
-          "id" : "4ba93a4f-6b3f-4b3b-9f18-bc02c93c87b6",
+          "id" : "58e974e3-55c1-4ee1-90f6-016059432684",
           "type" : "component"
         } ],
         "id" : "3c52276f-e1ad-4d6b-9e80-a35eebf0e038",

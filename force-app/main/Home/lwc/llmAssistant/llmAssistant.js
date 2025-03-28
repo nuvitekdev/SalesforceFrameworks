@@ -1,7 +1,8 @@
-import { LightningElement, api, wire, track } from 'lwc';  // Added track import
+import { LightningElement, api, wire, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getLLMConfigurations from '@salesforce/apex/LLMController.getLLMConfigurations';
 import handleRequest from '@salesforce/apex/LLMController.handleRequest';
+import checkRecordForAnomalies from '@salesforce/apex/LLMController.checkRecordForAnomalies';
 
 // Constants
 const MAX_HISTORY_MESSAGES = 50; // Maximum number of messages to keep in history
@@ -9,7 +10,7 @@ const MAX_HISTORY_MESSAGES = 50; // Maximum number of messages to keep in histor
 export default class LLMAssistant extends LightningElement {
     @api recordId;
     
-    // Design attributes for configuration
+    // Design attributes for configuration from targetConfig
     @api primaryColor = '#22BDC1';  // Default Nuvitek teal
     @api accentColor = '#D5DF23';   // Default Nuvitek lime
     @api defaultModelName;          // If provided, this model will be preselected
@@ -25,13 +26,51 @@ export default class LLMAssistant extends LightningElement {
     @track isLoading = false;
     @track hasError = false;
     @track errorMessage = '';
-    @track pageComponents = [];  // Added track decorator
+    @track pageComponents = [];
     @track pageComponentsScanned = false;
     @track conversationHistory = []; // Track conversation history
     @track showConversationHistory = false; // Default to hiding history
     @track conversationSummary = ''; // Track conversation summary
     @track isSummarizing = false; // Track if summarization is in progress
     @track messagesTotalCount = 0; // Total message count including those pruned due to limits
+    @track isTyping = false;
+    @track partialResponse = '';
+    
+    // --- New properties for Anomaly Check ---
+    @track anomalyCheckResult = ''; // Store the full result text from the AI
+    @track anomalyCheckLoading = false; // Track if the initial anomaly check is running
+    @track showAnomalyBanner = false; // Flag to control banner visibility
+    @track anomalyBannerMessage = ''; // Message to display in the banner
+    // --- End Anomaly Check properties ---
+    
+    // --- Accordion Control ---
+    @track activeAccordionSections = []; // Keep track of open sections
+    // --- End Accordion Control ---
+    
+    // Computed properties for text colors based on background brightness
+    get primaryTextColor() {
+        return this.getContrastColor(this.primaryColor);
+    }
+    
+    get accentTextColor() {
+        return this.getContrastColor(this.accentColor);
+    }
+    
+    get userChatBubbleColor() {
+        return this.adjustColor(this.primaryColor, 40); // Lighter version of primary
+    }
+    
+    get userChatTextColor() {
+        return this.getContrastColor(this.userChatBubbleColor);
+    }
+    
+    get aiChatBubbleColor() {
+        return "#f3f4f6"; // Light gray for AI bubbles
+    }
+    
+    get aiChatTextColor() {
+        return "#1d1d1f"; // Dark text for light backgrounds
+    }
 
     // Check if "Analyze Record" button should be shown
     get showAnalyzeButton() {
@@ -43,18 +82,50 @@ export default class LLMAssistant extends LightningElement {
         // Extract RGB values for rgba() usage
         const primaryRGB = this.hexToRgb(this.primaryColor);
         const accentRGB = this.hexToRgb(this.accentColor);
+        
+        // Get contrast text colors
+        const primaryTextColor = this.primaryTextColor;
+        const accentTextColor = this.accentTextColor;
+        const userChatTextColor = this.userChatTextColor;
 
         return `--primary-color: ${this.primaryColor}; 
                 --primary-dark: ${this.adjustColor(this.primaryColor, -20)}; 
                 --primary-light: ${this.adjustColor(this.primaryColor, 20)};
                 --primary-color-rgb: ${primaryRGB};
+                --primary-text-color: ${primaryTextColor};
                 --accent-color: ${this.accentColor};
                 --accent-dark: ${this.adjustColor(this.accentColor, -20)};
                 --accent-light: ${this.adjustColor(this.accentColor, 20)};
                 --accent-color-rgb: ${accentRGB};
-                --chat-bubble-user: ${this.adjustColor(this.primaryColor, 40)};
-                --chat-bubble-ai: #f3f4f6;
-                --model-badge-color: ${this.primaryColor};`;
+                --accent-text-color: ${accentTextColor};
+                --chat-bubble-user: ${this.userChatBubbleColor};
+                --chat-bubble-ai: ${this.aiChatBubbleColor};
+                --chat-text-user: ${userChatTextColor};
+                --chat-text-ai: ${this.aiChatTextColor};
+                --model-badge-color: ${this.primaryColor};
+                --model-badge-text-color: ${primaryTextColor};`;
+    }
+    
+    // Get contrast color (black or white) based on background brightness
+    getContrastColor(hexColor) {
+        // Default to black if no color provided
+        if (!hexColor || !hexColor.startsWith('#')) return '#000000';
+        
+        // Remove # if present
+        hexColor = hexColor.replace('#', '');
+        
+        // Convert to RGB
+        const r = parseInt(hexColor.substr(0, 2), 16);
+        const g = parseInt(hexColor.substr(2, 2), 16);
+        const b = parseInt(hexColor.substr(4, 2), 16);
+        
+        // Calculate luminance using the perceived brightness formula
+        // (Weighted average for human perception: R:0.299, G:0.587, B:0.114)
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        
+        // Use white text for dark backgrounds, black text for light backgrounds
+        // 0.5 is the threshold - adjust as needed
+        return luminance > 0.5 ? '#000000' : '#FFFFFF';
     }
     
     // Control visibility of model selector
@@ -136,6 +207,13 @@ export default class LLMAssistant extends LightningElement {
         this.conversationSummary = '';
         this.messagesTotalCount = 0;
         this.response = '';
+        this.partialResponse = '';
+        
+        // Show feedback
+        const clearButton = this.template.querySelector('.clear-button');
+        if (clearButton) {
+            this.provideFeedback(clearButton, 'Conversation cleared');
+        }
     }
     
     // Toggle conversation history visibility
@@ -145,8 +223,14 @@ export default class LLMAssistant extends LightningElement {
         // Set button data attributes for animation
         setTimeout(() => {
             const toggleButton = this.template.querySelector('.toggle-chat-button');
+            const container = this.template.querySelector('.conversation-container');
+            
             if (toggleButton) {
                 toggleButton.setAttribute('data-expanded', this.showConversationHistory ? 'true' : 'false');
+            }
+            
+            if (container) {
+                container.setAttribute('data-expanded', this.showConversationHistory ? 'true' : 'false');
             }
         }, 0);
     }
@@ -184,7 +268,6 @@ SUMMARY:`;
         })
         .then(result => {
             this.conversationSummary = result;
-            console.log('Generated conversation summary');
         })
         .catch(error => {
             console.error('Error summarizing conversation:', error);
@@ -216,6 +299,45 @@ SUMMARY:`;
         }
     }
 
+    // Provide feedback on user actions
+    provideFeedback(element, successMessage) {
+        // Add ripple effect
+        const ripple = document.createElement('span');
+        ripple.classList.add('ripple-effect');
+        
+        // For custom buttons, add ripple as a child
+        if (element.classList.contains('custom-button')) {
+            element.appendChild(ripple);
+            
+            // Calculate ripple position
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+        } else {
+            // For lightning components
+            element.appendChild(ripple);
+        }
+        
+        // Show brief toast feedback
+        this.dispatchEvent(new ShowToastEvent({
+            title: 'Success',
+            message: successMessage,
+            variant: 'success',
+            mode: 'dismissable',
+            duration: 1000 // Shorter duration for better UX
+        }));
+        
+        // Remove ripple after animation completes
+        setTimeout(() => {
+            ripple.remove();
+        }, 500);
+    }
+
     connectedCallback() {
         this.applyDynamicStyling();
         
@@ -227,11 +349,11 @@ SUMMARY:`;
     
     renderedCallback() {
         if (!this.pageComponentsScanned && this.recordId) {
-            // Only scan page components if we're on a record page
-            setTimeout(() => {
+            // Use requestAnimationFrame for better timing with UI updates
+            requestAnimationFrame(() => {
                 this.pageComponents = this.getDOMInformation();
                 this.pageComponentsScanned = true;
-            }, 1000);
+            });
         } else if (!this.recordId) {
             // Set as scanned if we're not on a record page
             this.pageComponentsScanned = true;
@@ -270,9 +392,9 @@ SUMMARY:`;
     }
     
     applyDynamicStyling() {
-        // Apply dynamic CSS variable values
-        const hostElement = this.template.host;
-        hostElement.style = this.componentStyle;
+        // No need for direct DOM manipulation in this approach
+        // CSS variables defined in the component style will be used
+        // and will be updated whenever the component properties change
     }
     
     // Color manipulation helper function
@@ -302,11 +424,85 @@ SUMMARY:`;
         }
     }
 
+    // Simulate typing effect
+    simulateTyping(result) {
+        const chars = result.split('');
+        let charIndex = 0;
+        this.partialResponse = '';
+        this.isTyping = true;
+        
+        // Track last timestamp to calculate elapsed time
+        let lastTimestamp = Date.now();
+        // Store typing state across tab switches
+        const typingState = {
+            chars: chars,
+            charIndex: 0,
+            lastUpdate: Date.now(),
+            timeSinceLastChar: 0,
+            nextCharDelay: 0
+        };
+        
+        // Use requestAnimationFrame for smoother animation that continues in background
+        const animateTyping = () => {
+            const now = Date.now();
+            const elapsed = now - typingState.lastUpdate;
+            typingState.lastUpdate = now;
+            
+            // Add elapsed time to our counter
+            typingState.timeSinceLastChar += elapsed;
+            
+            // Check if it's time to type the next character
+            if (typingState.timeSinceLastChar >= typingState.nextCharDelay) {
+                // Type next character if available
+                if (typingState.charIndex < typingState.chars.length) {
+                    this.partialResponse += typingState.chars[typingState.charIndex];
+                    typingState.charIndex++;
+                    
+                    // Reset timer and calculate next delay
+                    typingState.timeSinceLastChar = 0;
+                    
+                    // FASTER TYPING: Reduced base typing delay from 5-20ms to 1-5ms
+                    typingState.nextCharDelay = Math.floor(Math.random() * 4) + 1; // 1-5ms
+                    
+                    // FASTER TYPING: Reduced punctuation pause from +50ms to +15ms
+                    if ('.!?,:;'.includes(typingState.chars[typingState.charIndex - 1])) {
+                        typingState.nextCharDelay += 15; // Shorter pause at punctuation
+                    }
+                    
+                    // Continue animation
+                    requestAnimationFrame(animateTyping);
+                } else {
+                    // Finished typing
+                    this.isTyping = false;
+                    this.response = result;
+                }
+            } else {
+                // Not time for next character yet
+                requestAnimationFrame(animateTyping);
+            }
+        };
+        
+        // Add document visibility change detection
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                // Tab is hidden, update the lastUpdate time when we return
+                typingState.lastUpdate = Date.now();
+            }
+        };
+        
+        // Listen for visibility changes
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        
+        // Start animation
+        requestAnimationFrame(animateTyping);
+        
+        // Clean up when component is disconnected or when typing finishes
+        this.visibilityChangeHandler = handleVisibilityChange;
+    }
+
     @wire(getLLMConfigurations)
     wiredConfigs({ data, error }) {
-        if (data) {
-            console.log('LLM configurations received:', data);
-            
+        if (data) {            
             // Map the configurations to combobox options
             this.llmOptions = data.map(config => {
                 return {
@@ -315,22 +511,33 @@ SUMMARY:`;
                 };
             });
             
-            console.log('LLM options:', this.llmOptions);
-            
-            // Select the first option by default if none specified
-            if (this.llmOptions.length > 0 && !this.selectedLLM) {
-                // Check if there's a default model specified
-                if (this.defaultModelName) {
-                    const defaultConfig = this.llmOptions.find(
-                        option => option.value === this.defaultModelName
-                    );
-                    
-                    if (defaultConfig) {
-                        this.selectedLLM = defaultConfig.value;
-                        this.selectedLLMLabel = defaultConfig.label;
-                        console.log('Default model selected:', this.selectedLLM);
+            // Select the default model if specified AND available
+            if (this.defaultModelName) {
+                const defaultOption = this.llmOptions.find(opt => opt.value === this.defaultModelName);
+                if (defaultOption) {
+                    this.selectedLLM = defaultOption.value;
+                    this.selectedLLMLabel = defaultOption.label;
+                    console.log('Default model selected:', this.selectedLLMLabel);
+                    // --- Trigger anomaly check after default model is set ---
+                    this.performInitialAnomalyCheck();
+                } else {
+                    console.warn(`Default model '${this.defaultModelName}' not found or inactive.`);
+                    // If default isn't valid, select the first available one
+                    if (this.llmOptions.length > 0) {
+                        this.selectedLLM = this.llmOptions[0].value;
+                        this.selectedLLMLabel = this.llmOptions[0].label;
+                        console.log('Selected first available model:', this.selectedLLMLabel);
+                         // --- Trigger anomaly check after first model is set ---
+                        this.performInitialAnomalyCheck();
                     }
                 }
+            } else if (this.llmOptions.length > 0) {
+                 // If no default, select the first one
+                this.selectedLLM = this.llmOptions[0].value;
+                this.selectedLLMLabel = this.llmOptions[0].label;
+                console.log('No default model specified, selected first available:', this.selectedLLMLabel);
+                // --- Trigger anomaly check after first model is set ---
+                this.performInitialAnomalyCheck();
             }
         } else if (error) {
             console.error('Error fetching LLM configurations:', error);
@@ -340,10 +547,14 @@ SUMMARY:`;
 
     handleModelChange(event) {
         this.selectedLLM = event.detail.value;
-        // Store the label as well for display purposes
-        const selectedOption = this.llmOptions.find(option => option.value === this.selectedLLM);
-        this.selectedLLMLabel = selectedOption ? selectedOption.label : '';
-        console.log('Selected LLM:', this.selectedLLM, 'Label:', this.selectedLLMLabel);
+        const selectedOption = this.llmOptions.find(opt => opt.value === this.selectedLLM);
+        this.selectedLLMLabel = selectedOption ? selectedOption.label : 'Unknown Model';
+        console.log('Model changed to:', this.selectedLLMLabel);
+        // --- Trigger anomaly check if the model is changed manually and hasn't run yet ---
+        // This ensures it runs even if the default/first selection failed or wasn't ready
+        if (!this.anomalyCheckResult && !this.anomalyCheckLoading) {
+            this.performInitialAnomalyCheck();
+        }
     }
 
     handlePromptChange(event) {
@@ -351,22 +562,21 @@ SUMMARY:`;
     }
 
     handleAsk() {
-        console.log('Handling Ask request');
         this.handleLLMRequest('ask');
     }
 
     handleSummarize() {
-        console.log('Handling Analyze record request');
         this.handleLLMRequest('summarize');
     }
 
+    // Replace your existing handleLLMRequest method with this version
     handleLLMRequest(operation) {
         if (!this.validateInputs(operation)) return;
-    
+        
         this.isLoading = true;
         this.clearErrors();
         this.response = '';
-    
+        
         // Only get DOM information if we're on a record page
         let domInfo = '';
         if (this.recordId) {
@@ -421,7 +631,7 @@ SUMMARY:`;
                 `${contextInfo}${conversationContext}${this.userPrompt}`
             );
         }
-    
+
         handleRequest({
             recordId: this.recordId || null, // Pass null if no record ID
             configName: this.selectedLLM,
@@ -429,7 +639,8 @@ SUMMARY:`;
             operation: operation
         })
         .then(result => {
-            console.log('LLM Response received:', result);
+            
+            // Show full response immediately instead of typing animation
             this.response = result;
             
             // Add AI response to conversation history
@@ -456,12 +667,7 @@ SUMMARY:`;
             }));
             
             // Auto-scroll to bottom of conversation
-            setTimeout(() => {
-                const chatContainer = this.template.querySelector('.conversation-container');
-                if (chatContainer) {
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                }
-            }, 100);
+            this.scrollToBottom();
         })
         .catch(error => {
             if (error.body?.message?.includes('prompt is too long')) {
@@ -473,6 +679,16 @@ SUMMARY:`;
         .finally(() => {
             this.isLoading = false;
         });
+    }
+    
+    // Helper to scroll to bottom of conversation
+    scrollToBottom() {
+        setTimeout(() => {
+            const chatContainer = this.template.querySelector('.conversation-container');
+            if (chatContainer) {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }, 100);
     }
 
     truncateContent(content, maxSize = 150000) { // Using 150000 to leave room for response
@@ -563,9 +779,23 @@ SUMMARY:`;
         
         return formatted;
     }
+    
+    // For partial response during typing
+    get formattedPartialResponse() {
+        if (!this.partialResponse) return '';
+        
+        // Replace newlines with HTML breaks
+        let formatted = this.partialResponse.replace(/\n/g, '<br />');
+        
+        // Remove any "User:" prefixes that might have slipped through
+        formatted = formatted.replace(/User:\s+/g, '');
+        formatted = formatted.replace(/You:\s+/g, '');
+        
+        return formatted;
+    }
 
-    // New method to copy response to clipboard
-    copyResponseToClipboard() {
+    // Copy response to clipboard
+    copyResponseToClipboard(event) {
         if (!this.response) return;
         
         const tempTextArea = document.createElement('textarea');
@@ -575,17 +805,28 @@ SUMMARY:`;
         document.execCommand('copy');
         document.body.removeChild(tempTextArea);
         
-        // Show success toast
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Copied!',
-            message: 'Response copied to clipboard',
-            variant: 'success'
-        }));
+        // Provide immediate feedback
+        this.provideFeedback(event.target, 'Response copied to clipboard');
     }
 
-    // Add this new method to your LWC class
+    // Copy a specific message to clipboard
+    copyMessageToClipboard(event) {
+        const message = event.currentTarget.dataset.message;
+        if (!message) return;
+        
+        const tempTextArea = document.createElement('textarea');
+        tempTextArea.value = message;
+        document.body.appendChild(tempTextArea);
+        tempTextArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempTextArea);
+        
+        // Provide immediate feedback
+        this.provideFeedback(event.target, 'Message copied to clipboard');
+    }
+
+    // Get all Lightning components on the page
     getDOMInformation() {
-        // Get all Lightning components on the page
         const pageContent = [];
         
         try {
@@ -644,26 +885,6 @@ SUMMARY:`;
         return pageContent.join('\n');
     }
 
-    // New method to copy a specific message to clipboard
-    copyMessageToClipboard(event) {
-        const message = event.currentTarget.dataset.message;
-        if (!message) return;
-        
-        const tempTextArea = document.createElement('textarea');
-        tempTextArea.value = message;
-        document.body.appendChild(tempTextArea);
-        tempTextArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempTextArea);
-        
-        // Show success toast
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Copied!',
-            message: 'Message copied to clipboard',
-            variant: 'success'
-        }));
-    }
-
     // Convert hex color to RGB values
     hexToRgb(hex) {
         // Default fallback
@@ -683,5 +904,76 @@ SUMMARY:`;
         const b = parseInt(hex.substring(4, 6), 16);
         
         return `${r}, ${g}, ${b}`;
+    }
+
+    // Perform the initial anomaly check when the component has the recordId and a model selected
+    async performInitialAnomalyCheck() {
+        // Only run if we have a recordId and a selected LLM
+        if (!this.recordId || !this.selectedLLM || this.anomalyCheckLoading) {
+            console.log('Anomaly check skipped: Missing recordId, selectedLLM, or already loading.');
+            return;
+        }
+        
+        console.log('Performing initial anomaly check...');
+        this.anomalyCheckLoading = true;
+        this.showAnomalyBanner = false; // Reset banner state
+        this.anomalyBannerMessage = ''; // Clear previous message
+        this.anomalyCheckResult = '';   // Clear previous result
+
+        try {
+            // Call the Apex method
+            const result = await checkRecordForAnomalies({ 
+                recordId: this.recordId, 
+                configName: this.selectedLLM 
+            });
+
+            console.log('Anomaly check result received:', result);
+            this.anomalyCheckResult = result; // Store the raw result
+            
+            // Check if the result indicates an anomaly (starts with "YES")
+            if (result && result.toUpperCase().startsWith('YES')) {
+                this.showAnomalyBanner = true;
+                // Extract the explanation part after "YES - "
+                this.anomalyBannerMessage = result.substring(result.indexOf('-') + 1).trim(); 
+                console.log('Anomaly detected, banner will be shown:', this.anomalyBannerMessage);
+                // Automatically open the accordion when an issue is detected
+                this.activeAccordionSections = ['anomalySection']; 
+            } else {
+                this.showAnomalyBanner = false;
+                console.log('No anomalies detected by initial check.');
+                // Ensure accordion is closed if no issue
+                this.activeAccordionSections = []; 
+            }
+
+        } catch (error) {
+            // Handle errors during the anomaly check (e.g., Apex error, network issue)
+            console.error('Error during initial anomaly check:', error);
+            // Optionally show a toast or log the error, but maybe don't block the main UI
+            // We'll display a generic message in the banner spot for visibility
+            this.showAnomalyBanner = true;
+            this.anomalyBannerMessage = 'Could not perform automatic record analysis. Please proceed with caution or try analyzing manually.';
+            // Automatically open the accordion when there is an error
+            this.activeAccordionSections = ['anomalySection'];
+            // Consider adding a more specific error log for admins/devs
+            // this.showError('Failed to perform initial anomaly check: ' + this.getErrorMessage(error));
+        } finally {
+            // Ensure loading state is turned off
+            this.anomalyCheckLoading = false;
+            console.log('Anomaly check finished.');
+        }
+    }
+
+    // Utility to extract error messages
+    getErrorMessage(error) {
+        let message = 'Unknown error';
+        // Check if it's an AuraHandledException
+        if (error?.body?.message) {
+            message = error.body.message;
+        }
+        // Check for other common error structures
+        else if (error?.message) {
+            message = error.message;
+        }
+        return message;
     }
 }
