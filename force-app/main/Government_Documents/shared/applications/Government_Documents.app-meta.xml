@@ -26,5 +26,4 @@
     <tabs>standard-Account</tabs>
     <tabs>standard-Contact</tabs>
     <uiType>Lightning</uiType>
-    <!-- <utilityBar>Investigations_clone_UtilityBar</utilityBar> -->
 </CustomApplication>
