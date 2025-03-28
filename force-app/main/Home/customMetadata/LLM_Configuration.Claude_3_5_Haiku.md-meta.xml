@@ -4,7 +4,7 @@
     <protected>false</protected>
     <values>
         <field>API_Key__c</field>
-        <value xsi:type="xsd:string">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</value>
+        <value xsi:type="xsd:string"></value>
     </values>
     <values>
         <field>Base_URL__c</field>

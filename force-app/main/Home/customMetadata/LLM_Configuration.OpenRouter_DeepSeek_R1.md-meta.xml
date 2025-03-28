@@ -4,7 +4,7 @@
     <protected>false</protected>
     <values>
         <field>API_Key__c</field>
-        <value xsi:type="xsd:string">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</value>
+        <value xsi:type="xsd:string"></value>
     </values>
     <values>
         <field>Base_URL__c</field>
