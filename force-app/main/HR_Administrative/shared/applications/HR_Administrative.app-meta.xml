@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
-    <!-- Action Override for the Home Tab -->
     <actionOverrides>
         <actionName>Tab</actionName>
-        <content>HR_Administrative_Home</content> <!-- Points to the FlexiPage -->
-        <formFactor>Large</formFactor> <!-- Apply override for desktop -->
+        <content>HR_Administrative_Home</content>
+        <formFactor>Large</formFactor>
         <skipRecordTypeSelect>false</skipRecordTypeSelect>
         <type>Flexipage</type>
-        <pageOrSobjectType>standard-home</pageOrSobjectType> <!-- Target the standard Home tab -->
+        <pageOrSobjectType>standard-home</pageOrSobjectType>
     </actionOverrides>
     <brand>
-        <!-- Placeholder Branding - Update these! -->
-        <headerColor>#E91E63</headerColor> <!-- Example Pink -->
-        <logo>Investigation_1</logo>
+        <headerColor>#D0DC32</headerColor>
+        <logo>HR_1</logo>
         <logoVersion>1</logoVersion>
         <shouldOverrideOrgTheme>true</shouldOverrideOrgTheme>
     </brand>
@@ -22,14 +20,10 @@
     <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
     <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
     <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
-    <label>HR Administrative</label> <!-- App Label -->
+    <label>HR Administrative</label>
     <navType>Standard</navType>
-    <!-- Include standard-home -->
     <tabs>standard-home</tabs>
     <tabs>standard-Account</tabs>
     <tabs>standard-Contact</tabs>
-    <!-- Add other relevant tabs for this app here -->
     <uiType>Lightning</uiType>
-    <!-- Placeholder Utility Bar - Update this! -->
-    <!-- <utilityBar>HR_Administrative_UtilityBar</utilityBar> --> <!-- Removed placeholder -->
-</CustomApplication> 
+</CustomApplication>

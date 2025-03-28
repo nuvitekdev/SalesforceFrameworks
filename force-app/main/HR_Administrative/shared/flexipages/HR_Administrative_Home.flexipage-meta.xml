@@ -9,29 +9,27 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>richTextValue</name>
-                    <!-- Updated title and description for HR Administrative -->
                     <value>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 24px; color: rgb(0, 0, 0);&quot;&gt;HR Administrative Application&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px; color: rgb(0, 0, 0);&quot;&gt;Centralize HR functions including employee records, onboarding, benefits administration, time-off requests, and performance management.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</value>
                 </componentInstanceProperties>
                 <componentName>flexipage:richText</componentName>
-                <identifier>flexipage_richText_HR_Administrative</identifier> <!-- Unique identifier -->
+                <identifier>flexipage_richText_HR_Administrative</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region1</name> <!-- Corrected name -->
+        <name>region1</name>
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
         <itemInstances>
-            <!-- Pending Approvals component -->
             <componentInstance>
                 <componentName>runtime_approval_process:pendingApprovalCard</componentName>
-                <identifier>runtime_approval_process_pendingApprovalCard_HR_Administrative</identifier> <!-- Unique identifier -->
+                <identifier>runtime_approval_process_pendingApprovalCard_HR_Administrative</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
                     <name>accentColor</name>
-                    <value>#D5DF23</value> <!-- Consistent styling -->
+                    <value>#D5DF23</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>cardTitle</name>
@@ -39,7 +37,6 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>contextPrompt</name>
-                    <!-- Updated context prompt for HR Administrative -->
                     <value>your job is to speak within the context of HR Administrative tasks</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
@@ -51,14 +48,13 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>primaryColor</name>
-                    <value>#22BDC1</value> <!-- Consistent styling -->
+                    <value>#22BDC1</value>
                 </componentInstanceProperties>
                 <componentName>llmAssistant</componentName>
-                <identifier>c_llmAssistant_HR_Administrative</identifier> <!-- Unique identifier -->
+                <identifier>c_llmAssistant_HR_Administrative</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
-            <!-- Messaging component -->
             <componentInstance>
                 <componentInstanceProperties>
                     <name>accentColor</name>
@@ -105,18 +101,16 @@
                     <value>30%</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekMessaging</componentName>
-                <identifier>c_nuvitekMessaging_HR_Administrative</identifier> <!-- Unique identifier -->
+                <identifier>c_nuvitekMessaging_HR_Administrative</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region2</name> <!-- Corrected name -->
+        <name>region2</name>
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
         <itemInstances>
-            <!-- Navigation Tiles component - Placeholder for HR Administrative -->
             <componentInstance>
                 <componentInstanceProperties>
-                    <!-- Placeholder colors -->
                     <name>colors</name>
                     <value>#FFC107, #673AB7, #3F51B5, #009688, #CDDC39, #FF5722</value>
                 </componentInstanceProperties>
@@ -125,17 +119,14 @@
                     <value>3</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder descriptions -->
                     <name>descriptions</name>
                     <value>Access and manage employee information and records.,Initiate and track the onboarding process for new hires.,Administer employee benefits programs and enrollments.,Submit and approve requests for time off or leave.,Manage performance reviews and employee evaluations.,Access HR policies, forms, and important documents.</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder icons -->
                     <name>icons</name>
                     <value>utility:user, utility:add_user, utility:money, utility:event, utility:ribbon, utility:paste</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder links - Update these! -->
                     <name>links</name>
                     <value>#, #, #, #, #, #</value>
                 </componentInstanceProperties>
@@ -144,22 +135,19 @@
                     <value>gradient</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder titles -->
                     <name>titles</name>
                     <value>Employee Records, New Hire Onboarding, Benefits Admin, Time Off Requests, Performance Mgmt, HR Resources</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
-                <identifier>c_nuvitekNavigationTiles_HR_Administrative</identifier> <!-- Unique identifier -->
+                <identifier>c_nuvitekNavigationTiles_HR_Administrative</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region3</name> <!-- Corrected name -->
+        <name>region3</name>
         <type>Region</type>
     </flexiPageRegions>
-    <!-- Updated Master Label -->
     <masterLabel>HR Administrative Home</masterLabel>
     <template>
-        <!-- Using the same template -->
         <name>flowsapp:homePageTemplateHeaderTwoColumnLeftSidebar</name>
     </template>
     <type>HomePage</type>
-</FlexiPage> 
+</FlexiPage>

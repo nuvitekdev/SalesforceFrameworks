@@ -9,29 +9,27 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>richTextValue</name>
-                    <!-- Updated title and description for Ethics & Compliance -->
                     <value>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 24px; color: rgb(0, 0, 0);&quot;&gt;Ethics &amp; Compliance Application&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px; color: rgb(0, 0, 0);&quot;&gt;Manage ethics reporting, compliance training, conflict of interest disclosures, and policy acknowledgments. Ensure adherence to regulations and internal standards.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</value>
                 </componentInstanceProperties>
                 <componentName>flexipage:richText</componentName>
-                <identifier>flexipage_richText_Ethics_Compliance</identifier> <!-- Unique identifier -->
+                <identifier>flexipage_richText_Ethics_Compliance</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region1</name> <!-- Corrected name -->
+        <name>region1</name>
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
         <itemInstances>
-            <!-- Pending Approvals component -->
             <componentInstance>
                 <componentName>runtime_approval_process:pendingApprovalCard</componentName>
-                <identifier>runtime_approval_process_pendingApprovalCard_Ethics_Compliance</identifier> <!-- Unique identifier -->
+                <identifier>runtime_approval_process_pendingApprovalCard_Ethics_Compliance</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
                     <name>accentColor</name>
-                    <value>#D5DF23</value> <!-- Consistent styling -->
+                    <value>#D5DF23</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>cardTitle</name>
@@ -39,7 +37,6 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>contextPrompt</name>
-                    <!-- Updated context prompt for Ethics & Compliance -->
                     <value>your job is to speak within the context of Ethics and Compliance</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
@@ -51,14 +48,13 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>primaryColor</name>
-                    <value>#22BDC1</value> <!-- Consistent styling -->
+                    <value>#22BDC1</value>
                 </componentInstanceProperties>
                 <componentName>llmAssistant</componentName>
-                <identifier>c_llmAssistant_Ethics_Compliance</identifier> <!-- Unique identifier -->
+                <identifier>c_llmAssistant_Ethics_Compliance</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
-            <!-- Messaging component -->
             <componentInstance>
                 <componentInstanceProperties>
                     <name>accentColor</name>
@@ -105,18 +101,16 @@
                     <value>30%</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekMessaging</componentName>
-                <identifier>c_nuvitekMessaging_Ethics_Compliance</identifier> <!-- Unique identifier -->
+                <identifier>c_nuvitekMessaging_Ethics_Compliance</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region2</name> <!-- Corrected name -->
+        <name>region2</name>
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
         <itemInstances>
-            <!-- Navigation Tiles component - Placeholder for Ethics & Compliance -->
             <componentInstance>
                 <componentInstanceProperties>
-                    <!-- Placeholder colors -->
                     <name>colors</name>
                     <value>#8BC34A, #FFEB3B, #03A9F4, #E91E63, #FF5722, #9E9E9E</value>
                 </componentInstanceProperties>
@@ -125,17 +119,14 @@
                     <value>3</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder descriptions -->
                     <name>descriptions</name>
                     <value>Report an ethics concern or potential violation securely.,Access and complete required compliance training modules.,Declare potential conflicts of interest for review.,Review and acknowledge new or updated company policies.,Access the library of ethics and compliance guidelines.,Request guidance or clarification on ethical matters.</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder icons -->
                     <name>icons</name>
                     <value>utility:alert, utility:knowledge_base, utility:groups, utility:bookmark, utility:policy, utility:help</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder links - Update these! -->
                     <name>links</name>
                     <value>#, #, #, #, #, #</value>
                 </componentInstanceProperties>
@@ -144,22 +135,19 @@
                     <value>gradient</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder titles -->
                     <name>titles</name>
                     <value>Report a Concern, Compliance Training, Disclose Conflicts, Policy Acknowledgment, Guidelines Library, Ask Ethics Question</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
-                <identifier>c_nuvitekNavigationTiles_Ethics_Compliance</identifier> <!-- Unique identifier -->
+                <identifier>c_nuvitekNavigationTiles_Ethics_Compliance</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region3</name> <!-- Corrected name -->
+        <name>region3</name>
         <type>Region</type>
     </flexiPageRegions>
-    <!-- Updated Master Label -->
     <masterLabel>Ethics Compliance Home</masterLabel>
     <template>
-        <!-- Using the same template -->
         <name>flowsapp:homePageTemplateHeaderTwoColumnLeftSidebar</name>
     </template>
     <type>HomePage</type>
-</FlexiPage> 
+</FlexiPage>

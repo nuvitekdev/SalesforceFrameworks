@@ -9,29 +9,27 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>richTextValue</name>
-                    <!-- Updated title and description for Travel -->
                     <value>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 24px; color: rgb(0, 0, 0);&quot;&gt;Travel Application&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px; color: rgb(0, 0, 0);&quot;&gt;Manage travel requests, approvals, booking integrations, and expense reporting. Streamline business travel from planning to reimbursement.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</value>
                 </componentInstanceProperties>
                 <componentName>flexipage:richText</componentName>
-                <identifier>flexipage_richText_Travel</identifier> <!-- Unique identifier -->
+                <identifier>flexipage_richText_Travel</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region1</name> <!-- Corrected name -->
+        <name>region1</name>
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
         <itemInstances>
-            <!-- Pending Approvals component -->
             <componentInstance>
                 <componentName>runtime_approval_process:pendingApprovalCard</componentName>
-                <identifier>runtime_approval_process_pendingApprovalCard_Travel</identifier> <!-- Unique identifier -->
+                <identifier>runtime_approval_process_pendingApprovalCard_Travel</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
                     <name>accentColor</name>
-                    <value>#D5DF23</value> <!-- Consistent styling -->
+                    <value>#D5DF23</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>cardTitle</name>
@@ -39,7 +37,6 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>contextPrompt</name>
-                    <!-- Updated context prompt for Travel -->
                     <value>your job is to speak within the context of Travel requests and management</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
@@ -51,14 +48,13 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>primaryColor</name>
-                    <value>#22BDC1</value> <!-- Consistent styling -->
+                    <value>#22BDC1</value>
                 </componentInstanceProperties>
                 <componentName>llmAssistant</componentName>
-                <identifier>c_llmAssistant_Travel</identifier> <!-- Unique identifier -->
+                <identifier>c_llmAssistant_Travel</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
-            <!-- Messaging component -->
             <componentInstance>
                 <componentInstanceProperties>
                     <name>accentColor</name>
@@ -105,18 +101,16 @@
                     <value>30%</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekMessaging</componentName>
-                <identifier>c_nuvitekMessaging_Travel</identifier> <!-- Unique identifier -->
+                <identifier>c_nuvitekMessaging_Travel</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region2</name> <!-- Corrected name -->
+        <name>region2</name>
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
         <itemInstances>
-            <!-- Navigation Tiles component - Placeholder for Travel -->
             <componentInstance>
                 <componentInstanceProperties>
-                    <!-- Placeholder colors -->
                     <name>colors</name>
                     <value>#03A9F4, #FFEB3B, #FF9800, #795548, #607D8B, #4CAF50</value>
                 </componentInstanceProperties>
@@ -125,17 +119,14 @@
                     <value>3</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder descriptions -->
                     <name>descriptions</name>
                     <value>Submit a new request for business travel approval.,View the status of your pending and approved travel requests.,Access tools and integrations for booking flights and hotels.,Submit expense reports for reimbursement after travel.,Review company travel policies and guidelines.,Access emergency contact information and travel support.</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder icons -->
                     <name>icons</name>
                     <value>utility:forward_up, utility:search, utility:airplane, utility:currency, utility:policy, utility:call</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder links - Update these! -->
                     <name>links</name>
                     <value>#, #, #, #, #, #</value>
                 </componentInstanceProperties>
@@ -144,22 +135,19 @@
                     <value>gradient</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder titles -->
                     <name>titles</name>
                     <value>Request Travel, My Travel Requests, Book Travel, Submit Expenses, Travel Policy, Support</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
-                <identifier>c_nuvitekNavigationTiles_Travel</identifier> <!-- Unique identifier -->
+                <identifier>c_nuvitekNavigationTiles_Travel</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region3</name> <!-- Corrected name -->
+        <name>region3</name>
         <type>Region</type>
     </flexiPageRegions>
-    <!-- Updated Master Label -->
     <masterLabel>Travel Home</masterLabel>
     <template>
-        <!-- Using the same template -->
         <name>flowsapp:homePageTemplateHeaderTwoColumnLeftSidebar</name>
     </template>
     <type>HomePage</type>
-</FlexiPage> 
+</FlexiPage>

@@ -9,29 +9,27 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>richTextValue</name>
-                    <!-- Updated title and description for Document Routing -->
                     <value>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 24px; color: rgb(0, 0, 0);&quot;&gt;Document Routing Application&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px; color: rgb(0, 0, 0);&quot;&gt;The Document Routing application streamlines document submission, review, and approval processes across the organization. Automate workflows, track document status, and ensure timely handling of critical paperwork.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</value>
                 </componentInstanceProperties>
                 <componentName>flexipage:richText</componentName>
-                <identifier>flexipage_richText_Document_Routing</identifier> <!-- Unique identifier -->
+                <identifier>flexipage_richText_Document_Routing</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region1</name> <!-- Corrected name -->
+        <name>region1</name>
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
         <itemInstances>
-            <!-- Pending Approvals component -->
             <componentInstance>
                 <componentName>runtime_approval_process:pendingApprovalCard</componentName>
-                <identifier>runtime_approval_process_pendingApprovalCard_Document_Routing</identifier> <!-- Unique identifier -->
+                <identifier>runtime_approval_process_pendingApprovalCard_Document_Routing</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
                     <name>accentColor</name>
-                    <value>#D5DF23</value> <!-- Consistent styling -->
+                    <value>#D5DF23</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>cardTitle</name>
@@ -39,7 +37,6 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>contextPrompt</name>
-                    <!-- Updated context prompt for Document Routing -->
                     <value>your job is to speak within the context of Document Routing</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
@@ -51,14 +48,13 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>primaryColor</name>
-                    <value>#22BDC1</value> <!-- Consistent styling -->
+                    <value>#22BDC1</value>
                 </componentInstanceProperties>
                 <componentName>llmAssistant</componentName>
-                <identifier>c_llmAssistant_Document_Routing</identifier> <!-- Unique identifier -->
+                <identifier>c_llmAssistant_Document_Routing</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
-            <!-- Messaging component -->
             <componentInstance>
                 <componentInstanceProperties>
                     <name>accentColor</name>
@@ -105,18 +101,16 @@
                     <value>30%</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekMessaging</componentName>
-                <identifier>c_nuvitekMessaging_Document_Routing</identifier> <!-- Unique identifier -->
+                <identifier>c_nuvitekMessaging_Document_Routing</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region2</name> <!-- Corrected name -->
+        <name>region2</name>
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
         <itemInstances>
-            <!-- Navigation Tiles component - Placeholder for Document Routing -->
             <componentInstance>
                 <componentInstanceProperties>
-                    <!-- Placeholder colors -->
                     <name>colors</name>
                     <value>#4CAF50, #FF9800, #2196F3, #9C27B0, #795548, #607D8B</value>
                 </componentInstanceProperties>
@@ -125,17 +119,14 @@
                     <value>3</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder descriptions -->
                     <name>descriptions</name>
                     <value>Submit a new document for routing and approval.,View documents currently waiting for your review or action.,Check the status of documents you have submitted.,Access the central repository of routed documents.,Configure standard document routing workflows.,Generate reports on document routing cycle times.</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder icons -->
                     <name>icons</name>
                     <value>utility:forward, utility:check, utility:search, utility:database, utility:flow, utility:chart</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder links - Update these! -->
                     <name>links</name>
                     <value>#, #, #, #, #, #</value>
                 </componentInstanceProperties>
@@ -144,22 +135,19 @@
                     <value>gradient</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder titles -->
                     <name>titles</name>
                     <value>Submit Document, My Pending Approvals, Track My Documents, Document Archive, Manage Workflows, Routing Reports</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
-                <identifier>c_nuvitekNavigationTiles_Document_Routing</identifier> <!-- Unique identifier -->
+                <identifier>c_nuvitekNavigationTiles_Document_Routing</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region3</name> <!-- Corrected name -->
+        <name>region3</name>
         <type>Region</type>
     </flexiPageRegions>
-    <!-- Updated Master Label -->
     <masterLabel>Document Routing Home</masterLabel>
     <template>
-        <!-- Using the same template -->
         <name>flowsapp:homePageTemplateHeaderTwoColumnLeftSidebar</name>
     </template>
     <type>HomePage</type>
-</FlexiPage> 
+</FlexiPage>

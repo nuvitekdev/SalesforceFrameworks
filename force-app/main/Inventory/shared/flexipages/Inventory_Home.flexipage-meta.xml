@@ -9,29 +9,27 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>richTextValue</name>
-                    <!-- Updated title and description for Inventory -->
                     <value>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 24px; color: rgb(0, 0, 0);&quot;&gt;Inventory Application&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px; color: rgb(0, 0, 0);&quot;&gt;Track and manage assets, equipment, and supplies. Monitor stock levels, handle check-in/check-out, and manage inventory lifecycle.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</value>
                 </componentInstanceProperties>
                 <componentName>flexipage:richText</componentName>
-                <identifier>flexipage_richText_Inventory</identifier> <!-- Unique identifier -->
+                <identifier>flexipage_richText_Inventory</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region1</name> <!-- Corrected name -->
+        <name>region1</name>
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
         <itemInstances>
-            <!-- Pending Approvals component -->
             <componentInstance>
                 <componentName>runtime_approval_process:pendingApprovalCard</componentName>
-                <identifier>runtime_approval_process_pendingApprovalCard_Inventory</identifier> <!-- Unique identifier -->
+                <identifier>runtime_approval_process_pendingApprovalCard_Inventory</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
                     <name>accentColor</name>
-                    <value>#D5DF23</value> <!-- Consistent styling -->
+                    <value>#D5DF23</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>cardTitle</name>
@@ -39,7 +37,6 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>contextPrompt</name>
-                    <!-- Updated context prompt for Inventory -->
                     <value>your job is to speak within the context of Inventory Management</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
@@ -51,14 +48,13 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>primaryColor</name>
-                    <value>#22BDC1</value> <!-- Consistent styling -->
+                    <value>#22BDC1</value>
                 </componentInstanceProperties>
                 <componentName>llmAssistant</componentName>
-                <identifier>c_llmAssistant_Inventory</identifier> <!-- Unique identifier -->
+                <identifier>c_llmAssistant_Inventory</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
-            <!-- Messaging component -->
             <componentInstance>
                 <componentInstanceProperties>
                     <name>accentColor</name>
@@ -105,18 +101,16 @@
                     <value>30%</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekMessaging</componentName>
-                <identifier>c_nuvitekMessaging_Inventory</identifier> <!-- Unique identifier -->
+                <identifier>c_nuvitekMessaging_Inventory</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region2</name> <!-- Corrected name -->
+        <name>region2</name>
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
         <itemInstances>
-            <!-- Navigation Tiles component - Placeholder for Inventory -->
             <componentInstance>
                 <componentInstanceProperties>
-                    <!-- Placeholder colors -->
                     <name>colors</name>
                     <value>#795548, #FF9800, #607D8B, #9E9E9E, #4CAF50, #00BCD4</value>
                 </componentInstanceProperties>
@@ -125,17 +119,14 @@
                     <value>3</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder descriptions -->
                     <name>descriptions</name>
                     <value>View and manage the complete inventory of assets and supplies.,Check items in or out to track custody and usage.,Request new inventory items or supplies.,Monitor current stock levels and set reorder points.,Manage the lifecycle of assets from acquisition to disposal.,Generate reports on inventory usage, stock levels, and asset age.</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder icons -->
                     <name>icons</name>
                     <value>utility:product_item, utility:checkin, utility:add, utility:metrics, utility:recycle, utility:report</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder links - Update these! -->
                     <name>links</name>
                     <value>#, #, #, #, #, #</value>
                 </componentInstanceProperties>
@@ -144,22 +135,19 @@
                     <value>gradient</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <!-- Placeholder titles -->
                     <name>titles</name>
                     <value>View Inventory, Check In/Out, Request Items, Stock Levels, Asset Lifecycle, Inventory Reports</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
-                <identifier>c_nuvitekNavigationTiles_Inventory</identifier> <!-- Unique identifier -->
+                <identifier>c_nuvitekNavigationTiles_Inventory</identifier>
             </componentInstance>
         </itemInstances>
-        <name>region3</name> <!-- Corrected name -->
+        <name>region3</name>
         <type>Region</type>
     </flexiPageRegions>
-    <!-- Updated Master Label -->
     <masterLabel>Inventory Home</masterLabel>
     <template>
-        <!-- Using the same template -->
         <name>flowsapp:homePageTemplateHeaderTwoColumnLeftSidebar</name>
     </template>
     <type>HomePage</type>
-</FlexiPage> 
+</FlexiPage>
