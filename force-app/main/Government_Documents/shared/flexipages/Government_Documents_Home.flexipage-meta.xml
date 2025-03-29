@@ -54,7 +54,7 @@
                 <identifier>c_llmAssistant</identifier>
             </componentInstance>
         </itemInstances>
-        <itemInstances>
+               <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
                     <name>accentColor</name>
@@ -78,7 +78,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>defaultLLMName</name>
-                    <value>GPT4o</value>
+                    <value>Gemini 2.5 Pro</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>fontFamily</name>
@@ -91,10 +91,6 @@
                 <componentInstanceProperties>
                     <name>primaryColor</name>
                     <value>#22BDC1</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>searchObjects</name>
-                    <value>User,Contact,Account,Lead</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>sidebarWidth</name>

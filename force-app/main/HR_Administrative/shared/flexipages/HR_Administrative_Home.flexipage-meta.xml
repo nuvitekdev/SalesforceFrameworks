@@ -54,7 +54,7 @@
                 <identifier>c_llmAssistant_HR_Administrative</identifier>
             </componentInstance>
         </itemInstances>
-        <itemInstances>
+               <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
                     <name>accentColor</name>
@@ -78,7 +78,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>defaultLLMName</name>
-                    <value>GPT4o</value>
+                    <value>Gemini 2.5 Pro</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>fontFamily</name>
@@ -93,15 +93,11 @@
                     <value>#22BDC1</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <name>searchObjects</name>
-                    <value>User,Contact,Account,Lead</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
                     <name>sidebarWidth</name>
                     <value>30%</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekMessaging</componentName>
-                <identifier>c_nuvitekMessaging_HR_Administrative</identifier>
+                <identifier>c_nuvitekMessaging</identifier>
             </componentInstance>
         </itemInstances>
         <name>region2</name>

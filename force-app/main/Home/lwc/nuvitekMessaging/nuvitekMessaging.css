@@ -236,65 +236,129 @@ lightning-card {
     padding-bottom: 10px; /* Add padding at the bottom */
 }
 
-/* Recipient Item Styling (for Recent list) */
-.recipient-item {
+/* Improved recent conversations styling */
+.conversations-list {
     display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    cursor: pointer;
-    transition: background-color var(--transition-fast);
+    flex-direction: column;
+    width: 100%;
+}
+
+.conversations-list > div {
+    display: flex;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
-.recipient-item:last-child {
-    border-bottom: none;
-}
-
-.recipient-item:hover {
+.conversations-list > div:hover {
     background-color: var(--background-alt);
 }
 
-.recipient-item-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin-right: 12px;
-    flex-shrink: 0;
+.conversations-list > div:last-child {
+    border-bottom: none;
 }
 
-.recipient-item-avatar img {
+/* Remove margin from avatar container */
+.avatar-container {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    position: relative;
+    margin-right: 0; /* Remove right margin */
+}
+
+.avatar {
     width: 100%;
     height: 100%;
+    border-radius: 50%;
     object-fit: cover;
 }
 
-.recipient-item-details {
-    overflow: hidden;
-    flex-grow: 1;
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: var(--background-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.recipient-item-name {
-    font-weight: var(--font-weight-medium);
-    margin-bottom: 2px;
+.group-indicator {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 16px;
+    height: 16px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--background);
+}
+
+.conversation-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding-left: 12px; /* Move padding here from avatar */
+}
+
+/* Restructured conversation header with improved alignment */
+.conversation-header {
+    display: flex;
+    align-items: center; /* Center align vertically */
+    justify-content: flex-start; /* Align to start */
+    margin-bottom: 4px;
+    position: relative; /* Enable positioning */
+}
+
+/* Improved name styling */
+.conversation-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-color);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
+    font-size: calc(var(--font-size) + 1px);
+    line-height: 1.2; /* Consistent line height */
+    padding-top: 2px; /* Fine-tune vertical alignment */
 }
 
-.recipient-item-info {
-    font-size: calc(var(--font-size) - 2px);
+/* Move time to absolute position on the right */
+.conversation-time {
     color: var(--text-secondary);
+    font-size: calc(var(--font-size) - 2px);
+    white-space: nowrap;
+    position: absolute;
+    right: 0;
+    top: 2px;
+}
+
+.conversation-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 2px; /* Add space between name and preview */
+}
+
+.message-preview {
+    color: var(--text-secondary);
+    font-size: calc(var(--font-size) - 1px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
 }
 
-.recipient-item-unread {
-    margin-left: 8px;
-    min-width: 18px;
-    height: 18px;
-    border-radius: 9px;
+.unread-indicator {
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
     background-color: var(--primary-color);
     color: white;
     font-size: 11px;
@@ -302,16 +366,8 @@ lightning-card {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 5px;
-    flex-shrink: 0;
-}
-
-.placeholder-message {
-    color: var(--text-tertiary);
-    font-size: 13px;
-    text-align: center;
-    padding: 20px;
-    font-style: italic;
+    margin-left: 8px;
+    padding: 0 6px;
 }
 
 /* Sidebar Backdrop for Mobile Overlay */
