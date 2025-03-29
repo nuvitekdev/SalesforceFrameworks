@@ -793,10 +793,10 @@ lightning-card {
     color: rgba(245, 245, 247, 0.7);
 }
 
-/* Message input container - allow for much more expansion */
+/* Message input container - contained within the conversation area */
 .message-input-container {
     min-height: var(--message-input-height);
-    max-height: 300px; /* Significantly increase maximum height */
+    max-height: 170px; /* Increase max height to allow for more expansion */
     height: auto;
     border-top: 1px solid var(--border-color);
     padding: 8px 12px;
@@ -810,26 +810,26 @@ lightning-card {
     z-index: 5;
     flex-shrink: 0;
     overflow: visible;
-    transition: height 0.3s ease;
+    transition: height 0.3s ease; /* Smoother transition */
     bottom: 0;
 }
 
-/* Message input wrapper - allow much more expansion */
+/* Message input wrapper - full width without flex */
 .message-input-wrapper {
     flex: 1;
     min-width: 0;
     position: relative;
     width: 100%;
-    max-height: 280px; /* Significantly increased */
+    max-height: 150px; /* Increase to match textarea */
     overflow: hidden;
 }
 
-/* Textarea styling - allow much more expansion */
+/* Textarea styling for full width expansion */
 .message-input textarea {
-    resize: vertical !important;
+    resize: vertical !important; /* Enable vertical resizing */
     transition: height 0.3s ease;
     min-height: 40px;
-    max-height: 280px; /* Significantly increased */
+    max-height: 150px; /* Increase max height to allow more content */
     border-radius: 20px;
     padding: 10px 16px;
     font-size: calc(var(--font-size) + 1px);

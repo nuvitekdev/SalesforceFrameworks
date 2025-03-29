@@ -1918,7 +1918,7 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         const scrollHeight = textarea.scrollHeight;
         
         // Set maximum height (match CSS)
-        const maxHeight = 280; // Increased to match CSS
+        const maxHeight = 150;
         
         // Apply height, allowing it to grow up to max height
         const newHeight = Math.min(scrollHeight, maxHeight);
@@ -1932,17 +1932,18 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     expandContainers(textareaHeight) {
         const baseHeight = 40; // Base height of textarea
         const extraExpansion = textareaHeight - baseHeight; // Calculate how much we need to expand
-        // Multiply expansion factor to make it more aggressive
-        const expansionFactor = extraExpansion * 1.5;
         
         // Get all relevant containers
         const inputContainer = this.template.querySelector('.message-input-container');
         const messageBody = this.template.querySelector('.messaging-body');
         const messagingContainer = this.template.querySelector('.nuvitek-messaging-container');
         
+        // For Lightning card components we need to use closest since they're not directly in our template
+        const cardElement = this.template.querySelector('lightning-card'); 
+        
         if (inputContainer) {
-            // Add padding for the container with extra room
-            const paddingHeight = 30; // Increased padding
+            // Add padding for the container
+            const paddingHeight = 20;
             const containerHeight = textareaHeight + paddingHeight;
             inputContainer.style.height = containerHeight + 'px';
             
@@ -1952,30 +1953,22 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
             // Force component to recalculate layout with a slight delay
             window.setTimeout(() => {
                 if (messageBody) {
-                    // Ensure messaging body expands significantly more
+                    // Ensure messaging body expands
                     const currentHeight = parseInt(getComputedStyle(messageBody).height, 10) || 400;
-                    const newHeight = currentHeight + expansionFactor;
+                    const newHeight = currentHeight + extraExpansion;
                     
                     messageBody.style.minHeight = `${newHeight}px`;
                     messageBody.style.height = 'auto';
-                    
-                    // Force direct style to ensure expansion
-                    messageBody.style.setProperty('min-height', `${newHeight}px`, 'important');
-                    messageBody.style.setProperty('height', 'auto', 'important');
                 }
                 
                 // Expand the main container
                 if (messagingContainer) {
-                    const currentHeight = parseInt(getComputedStyle(messagingContainer).height, 10) || 400;
-                    const newContainerHeight = currentHeight + expansionFactor;
-                    
                     messagingContainer.style.height = 'auto';
-                    messagingContainer.style.minHeight = `${newContainerHeight}px`;
-                    messagingContainer.style.setProperty('min-height', `${newContainerHeight}px`, 'important');
+                    messagingContainer.style.minHeight = messagingContainer.scrollHeight + 'px';
                 }
                 
                 // Find and expand Lightning card elements
-                this.expandLightningCardElements(expansionFactor);
+                this.expandLightningCardElements();
                 
                 // Scroll message container to bottom
                 this.scrollToBottom();
@@ -1984,7 +1977,7 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     }
 
     // Target and expand Lightning card components
-    expandLightningCardElements(expansionFactor) {
+    expandLightningCardElements() {
         // Find main Lightning container elements
         const container = this.template.querySelector('.nuvitek-messaging-container');
         if (!container) return;
@@ -1994,42 +1987,22 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
             const cardElement = container.querySelector('lightning-card');
             
             if (cardElement) {
-                // Get current height to expand from
-                const currentCardHeight = cardElement.offsetHeight || 400;
-                const newCardHeight = currentCardHeight + expansionFactor;
-                
-                // Set minimum height directly on card element
-                cardElement.style.minHeight = `${newCardHeight}px`;
-                cardElement.style.height = 'auto';
-                cardElement.style.overflow = 'visible';
-                cardElement.style.setProperty('min-height', `${newCardHeight}px`, 'important');
-                
                 // Access shadow DOM if possible
                 const cardRoot = cardElement.shadowRoot || cardElement;
                 
                 if (cardRoot) {
                     const cardBody = cardRoot.querySelector('.slds-card__body');
                     if (cardBody) {
-                        // Apply more aggressive styling
                         cardBody.style.height = 'auto';
-                        cardBody.style.minHeight = `${newCardHeight}px`;
+                        cardBody.style.minHeight = '100%';
                         cardBody.style.overflow = 'visible';
-                        // Force with !important
-                        cardBody.style.setProperty('height', 'auto', 'important');
-                        cardBody.style.setProperty('min-height', `${newCardHeight}px`, 'important');
-                        cardBody.style.setProperty('overflow', 'visible', 'important');
                     }
                     
                     const card = cardRoot.querySelector('.slds-card');
                     if (card) {
-                        // Apply more aggressive styling
                         card.style.height = 'auto';
-                        card.style.minHeight = `${newCardHeight}px`;
+                        card.style.minHeight = '100%';
                         card.style.overflow = 'visible';
-                        // Force with !important
-                        card.style.setProperty('height', 'auto', 'important');
-                        card.style.setProperty('min-height', `${newCardHeight}px`, 'important');
-                        card.style.setProperty('overflow', 'visible', 'important');
                     }
                 }
             }
@@ -2039,12 +2012,7 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
             for (let i = 0; i < 5 && parentNode; i++) { // Limit to 5 levels up
                 if (parentNode.style) {
                     parentNode.style.height = 'auto';
-                    parentNode.style.minHeight = `${400 + expansionFactor}px`;
                     parentNode.style.overflow = 'visible';
-                    // Force with !important
-                    parentNode.style.setProperty('height', 'auto', 'important');
-                    parentNode.style.setProperty('min-height', `${400 + expansionFactor}px`, 'important');
-                    parentNode.style.setProperty('overflow', 'visible', 'important');
                 }
                 parentNode = parentNode.parentNode;
             }
