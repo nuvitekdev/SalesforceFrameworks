@@ -77,6 +77,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* Prevent content from overflowing */
 }
 
 /* Card styling using modern design - allow dynamic height */
@@ -92,7 +93,7 @@ lightning-card {
     width: 100%;
     display: flex;
     flex-direction: column;
-    overflow: visible !important; /* Allow content to expand */
+    overflow: hidden !important; /* Contain content within */
 }
 
 /* Title container styling */
@@ -181,7 +182,7 @@ lightning-card {
     background: var(--primary-dark);
 }
 
-/* Messaging body layout - dynamic height */
+/* Messaging body layout - dynamic height with proper containment */
 .messaging-body {
     display: grid;
     grid-template-columns: minmax(var(--sidebar-min-width), var(--sidebar-width)) 1fr;
@@ -194,7 +195,7 @@ lightning-card {
     margin-top: 8px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    overflow: visible; /* Allow expansion beyond boundaries */
+    overflow: hidden; /* Contain overflow */
     position: relative;
     box-sizing: border-box;
 }
@@ -483,7 +484,7 @@ lightning-card {
     font-style: italic;
 }
 
-/* Force the conversation area to use dynamic layout */
+/* Force the conversation area to use dynamic layout and stay contained */
 .conversation-area {
     display: flex;
     flex-direction: column;
@@ -491,7 +492,7 @@ lightning-card {
     min-height: 100%; /* Fill available space */
     position: relative;
     background-color: var(--background);
-    overflow: visible; /* Allow expansion */
+    overflow: hidden; /* Contain content */
 }
 
 /* Conversation header */
@@ -599,7 +600,7 @@ lightning-card {
     font-style: italic;
 }
 
-/* Message container with dynamic height */
+/* Message container with proper containment */
 .message-container {
     flex: 1;
     padding: 12px;
@@ -741,7 +742,7 @@ lightning-card {
     color: rgba(245, 245, 247, 0.7);
 }
 
-/* Message input container - full width dynamic container */
+/* Message input container - contained within the conversation area */
 .message-input-container {
     min-height: var(--message-input-height);
     max-height: none; /* Remove max height to allow full expansion */
@@ -757,7 +758,7 @@ lightning-card {
     position: relative;
     z-index: 50; /* Higher z-index to ensure it's above other elements */
     flex-shrink: 0; /* Prevent shrinking */
-    overflow: visible; /* Allow for growth */
+    overflow: visible; /* Allow for expansion within container */
     transition: height 0.2s ease;
 }
 
@@ -1046,12 +1047,14 @@ lightning-card {
         border: none; /* Remove border on mobile */
         border-radius: 0;
         margin-top: 0;
+        overflow: hidden; /* Ensure content stays contained */
     }
     
     .conversation-area {
         height: 100%;
         display: flex;
         flex-direction: column;
+        overflow: hidden; /* Contain content */
     }
     
     .message-container {
@@ -1571,5 +1574,5 @@ lightning-card {
 .slds-card__body, 
 .slds-card__footer {
     height: auto !important;
-    overflow: visible !important;
+    overflow: hidden !important; /* Changed from visible to hidden */
 }
