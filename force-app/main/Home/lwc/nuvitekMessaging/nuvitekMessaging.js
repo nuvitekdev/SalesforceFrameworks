@@ -594,7 +594,8 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
 
     // Getter for disabling compose button
     get isComposeDisabled() {
-        return !this.isComposing;
+        // Enable button when there's text in the message field
+        return !this.newMessage || this.newMessage.trim() === '';
     }
 
     /**
@@ -668,16 +669,15 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
                     
                     // Format messages for display
                     const formattedMessages = result.messages.map(msg => {
-                        // Check if message is from current user by name or ID
-                        const isFromUser = msg.senderId === USER_ID || 
-                                           (msg.senderName && msg.senderName.includes(currentUserName));
+                        // Check if message is from current user by ID ONLY, not name
+                        const isFromUser = msg.senderId === USER_ID;
                         
                         console.log(`Message from ${msg.senderName} (${msg.senderId}), isFromUser: ${isFromUser}`);
                         
-                return {
+                        return {
                             id: msg.id,
                             content: msg.content,
-                    formattedContent: this.formatMessageContent(msg.content),
+                            formattedContent: this.formatMessageContent(msg.content),
                             timestamp: new Date(msg.timestamp),
                             formattedTimestamp: this.formatTimestamp(msg.timestamp),
                             senderId: msg.senderId,
@@ -685,16 +685,16 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
                             senderPhotoUrl: msg.senderPhotoUrl,
                             isFromUser: isFromUser,
                             messageClass: isFromUser ? 'message user-message' : 'message recipient-message'
-                };
-            });
-            
+                        };
+                    });
+                    
                     // Append or prepend based on load direction
-            if (isInitialLoad) {
+                    if (isInitialLoad) {
                         this.messages = formattedMessages;
-            } else {
+                    } else {
                         this.messages = [...formattedMessages, ...this.messages]; // Older messages at the top
-            }
-            
+                    }
+                    
                     this.messageOffset += result.messages.length;
                 }
             
@@ -753,9 +753,8 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
                 
                 // Format the new messages
                 const formattedNewMessages = newMessages.map(msg => {
-                    // Check if message is from current user by name or ID
-                    const isFromUser = msg.senderId === USER_ID || 
-                                      (msg.senderName && msg.senderName.includes(currentUserName));
+                    // Check if message is from current user by ID ONLY, not name
+                    const isFromUser = msg.senderId === USER_ID;
                     
                     console.log(`New message from ${msg.senderName} (${msg.senderId}), isFromUser: ${isFromUser}`);
                     
@@ -763,8 +762,8 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
                         id: msg.id,
                         content: msg.content,
                         formattedContent: this.formatMessageContent(msg.content),
-                    timestamp: new Date(msg.timestamp),
-                    formattedTimestamp: this.formatTimestamp(msg.timestamp),
+                        timestamp: new Date(msg.timestamp),
+                        formattedTimestamp: this.formatTimestamp(msg.timestamp),
                         senderId: msg.senderId,
                         senderName: msg.senderName,
                         senderPhotoUrl: msg.senderPhotoUrl,
@@ -882,7 +881,12 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     // Handle message input change
     handleMessageChange(event) {
         this.newMessage = event.target.value;
-        this.autoAdjustTextareaHeight(event.target);
+        // Set isComposing based on whether there's text in the field
+        this.isComposing = (this.newMessage && this.newMessage.trim() !== '');
+        // Adjust height with a slight delay to allow for pasting
+        setTimeout(() => {
+            this.autoAdjustTextareaHeight(event.target);
+        }, 0);
     }
 
     // Handle key press in message input
@@ -943,19 +947,21 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
             const isNewMessage = !this.messages.some(msg => msg.id === result.messageId);
             
             if (isNewMessage) {
-                // Add the message to our local array
+                // Add the message to our local array - at the end (bottom)
                 const newMessage = {
                     id: result.messageId,
-            content: messageContent,
-            isFromUser: true,
-            messageClass: 'message user-message',
+                    content: messageContent,
+                    isFromUser: true,
+                    messageClass: 'message user-message',
                     timestamp: new Date(),
                     formattedTimestamp: this.formatTimestamp(new Date()),
                     formattedContent: this.formatMessageContent(messageContent),
+                    senderName: this.getCurrentUserName(), // Add sender name for consistency
                     senderPhotoUrl: result.userPhotoUrl
                 };
                 
-                this.messages = [newMessage, ...this.messages];
+                // Append to the end, not prepend to the beginning
+                this.messages = [...this.messages, newMessage];
                 
                 // Update recent conversations to reflect this conversation
                 this.updateRecentConversations({
@@ -970,15 +976,15 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
                 // Scroll to bottom
                 this.scrollToBottom();
             }
-            })
-            .catch(error => {
+        })
+        .catch(error => {
             // Restore the message if sending failed
             this.newMessage = messageContent;
-                this.handleError(error, 'Error sending message');
-            })
-            .finally(() => {
-                this.isLoading = false;
-            });
+            this.handleError(error, 'Error sending message');
+        })
+        .finally(() => {
+            this.isLoading = false;
+        });
     }
 
     // Handle click on notification bell
@@ -1908,50 +1914,142 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         // Reset the height temporarily to get the correct scrollHeight
         textarea.style.height = 'auto';
         
-        // Set to scrollHeight to expand properly - no max height limit
-        textarea.style.height = textarea.scrollHeight + 'px';
+        // Get the textarea's scroll height
+        const scrollHeight = textarea.scrollHeight;
         
-        // Also adjust the container height if needed
-        const container = this.template.querySelector('.message-input-container');
-        if (container) {
-            // Calculate container height based on textarea height plus padding
-            const baseHeight = 60; // Base height including padding
-            const extraPadding = 16; // Account for top and bottom padding
+        // Set maximum height (match CSS)
+        const maxHeight = 280; // Increased to match CSS
+        
+        // Apply height, allowing it to grow up to max height
+        const newHeight = Math.min(scrollHeight, maxHeight);
+        textarea.style.height = newHeight + 'px';
+        
+        // Adjust the container height accordingly
+        this.expandContainers(newHeight);
+    }
+
+    // Expand all related containers when textarea grows
+    expandContainers(textareaHeight) {
+        const baseHeight = 40; // Base height of textarea
+        const extraExpansion = textareaHeight - baseHeight; // Calculate how much we need to expand
+        // Multiply expansion factor to make it more aggressive
+        const expansionFactor = extraExpansion * 1.5;
+        
+        // Get all relevant containers
+        const inputContainer = this.template.querySelector('.message-input-container');
+        const messageBody = this.template.querySelector('.messaging-body');
+        const messagingContainer = this.template.querySelector('.nuvitek-messaging-container');
+        
+        if (inputContainer) {
+            // Add padding for the container with extra room
+            const paddingHeight = 30; // Increased padding
+            const containerHeight = textareaHeight + paddingHeight;
+            inputContainer.style.height = containerHeight + 'px';
             
-            // No max height limit - allow full expansion
-            const newContainerHeight = baseHeight + (textarea.scrollHeight - 40) + extraPadding;
-            container.style.height = newContainerHeight + 'px';
+            // Force component redraw to prevent layout issues
+            this.refreshUICounter++;
             
-            // Force the messaging container to expand too
-            this.expandMessagingContainer();
+            // Force component to recalculate layout with a slight delay
+            window.setTimeout(() => {
+                if (messageBody) {
+                    // Ensure messaging body expands significantly more
+                    const currentHeight = parseInt(getComputedStyle(messageBody).height, 10) || 400;
+                    const newHeight = currentHeight + expansionFactor;
+                    
+                    messageBody.style.minHeight = `${newHeight}px`;
+                    messageBody.style.height = 'auto';
+                    
+                    // Force direct style to ensure expansion
+                    messageBody.style.setProperty('min-height', `${newHeight}px`, 'important');
+                    messageBody.style.setProperty('height', 'auto', 'important');
+                }
+                
+                // Expand the main container
+                if (messagingContainer) {
+                    const currentHeight = parseInt(getComputedStyle(messagingContainer).height, 10) || 400;
+                    const newContainerHeight = currentHeight + expansionFactor;
+                    
+                    messagingContainer.style.height = 'auto';
+                    messagingContainer.style.minHeight = `${newContainerHeight}px`;
+                    messagingContainer.style.setProperty('min-height', `${newContainerHeight}px`, 'important');
+                }
+                
+                // Find and expand Lightning card elements
+                this.expandLightningCardElements(expansionFactor);
+                
+                // Scroll message container to bottom
+                this.scrollToBottom();
+            }, 10);
         }
     }
 
-    // Force the messaging container to expand with the content
-    expandMessagingContainer() {
-        // Force component re-render
-        this.refreshUICounter++;
+    // Target and expand Lightning card components
+    expandLightningCardElements(expansionFactor) {
+        // Find main Lightning container elements
+        const container = this.template.querySelector('.nuvitek-messaging-container');
+        if (!container) return;
         
-        // Get all potential fixed-height containers
-        const messagingContainer = this.template.querySelector('.nuvitek-messaging-container');
-        const messagingBody = this.template.querySelector('.messaging-body');
-        const conversationArea = this.template.querySelector('.conversation-area');
-        const cardElement = this.template.querySelector('lightning-card');
-        
-        // Remove any fixed heights
-        if (messagingContainer) messagingContainer.style.height = 'auto';
-        if (messagingBody) messagingBody.style.height = 'auto';
-        if (conversationArea) conversationArea.style.height = 'auto';
-        
-        // Force Salesforce card components to expand
-        if (cardElement) {
-            const cardBody = cardElement.querySelector('.slds-card__body');
-            if (cardBody) cardBody.style.height = 'auto';
+        try {
+            // Find card and body elements - have to use DOM traversal since they're in the shadow DOM
+            const cardElement = container.querySelector('lightning-card');
+            
+            if (cardElement) {
+                // Get current height to expand from
+                const currentCardHeight = cardElement.offsetHeight || 400;
+                const newCardHeight = currentCardHeight + expansionFactor;
+                
+                // Set minimum height directly on card element
+                cardElement.style.minHeight = `${newCardHeight}px`;
+                cardElement.style.height = 'auto';
+                cardElement.style.overflow = 'visible';
+                cardElement.style.setProperty('min-height', `${newCardHeight}px`, 'important');
+                
+                // Access shadow DOM if possible
+                const cardRoot = cardElement.shadowRoot || cardElement;
+                
+                if (cardRoot) {
+                    const cardBody = cardRoot.querySelector('.slds-card__body');
+                    if (cardBody) {
+                        // Apply more aggressive styling
+                        cardBody.style.height = 'auto';
+                        cardBody.style.minHeight = `${newCardHeight}px`;
+                        cardBody.style.overflow = 'visible';
+                        // Force with !important
+                        cardBody.style.setProperty('height', 'auto', 'important');
+                        cardBody.style.setProperty('min-height', `${newCardHeight}px`, 'important');
+                        cardBody.style.setProperty('overflow', 'visible', 'important');
+                    }
+                    
+                    const card = cardRoot.querySelector('.slds-card');
+                    if (card) {
+                        // Apply more aggressive styling
+                        card.style.height = 'auto';
+                        card.style.minHeight = `${newCardHeight}px`;
+                        card.style.overflow = 'visible';
+                        // Force with !important
+                        card.style.setProperty('height', 'auto', 'important');
+                        card.style.setProperty('min-height', `${newCardHeight}px`, 'important');
+                        card.style.setProperty('overflow', 'visible', 'important');
+                    }
+                }
+            }
+            
+            // Force parent containers to expand (for good measure)
+            let parentNode = this.template.host;
+            for (let i = 0; i < 5 && parentNode; i++) { // Limit to 5 levels up
+                if (parentNode.style) {
+                    parentNode.style.height = 'auto';
+                    parentNode.style.minHeight = `${400 + expansionFactor}px`;
+                    parentNode.style.overflow = 'visible';
+                    // Force with !important
+                    parentNode.style.setProperty('height', 'auto', 'important');
+                    parentNode.style.setProperty('min-height', `${400 + expansionFactor}px`, 'important');
+                    parentNode.style.setProperty('overflow', 'visible', 'important');
+                }
+                parentNode = parentNode.parentNode;
+            }
+        } catch (error) {
+            console.error('Error expanding Lightning card:', error);
         }
-        
-        // Scroll to bottom after a brief delay to ensure UI has updated
-        setTimeout(() => {
-            this.scrollToBottom();
-        }, 50);
     }
 }

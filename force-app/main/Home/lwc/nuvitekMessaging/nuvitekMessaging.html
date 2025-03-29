@@ -228,9 +228,14 @@
                             <template if:true={hasMessages}>
                                 <template for:each={messages} for:item="message">
                                     <div key={message.id} class={message.messageClass} data-from-user={message.isFromUser}>
-                                        <!-- Only show sender name for recipient messages -->
-                                        <template if:false={message.isFromUser}>
+                                        <!-- Show sender name for recipient messages or in group chats -->
+                                        <template if:true={selectedRecipient.isGroupChat}>
                                             <div class="message-sender-name">{message.senderName}</div>
+                                        </template>
+                                        <template if:false={selectedRecipient.isGroupChat}>
+                                            <template if:false={message.isFromUser}>
+                                                <div class="message-sender-name">{message.senderName}</div>
+                                            </template>
                                         </template>
                                         <div class="message-bubble">
                                             <lightning-formatted-rich-text value={message.formattedContent} class="message-content"></lightning-formatted-rich-text>
