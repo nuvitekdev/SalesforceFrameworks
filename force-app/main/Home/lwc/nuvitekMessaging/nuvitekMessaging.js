@@ -1931,15 +1931,9 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     // Expand all related containers when textarea grows
     expandContainers(textareaHeight) {
         const baseHeight = 40; // Base height of textarea
-        const extraExpansion = textareaHeight - baseHeight; // Calculate how much we need to expand
-        
-        // Get all relevant containers
         const inputContainer = this.template.querySelector('.message-input-container');
         const messageBody = this.template.querySelector('.messaging-body');
-        const messagingContainer = this.template.querySelector('.nuvitek-messaging-container');
-        
-        // For Lightning card components we need to use closest since they're not directly in our template
-        const cardElement = this.template.querySelector('lightning-card'); 
+        const cardBody = this.template.closest('lightning-card').querySelector('.slds-card__body');
         
         if (inputContainer) {
             // Add padding for the container
@@ -1950,74 +1944,21 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
             // Force component redraw to prevent layout issues
             this.refreshUICounter++;
             
-            // Force component to recalculate layout with a slight delay
+            // Force component to recalculate layout
             window.setTimeout(() => {
                 if (messageBody) {
-                    // Ensure messaging body expands
-                    const currentHeight = parseInt(getComputedStyle(messageBody).height, 10) || 400;
-                    const newHeight = currentHeight + extraExpansion;
-                    
-                    messageBody.style.minHeight = `${newHeight}px`;
-                    messageBody.style.height = 'auto';
+                    // Ensure messaging body expands if needed
+                    const currentHeight = parseInt(getComputedStyle(messageBody).height, 10);
+                    const desiredHeight = currentHeight + (textareaHeight - baseHeight);
+                    messageBody.style.minHeight = `${desiredHeight}px`;
                 }
                 
-                // Expand the main container
-                if (messagingContainer) {
-                    messagingContainer.style.height = 'auto';
-                    messagingContainer.style.minHeight = messagingContainer.scrollHeight + 'px';
+                if (cardBody) {
+                    // Ensure card body expands if needed
+                    cardBody.style.height = 'auto';
+                    cardBody.style.minHeight = cardBody.scrollHeight + 'px';
                 }
-                
-                // Find and expand Lightning card elements
-                this.expandLightningCardElements();
-                
-                // Scroll message container to bottom
-                this.scrollToBottom();
             }, 10);
-        }
-    }
-
-    // Target and expand Lightning card components
-    expandLightningCardElements() {
-        // Find main Lightning container elements
-        const container = this.template.querySelector('.nuvitek-messaging-container');
-        if (!container) return;
-        
-        try {
-            // Find card and body elements - have to use DOM traversal since they're in the shadow DOM
-            const cardElement = container.querySelector('lightning-card');
-            
-            if (cardElement) {
-                // Access shadow DOM if possible
-                const cardRoot = cardElement.shadowRoot || cardElement;
-                
-                if (cardRoot) {
-                    const cardBody = cardRoot.querySelector('.slds-card__body');
-                    if (cardBody) {
-                        cardBody.style.height = 'auto';
-                        cardBody.style.minHeight = '100%';
-                        cardBody.style.overflow = 'visible';
-                    }
-                    
-                    const card = cardRoot.querySelector('.slds-card');
-                    if (card) {
-                        card.style.height = 'auto';
-                        card.style.minHeight = '100%';
-                        card.style.overflow = 'visible';
-                    }
-                }
-            }
-            
-            // Force parent containers to expand (for good measure)
-            let parentNode = this.template.host;
-            for (let i = 0; i < 5 && parentNode; i++) { // Limit to 5 levels up
-                if (parentNode.style) {
-                    parentNode.style.height = 'auto';
-                    parentNode.style.overflow = 'visible';
-                }
-                parentNode = parentNode.parentNode;
-            }
-        } catch (error) {
-            console.error('Error expanding Lightning card:', error);
         }
     }
 }
