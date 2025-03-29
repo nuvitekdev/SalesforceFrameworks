@@ -111,32 +111,40 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>accentColor</name>
+                    <value>#D5DF23</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>colors</name>
-                    <value>#FFC107, #673AB7, #3F51B5, #009688, #CDDC39, #FF5722</value>
+                    <value>#FF5252, #00BFA5, #FF6D00, #536DFE, #651FFF, #3949AB, #F50057, #00C853, #FFD600, #40C4FF, #FF4081, #9C27B0, #4CAF50, #F57C00, #7C4DFF, #795548, #009688, #607D8B, #2196F3, #D32F2F, #388E3C, #FFA000, #1976D2, #C2185B</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>columns</name>
-                    <value>3</value>
+                    <value>4</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>descriptions</name>
-                    <value>Access and manage employee information and records.,Initiate and track the onboarding process for new hires.,Administer employee benefits programs and enrollments.,Submit and approve requests for time off or leave.,Manage performance reviews and employee evaluations.,Access HR policies, forms, and important documents.</value>
+                    <value>Streamline departure processes with exit interviews plus equipment returns and security debriefings with automated approval tracking, Facilitate financial incentives with nomination forms plus multi-level approval workflows and integration with payroll systems, Document and resolve employee misconduct with secure case management plus workflow automation and audit trails, Create and evaluate performance objectives with goal tracking plus progress visualization and automated scoring calculations, Process relocation requests with form automation plus multi-department approvals and position management integration, Manage NDA submissions with document generation plus e-signature integration and compliance tracking dashboards, Process overtime with time tracking plus approval routing and payroll system integration with labor law compliance, Enhance employee wellbeing with enrollment portals plus activity tracking and gamification with program effectiveness analytics, Manage formal recognitions with nomination forms plus certificate generation and public recognition feeds with profile integration, Capture innovative ideas with anonymous submission options plus voting mechanisms and implementation tracking with trend analysis, Track workplace incidents with mobile reporting forms plus automated safety alerts and OSHA compliance reporting, Process resignations with secure form submission plus exit interview scheduling and automated offboarding tasks, Manage FMLA requests with eligibility verification plus document management and leave balance tracking with compliance reporting, Process system access with document generation plus e-signature capabilities and automated renewal reminders, Implement workplace adjustments with confidential request forms plus interactive process tracking and compliance reporting, Manage workplace disputes with case management plus meeting scheduling and agreement version control with compliance verification, Administer remote work with eligibility verification plus equipment tracking and productivity monitoring with pattern analysis, Process retirement requests with eligibility calculations plus benefits estimation and knowledge transfer tracking, Welcome new employees with document management plus training scheduling and equipment provisioning with experience surveys, Resolve employee issues with confidential forms plus case routing and resolution documentation with trend analysis, Manage promotions with nomination forms plus performance integration and compensation adjustment calculations, Process formal grievances with secure forms plus hearing scheduling and resolution tracking with compliance verification, Recognize with time-off incentives using nomination forms plus leave balance adjustment and calendar integration, Distribute performance pay with rating aggregation plus budget allocation and calculation engines with modeling tools</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>icons</name>
-                    <value>utility:user, utility:add_user, utility:money, utility:event, utility:ribbon, utility:paste</value>
+                    <value>utility:logout, utility:moneybag, utility:warning, utility:metrics, utility:travel_and_places, utility:file, utility:clock, utility:heart, utility:like, utility:feed, utility:fallback, utility:logout, utility:event, utility:signature, utility:help, utility:case, utility:home, utility:skip_back, utility:adduser, utility:error, utility:flow, utility:record, utility:dayview, utility:money</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>links</name>
-                    <value>#, #, #, #, #, #</value>
+                    <value>/page1, /page2, /page3, /page1, /page2, /page3, /page1, /page2, /page3, /page1, /page2, /page3, /page1, /page2, /page3, /page1, /page2, /page3, /page1, /page2, /page3, /page1, /page2, /page3</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>primaryColor</name>
+                    <value>#22BDC1</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>tileStyle</name>
-                    <value>gradient</value>
+                    <value>elevated</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>titles</name>
-                    <value>Employee Records, New Hire Onboarding, Benefits Admin, Time Off Requests, Performance Mgmt, HR Resources</value>
+                    <value>Out Processing, Monetary Awards, Disciplinary Action, Performance Plans, Request to Transfer, Annual NDA Filing, Overtime Requests, Wellness Program, Citation Awards, Suggestion Box, Incidental/Injury Response, Resignation Submission, Family Medical Leave Act, User Agreement Submission, Reasonable Accommodations, Labor &amp; Employee Relations, Telework, Retirement, Onboarding, Complaints, Promoting, Grievances, Time Off Awards, Pay Pool/Performance Pay</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
                 <identifier>c_nuvitekNavigationTiles_HR_Administrative</identifier>

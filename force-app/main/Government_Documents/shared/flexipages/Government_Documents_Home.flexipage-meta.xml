@@ -111,6 +111,10 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>accentColor</name>
+                    <value>#D5DF23</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>colors</name>
                     <value>#6200EA, #00BCD4, #FF6D00, #D50000, #1565C0, #8E24AA, #2E7D32, #455A64, #FFAB00</value>
                 </componentInstanceProperties>
@@ -128,7 +132,11 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>links</name>
-                    <value>/page1, /page2, /page3, #, #, #, #, #, #</value>
+                    <value>/page1, /page2, /page3, /page1, /page2, /page3, /page1, /page2, /page3</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>primaryColor</name>
+                    <value>#22BDC1</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>tileStyle</name>

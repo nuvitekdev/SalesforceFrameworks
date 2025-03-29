@@ -111,32 +111,40 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>accentColor</name>
+                    <value>#D5DF23</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>colors</name>
-                    <value>#8BC34A, #FFEB3B, #03A9F4, #E91E63, #FF5722, #9E9E9E</value>
+                    <value>#34c759, #5856d6</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>columns</name>
-                    <value>3</value>
+                    <value>2</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>descriptions</name>
-                    <value>Report an ethics concern or potential violation securely.,Access and complete required compliance training modules.,Declare potential conflicts of interest for review.,Review and acknowledge new or updated company policies.,Access the library of ethics and compliance guidelines.,Request guidance or clarification on ethical matters.</value>
+                    <value>Streamline OGE 450 reporting with smart form generation plus validation checks and comprehensive reviewer workflows, Manage all ethics disclosures with conflict analysis tools plus determination tracking and recusal management</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>icons</name>
-                    <value>utility:alert, utility:knowledge_base, utility:groups, utility:bookmark, utility:policy, utility:help</value>
+                    <value>utility:money, utility:shield</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>links</name>
-                    <value>#, #, #, #, #, #</value>
+                    <value>/page1, /page2</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>primaryColor</name>
+                    <value>#22BDC1</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>tileStyle</name>
-                    <value>gradient</value>
+                    <value>elevated</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>titles</name>
-                    <value>Report a Concern, Compliance Training, Disclose Conflicts, Policy Acknowledgment, Guidelines Library, Ask Ethics Question</value>
+                    <value>Financial Disclosure Portal, Ethics Submissions Center</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
                 <identifier>c_nuvitekNavigationTiles_Ethics_Compliance</identifier>

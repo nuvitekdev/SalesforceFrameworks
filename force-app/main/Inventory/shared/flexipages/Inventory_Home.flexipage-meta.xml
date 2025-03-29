@@ -111,32 +111,40 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>accentColor</name>
+                    <value>#D5DF23</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>colors</name>
-                    <value>#795548, #FF9800, #607D8B, #9E9E9E, #4CAF50, #00BCD4</value>
+                    <value>#00C4B4, #D47500, #FFB900, #00B294</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>columns</name>
-                    <value>3</value>
+                    <value>4</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>descriptions</name>
-                    <value>View and manage the complete inventory of assets and supplies.,Check items in or out to track custody and usage.,Request new inventory items or supplies.,Monitor current stock levels and set reorder points.,Manage the lifecycle of assets from acquisition to disposal.,Generate reports on inventory usage, stock levels, and asset age.</value>
+                    <value>Optimize your vehicle fleet with maintenance scheduling plus fuel tracking and cost analysis with geographic visualization tools, Streamline vehicle usage with reservation systems plus condition verification and mileage logging with digital key management, Monitor all government assets with barcode integration plus assignment tracking and maintenance management with lifecycle analysis, Manage property transfers with documentation tools plus valuation tracking and legal review integration with geographic visualization</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>icons</name>
-                    <value>utility:product_item, utility:checkin, utility:add, utility:metrics, utility:recycle, utility:report</value>
+                    <value>utility:away, utility:travel_and_places, utility:quick_text, utility:location</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>links</name>
-                    <value>#, #, #, #, #, #</value>
+                    <value>/page1, /page2, /page3, /page4</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>primaryColor</name>
+                    <value>#22BDC1</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>tileStyle</name>
-                    <value>gradient</value>
+                    <value>elevated</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>titles</name>
-                    <value>View Inventory, Check In/Out, Request Items, Stock Levels, Asset Lifecycle, Inventory Reports</value>
+                    <value>Fleet Management, Vehicle Reservations, Equipment Tracking, Real Estate Conveyance</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
                 <identifier>c_nuvitekNavigationTiles_Inventory</identifier>

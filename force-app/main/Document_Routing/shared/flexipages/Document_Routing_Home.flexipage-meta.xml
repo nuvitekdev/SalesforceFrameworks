@@ -111,32 +111,40 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>accentColor</name>
+                    <value>#D5DF23</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>colors</name>
-                    <value>#4CAF50, #FF9800, #2196F3, #9C27B0, #795548, #607D8B</value>
+                    <value>#ff3b30, #0071e3, #5856d6, #34c759, #007aff, #ff9500, #9c27b0, #8e8e93</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>columns</name>
-                    <value>3</value>
+                    <value>4</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>descriptions</name>
-                    <value>Submit a new document for routing and approval.,View documents currently waiting for your review or action.,Check the status of documents you have submitted.,Access the central repository of routed documents.,Configure standard document routing workflows.,Generate reports on document routing cycle times.</value>
+                    <value>Streamline all official communications with intelligent routing plus approval workflows and comprehensive archiving, Track and manage critical tasks with smart assignment routing plus deadline monitoring and workload analytics, Review and process policy documents with collaborative editing plus approval routing and version control, Set goals and track performance initiatives with milestone management plus resource allocation and impact measurement, Build and process digital forms with validation logic plus workflow routing and mobile accessibility, Manage public inquiries with case routing plus response tracking and satisfaction monitoring, Administer fellowship programs with application processing plus performance tracking and program evaluation, Process public records requests with automated routing plus document search and compliance verification</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>icons</name>
-                    <value>utility:forward, utility:check, utility:search, utility:database, utility:flow, utility:chart</value>
+                    <value>utility:email, utility:task, utility:note, utility:chart, utility:form, utility:customer, utility:education, utility:record</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>links</name>
-                    <value>#, #, #, #, #, #</value>
+                    <value>/page1, /page2, /page3, /page1, /page2, /page3, /page1, /page2</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>primaryColor</name>
+                    <value>#22BDC1</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>tileStyle</name>
-                    <value>gradient</value>
+                    <value>flat</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>titles</name>
-                    <value>Submit Document, My Pending Approvals, Track My Documents, Document Archive, Manage Workflows, Routing Reports</value>
+                    <value>Correspondence Hub, Task Command Center, Directive Portal, Improvement Tracker, Forms Builder, Constituent Services, Fellowship Portal, FOIA Center</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
                 <identifier>c_nuvitekNavigationTiles_Document_Routing</identifier>

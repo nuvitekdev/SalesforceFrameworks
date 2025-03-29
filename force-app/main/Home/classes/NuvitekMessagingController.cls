@@ -167,7 +167,7 @@ public with sharing class NuvitekMessagingController {
      * @param recipientId Id of the recipient
      * @param recipientType Type of recipient object
      * @param offset Pagination offset
-     * @param limit Maximum number of messages to return
+     * @param limitNum Maximum number of messages to return (will default to 50 if invalid)
      * @param newerThan Optional timestamp to only get messages newer than this
      * @return Map containing messages and pagination info
      */
@@ -177,6 +177,8 @@ public with sharing class NuvitekMessagingController {
             // Initialize variables first
             String currentUserId = UserInfo.getUserId();
             Integer offsetNum = offset != null ? offset : 0;
+            // Ensure limitNum has a valid default value
+            Integer validatedLimit = (limitNum != null && limitNum > 0) ? limitNum : 50; // Use a new variable for the validated limit
             
             // Query to find messages
             String queryStr = 'SELECT Id, Sender__c, Sender__r.Name, Content__c, CreatedDate, Is_Read__c FROM Nuvitek_Message__c WHERE ';
@@ -203,9 +205,9 @@ public with sharing class NuvitekMessagingController {
                 queryStr += ' AND CreatedDate > :newerThanDate';
             }
             
-            // Add sorting, offset and limit
+            // Add sorting, offset and limit - Use the validatedLimit variable
             queryStr += ' ORDER BY CreatedDate ' + (String.isBlank(newerThan) ? 'DESC' : 'ASC');
-            queryStr += ' LIMIT :limitNum OFFSET :offsetNum';
+            queryStr += ' LIMIT :validatedLimit OFFSET :offsetNum';
             
             // Execute the query
             List<Nuvitek_Message__c> messageRecords = Database.query(queryStr);
@@ -239,10 +241,10 @@ public with sharing class NuvitekMessagingController {
                 }
             }
             
-            // Return messages and pagination info
+            // Return messages and pagination info - Use the validatedLimit variable for comparison
             return new Map<String, Object>{
                 'messages' => messages,
-                'hasMore' => (messages.size() >= limitNum)
+                'hasMore' => (messages.size() >= validatedLimit)
             };
             
         } catch (Exception e) {

@@ -111,24 +111,32 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>accentColor</name>
+                    <value>#D5DF23</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>colors</name>
-                    <value>#03A9F4, #FFEB3B, #FF9800, #795548, #607D8B, #4CAF50</value>
+                    <value>#1DA1F2, #00BA8F, #6B52DD, #FF9E1B</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>columns</name>
-                    <value>3</value>
+                    <value>4</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>descriptions</name>
-                    <value>Submit a new request for business travel approval.,View the status of your pending and approved travel requests.,Access tools and integrations for booking flights and hotels.,Submit expense reports for reimbursement after travel.,Review company travel policies and guidelines.,Access emergency contact information and travel support.</value>
+                    <value>Plan and approve official travel with streamlined request forms plus policy compliance checks and integrated risk assessment with booking system integration, Simplify reimbursement with mobile receipt capture plus automated expense categorization and policy verification with real-time processing status, Monitor passport applications with document upload capabilities plus status tracking and deadline management with renewal forecasting, Secure approval for conferences with justification tools plus cost estimation and travel coordination with ROI tracking dashboards</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>icons</name>
-                    <value>utility:forward_up, utility:search, utility:airplane, utility:currency, utility:policy, utility:call</value>
+                    <value>utility:travel_and_places, utility:money, utility:record, utility:event</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>links</name>
-                    <value>#, #, #, #, #, #</value>
+                    <value>/page1, /page2, /page3, /page4</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>primaryColor</name>
+                    <value>#22BDC1</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>tileStyle</name>
@@ -136,7 +144,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>titles</name>
-                    <value>Request Travel, My Travel Requests, Book Travel, Submit Expenses, Travel Policy, Support</value>
+                    <value>Travel Request Portal, Expense Processing Center, Passport Tracking System, Conference Approval Hub</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
                 <identifier>c_nuvitekNavigationTiles_Travel</identifier>
