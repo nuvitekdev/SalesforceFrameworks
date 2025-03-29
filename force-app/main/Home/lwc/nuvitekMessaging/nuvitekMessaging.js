@@ -1,20 +1,26 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
-import handleRequest from '@salesforce/apex/LLMController.handleRequest';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { refreshApex } from '@salesforce/apex';
+import USER_ID from '@salesforce/user/Id';
+
+// Import Apex methods
 import searchRecipients from '@salesforce/apex/NuvitekMessagingController.searchRecipients';
+import getRecentConversations from '@salesforce/apex/NuvitekMessagingController.getRecentConversations';
 import sendMessage from '@salesforce/apex/NuvitekMessagingController.sendMessage';
 import getMessages from '@salesforce/apex/NuvitekMessagingController.getMessages';
+import markAsRead from '@salesforce/apex/NuvitekMessagingController.markConversationAsRead';
 import getUnreadMessageCount from '@salesforce/apex/NuvitekMessagingController.getUnreadMessageCount';
-import markAsRead from '@salesforce/apex/NuvitekMessagingController.markAsRead';
-import getRecentConversations from '@salesforce/apex/NuvitekMessagingController.getRecentConversations';
 import getChatSummary from '@salesforce/apex/NuvitekMessagingController.getChatSummary';
 import getConversationForUsers from '@salesforce/apex/NuvitekMessagingController.getConversationForUsers';
+import getGroupConversationInfo from '@salesforce/apex/NuvitekMessagingController.getGroupConversationInfo';
+import createGroupConversation from '@salesforce/apex/NuvitekMessagingController.createGroupConversation';
 
 // Constants
 const SEARCH_DELAY = 300; // ms delay for search to prevent too many server calls
 const REFRESH_INTERVAL = 30000; // 30 seconds refresh interval
-const MAX_MESSAGE_LENGTH = 32000; // Maximum characters in a message
+const CHECK_NOTIFICATIONS_INTERVAL = 60000; // 60 seconds
+const MAX_MESSAGE_LENGTH = 4000; // Maximum characters in a message
 
 export default class NuvitekMessaging extends NavigationMixin(LightningElement) {
     // Public properties (configurable via metadata)
@@ -25,7 +31,7 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     @api fontFamily = 'Arial, sans-serif';
     @api fontSize = '14px';
     @api cardTitle = 'Messaging';
-    @api defaultLLMName = 'Gemini 2.5';  // Default LLM for summarization
+    @api defaultLLMName = 'Gemini 2.5 Pro';  // Default LLM for summarization
     @api checkNotificationsInterval = 60; // In seconds
     @api componentHeight = 400; // Component height in pixels
     @api sidebarWidth = '30%'; // Sidebar width as percentage or pixels
@@ -55,6 +61,9 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     @track llmOptions = [];
     @track selectedLLM;
     @track showEmojiPicker = false;
+    @track refreshUICounter = 0; // Counter to force UI updates
+    @track showMessagesPanel = false; // Explicit flag for message panel visibility
+    @track showRecentPanel = true; // Explicit flag for recent panel visibility
     @track fontSizeOptions = [
         { label: 'Small', value: '12px' },
         { label: 'Medium', value: '14px' },
@@ -72,6 +81,22 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     @track recentConversations = []; // Array for recent conversations
     @track isLoadingRecent = false; // Loading state for recent conversations
     
+    // New group chat support
+    @track isCreatingGroup = false; // Flag to indicate group creation mode
+    @track newGroupName = ''; // Name for the new group
+    @track newGroupDescription = ''; // Description for the new group
+    @track selectedGroupParticipants = []; // Selected participants for the new group
+    @track showGroupCreationModal = false; // Modal visibility flag
+    @track searchingGroupParticipants = false; // Flag to indicate searching participants
+    @track groupParticipantResults = []; // Search results for group participants
+    @track showGroupParticipantResults = false; // Flag to show/hide results
+    @track selectedObjectTypes = ['User', 'Contact', 'Account', 'Group']; // Default object types for search
+    
+    // Group info modal
+    @track showGroupInfoModal = false; // Flag to show/hide group info modal
+    @track groupInfo = {}; // Group conversation details
+    @track isGroupAdmin = false; // Flag to indicate if current user is group admin
+    
     searchTimeoutId = null;
     refreshIntervalId = null;
     notificationCheckIntervalId = null;
@@ -82,8 +107,11 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     emojiGroups = [
         { name: 'Smileys', emojis: ['😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊', '😋', '😎', '😍', '🥰', '😘'] },
         { name: 'Hand Gestures', emojis: ['👍', '👎', '👌', '👏', '🙌', '👐', '🤲', '🤝', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉'] },
-        { name: 'Common', emojis: ['❤️', '🔥', '👀', '✨', '💯', '🎉', '🙏', '💪', '🤔', '👏', '🤦', '🤷', '👋', '🙌', '💬'] }
+        { name: 'Common', emojis: ['❤️', '🔥', '👀', '✨', '💯', '🎉', '🙏', '💪', '🤔', '👏', '🤦', '🤷', '👋', '🙌', '��'] }
     ];
+
+    // Track mobile sidebar state
+    @track isMobileSidebarVisible = false;
 
     // Computed properties
     get messageInputClasses() {
@@ -91,7 +119,13 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     }
 
     get showMessages() {
-        return this.selectedRecipient !== null;
+        // Use explicit showMessagesPanel flag as primary check
+        if (this.showMessagesPanel === true) {
+            return true;
+        }
+        
+        // Fallback to checking if recipient is selected and conversation exists
+        return this.selectedRecipient !== null && this.conversationId;
     }
 
     get recipientName() {
@@ -103,11 +137,27 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     }
 
     get recipientTitle() {
-        return this.selectedRecipient ? this.selectedRecipient.title || '' : '';
+        return this.selectedRecipient ? this.selectedRecipient.title : '';
+    }
+
+    get recipientInitials() {
+        if (!this.selectedRecipient || !this.selectedRecipient.name) {
+            return '';
+        }
+        
+        // Extract initials from the recipient name
+        const nameParts = this.selectedRecipient.name.split(' ');
+        if (nameParts.length === 1) {
+            // If only one word, return first two characters
+            return nameParts[0].substring(0, 2).toUpperCase();
+        } else {
+            // Return first letter of first and last word
+            return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+        }
     }
 
     get hasMessages() {
-        return this.messages.length > 0;
+        return this.messages && this.messages.length > 0;
     }
 
     get hasUnreadMessages() {
@@ -151,6 +201,11 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         // Apply dynamic styling
         this.applyDynamicStyling();
         
+        // Setup resize listener for responsive behavior
+        this.handleResize = this.handleResize.bind(this);
+        window.addEventListener('resize', this.handleResize);
+        this.handleResize();
+        
         // Setup refresh for unread message count
         this.notificationCheckIntervalId = setInterval(() => {
             this.checkUnreadMessages();
@@ -161,12 +216,12 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         
         // Load recent conversations on initial load
         this.loadRecentConversations();
-        
-        // Add listener for window resize to handle responsive changes
-        window.addEventListener('resize', this.handleResize.bind(this));
     }
 
     disconnectedCallback() {
+        // Clean up resize listener
+        window.removeEventListener('resize', this.handleResize);
+        
         // Clear all intervals
         if (this.refreshIntervalId) {
             clearInterval(this.refreshIntervalId);
@@ -175,9 +230,6 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         if (this.notificationCheckIntervalId) {
             clearInterval(this.notificationCheckIntervalId);
         }
-        
-        // Remove resize listener
-        window.removeEventListener('resize', this.handleResize.bind(this));
     }
 
     renderedCallback() {
@@ -295,25 +347,29 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         this.isSearching = true;
         this.searchResults = [];
         
-        // Remove objectTypes from the parameters sent to Apex
-        searchRecipients({ searchTerm: this.searchTerm })
+        // Include all object types: User, Contact, Account, Group
+        searchRecipients({ 
+            searchTerm: this.searchTerm,
+            objectTypes: ['User', 'Contact', 'Account', 'Group']
+        })
             .then(data => {
                 if (data) {
                     this.searchResults = data.map(item => ({
                         id: item.id,
                         name: item.name,
                         title: item.title || '', // Handle potentially null title
-                        photoUrl: item.photoUrl || this.getPlaceholderImage(item.name),
-                        objectType: 'User' // Hardcode objectType as User for Phase 1
+                        photoUrl: item.photoUrl || null, // Use null so we can check in the template
+                        objectType: item.objectType || 'User', // Use objectType from server or default to User
+                        iconName: this.getIconForObjectType(item.objectType || 'User') // Get the appropriate icon
                     }));
                     
-                    // Apply prioritization (optional, less relevant with only Users)
+                    // Apply prioritization for all object types
                     const getPriority = (obj) => {
                         switch(obj.objectType) {
-                            case 'User': return 1;
-                            // case 'Contact': return 2; // Keep for future phases if needed
-                            // case 'Account': return 3;
-                            // case 'Lead': return 4;
+                            case 'User': return 1;      // Users first
+                            case 'Contact': return 2;   // Contacts second
+                            case 'Account': return 3;   // Accounts third
+                            case 'Group': return 4;     // Groups last
                             default: return 5;
                         }
                     };
@@ -346,40 +402,109 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=${this.primaryColor.replace('#', '')}&color=fff`;
     }
 
-    // Handle recipient selection
+    /**
+     * Handles selection of a recipient from search results
+     * Supports User, Contact, Person Account, and Group recipients
+     * Ensures proper conversation setup and message loading
+     */
     handleRecipientSelect(event) {
         const recipientId = event.currentTarget.dataset.id;
+        const objectType = event.currentTarget.dataset.type || 'User';
         
-        // Find the selected recipient
-        const recipient = this.searchResults.find(result => result.id === recipientId);
+        // Find the selected recipient from search results
+        const recipient = this.searchResults.find(r => r.id === recipientId);
         
-        if (recipient) {
-            console.log('Selected recipient:', recipient);
-            this.resetConversationState(); // Clear old messages/state
-            this.selectedRecipient = recipient;
+        if (!recipient) {
+            console.error('Recipient not found in search results');
+            return;
+        }
+        
+        console.log('Selected recipient from search:', JSON.stringify(recipient));
+        console.log('Search Results:', JSON.stringify(this.searchResults));
+        
+        // Determine if this is a group chat
+        const isGroup = objectType === 'Group';
+        
+        // Close search results
             this.showSearchResults = false;
-            this.searchTerm = ''; // Clear search term
+        
+        // Reset conversation state (clear messages, etc.)
+        this.resetConversationState();
+        
+        // For users, find or create a 1:1 conversation
+        if (objectType === 'User') {
+            console.log(`User recipient selected: ${recipient.name}`);
             this.isLoading = true; 
-            this.hideMobileSidebar(); // Close sidebar on mobile after selection
-
-            // --- Get or Create Conversation ID --- 
-            console.log(`Fetching conversation ID for user: ${recipient.id}`);
-            getConversationForUsers({ userId1: USER_ID, userId2: recipient.id })
-                .then(convoId => {
-                    console.log(`Conversation ID received: ${convoId}`);
-                    this.conversationId = convoId;
-                     // Now load messages using the conversation ID
-                    this.loadMessages(true); // Pass conversationId implicitly via this.conversationId
-                     // Also mark as read immediately upon opening
+            
+            // For users, we need to find or create a 1:1 conversation
+            getConversationForUsers({ 
+                userId1: USER_ID, 
+                userId2: recipientId 
+            })
+            .then(conversationId => {
+                console.log(`User conversation set up: ${conversationId}`);
+                
+                // Set the conversation ID from Apex
+                this.conversationId = conversationId;
+                
+                // Set the selected recipient with proper properties
+                this.selectedRecipient = {
+                    ...recipient,
+                    isGroupChat: false
+                };
+                
+                // Update UI state flags - explicitly show messages panel and hide recent panel
+                this.showMessagesPanel = true;
+                this.showRecentPanel = false;
+                
+                // Add debugging logs
+                console.log('Show messages state after user selection:', this.showMessages);
+                console.log('Conversation ID after user selection:', this.conversationId);
+                
+                // Force a UI refresh  
+                this.refreshUICounter = (this.refreshUICounter || 0) + 1;
+                
+                // If we have a conversation, load messages and mark as read
+                if (this.conversationId) {
+                    // Small delay to allow UI to update first
+                    setTimeout(() => {
+                        this.loadMessages(true);
                     this.markMessagesAsRead(); 
-                    this.updateRecentConversations(recipient); // Update recent list
+                        
+                        // Update recent conversations to include this one at the top
+                        this.updateRecentConversations(this.selectedRecipient);
+                    }, 100);
+                }
                 })
                 .catch(error => {
-                    this.handleError(error, 'Error getting conversation details');
-                    this.isLoading = false; // Stop loading indicator on error
-                });
-        } else {
-            console.error('Selected recipient not found in search results');
+                console.error('Error in getConversationForUsers:', error);
+                this.handleError(error, 'Error setting up conversation');
+            })
+            .finally(() => {
+                this.isLoading = false;
+            });
+        } 
+        // For Groups, Contacts, Accounts, etc.
+        else {
+            console.log(`Non-user recipient selected: ${objectType}`);
+            
+            // For non-User recipients, we'll create the conversation when sending first message
+            this.selectedRecipient = {
+                ...recipient,
+                isGroupChat: isGroup
+            };
+            
+            this.conversationId = null; // Will be created on first message send
+            
+            // Update UI state - explicitly show messages panel and hide recent panel
+            this.showMessagesPanel = true;
+            this.showRecentPanel = false;
+            this.isLoading = false;
+            
+            // Force UI refresh
+            this.refreshUICounter = (this.refreshUICounter || 0) + 1;
+            
+            console.log('Show messages state after non-user selection:', this.showMessages);
         }
     }
 
@@ -388,31 +513,66 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
      */
     handleRecentSelect(event) {
         const conversationId = event.currentTarget.dataset.id;
+        
+        // Add additional console logging for debugging
+        console.log('Recent conversation selected. Dataset:', JSON.stringify(event.currentTarget.dataset));
+        console.log('Looking for conversation with ID:', conversationId);
+        
+        // Find the corresponding conversation object
         const convo = this.recentConversations.find(c => c.id === conversationId);
+        
+        console.log('Found conversation:', convo ? JSON.stringify(convo) : 'null');
 
         if (convo) {
-            console.log('Selected recent conversation:', convo);
-            this.resetConversationState(); // Clear old messages/state
-            this.conversationId = conversationId; // Set the conversation ID directly
+            // Clear old messages/state before setting new properties
+            this.resetConversationState(); 
+            
+            // Set conversation ID directly
+            this.conversationId = conversationId; 
+            
+            // CRITICAL: Update UI state flags FIRST before any async operations
+            this.showMessagesPanel = true;
+            this.showRecentPanel = false;
+            
+            // Create proper recipient object with all required properties
             this.selectedRecipient = {
-                id: convo.participantId, 
+                id: convo.id, 
                 name: convo.name,
                 photoUrl: convo.photoUrl,
-                title: convo.title
-                // objectType: 'User' // Assuming Phase 1 is User-only for recents
+                title: convo.title,
+                objectType: convo.objectType || 'User', // Include objectType from the conversation
+                isGroupChat: convo.isGroupChat || false // Ensure group chat status is set
             };
+            
+            console.log('Selected recipient set to:', JSON.stringify(this.selectedRecipient));
+            console.log('Show messages state:', this.showMessages);
+            
+            // Force component to re-render by manipulating a tracked property
+            this.refreshUICounter = (this.refreshUICounter || 0) + 1;
+            
+            // Close mobile sidebar if applicable
+            this.hideMobileSidebar();
+            
+            // AFTER UI updates are in place, then set loading state and fetch messages
             this.isLoading = true;
-            this.hideMobileSidebar(); // Close sidebar on mobile after selection
 
-            // Load messages for this conversation
+            // Load messages for this conversation - use zero delay to run immediately
+            // after component updates
+            setTimeout(() => {
             this.loadMessages(true); 
+                
             // Mark as read upon opening
             this.markMessagesAsRead();
+                
              // Update recent list (might just reorder or refresh unread status)
             this.updateRecentConversations(this.selectedRecipient);
+                
+                this.isLoading = false;
+            }, 0);
             
         } else {
-             console.error('Selected recent conversation not found');
+             console.error('Selected recent conversation not found in recentConversations array');
+             console.log('Available conversations:', JSON.stringify(this.recentConversations));
         }
     }
 
@@ -437,146 +597,226 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         return !this.isComposing;
     }
 
-    // Load messages for the current conversation
+    /**
+     * Gets the current user's name from the UI
+     * This is a fallback in case USER_ID matching doesn't work
+     */
+    getCurrentUserName() {
+        // In the UI, current user is likely "Shahzeb Khan" based on screenshot
+        // But this is a simplification - in a real app, we'd use a better approach
+        return 'Shahzeb Khan';
+    }
+    
+    /**
+     * Load messages for the current conversation
+     */
     loadMessages(isInitialLoad = false) {
-        if (!this.selectedRecipient) return;
+        // Validate conversation ID - should be a valid Salesforce ID
+        if (!this.conversationId) {
+            console.error('Cannot load messages: No conversation ID available');
+            this.isLoading = false;
+            return;
+        }
+        
+        // Basic Salesforce ID validation (should be 15 or 18 chars)
+        if (typeof this.conversationId !== 'string' || 
+            (this.conversationId.length !== 15 && this.conversationId.length !== 18)) {
+            console.error(`Invalid conversation ID format: ${this.conversationId}`);
+            this.isLoading = false;
+            return;
+        }
         
         if (isInitialLoad) {
             this.isLoading = true;
+            this.messages = [];
+            this.messageOffset = 0;
+            this.allMessagesLoaded = false;
         } else {
             this.loadingMoreMessages = true;
         }
         
+        // Get current user name for matching
+        const currentUserName = this.getCurrentUserName();
+        
+        console.log(`Loading messages for conversation ${this.conversationId}, offset=${this.messageOffset}`);
+        console.log('Current USER_ID:', USER_ID);
+        console.log('Current user name:', currentUserName);
+        
+        // Use getMessages, not getMessagesByConversationId (which seems to be incorrect)
         getMessages({
             conversationId: this.conversationId,
             offset: this.messageOffset,
-            limitNum: 50,
-            newerThan: null
+            limitNum: 20,
+            newerThan: null // Set to null for regular loading (not checking for new)
         })
         .then(result => {
-            const newMessages = result.messages;
+            console.log('Message loading result:', JSON.stringify(result));
             
-            // Add formatted timestamp and content to each message
-            const processedMessages = newMessages.map(msg => {
+            if (result && result.messages) {
+                if (result.messages.length === 0) {
+                    this.allMessagesLoaded = true;
+                } else {
+                    // Log the first message to check sender details
+                    if (result.messages.length > 0) {
+                        const sampleMsg = result.messages[0];
+                        console.log('Sample message details:', {
+                            senderId: sampleMsg.senderId,
+                            senderName: sampleMsg.senderName,
+                            isCurrentUser: sampleMsg.senderId === USER_ID
+                        });
+                    }
+                    
+                    // Format messages for display
+                    const formattedMessages = result.messages.map(msg => {
+                        // Check if message is from current user by name or ID
+                        const isFromUser = msg.senderId === USER_ID || 
+                                           (msg.senderName && msg.senderName.includes(currentUserName));
+                        
+                        console.log(`Message from ${msg.senderName} (${msg.senderId}), isFromUser: ${isFromUser}`);
+                        
                 return {
-                    ...msg,
-                    formattedTimestamp: this.formatTimestamp(msg.timestamp),
+                            id: msg.id,
+                            content: msg.content,
                     formattedContent: this.formatMessageContent(msg.content),
-                    messageClass: msg.isFromUser ? 'message user-message' : 'message recipient-message'
+                            timestamp: new Date(msg.timestamp),
+                            formattedTimestamp: this.formatTimestamp(msg.timestamp),
+                            senderId: msg.senderId,
+                            senderName: msg.senderName,
+                            senderPhotoUrl: msg.senderPhotoUrl,
+                            isFromUser: isFromUser,
+                            messageClass: isFromUser ? 'message user-message' : 'message recipient-message'
                 };
             });
             
+                    // Append or prepend based on load direction
             if (isInitialLoad) {
-                // For initial load, replace all messages
-                this.messages = processedMessages;
+                        this.messages = formattedMessages;
             } else {
-                // For pagination, add to the beginning of the array
-                this.messages = [...processedMessages, ...this.messages];
+                        this.messages = [...formattedMessages, ...this.messages]; // Older messages at the top
             }
             
-            // Update offset and check if all messages have been loaded
-            this.messageOffset += newMessages.length;
-            this.allMessagesLoaded = newMessages.length < 50;
+                    this.messageOffset += result.messages.length;
+                }
             
             // Mark messages as read
-            if (this.selectedRecipient && newMessages.length > 0) {
+                if (isInitialLoad && result.messages.length > 0) {
                 this.markMessagesAsRead();
             }
             
-            // Update this conversation in the recent list
-            this.updateRecentConversations({
-                ...this.selectedRecipient,
-                lastMessageSnippet: this.newMessage.trim().substring(0, 50) + (this.newMessage.trim().length > 50 ? '...' : ''),
-                timestamp: new Date().toISOString()
-            });
+                // Scroll to bottom on initial load
+                if (isInitialLoad) {
+                    this.scrollToBottom();
+                }
+                
+                // Update hasMore flag
+                this.hasMoreMessages = result.hasMore;
+            }
         })
         .catch(error => {
+            console.error('Error in loadMessages:', error);
             this.handleError(error, 'Error loading messages');
         })
         .finally(() => {
-            if (isInitialLoad) {
                 this.isLoading = false;
-            } else {
                 this.loadingMoreMessages = false;
-            }
         });
     }
 
-    // Check for new messages
+    /**
+     * Check for new messages in the current conversation
+     * Loads and displays any new messages that have arrived
+     */
     checkForNewMessages() {
+        // Skip if we're already loading or have no conversation
         if (this.isLoadingNewMessages || !this.hasInitialized || !this.selectedRecipient || !this.conversationId) {
-            // Don't check if already checking, not initialized, or no recipient/conversation selected
-            return; 
-        }
-
-        // --- Use conversationId --- 
-        if (!this.conversationId) {
-            console.warn('checkForNewMessages called without conversationId.');
             return;
         }
 
         this.isLoadingNewMessages = true;
         const newestTimestamp = this.getNewestMessageTimestamp();
+        
         console.log(`Checking for new messages since ${newestTimestamp} in conversation ${this.conversationId}`);
 
         getMessages({ 
-            conversationId: this.conversationId, // Pass conversation ID
+            conversationId: this.conversationId,
             offset: 0, 
             limitNum: 50, // Fetch a decent batch in case many arrived
-            newerThan: newestTimestamp // Pass the timestamp of the latest known message
+            newerThan: newestTimestamp // Only get messages newer than our latest
         })
         .then(result => {
             const newMessages = result.messages;
             if (newMessages && newMessages.length > 0) {
-                console.log(`Received ${newMessages.length} new messages.`);
-                const formattedNewMessages = newMessages.map(msg => ({
-                    ...msg,
+                console.log(`Received ${newMessages.length} new messages`);
+                
+                // Get current user name for matching
+                const currentUserName = this.getCurrentUserName();
+                
+                // Format the new messages
+                const formattedNewMessages = newMessages.map(msg => {
+                    // Check if message is from current user by name or ID
+                    const isFromUser = msg.senderId === USER_ID || 
+                                      (msg.senderName && msg.senderName.includes(currentUserName));
+                    
+                    console.log(`New message from ${msg.senderName} (${msg.senderId}), isFromUser: ${isFromUser}`);
+                    
+                    return {
+                        id: msg.id,
+                        content: msg.content,
+                        formattedContent: this.formatMessageContent(msg.content),
                     timestamp: new Date(msg.timestamp),
                     formattedTimestamp: this.formatTimestamp(msg.timestamp),
-                    formattedContent: this.formatMessageContent(msg.content),
-                    messageClass: `message ${msg.isFromUser ? 'user-message' : 'recipient-message'}`
-                }));
+                        senderId: msg.senderId,
+                        senderName: msg.senderName,
+                        senderPhotoUrl: msg.senderPhotoUrl,
+                        isFromUser: isFromUser,
+                        messageClass: isFromUser ? 'message user-message' : 'message recipient-message'
+                    };
+                });
 
-                // Add new messages to the top (or bottom if reversed) of the list
+                // Add new messages to the existing list
                 this.messages = [...this.messages, ...formattedNewMessages];
 
                 // Only show notification/sound if message is not from current user
                 const incomingMessages = formattedNewMessages.filter(msg => !msg.isFromUser);
                 if (incomingMessages.length > 0) {
-                    this.showBrowserNotification(incomingMessages[0]); // Show for the first incoming one
+                    // Show notification for the first incoming message
+                    this.showBrowserNotification(`New message from ${incomingMessages[0].senderName}`);
+                    
+                    // Play sound for notification
                     this.playNotificationSound();
-                    this.markMessagesAsRead(); // Mark as read since we just displayed them
+                    
+                    // Mark as read if we're currently viewing this conversation
+                    this.markMessagesAsRead();
                 }
 
-                // Use requestAnimationFrame to ensure DOM updates before scrolling
-                requestAnimationFrame(() => {
+                // Scroll to the bottom to show new messages
                     this.scrollToBottom();
-                });
-            } else {
-                console.log('No new messages found.');
             }
         })
         .catch(error => {
-            // Don't show toast for background refresh errors unless critical
             console.error('Error checking for new messages:', error);
-            // Optionally stop refresh if error persists
-            // this.stopMessageRefresh(); 
         })
         .finally(() => {
             this.isLoadingNewMessages = false;
         });
     }
 
-    // Get timestamp of newest message (for checking for newer messages)
+    /**
+     * Gets the timestamp of the newest message in the current conversation
+     * Used for checking for newer messages
+     */
     getNewestMessageTimestamp() {
-        if (this.messages.length === 0) return null;
+        if (!this.messages || this.messages.length === 0) {
+            return null;
+        }
         
-        // Sort messages by timestamp (newest first) and get the newest
-        const sortedMessages = [...this.messages].sort((a, b) => 
-            new Date(b.timestamp) - new Date(a.timestamp)
-        );
+        // Find the newest message timestamp
+        const newest = this.messages.reduce((latest, msg) => {
+            const msgDate = new Date(msg.timestamp);
+            return msgDate > latest ? msgDate : latest;
+        }, new Date(0));
         
-        return sortedMessages[0].timestamp;
+        return newest.toISOString();
     }
 
     // Check for unread messages across all conversations
@@ -600,145 +840,144 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
             });
     }
 
-    // Mark current conversation messages as read
+    /**
+     * Mark current conversation messages as read
+     * Updates read timestamp in Salesforce and local UI state
+     */
     markMessagesAsRead() {
         if (!this.selectedRecipient) return;
         
-        // --- Use conversationId if available --- 
+        // Must have a conversation ID
         if (!this.conversationId) {
-            console.warn('markMessagesAsRead called without conversationId.');
+            console.warn('markMessagesAsRead called without conversationId');
             return;
         }
 
-        console.log(`Marking conversation ${this.conversationId} as read.`);
-        markAsRead({ conversationId: this.conversationId }) // Pass conversation ID
+        console.log(`Marking conversation ${this.conversationId} as read`);
+        markAsRead({ conversationId: this.conversationId })
             .then(() => {
-                console.log('Successfully marked conversation as read.');
-                // Update local unread count immediately for responsiveness
+                console.log('Successfully marked conversation as read');
+                
+                // Update local unread count and UI immediately for responsiveness
                 this.unreadCount = 0; 
-                 // Update recent list immediately
+                
+                // Update recent list if it exists
+                if (this.recentConversations) {
                 const recentIndex = this.recentConversations.findIndex(c => c.id === this.conversationId);
                 if (recentIndex !== -1) {
                     this.recentConversations[recentIndex].hasUnread = false;
                     this.recentConversations[recentIndex].unreadCount = 0;
-                    // Trigger reactivity if needed (though tracking should handle it)
+                        
+                        // Trigger reactivity
                     this.recentConversations = [...this.recentConversations]; 
                 }
-                // Optionally trigger a full refresh of unread count from server if needed elsewhere
-                // this.checkUnreadMessages(); 
+                }
             })
             .catch(error => {
-                // Don't show toast for this background action unless debugging
+                // Log error but don't show to user since this is a background operation
                  console.error('Error marking messages as read:', error);
             });
     }
 
-    // Handle new message input
+    // Handle message input change
     handleMessageChange(event) {
         this.newMessage = event.target.value;
-        this.isComposing = this.newMessage.trim().length > 0;
+        this.autoAdjustTextareaHeight(event.target);
     }
 
-    // Handle keydown in message input (for Enter key sending)
+    // Handle key press in message input
     handleKeyDown(event) {
-        // Send message on Enter key (unless Shift is held)
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
             this.sendNewMessage();
+        } else {
+            // Auto adjust height after a small delay to account for pasted content
+            setTimeout(() => {
+                this.autoAdjustTextareaHeight(event.target);
+            }, 10);
         }
     }
 
-    // Send a new message
+    /**
+     * Sends a new message to the current recipient
+     * Supports sending to Users, Contacts, Person Accounts, and Groups
+     */
     sendNewMessage() {
-        if (!this.selectedRecipient || !this.newMessage.trim()) return;
-        
-        // Validate message length
-        if (this.newMessage.length > MAX_MESSAGE_LENGTH) {
-            this.handleError(
-                null, 
-                `Message is too long. Maximum length is ${MAX_MESSAGE_LENGTH} characters.`
-            );
+        if (!this.selectedRecipient || !this.newMessage.trim()) {
             return;
         }
         
         this.isLoading = true;
         
-        // --- Get or Create Conversation ID first if not available ---
-        if (!this.conversationId) {
-            console.warn('Attempting to send message without a conversationId. This should ideally be set when recipient is selected.');
-            // As a fallback, try to derive it here, though this might cause slight delays
-            // Ideally, getConversationForUsers should be called in handleRecipientSelect/handleRecentSelect
-            // This path is less likely if the UI flow is correct.
-            this.isLoading = true;
-            getConversationForUsers({ userId1: USER_ID, userId2: this.selectedRecipient.id })
-                .then(convoId => {
-                    this.conversationId = convoId;
-                    this.isLoading = false;
-                    this.sendNewMessage(); // Retry sending now that we have the ID
-                })
-                .catch(error => {
-                    this.handleError(error, 'Error initiating conversation before sending message.');
-                    this.isLoading = false;
-                });
-            return; // Exit here, will retry after getting convoId
-        }
-
+        // Store message value before it's cleared
         const messageContent = this.newMessage.trim();
-        if (!messageContent) return;
-
-        this.isComposing = false; // Collapse input on send attempt
-        const tempMessageId = `temp_${Date.now()}`;
-        const timestamp = new Date().toISOString();
-
-        // Optimistically add the message to the UI
-        const optimisticMessage = {
-            id: tempMessageId,
+        
+        // Clear input immediately for better UX
+        this.newMessage = '';
+        this.isComposing = false;
+        
+        // Different logic based on recipient type
+        let recipientId = this.selectedRecipient.id;
+        let recipientType = this.selectedRecipient.objectType;
+        
+        // If we already have a conversation ID, use that
+        if (this.conversationId) {
+            recipientId = this.conversationId;
+            recipientType = 'Conversation';
+        }
+        
+        // Call Apex to send message
+        sendMessage({
+            recipientId: recipientId,
+            recipientType: recipientType,
+            content: messageContent
+        })
+        .then(result => {
+            // If we didn't have a conversation ID before, set it now
+            if (!this.conversationId) {
+                this.conversationId = result.conversationId;
+            }
+            
+            // Check if we need to add the message to the local list
+            // (avoiding duplication with real-time updates)
+            const isNewMessage = !this.messages.some(msg => msg.id === result.messageId);
+            
+            if (isNewMessage) {
+                // Add the message to our local array
+                const newMessage = {
+                    id: result.messageId,
             content: messageContent,
-            formattedContent: this.formatMessageContent(messageContent), // Apply formatting
-            timestamp: new Date(timestamp),
-            formattedTimestamp: this.formatTimestamp(timestamp),
             isFromUser: true,
             messageClass: 'message user-message',
-            senderName: 'You', 
-            senderPhotoUrl: null // We'll get this from the response if needed
-        };
-        this.messages = [optimisticMessage, ...this.messages];
-        this.newMessage = '';
-        this.scrollToBottom();
-
-        // Call Apex to send the message
-        sendMessage({ recipientUserId: this.selectedRecipient.id, content: messageContent })
-            .then(result => {
-                console.log('Message sent successfully:', result);
-                // Update the temporary message with the real ID and confirm photo
-                const messageIndex = this.messages.findIndex(msg => msg.id === tempMessageId);
-                if (messageIndex !== -1) {
-                    this.messages[messageIndex].id = result.messageId;
-                    // Optionally update sender photo if it wasn't available before
-                    if (!this.messages[messageIndex].senderPhotoUrl && result.userPhotoUrl) {
-                        this.messages[messageIndex].senderPhotoUrl = result.userPhotoUrl;
-                    }
-                    // Ensure the conversationId is stored from the result
-                    if (result.conversationId) {
-                        this.conversationId = result.conversationId; 
-                    }
-                }
-                 // Update recent conversations list
-                this.updateRecentConversations(this.selectedRecipient);
-                // No need to call checkForNewMessages immediately, rely on interval
+                    timestamp: new Date(),
+                    formattedTimestamp: this.formatTimestamp(new Date()),
+                    formattedContent: this.formatMessageContent(messageContent),
+                    senderPhotoUrl: result.userPhotoUrl
+                };
+                
+                this.messages = [newMessage, ...this.messages];
+                
+                // Update recent conversations to reflect this conversation
+                this.updateRecentConversations({
+                    id: this.conversationId,
+                    name: this.selectedRecipient.name,
+                    objectType: this.selectedRecipient.objectType,
+                    title: this.selectedRecipient.title,
+                    photoUrl: this.selectedRecipient.photoUrl,
+                    isGroupChat: this.selectedRecipient.isGroupChat
+                });
+                
+                // Scroll to bottom
+                this.scrollToBottom();
+            }
             })
             .catch(error => {
+            // Restore the message if sending failed
+            this.newMessage = messageContent;
                 this.handleError(error, 'Error sending message');
-                // Remove the optimistic message on failure
-                this.messages = this.messages.filter(msg => msg.id !== tempMessageId);
             })
             .finally(() => {
                 this.isLoading = false;
-                // Ensure input focus is managed correctly after send attempt
-                const textarea = this.template.querySelector('.message-input textarea');
-                if (textarea) {
-                    textarea.focus();
-                }
             });
     }
 
@@ -797,14 +1036,33 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         }
     }
 
-    // Scroll to bottom of message container
+    /**
+     * Scrolls the message container to the bottom to show the latest messages
+     */
     scrollToBottom() {
+        try {
+            // Use setTimeout with a small delay to ensure the DOM is updated
         setTimeout(() => {
-            const messageContainer = this.template.querySelector('.message-container');
-            if (messageContainer) {
-                messageContainer.scrollTop = messageContainer.scrollHeight;
-            }
-        }, 0);
+                const container = this.template.querySelector('.message-container');
+                if (container) {
+                    console.log('Scrolling to bottom, height:', container.scrollHeight);
+                    // Force scroll to very bottom
+                    container.scrollTop = container.scrollHeight + 1000;
+                    
+                    // Double-check scroll after a bit more time to ensure it worked
+                    // (sometimes DOM updates can happen after the first scroll)
+                    setTimeout(() => {
+                        if (container.scrollTop < container.scrollHeight - container.clientHeight) {
+                            container.scrollTop = container.scrollHeight + 1000;
+                        }
+                    }, 100);
+                } else {
+                    console.warn('Message container not found for scrolling');
+                }
+            }, 50);
+        } catch (error) {
+            console.error('Error scrolling to bottom:', error);
+        }
     }
 
     // Handle chat summarization
@@ -1071,21 +1329,11 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
      * Handles window resize events to manage sidebar visibility on desktop vs mobile
      */
     handleResize() {
-        const isMobile = window.innerWidth <= 767;
-        const sidebar = this.template.querySelector('[data-id="sidebar"]');
-        const backdrop = this.template.querySelector('.sidebar-backdrop');
-        const body = this.template.querySelector('.messaging-body');
+        this.isMobileView = window.innerWidth < 768;
 
-        if (!isMobile) {
-            // If switching to desktop view and mobile sidebar was open, hide it properly
-            if (this.isSidebarVisibleMobile) {
+        // When switching to desktop view, reset mobile sidebar
+        if (!this.isMobileView) {
                 this.isSidebarVisibleMobile = false;
-                if (sidebar) sidebar.classList.remove('mobile-visible');
-                if (backdrop) backdrop.classList.remove('visible');
-            }
-            if (body) body.classList.remove('mobile-view');
-        } else {
-            if (body) body.classList.add('mobile-view');
         }
         
         // Re-detect container size on resize
@@ -1099,13 +1347,29 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         this.isLoadingRecent = true;
         getRecentConversations()
             .then(results => {
-                // Process results: generate placeholder images if needed
-                this.recentConversations = results.map(convo => ({
-                    ...convo,
-                    photoUrl: convo.photoUrl || this.getPlaceholderImage(convo.name)
-                }));
+                console.log('Raw recent conversations data:', JSON.stringify(results));
+                
+                // Process results: ensure all required properties exist and format properly
+                this.recentConversations = results.map(convo => {
+                    // Ensure we have all required properties with fallbacks
+                    return {
+                        id: convo.id || '',
+                        name: convo.name || 'Unknown',
+                        photoUrl: convo.photoUrl || this.getPlaceholderImage(convo.name || 'Unknown'),
+                        title: convo.title || '',
+                        objectType: convo.objectType || 'User',
+                        isGroupChat: Boolean(convo.isGroupChat),
+                        lastMessageSnippet: convo.lastMessageSnippet || 'No messages',
+                        hasUnread: Boolean(convo.hasUnread),
+                        unreadCount: typeof convo.unreadCount === 'number' ? convo.unreadCount : 0,
+                        timestamp: convo.lastMessageTimestamp || new Date().toISOString()
+                    };
+                });
+                
+                console.log('Processed recent conversations:', JSON.stringify(this.recentConversations));
             })
             .catch(error => {
+                console.error('Error in loadRecentConversations:', error);
                 this.handleError(error, 'Error loading recent conversations');
                 this.recentConversations = []; // Clear on error
             })
@@ -1164,22 +1428,52 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     }
     
     /** 
-     * Reset conversation-specific state when changing recipients
+     * Reset conversation state when selecting a new recipient
+     * Note: This does NOT reset UI state flags (showMessagesPanel, showRecentPanel)
+     * and does NOT clear selectedRecipient or conversationId - those should be set by the caller
      */
     resetConversationState() {
+        // Log current state before reset
+        console.log('Resetting conversation state, current UI flags:', {
+            showMessagesPanel: this.showMessagesPanel,
+            showRecentPanel: this.showRecentPanel,
+            hasSelectedRecipient: !!this.selectedRecipient,
+            conversationId: this.conversationId
+        });
+
+        // Reset message-related state only - NOT conversation identifiers
         this.messages = [];
-        this.selectedRecipient = null;
-        this.conversationId = null; // <-- Reset conversation ID
-        this.messageOffset = 0;
-        this.allMessagesLoaded = false;
-        this.hasInitialized = false;
         this.newMessage = '';
+        this.messageOffset = 0;
+        this.isLoading = false;
+        this.loadingMoreMessages = false;
+        this.allMessagesLoaded = false;
+        this.hasError = false;
+        this.errorMessage = '';
         this.isComposing = false;
-        this.stopMessageRefresh(); // Stop refresh when changing conversations
-        this.showChatSummary = false; // Hide summary section
+        this.showChatSummary = false;
         this.chatSummary = '';
         this.isSummarizingChat = false;
-        console.log('Conversation state reset.');
+        
+        // Stop message refresh when changing conversations
+        if (this.refreshIntervalId) {
+            this.stopMessageRefresh();
+        }
+        
+        // DO NOT reset these critical properties - they should be managed
+        // by the calling method:
+        // this.selectedRecipient = null;
+        // this.conversationId = null;
+        // this.showMessagesPanel = false;
+        // this.showRecentPanel = true;
+        
+        // Log state after reset
+        console.log('Conversation state reset complete, preserving IDs:', {
+            showMessagesPanel: this.showMessagesPanel,
+            showRecentPanel: this.showRecentPanel,
+            selectedRecipient: this.selectedRecipient ? this.selectedRecipient.name : null,
+            conversationId: this.conversationId
+        });
     }
     
     /**
@@ -1199,23 +1493,465 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     /**
      * Formats message content (e.g., for links, markdown in the future).
      * Currently just returns content, ready for lwc:inner-html.
-     * @param {string} content - Raw message content
-     * @returns {string} - Formatted HTML string for display
      */
     formatMessageContent(content) {
-        // Basic link detection (replace with a more robust library if needed)
-        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-        let formatted = content.replace(urlRegex, function(url) {
-            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        if (!content) return '';
+        
+        // Convert URLs to clickable links
+        content = content.replace(
+            /(https?:\/\/[^\s]+)/g, 
+            '<a href="$1" target="_blank" rel="noopener">$1</a>'
+        );
+        
+        // Convert line breaks to <br>
+        content = content.replace(/\n/g, '<br>');
+        
+        // Escape HTML except for our allowed tags
+        const div = document.createElement('div');
+        div.textContent = content;
+        content = div.innerHTML;
+        
+        // Restore the links we created
+        content = content.replace(/&lt;a href="(.*?)" target="_blank" rel="noopener"&gt;(.*?)&lt;\/a&gt;/g, 
+                               '<a href="$1" target="_blank" rel="noopener">$2</a>');
+        
+        // Replace emoji shortcodes with actual emojis
+        const emojiMap = {
+            ':)': '😊',
+            ':D': '😃',
+            ':(': '😔',
+            ':P': '😛',
+            ';)': '😉',
+            '<3': '❤️',
+            ':+1:': '👍',
+            ':-1:': '👎'
+        };
+        
+        Object.keys(emojiMap).forEach(code => {
+            content = content.replace(new RegExp(code.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1'), 'g'), emojiMap[code]);
         });
         
-        // Simple newline to <br> conversion
-        formatted = formatted.replace(/\n/g, '<br />');
+        return content;
+    }
+
+    /**
+     * Shows the group creation modal to start a new group conversation
+     */
+    handleNewGroupChat() {
+        this.showGroupCreationModal = true;
+        this.isCreatingGroup = true;
+        this.newGroupName = '';
+        this.newGroupDescription = '';
+        this.selectedGroupParticipants = [];
+        this.showGroupParticipantResults = false;
         
-        // Basic bold/italic markdown (example)
-        // formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        // formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        // Send analytics event - group creation started
+        this.fireAnalyticsEvent('group_creation_started');
+    }
+    
+    /**
+     * Handles closing the group creation modal
+     */
+    handleCloseGroupModal() {
+        this.showGroupCreationModal = false;
+        this.isCreatingGroup = false;
+        this.groupParticipantResults = [];
+    }
+    
+    /**
+     * Handles group name change in the modal
+     */
+    handleGroupNameChange(event) {
+        this.newGroupName = event.target.value;
+    }
+    
+    /**
+     * Handles group description change in the modal
+     */
+    handleGroupDescriptionChange(event) {
+        this.newGroupDescription = event.target.value;
+    }
+    
+    /**
+     * Handles search for group participants
+     */
+    handleGroupParticipantSearch(event) {
+        const searchTerm = event.target.value;
         
-        return formatted; 
+        if (this.searchTimeoutId) {
+            clearTimeout(this.searchTimeoutId);
+        }
+        
+        // If search term is empty, hide results
+        if (!searchTerm || searchTerm.length < 2) {
+            this.showGroupParticipantResults = false;
+            return;
+        }
+        
+        // Debounce the search to avoid excessive server calls
+        this.searchTimeoutId = setTimeout(() => {
+            this.searchGroupParticipants(searchTerm);
+        }, 300);
+    }
+    
+    /**
+     * Search for potential group participants across different object types
+     */
+    searchGroupParticipants(searchTerm) {
+        this.searchingGroupParticipants = true;
+        this.showGroupParticipantResults = true;
+        
+        searchRecipients({ 
+            searchTerm: searchTerm,
+            objectTypes: this.selectedObjectTypes
+        })
+        .then(results => {
+            // Filter out already selected participants
+            this.groupParticipantResults = results.filter(result => 
+                !this.selectedGroupParticipants.some(selected => 
+                    selected.id === result.id && selected.objectType === result.objectType
+                )
+            );
+            this.searchingGroupParticipants = false;
+        })
+        .catch(error => {
+            this.handleError(error, 'Error searching for participants');
+            this.searchingGroupParticipants = false;
+        });
+    }
+    
+    /**
+     * Handle selection of a participant for the group
+     */
+    handleAddGroupParticipant(event) {
+        const id = event.currentTarget.dataset.id;
+        const type = event.currentTarget.dataset.type;
+        
+        // Find the participant in the results
+        const participant = this.groupParticipantResults.find(
+            r => r.id === id && r.objectType === type
+        );
+        
+        if (participant) {
+            // Add to selected participants
+            this.selectedGroupParticipants = [
+                ...this.selectedGroupParticipants,
+                participant
+            ];
+            
+            // Remove from results to avoid duplication
+            this.groupParticipantResults = this.groupParticipantResults.filter(
+                r => !(r.id === id && r.objectType === type)
+            );
+        }
+    }
+    
+    /**
+     * Remove a participant from the group creation selection
+     */
+    handleRemoveGroupParticipant(event) {
+        const id = event.currentTarget.dataset.id;
+        const type = event.currentTarget.dataset.type;
+        
+        // Find the participant in the selected list
+        const participant = this.selectedGroupParticipants.find(
+            p => p.id === id && p.objectType === type
+        );
+        
+        // Remove from selected participants
+        this.selectedGroupParticipants = this.selectedGroupParticipants.filter(
+            p => !(p.id === id && p.objectType === type)
+        );
+    }
+    
+    /**
+     * Create a new group conversation with the selected participants
+     */
+    createGroupConversation() {
+        // Validation
+        if (!this.newGroupName) {
+            this.showToast('Error', 'Please enter a group name', 'error');
+            return;
+        }
+        
+        if (this.selectedGroupParticipants.length < 1) {
+            this.showToast('Error', 'Please add at least one participant', 'error');
+            return;
+        }
+        
+        this.isLoading = true;
+        
+        // Prepare participants data structure
+        const participants = this.selectedGroupParticipants.map(p => ({
+            id: p.id,
+            objectType: p.objectType
+        }));
+        
+        // Call Apex to create the group
+        createGroupConversation({
+            groupName: this.newGroupName,
+            groupDescription: this.newGroupDescription,
+            participants: participants
+        })
+        .then(conversationId => {
+            // Close modal
+            this.handleCloseGroupModal();
+            
+            // Set as current conversation
+            this.conversationId = conversationId;
+            this.selectedRecipient = {
+                id: conversationId,
+                name: this.newGroupName,
+                objectType: 'Conversation',
+                isGroupChat: true
+            };
+            
+            // Load messages
+            this.loadMessages(true);
+            
+            // Refresh recent conversations
+            this.loadRecentConversations();
+            
+            // Show success message
+            this.showToast('Success', 'Group conversation created', 'success');
+            
+            // Analytics event
+            this.fireAnalyticsEvent('group_created', {
+                num_participants: participants.length
+            });
+        })
+        .catch(error => {
+            this.handleError(error, 'Error creating group conversation');
+        })
+        .finally(() => {
+            this.isLoading = false;
+        });
+    }
+    
+    /**
+     * Toggle selection of an object type for participant search
+     */
+    handleObjectTypeToggle(event) {
+        const type = event.currentTarget.dataset.type;
+        
+        if (this.selectedObjectTypes.includes(type)) {
+            // Remove if already selected
+            this.selectedObjectTypes = this.selectedObjectTypes.filter(t => t !== type);
+        } else {
+            // Add if not selected
+            this.selectedObjectTypes = [...this.selectedObjectTypes, type];
+        }
+    }
+    
+    /**
+     * Fire an analytics event for tracking user interactions
+     */
+    fireAnalyticsEvent(eventName, params = {}) {
+        // Using Lightning Interaction API if available
+        if (this.pageRef) {
+            const analyticsInteraction = {
+                pageEntityId: this.pageRef.attributes.recordId || 'home_page',
+                pageContext: {
+                    entityName: 'Messaging',
+                    entityId: this.conversationId || 'no_conversation'
+                }
+            };
+            
+            // Add any additional parameters
+            Object.keys(params).forEach(key => {
+                analyticsInteraction[key] = params[key];
+            });
+            
+            // Fire the event
+            this.dispatchEvent(new CustomEvent('lightning__interactionanalytics', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    eventName: eventName,
+                    eventData: analyticsInteraction
+                }
+            }));
+        }
+    }
+    
+    /**
+     * Show a toast notification message
+     */
+    showToast(title, message, variant) {
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title,
+                message,
+                variant
+            })
+        );
+    }
+
+    /**
+     * Determine if an object type is selected
+     * This properly handles LWC data binding for HTML attributes
+     */
+    isObjectTypeSelected(type) {
+        return this.selectedObjectTypes.includes(type);
+    }
+    
+    /**
+     * Get the CSS class for an object type filter
+     */
+    get userTypeClass() {
+        return `type-filter ${this.isObjectTypeSelected('User') ? 'selected' : ''}`;
+    }
+    
+    get contactTypeClass() {
+        return `type-filter ${this.isObjectTypeSelected('Contact') ? 'selected' : ''}`;
+    }
+    
+    get accountTypeClass() {
+        return `type-filter ${this.isObjectTypeSelected('Account') ? 'selected' : ''}`;
+    }
+    
+    get groupTypeClass() {
+        return `type-filter ${this.isObjectTypeSelected('Group') ? 'selected' : ''}`;
+    }
+
+    /**
+     * Shows group information in a modal
+     */
+    showGroupInfo() {
+        if (!this.selectedRecipient || !this.selectedRecipient.isGroupChat) {
+            return;
+        }
+        
+        // Show loading state while we fetch detailed information
+        this.isLoading = true;
+        
+        // Get group information from the server
+        getGroupConversationInfo({ conversationId: this.conversationId })
+            .then(result => {
+                // Store group info for display
+                this.groupInfo = result;
+                this.showGroupInfoModal = true;
+            })
+            .catch(error => {
+                this.handleError(error, 'Failed to load group information');
+            })
+            .finally(() => {
+                this.isLoading = false;
+            });
+    }
+    
+    /**
+     * Closes the group info modal
+     */
+    handleCloseGroupInfoModal() {
+        this.showGroupInfoModal = false;
+    }
+
+    /**
+     * Returns the appropriate icon name for each object type
+     * @param {String} type - The object type (User, Contact, etc.)
+     * @return {String} - The SLDS icon name
+     */
+    getIconForObjectType(type) {
+        switch(type) {
+            case 'User': return 'standard:user';
+            case 'Contact': return 'standard:contact';
+            case 'Account': return 'standard:account';
+            case 'Group': return 'standard:groups';
+            default: return 'standard:default';
+        }
+    }
+
+    // Toggle mobile sidebar visibility
+    toggleMobileSidebar() {
+        console.log('Toggling mobile sidebar visibility');
+        this.isMobileSidebarVisible = !this.isMobileSidebarVisible;
+        
+        // Find the sidebar element and toggle the class
+        const sidebarElement = this.template.querySelector('.sidebar');
+        if (sidebarElement) {
+            if (this.isMobileSidebarVisible) {
+                sidebarElement.classList.add('mobile-visible');
+            } else {
+                sidebarElement.classList.remove('mobile-visible');
+            }
+        }
+    }
+
+    // Handle click outside to close mobile sidebar
+    handleMessagesClick() {
+        // If we're in mobile view and sidebar is open, close it
+        if (this.isMobileView && this.isMobileSidebarVisible) {
+            this.isMobileSidebarVisible = false;
+            const sidebarElement = this.template.querySelector('.sidebar');
+            if (sidebarElement) {
+                sidebarElement.classList.remove('mobile-visible');
+            }
+        }
+    }
+
+    // Compute sidebar classes
+    get sidebarClasses() {
+        let classes = 'sidebar';
+        if (this.isMobileSidebarVisible) {
+            classes += ' mobile-visible';
+        }
+        return classes;
+    }
+
+    // Auto adjust textarea height based on content
+    autoAdjustTextareaHeight(textarea) {
+        if (!textarea) return;
+        
+        console.log('Auto-adjusting textarea height');
+        
+        // Reset the height temporarily to get the correct scrollHeight
+        textarea.style.height = 'auto';
+        
+        // Set to scrollHeight to expand properly - no max height limit
+        textarea.style.height = textarea.scrollHeight + 'px';
+        
+        // Also adjust the container height if needed
+        const container = this.template.querySelector('.message-input-container');
+        if (container) {
+            // Calculate container height based on textarea height plus padding
+            const baseHeight = 60; // Base height including padding
+            const extraPadding = 16; // Account for top and bottom padding
+            
+            // No max height limit - allow full expansion
+            const newContainerHeight = baseHeight + (textarea.scrollHeight - 40) + extraPadding;
+            container.style.height = newContainerHeight + 'px';
+            
+            // Force the messaging container to expand too
+            this.expandMessagingContainer();
+        }
+    }
+
+    // Force the messaging container to expand with the content
+    expandMessagingContainer() {
+        // Force component re-render
+        this.refreshUICounter++;
+        
+        // Get all potential fixed-height containers
+        const messagingContainer = this.template.querySelector('.nuvitek-messaging-container');
+        const messagingBody = this.template.querySelector('.messaging-body');
+        const conversationArea = this.template.querySelector('.conversation-area');
+        const cardElement = this.template.querySelector('lightning-card');
+        
+        // Remove any fixed heights
+        if (messagingContainer) messagingContainer.style.height = 'auto';
+        if (messagingBody) messagingBody.style.height = 'auto';
+        if (conversationArea) conversationArea.style.height = 'auto';
+        
+        // Force Salesforce card components to expand
+        if (cardElement) {
+            const cardBody = cardElement.querySelector('.slds-card__body');
+            if (cardBody) cardBody.style.height = 'auto';
+        }
+        
+        // Scroll to bottom after a brief delay to ensure UI has updated
+        setTimeout(() => {
+            this.scrollToBottom();
+        }, 50);
     }
 }

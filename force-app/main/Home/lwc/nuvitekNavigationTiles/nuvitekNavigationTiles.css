@@ -18,6 +18,8 @@
 
 .tiles-container {
     width: 100%;
+    display: grid;
+    gap: 24px;
 }
 
 .navigation-tile {
@@ -130,10 +132,79 @@
     position: relative;
     z-index: 2;
     width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: space-between;
     gap: 16px;
+}
+
+/* Request Access Button in Top Right */
+.request-access-button-top {
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.25);
+    border: none;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    color: var(--theme-primary-color, #22BDC1);
+}
+
+.request-access-button-top:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+}
+
+.request-access-button-top:active {
+    transform: scale(0.95);
+}
+
+/* Menu Button in Center - Now used for Request Access */
+.menu-button-center {
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    color: var(--theme-primary-color, #22BDC1);
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 5;
+}
+
+.menu-button-center:hover {
+    background-color: #ffffff;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.menu-button-center:active {
+    transform: scale(0.95);
+}
+
+.menu-button-center svg {
+    width: 22px;
+    height: 22px;
+}
+
+.menu-button-center svg circle {
+    fill: var(--theme-primary-color, #22BDC1);
 }
 
 /* Menu Button Styles */
@@ -142,6 +213,8 @@
     top: 8px;
     right: 8px;
     z-index: 10;
+    width: 0;
+    height: 0;
 }
 
 .tile-menu-button {
@@ -174,7 +247,8 @@
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
-    min-width: 200px;
+    min-width: 180px;
+    max-width: 220px;
     background-color: white;
     border-radius: 12px;
     box-shadow: var(--tile-shadow-md);
@@ -210,6 +284,8 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
 }
 
 .tile-menu-item:hover {
@@ -218,16 +294,33 @@
 
 .tile-menu-item svg {
     color: #0071e3;
+    flex-shrink: 0;
+    min-width: 16px;
+}
+
+.tile-menu-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .tile-icon-container {
-    margin-bottom: 16px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .tile-icon {
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 48px;
+    width: 48px;
+    margin: 0 auto;
 }
 
 .tile-custom-icon {
@@ -247,13 +340,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 0 8px;
 }
 
 .tile-title {
     font-size: 20px;
     font-weight: 600;
     margin-bottom: 8px;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
 }
 
 .tile-description {
@@ -263,10 +361,14 @@
 }
 
 .tile-action {
-    margin-top: 16px;
+    margin-top: auto;
     opacity: 0;
     transition: opacity var(--tile-transition), transform var(--tile-transition);
     transform: translateX(-10px);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding-top: 12px;
 }
 
 .navigation-tile:hover .tile-action {
@@ -353,16 +455,17 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .tiles-container {
-        grid-template-columns: repeat(1, 1fr) !important;
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
     
     .navigation-tile {
-        padding: 24px;
+        padding: 24px 20px;
     }
     
     .navigation-tile.size-large {
-        padding: 32px;
-        min-height: 280px;
+        min-height: 300px;
+        padding: 32px 20px;
     }
     
     .tile-title {
@@ -370,20 +473,67 @@
     }
     
     .tile-description {
-        font-size: 13px;
+        font-size: 14px;
     }
     
     .toast-container {
-        top: 60px;
-        right: 16px;
         left: 16px;
-        max-width: none;
+        right: 16px;
+        bottom: 16px;
+    }
+    
+    .tile-menu-dropdown {
+        min-width: 160px;
+        right: -8px;
+    }
+    
+    .tile-menu-item {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    
+    .request-access-button-top {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 8px;
+    }
+    
+    .menu-dropdown-center {
+        min-width: 160px;
+    }
+    
+    .menu-button-center {
+        width: 36px;
+        height: 36px;
+        margin-bottom: 8px;
+    }
+    
+    .menu-button-center svg {
+        width: 20px;
+        height: 20px;
     }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
     .tiles-container {
-        grid-template-columns: repeat(2, 1fr) !important;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 20px;
+    }
+    
+    .tile-menu-dropdown {
+        min-width: 170px;
+    }
+    
+    .navigation-tile {
+        padding: 24px 16px;
+    }
+    
+    .request-access-button {
+        max-width: 85%;
+    }
+    
+    .menu-dropdown-center {
+        min-width: 170px;
     }
 }
 

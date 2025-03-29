@@ -23,73 +23,114 @@
                 <!-- Sidebar: Search & Recipient Selection -->
                 <div class="sidebar" data-id="sidebar">
                     <div class="search-container">
-                        <lightning-input
-                            type="search"
-                            label="Search"
-                            placeholder="Search users, contacts, accounts..."
-                            value={searchTerm}
-                            onchange={handleSearchChange}
-                            variant="label-hidden"
-                            class="search-input">
-                        </lightning-input>
+                        <div class="search-input-container">
+                            <lightning-input
+                                type="search"
+                                placeholder="Search for users, contacts..."
+                                value={searchTerm}
+                                onchange={handleSearchChange}
+                                onkeyup={handleSearchKeyUp}
+                                class="search-input">
+                            </lightning-input>
+                        </div>
                         
                         <!-- Search Results -->
-                        <div if:true={showSearchResults} class="search-results-container">
-                            <div if:true={isSearching} class="search-loading">
-                                <lightning-spinner alternative-text="Searching..." size="small"></lightning-spinner>
-                            </div>
-                            
-                            <ul if:false={isSearching} class="search-results-list">
-                                <template if:true={searchResults.length}>
-                                    <template for:each={searchResults} for:item="result">
-                                        <li key={result.id} class="search-result-item" data-id={result.id} onclick={handleRecipientSelect}>
-                                            <div class="result-avatar">
-                                                <img src={result.photoUrl} alt={result.name} />
-                                            </div>
-                                            <div class="result-details">
-                                                <div class="result-name">{result.name}</div>
-                                                <div class="result-type">{result.title} • {result.objectType}</div>
-                                            </div>
-                                        </li>
+                        <div class="search-results-container" if:true={showSearchResults}>
+                            <div class="search-results-wrapper" onclick={handleSearchResultsClick}>
+                                <!-- Loading state for search results -->
+                                <div if:true={isLoadingSearch} class="search-loading">
+                                    <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                </div>
+                                
+                                <!-- Search results -->
+                                <div if:false={isLoadingSearch} class="search-results">
+                                    <template if:true={hasSearchResults}>
+                                        <div class="search-results-list">
+                                            <template for:each={searchResults} for:item="recipient">
+                                                <div key={recipient.id} class="search-result-item" data-id={recipient.id} data-type={recipient.type} onclick={handleRecipientSelect}>
+                                                    <div class="avatar-container">
+                                                        <template if:true={recipient.photoUrl}>
+                                                            <img src={recipient.photoUrl} alt={recipient.name} class="avatar" />
+                                                        </template>
+                                                        <template if:false={recipient.photoUrl}>
+                                                            <div class="avatar-placeholder">
+                                                                <lightning-icon icon-name={recipient.iconName} size="small"></lightning-icon>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                    <div class="recipient-info">
+                                                        <div class="recipient-name">{recipient.name}</div>
+                                                        <div class="recipient-type">
+                                                            <span class={recipient.typeBadgeClass}>{recipient.typeDisplay}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
                                     </template>
-                                </template>
-                                <li if:false={searchResults.length} class="no-results">
-                                    No results found
-                                </li>
-                            </ul>
+                                    <template if:false={hasSearchResults}>
+                                        <div class="no-search-results">
+                                            <p>No results found for "{searchTerm}"</p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
                     <!-- Recently Messaged -->
-                    <div class="recent-recipients">
-                        <h3 class="section-title">Recent</h3>
-                        <!-- Loading state for recent -->
-                        <template if:true={isLoadingRecent}>
-                            <div class="slds-p-vertical_medium slds-align_absolute-center">
-                                <lightning-spinner alternative-text="Loading recent conversations..." size="small"></lightning-spinner>
-                            </div>
-                        </template>
-                        <!-- Display recent conversations -->
+                    <div class="recent-conversations">
+                        <div class="section-header">
+                            <h3 class="section-title">Recent Conversations</h3>
+                        </div>
+                        
+                        <!-- Loading state for recent conversations -->
+                        <div if:true={isLoadingRecent} class="loading-container">
+                            <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                        </div>
+                        
+                        <!-- Recent conversations list -->
                         <template if:false={isLoadingRecent}>
                             <template if:true={hasRecentConversations}>
-                                <template for:each={recentConversations} for:item="convo">
-                                    <!-- Use a similar structure to search results but adapt for recent -->
-                                    <div key={convo.id} class="recipient-item" data-id={convo.id} data-type={convo.objectType} onclick={handleRecentSelect}>
-                                        <div class="recipient-item-avatar">
-                                            <img src={convo.photoUrl} alt={convo.name} />
+                                <div class="conversations-list">
+                                    <template for:each={recentConversations} for:item="convo">
+                                        <div key={convo.id} class={convo.itemClass} data-id={convo.id} onclick={handleRecentSelect}>
+                                            <div class="avatar-container">
+                                                <template if:true={convo.photoUrl}>
+                                                    <img src={convo.photoUrl} alt={convo.name} class="avatar" />
+                                                </template>
+                                                <template if:false={convo.photoUrl}>
+                                                    <div class="avatar-placeholder">
+                                                        <lightning-icon icon-name={convo.iconName} size="small"></lightning-icon>
+                                                    </div>
+                                                </template>
+                                                <template if:true={convo.isGroupChat}>
+                                                    <div class="group-indicator">
+                                                        <lightning-icon icon-name="utility:groups" size="xx-small"></lightning-icon>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <div class="conversation-info">
+                                                <div class="conversation-header">
+                                                    <div class="conversation-name" title={convo.name}>{convo.name}</div>
+                                                    <div class="conversation-time">{convo.timeDisplay}</div>
+                                                </div>
+                                                <div class="conversation-preview">
+                                                    <div class="message-preview" title={convo.lastMessage}>{convo.lastMessage}</div>
+                                                    <template if:true={convo.unreadCount}>
+                                                        <div class="unread-indicator">{convo.unreadCount}</div>
+                                                    </template>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="recipient-item-details">
-                                            <div class="recipient-item-name">{convo.name}</div>
-                                            <div class="recipient-item-info">{convo.lastMessageSnippet}</div>
-                                        </div>
-                                        <!-- Unread indicator -->
-                                        <span if:true={convo.hasUnread} class="recipient-item-unread">{convo.unreadCount}</span>
-                                    </div>
-                                </template>
+                                    </template>
+                                </div>
                             </template>
-                            <!-- Placeholder if no recent conversations -->
                             <template if:false={hasRecentConversations}>
-                                <div class="placeholder-message">No recent conversations</div>
+                                <div class="no-conversations">
+                                    <p>No recent conversations</p>
+                                    <p class="help-text">Search for a user or contact to start a conversation</p>
+                                </div>
                             </template>
                         </template>
                     </div>
@@ -101,9 +142,9 @@
                 <!-- Main Conversation Area -->
                 <div class="conversation-area">
                     <!-- Mobile Toggle for Sidebar -->
-                    <div class="mobile-toggle-container">
-                        <button class="mobile-toggle" onclick={toggleSidebar}>
-                            <lightning-icon icon-name="utility:rows" size="small"></lightning-icon>
+                    <div class="mobile-toggle-container" if:false={hideSidebar}>
+                        <button class="mobile-toggle" onclick={toggleMobileSidebar} aria-label="Toggle sidebar">
+                            <lightning-icon icon-name="utility:rows" size="small" alternative-text="Menu"></lightning-icon>
                         </button>
                     </div>
                     
@@ -111,13 +152,29 @@
                         <!-- Conversation Header -->
                         <div class="conversation-header">
                             <div class="recipient-info">
-                                <div class="recipient-avatar">
-                                    <img src={recipientPhotoUrl} alt={recipientName} />
-                                </div>
-                                <div class="recipient-details">
-                                    <div class="recipient-name">{recipientName}</div>
-                                    <div if:true={recipientTitle} class="recipient-title">{recipientTitle}</div>
-                                </div>
+                                <template if:true={selectedRecipient.isGroupChat}>
+                                    <!-- Group Chat Avatar -->
+                                    <div class="group-avatar">
+                                        <span>{recipientInitials}</span>
+                                        <div class="group-avatar-icon">
+                                            <lightning-icon icon-name="utility:groups" size="xx-small"></lightning-icon>
+                                        </div>
+                                    </div>
+                                    <div class="recipient-details">
+                                        <div class="recipient-name">{recipientName}</div>
+                                        <div class="group-members">{recipientTitle}</div>
+                                    </div>
+                                </template>
+                                <template if:false={selectedRecipient.isGroupChat}>
+                                    <!-- Regular Recipient Avatar -->
+                                    <div class="recipient-avatar">
+                                        <img src={recipientPhotoUrl} alt={recipientName} />
+                                    </div>
+                                    <div class="recipient-details">
+                                        <div class="recipient-name">{recipientName}</div>
+                                        <div if:true={recipientTitle} class="recipient-title">{recipientTitle}</div>
+                                    </div>
+                                </template>
                             </div>
                             
                             <!-- Conversation Actions -->
@@ -125,6 +182,11 @@
                                 <button class="icon-button" title="Summarize Conversation" onclick={summarizeChat} disabled={isSummarizingChat}>
                                     <lightning-icon icon-name="utility:summary" size="small"></lightning-icon>
                                 </button>
+                                <template if:true={selectedRecipient.isGroupChat}>
+                                    <button class="icon-button" title="Group Info" onclick={showGroupInfo}>
+                                        <lightning-icon icon-name="utility:info" size="small"></lightning-icon>
+                                    </button>
+                                </template>
                             </div>
                         </div>
                         
@@ -166,6 +228,10 @@
                             <template if:true={hasMessages}>
                                 <template for:each={messages} for:item="message">
                                     <div key={message.id} class={message.messageClass} data-from-user={message.isFromUser}>
+                                        <!-- Only show sender name for recipient messages -->
+                                        <template if:false={message.isFromUser}>
+                                            <div class="message-sender-name">{message.senderName}</div>
+                                        </template>
                                         <div class="message-bubble">
                                             <lightning-formatted-rich-text value={message.formattedContent} class="message-content"></lightning-formatted-rich-text>
                                             <div class="message-timestamp">{message.formattedTimestamp}</div>
@@ -250,4 +316,235 @@
             </div>
         </lightning-card>
     </div>
+
+    <!-- Create New Group Chat Button -->
+    <div class="new-group-container">
+        <button class="new-group-button" onclick={handleNewGroupChat}>
+            <lightning-icon icon-name="utility:add" size="small" class="new-group-icon"></lightning-icon>
+            <span>New Group Chat</span>
+        </button>
+    </div>
+
+    <!-- Group Creation Modal -->
+    <template if:true={showGroupCreationModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="group-modal-heading" aria-modal="true" aria-describedby="group-modal-content" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- Modal Header -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleCloseGroupModal}>
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="group-modal-heading" class="slds-text-heading_medium slds-hyphenate">Create Group Conversation</h2>
+                </header>
+                
+                <!-- Modal Body -->
+                <div class="slds-modal__content slds-p-around_medium" id="group-modal-content">
+                    <!-- Group Name -->
+                    <div class="slds-form-element slds-m-bottom_medium">
+                        <label class="slds-form-element__label" for="group-name">Group Name</label>
+                        <div class="slds-form-element__control">
+                            <input type="text" id="group-name" class="slds-input" placeholder="Enter group name..." value={newGroupName} onchange={handleGroupNameChange} />
+                        </div>
+                    </div>
+                    
+                    <!-- Group Description -->
+                    <div class="slds-form-element slds-m-bottom_medium">
+                        <label class="slds-form-element__label" for="group-description">Description (Optional)</label>
+                        <div class="slds-form-element__control">
+                            <textarea id="group-description" class="slds-textarea" placeholder="Enter group description..." value={newGroupDescription} onchange={handleGroupDescriptionChange}></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Object Type Filters -->
+                    <div class="slds-form-element slds-m-bottom_medium">
+                        <label class="slds-form-element__label">Search For</label>
+                        <div class="slds-form-element__control">
+                            <div class="type-filter-container">
+                                <div class={userTypeClass} data-type="User" onclick={handleObjectTypeToggle}>
+                                    <lightning-icon icon-name="standard:user" size="small"></lightning-icon>
+                                    <span>Users</span>
+                                </div>
+                                <div class={contactTypeClass} data-type="Contact" onclick={handleObjectTypeToggle}>
+                                    <lightning-icon icon-name="standard:contact" size="small"></lightning-icon>
+                                    <span>Contacts</span>
+                                </div>
+                                <div class={accountTypeClass} data-type="Account" onclick={handleObjectTypeToggle}>
+                                    <lightning-icon icon-name="standard:person_account" size="small"></lightning-icon>
+                                    <span>Person Accounts</span>
+                                </div>
+                                <div class={groupTypeClass} data-type="Group" onclick={handleObjectTypeToggle}>
+                                    <lightning-icon icon-name="standard:groups" size="small"></lightning-icon>
+                                    <span>Groups</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Participant Search -->
+                    <div class="slds-form-element slds-m-bottom_medium">
+                        <label class="slds-form-element__label" for="participant-search">Add Participants</label>
+                        <div class="slds-form-element__control">
+                            <input type="text" id="participant-search" class="slds-input" placeholder="Search for participants..." onkeyup={handleGroupParticipantSearch} />
+                        </div>
+                    </div>
+                    
+                    <!-- Search Results -->
+                    <div if:true={showGroupParticipantResults} class="participant-search-results">
+                        <div if:true={searchingGroupParticipants} class="search-loading">
+                            <lightning-spinner alternative-text="Searching..." size="small"></lightning-spinner>
+                        </div>
+                        
+                        <ul if:false={searchingGroupParticipants} class="participant-results-list">
+                            <template if:true={groupParticipantResults.length}>
+                                <template for:each={groupParticipantResults} for:item="result">
+                                    <li key={result.id} class="participant-result-item" data-id={result.id} data-type={result.objectType} onclick={handleAddGroupParticipant}>
+                                        <div class="participant-avatar">
+                                            <template if:true={result.photoUrl}>
+                                                <img src={result.photoUrl} alt={result.name} />
+                                            </template>
+                                            <template if:false={result.photoUrl}>
+                                                <div class="participant-avatar-placeholder">
+                                                    <template if:true={result.objectType}>
+                                                        <template if:true={isUserType}>
+                                                            <lightning-icon icon-name="standard:user" size="small"></lightning-icon>
+                                                        </template>
+                                                        <template if:true={isContactType}>
+                                                            <lightning-icon icon-name="standard:contact" size="small"></lightning-icon>
+                                                        </template>
+                                                        <template if:true={isPersonAccountType}>
+                                                            <lightning-icon icon-name="standard:person_account" size="small"></lightning-icon>
+                                                        </template>
+                                                        <template if:true={isGroupType}>
+                                                            <lightning-icon icon-name="standard:groups" size="small"></lightning-icon>
+                                                        </template>
+                                                        <template if:true={isDefaultType}>
+                                                            <lightning-icon icon-name="standard:default" size="small"></lightning-icon>
+                                                        </template>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <div class="participant-details">
+                                            <div class="participant-name">{result.name}</div>
+                                            <div class="participant-info">{result.title} • {result.objectType}</div>
+                                        </div>
+                                        <button class="add-participant-button" title="Add to group">
+                                            <lightning-icon icon-name="utility:add" size="small"></lightning-icon>
+                                        </button>
+                                    </li>
+                                </template>
+                            </template>
+                            <li if:false={groupParticipantResults.length} class="no-results">
+                                No results found
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Selected Participants -->
+                    <div class="selected-participants">
+                        <h3 class="slds-text-heading_small slds-m-bottom_small">Selected Participants</h3>
+                        <div if:false={selectedGroupParticipants.length} class="no-participants">
+                            No participants selected yet
+                        </div>
+                        <ul if:true={selectedGroupParticipants.length} class="participant-pills">
+                            <template for:each={selectedGroupParticipants} for:item="participant">
+                                <li key={participant.id} class="participant-pill">
+                                    <span class="pill-label">{participant.name}</span>
+                                    <button class="pill-remove" data-id={participant.id} data-type={participant.objectType} onclick={handleRemoveGroupParticipant}>
+                                        <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                    </button>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick={handleCloseGroupModal}>Cancel</button>
+                    <button class="slds-button slds-button_brand" onclick={createGroupConversation}>Create Group</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- Group Info Modal -->
+    <template if:true={showGroupInfoModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="group-info-heading" aria-modal="true" aria-describedby="group-info-content" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- Modal Header -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleCloseGroupInfoModal}>
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="group-info-heading" class="slds-text-heading_medium slds-hyphenate">Group Information</h2>
+                </header>
+                
+                <!-- Modal Body -->
+                <div class="slds-modal__content slds-p-around_medium" id="group-info-content">
+                    <!-- Group Details -->
+                    <div class="group-details-section">
+                        <div class="group-header">
+                            <div class="group-avatar large">
+                                <span>{recipientInitials}</span>
+                                <div class="group-avatar-icon">
+                                    <lightning-icon icon-name="utility:groups" size="xx-small"></lightning-icon>
+                                </div>
+                            </div>
+                            <div class="group-info">
+                                <h3 class="group-name">{groupInfo.name}</h3>
+                                <p class="group-created">Created {groupInfo.createdDate}</p>
+                            </div>
+                        </div>
+                        
+                        <div if:true={groupInfo.description} class="group-description">
+                            <p>{groupInfo.description}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Participants List -->
+                    <div class="group-participants-section">
+                        <h3 class="slds-text-heading_small slds-m-bottom_small">
+                            Participants ({groupInfo.totalParticipants})
+                        </h3>
+                        
+                        <ul class="participant-list">
+                            <template for:each={groupInfo.participants} for:item="participant">
+                                <li key={participant.id} class="participant-item">
+                                    <div class="participant-avatar">
+                                        <template if:true={participant.photoUrl}>
+                                            <img src={participant.photoUrl} alt={participant.name} />
+                                        </template>
+                                        <template if:false={participant.photoUrl}>
+                                            <div class="participant-avatar-placeholder">
+                                                <template if:true={participant.objectType}>
+                                                    <lightning-icon icon-name="standard:default" size="small"></lightning-icon>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <div class="participant-details">
+                                        <div class="participant-name">{participant.name}</div>
+                                        <div class="participant-info">{participant.title} • {participant.typeName}</div>
+                                    </div>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick={handleCloseGroupInfoModal}>Close</button>
+                    <template if:true={isGroupAdmin}>
+                        <button class="slds-button slds-button_brand" onclick={handleEditGroup}>Edit Group</button>
+                    </template>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
 </template>

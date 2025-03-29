@@ -23,7 +23,7 @@
             <property name="fontSize" type="String" label="Font Size" default="14px" description="Base font size (example: 14px)"/>
             <property name="componentHeight" type="Integer" label="Component Height" default="400" min="250" max="800" description="Height of the messaging component in pixels"/>
             <property name="sidebarWidth" type="String" label="Sidebar Width" default="30%" description="Width of the sidebar as percentage (example: 30%) or pixels (example: 250px)"/>
-            <property name="defaultLLMName" type="String" label="AI Model" default="Gemini 2.5" description="Default AI model to use for chat summarization"/>
+            <property name="defaultLLMName" type="String" label="AI Model" default="Gemini 2.5 Pro" description="Default AI model to use for chat summarization"/>
             <property name="checkNotificationsInterval" type="Integer" label="Notifications Check Interval" default="60" min="30" max="300" description="Time in seconds between notification checks"/>
         </targetConfig>
     </targetConfigs>

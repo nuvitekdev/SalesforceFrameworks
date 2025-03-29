@@ -14,14 +14,13 @@
 public with sharing class NuvitekMessagingController {
     
     /**
-     * Search for potential User recipients.
-     * (Phase 1: Only supports searching for Users).
+     * Searches for recipients matching the search term, including Users, Contacts, Accounts, and Groups.
      * 
-     * @param searchTerm Search string to find matching Users.
-     * @param objectTypes (Ignored in Phase 1, kept for potential future compatibility).
-     * @return List of User search result wrapper objects.
+     * @param searchTerm Search string to find matching Users/Contacts.
+     * @param objectTypes List of object types to search for (User, Contact, Account, Group).
+     * @return List of search result wrapper objects.
      */
-    @AuraEnabled(cacheable=true) // Make cacheable as it only queries User data now
+    @AuraEnabled(cacheable=true)
     public static List<UserSearchResultWrapper> searchRecipients(String searchTerm, List<String> objectTypes) {
         // --- Basic Input Validation ---
         if (String.isBlank(searchTerm) || searchTerm.length() < 2) {
@@ -36,68 +35,261 @@ public with sharing class NuvitekMessagingController {
         List<UserSearchResultWrapper> results = new List<UserSearchResultWrapper>();
         
         try {
-            // --- Construct SOSL Query (User only) ---
-            String soslQuery = 'FIND :sanitizedTerm IN NAME FIELDS RETURNING User(Id, Name, Title, SmallPhotoUrl, IsActive WHERE IsActive = true) LIMIT 50';
+            // Default to all object types if none specified
+            if (objectTypes == null || objectTypes.isEmpty()) {
+                objectTypes = new List<String>{'User', 'Contact', 'Account', 'Group'};
+            }
+            
+            // Check what objects we should search for
+            Boolean searchUsers = objectTypes.contains('User');
+            Boolean searchContacts = objectTypes.contains('Contact');
+            Boolean searchAccounts = objectTypes.contains('Account');
+            Boolean searchGroups = objectTypes.contains('Group');
+            
+            // Build SOSL returning clause
+            String returningClause = '';
+            Integer returnIndex = 0;
+            Map<String, Integer> returnIndexMap = new Map<String, Integer>();
+            
+            if (searchUsers) {
+                returningClause += 'User(Id, Name, Title, SmallPhotoUrl, IsActive WHERE IsActive = true LIMIT 20)';
+                returnIndexMap.put('User', returnIndex++);
+            }
+            
+            if (searchContacts) {
+                if (returningClause != '') returningClause += ', ';
+                returningClause += 'Contact(Id, Name, Title, PhotoUrl, Email, AccountId LIMIT 20)';
+                returnIndexMap.put('Contact', returnIndex++);
+            }
+            
+            if (searchAccounts) {
+                if (returningClause != '') returningClause += ', ';
+                returningClause += 'Account(Id, Name, BillingStreet, BillingCity, Phone, Website, Industry LIMIT 20)';
+                returnIndexMap.put('Account', returnIndex++);
+            }
+            
+            if (searchGroups) {
+                if (returningClause != '') returningClause += ', ';
+                returningClause += 'Group(Id, Name, DeveloperName, Type LIMIT 20)';
+                returnIndexMap.put('Group', returnIndex++);
+            }
+            
+            // --- Construct SOSL Query ---
+            String soslQuery = 'FIND :sanitizedTerm IN NAME FIELDS RETURNING ' + returningClause;
             System.debug('NuvitekMessagingController.searchRecipients: Executing SOSL query: ' + soslQuery);
             
             // --- Execute SOSL Search ---
             List<List<SObject>> searchList = Search.query(soslQuery);
             
             // --- Process User Results ---
-            if (searchList != null && !searchList.isEmpty()) {
-                List<User> userResults = (List<User>) searchList[0];
+            if (searchUsers && searchList != null && searchList.size() > returnIndexMap.get('User')) {
+                List<User> userResults = (List<User>) searchList[returnIndexMap.get('User')];
                 String currentUserId = UserInfo.getUserId();
                 for (User u : userResults) {
                     if (u.Id == currentUserId) continue; 
                     UserSearchResultWrapper wrapper = new UserSearchResultWrapper();
                     wrapper.id = u.Id;
-                        wrapper.name = u.Name;
-                        wrapper.title = u.Title;
-                        wrapper.photoUrl = u.SmallPhotoUrl;
+                    wrapper.name = u.Name;
+                    wrapper.title = u.Title;
+                    wrapper.photoUrl = u.SmallPhotoUrl;
+                    wrapper.objectType = 'User';
                     results.add(wrapper);
                 }
-                System.debug('NuvitekMessagingController.searchRecipients: Found ' + results.size() + ' User results (excluding current user).');
-            } else {
-                System.debug('NuvitekMessagingController.searchRecipients: No User results found for term: ' + searchTerm);
+                System.debug('NuvitekMessagingController.searchRecipients: Found ' + userResults.size() + ' User results.');
             }
+            
+            // --- Process Contact Results ---
+            if (searchContacts && searchList != null && searchList.size() > returnIndexMap.get('Contact')) {
+                List<Contact> contactResults = (List<Contact>) searchList[returnIndexMap.get('Contact')];
+                for (Contact c : contactResults) {
+                    UserSearchResultWrapper wrapper = new UserSearchResultWrapper();
+                    wrapper.id = c.Id;
+                    wrapper.name = c.Name;
+                    wrapper.title = c.Title;
+                    wrapper.photoUrl = c.PhotoUrl;
+                    wrapper.objectType = 'Contact';
+                    results.add(wrapper);
+                }
+                System.debug('NuvitekMessagingController.searchRecipients: Found ' + searchList[returnIndexMap.get('Contact')].size() + ' Contact results.');
+            }
+            
+            // --- Process Account Results ---
+            if (searchAccounts && searchList != null && searchList.size() > returnIndexMap.get('Account')) {
+                List<Account> accountResults = (List<Account>) searchList[returnIndexMap.get('Account')];
+                for (Account a : accountResults) {
+                    UserSearchResultWrapper wrapper = new UserSearchResultWrapper();
+                    wrapper.id = a.Id;
+                    wrapper.name = a.Name;
+                    wrapper.title = a.Industry;  // Use Industry as the "title" for display purposes
+                    wrapper.photoUrl = null;     // Accounts don't have photos, we'll use placeholder
+                    wrapper.objectType = 'Account';
+                    results.add(wrapper);
+                }
+                System.debug('NuvitekMessagingController.searchRecipients: Found ' + searchList[returnIndexMap.get('Account')].size() + ' Account results.');
+            }
+            
+            // --- Process Group Results ---
+            if (searchGroups && searchList != null && searchList.size() > returnIndexMap.get('Group')) {
+                List<Group> groupResults = (List<Group>) searchList[returnIndexMap.get('Group')];
+                for (Group g : groupResults) {
+                    UserSearchResultWrapper wrapper = new UserSearchResultWrapper();
+                    wrapper.id = g.Id;
+                    wrapper.name = g.Name;
+                    wrapper.title = g.Type;      // Use Group Type as the "title"
+                    wrapper.photoUrl = null;     // Groups don't have photos, we'll use placeholder
+                    wrapper.objectType = 'Group';
+                    results.add(wrapper);
+                }
+                System.debug('NuvitekMessagingController.searchRecipients: Found ' + searchList[returnIndexMap.get('Group')].size() + ' Group results.');
+            }
+            
         } catch (Exception e) {
-            System.debug(LoggingLevel.ERROR, 'NuvitekMessagingController.searchRecipients: Error searching for Users. Term=' + searchTerm + ', Error=' + e.getMessage() + '\nStackTrace: ' + e.getStackTraceString());
-            throw new AuraHandledException('Error searching for users: ' + e.getMessage());
+            System.debug(LoggingLevel.ERROR, 'NuvitekMessagingController.searchRecipients: Error searching. Term=' + searchTerm + ', Error=' + e.getMessage() + '\nStackTrace: ' + e.getStackTraceString());
+            throw new AuraHandledException('Error searching: ' + e.getMessage());
         }
         return results;
     }
     
     /**
-     * Sends a message from the current user to another user.
-     * Finds or creates a Conversation record between the two users.
-     * Creates the Nuvitek_Message__c record linked to the conversation.
+     * Sends a message from the current user to a recipient.
+     * Supports sending to Users, Contacts, Person Accounts, and Group conversations.
      * 
-     * @param recipientUserId The ID of the User receiving the message.
+     * @param recipientId The ID of the recipient (User, Contact, PersonAccount) or conversation ID.
+     * @param recipientType The type of recipient (User, Contact, PersonAccount, Conversation).
      * @param content The text content of the message.
      * @return Map containing 'messageId', 'conversationId', and 'userPhotoUrl'.
      */
     @AuraEnabled
-    public static Map<String, String> sendMessage(String recipientUserId, String content) {
+    public static Map<String, String> sendMessage(String recipientId, String recipientType, String content) {
         // --- Input Validation ---
-        if (String.isBlank(recipientUserId) || String.isBlank(content)) {
-             System.debug(LoggingLevel.WARN, 'NuvitekMessagingController.sendMessage: recipientUserId or content is blank.');
-            throw new AuraHandledException('Recipient user ID and message content cannot be blank.');
-        }
-        String currentUserId = UserInfo.getUserId();
-        if (recipientUserId == currentUserId) {
-             System.debug(LoggingLevel.WARN, 'NuvitekMessagingController.sendMessage: User attempting to send message to self.');
-            throw new AuraHandledException('You cannot send a message to yourself.');
-        }
-        // --- Ensure Recipient User Exists and is Active ---
-        List<User> recipientUsers = [SELECT Id, Name FROM User WHERE Id = :recipientUserId AND IsActive = true LIMIT 1];
-        if (recipientUsers.isEmpty()) {
-            System.debug(LoggingLevel.ERROR, 'NuvitekMessagingController.sendMessage: Recipient User not found or inactive. ID=' + recipientUserId);
-            throw new AuraHandledException('Recipient user not found or is inactive.');
+        if (String.isBlank(recipientId) || String.isBlank(content)) {
+            System.debug(LoggingLevel.WARN, 'NuvitekMessagingController.sendMessage: recipientId or content is blank.');
+            throw new AuraHandledException('Recipient ID and message content cannot be blank.');
         }
         
+        String currentUserId = UserInfo.getUserId();
+        Id conversationId;
+        
         try {
-            // --- Find or Create Conversation ---
-            Id conversationId = findOrCreateConversation(currentUserId, recipientUserId);
+            // --- Handle based on recipient type ---
+            if (recipientType == 'Conversation') {
+                // Direct message to an existing conversation
+                conversationId = recipientId;
+                
+                // Verify current user is a participant
+                List<Conversation_Participant__c> participants = [
+                    SELECT Id FROM Conversation_Participant__c 
+                    WHERE Conversation__c = :conversationId AND User__c = :currentUserId AND Is_Active__c = true
+                    LIMIT 1
+                ];
+                
+                if (participants.isEmpty()) {
+                    throw new AuraHandledException('You are not a participant in this conversation.');
+                }
+                
+            } else if (recipientType == 'User') {
+                // User-to-User message
+                if (recipientId == currentUserId) {
+                    throw new AuraHandledException('You cannot send a message to yourself.');
+                }
+                
+                // Verify recipient exists and is active
+                List<User> recipientUsers = [SELECT Id, Name FROM User WHERE Id = :recipientId AND IsActive = true LIMIT 1];
+                if (recipientUsers.isEmpty()) {
+                    throw new AuraHandledException('Recipient user not found or is inactive.');
+                }
+                
+                // Find or create conversation
+                conversationId = findOrCreateConversation(currentUserId, recipientId);
+                
+            } else if (recipientType == 'Contact' || recipientType == 'PersonAccount') {
+                // For Contact or PersonAccount, we need to find or create a special conversation
+                // First, check if a 1-1 conversation already exists
+                List<Conversation_Group_Participant__c> existingParticipants;
+                
+                if (recipientType == 'Contact') {
+                    existingParticipants = [
+                        SELECT Conversation__c
+                        FROM Conversation_Group_Participant__c
+                        WHERE Contact__c = :recipientId AND Conversation__r.Is_Group_Chat__c = false
+                    ];
+                } else { // PersonAccount
+                    existingParticipants = [
+                        SELECT Conversation__c
+                        FROM Conversation_Group_Participant__c
+                        WHERE Person_Account__c = :recipientId AND Conversation__r.Is_Group_Chat__c = false
+                    ];
+                }
+                
+                if (!existingParticipants.isEmpty()) {
+                    // Find a conversation where current user is the only other participant
+                    Set<Id> potentialConvoIds = new Set<Id>();
+                    for (Conversation_Group_Participant__c p : existingParticipants) {
+                        potentialConvoIds.add(p.Conversation__c);
+                    }
+                    
+                    // Check if current user is the only user participant
+                    Map<Id, Integer> convoParticipantCount = new Map<Id, Integer>();
+                    List<AggregateResult> participantCounts = [
+                        SELECT Conversation__c, COUNT(Id) cnt
+                        FROM Conversation_Participant__c
+                        WHERE Conversation__c IN :potentialConvoIds
+                        GROUP BY Conversation__c
+                    ];
+                    for (AggregateResult ar : participantCounts) {
+                        convoParticipantCount.put((Id)ar.get('Conversation__c'), Integer.valueOf(ar.get('cnt')));
+                    }
+                    
+                    for (Id cid : potentialConvoIds) {
+                        // Check if there's only one participant (current user) and this participant is the current user
+                        if (convoParticipantCount.containsKey(cid) && convoParticipantCount.get(cid) == 1) {
+                            List<Conversation_Participant__c> soloParticipant = [
+                                SELECT User__c FROM Conversation_Participant__c 
+                                WHERE Conversation__c = :cid AND Is_Active__c = true
+                                LIMIT 1
+                            ];
+                            
+                            if (!soloParticipant.isEmpty() && soloParticipant[0].User__c == currentUserId) {
+                                conversationId = cid;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // If no existing conversation found, create a new one
+                if (conversationId == null) {
+                    // Create new conversation
+                    Conversation__c newConvo = new Conversation__c(
+                        Is_Group_Chat__c = false // 1-1 conversation with a Contact/PersonAccount
+                    );
+                    insert newConvo;
+                    conversationId = newConvo.Id;
+                    
+                    // Add current user as participant
+                    Conversation_Participant__c userParticipant = new Conversation_Participant__c(
+                        Conversation__c = conversationId,
+                        User__c = currentUserId,
+                        Is_Active__c = true
+                    );
+                    insert userParticipant;
+                    
+                    // Add Contact/PersonAccount as group participant
+                    Conversation_Group_Participant__c groupParticipant = new Conversation_Group_Participant__c(
+                        Conversation__c = conversationId
+                    );
+                    
+                    if (recipientType == 'Contact') {
+                        groupParticipant.Contact__c = recipientId;
+                    } else { // PersonAccount
+                        groupParticipant.Person_Account__c = recipientId;
+                    }
+                    
+                    insert groupParticipant;
+                }
+            } else {
+                throw new AuraHandledException('Unsupported recipient type: ' + recipientType);
+            }
             
             // --- Create the Message ---
             Nuvitek_Message__c newMessage = new Nuvitek_Message__c(
@@ -122,7 +314,7 @@ public with sharing class NuvitekMessagingController {
                 'userPhotoUrl' => userPhotoUrl 
             };
         } catch (Exception e) {
-            System.debug(LoggingLevel.ERROR, 'NuvitekMessagingController.sendMessage: Error sending message. CurrentUser=' + currentUserId + ', RecipientUser=' + recipientUserId + ', Error=' + e.getMessage() + '\nStackTrace: ' + e.getStackTraceString());
+            System.debug(LoggingLevel.ERROR, 'NuvitekMessagingController.sendMessage: Error sending message. CurrentUser=' + currentUserId + ', RecipientId=' + recipientId + ', Error=' + e.getMessage() + '\nStackTrace: ' + e.getStackTraceString());
             throw new AuraHandledException('An error occurred while sending the message: ' + e.getMessage());
         }
     }
@@ -404,134 +596,208 @@ public with sharing class NuvitekMessagingController {
     }
     
     /**
-     * Fetches the most recent conversations (User-to-User) for the current user.
-     * Retrieves details of the other participant, the last message snippet, 
-     * and determines unread status based on Last_Read_Timestamp__c.
+     * Retrieves recent conversations for the current user, including:
+     * - 1:1 conversations with other users
+     * - 1:1 conversations with contacts and person accounts
+     * - Group conversations
      * 
-     * @return List<ConversationWrapper> A list of recent conversations, sorted by the last message date.
+     * @param limitVal Maximum number of conversations to return
+     * @return List of conversation wrapper objects with unread counts
      */
-    @AuraEnabled(cacheable=true) 
-    public static List<ConversationWrapper> getRecentConversations() {
-        String currentUserId = UserInfo.getUserId();
-        List<ConversationWrapper> recentConversations = new List<ConversationWrapper>();
+    @AuraEnabled
+    public static List<ConversationWrapper> getRecentConversations(Integer limitVal) {
+        if (limitVal == null || limitVal <= 0) {
+            limitVal = 10; // Default limit
+        }
         
-        Map<Id, ConversationWrapper> conversationMap = new Map<Id, ConversationWrapper>(); 
-        Map<Id, Conversation_Participant__c> userParticipationMap = new Map<Id, Conversation_Participant__c>(); 
-        Set<Id> conversationIds = new Set<Id>();
-        Set<Id> otherParticipantUserIds = new Set<Id>(); 
+        String currentUserId = UserInfo.getUserId();
+        List<ConversationWrapper> result = new List<ConversationWrapper>();
         
         try {
-            // --- Step 1: Get conversations the current user is actively participating in ---
-            List<Conversation_Participant__c> participations = [
-                SELECT Id, Conversation__c, User__c, Last_Read_Timestamp__c 
-                FROM Conversation_Participant__c 
+            // Find all conversations the current user is participating in
+            List<Conversation_Participant__c> userParticipations = [
+                SELECT Id, Conversation__c, Last_Read_Timestamp__c
+                FROM Conversation_Participant__c
                 WHERE User__c = :currentUserId AND Is_Active__c = true
             ];
-            if (participations.isEmpty()) {
-                System.debug('NuvitekMessagingController.getRecentConversations: User ' + currentUserId + ' is not in any active conversations.');
-                return recentConversations; 
+            
+            if (userParticipations.isEmpty()) {
+                return result; // No conversations to return
             }
-            for (Conversation_Participant__c p : participations) {
-                conversationIds.add(p.Conversation__c);
-                userParticipationMap.put(p.Conversation__c, p);
-                ConversationWrapper wrapper = new ConversationWrapper();
-                wrapper.id = p.Conversation__c; 
-                conversationMap.put(p.Conversation__c, wrapper);
+            
+            // Extract conversation IDs
+            Set<Id> conversationIds = new Set<Id>();
+            Map<Id, DateTime> lastReadMap = new Map<Id, DateTime>();
+            
+            for (Conversation_Participant__c cp : userParticipations) {
+                conversationIds.add(cp.Conversation__c);
+                lastReadMap.put(cp.Conversation__c, cp.Last_Read_Timestamp__c);
             }
-             System.debug('NuvitekMessagingController.getRecentConversations: User ' + currentUserId + ' is in ' + conversationIds.size() + ' conversations.');
-
-            // --- Step 2: Find the *other* participant in each conversation ---
-            List<Conversation_Participant__c> otherParticipants = [
-                SELECT Id, Conversation__c, User__c, User__r.Name, User__r.SmallPhotoUrl, User__r.Title 
-                FROM Conversation_Participant__c 
-                WHERE Conversation__c IN :conversationIds AND User__c != :currentUserId AND Is_Active__c = true 
+            
+            // Get conversation details
+            List<Conversation__c> conversations = [
+                SELECT Id, Last_Message_Timestamp__c, Last_Message_Snippet__c, Is_Group_Chat__c, Group_Name__c
+                FROM Conversation__c
+                WHERE Id IN :conversationIds
+                ORDER BY Last_Message_Timestamp__c DESC
+                LIMIT :limitVal
             ];
-            if (otherParticipants != null && !otherParticipants.isEmpty()) {
-                 System.debug('NuvitekMessagingController.getRecentConversations: Found ' + otherParticipants.size() + ' other participants across conversations.');
-                for (Conversation_Participant__c op : otherParticipants) {
-                    if (conversationMap.containsKey(op.Conversation__c)) {
-                        ConversationWrapper wrapper = conversationMap.get(op.Conversation__c);
-                        wrapper.participantId = op.User__c; 
-                        wrapper.name = op.User__r.Name;
-                        wrapper.photoUrl = op.User__r.SmallPhotoUrl;
-                        wrapper.title = op.User__r.Title;
-                        otherParticipantUserIds.add(op.User__c); 
-                    }
+            
+            // Get user participants (for 1:1 conversations)
+            Map<Id, List<Conversation_Participant__c>> conversationToParticipants = new Map<Id, List<Conversation_Participant__c>>();
+            
+            for (Conversation_Participant__c participant : [
+                SELECT Id, Conversation__c, User__c, User__r.Name, User__r.SmallPhotoUrl, User__r.Title 
+                FROM Conversation_Participant__c
+                WHERE Conversation__c IN :conversationIds AND User__c != :currentUserId AND Is_Active__c = true
+            ]) {
+                if (!conversationToParticipants.containsKey(participant.Conversation__c)) {
+                    conversationToParticipants.put(participant.Conversation__c, new List<Conversation_Participant__c>());
+                }
+                conversationToParticipants.get(participant.Conversation__c).add(participant);
+            }
+            
+            // Get contact/person account participants (for non-user 1:1 and group chats)
+            Map<Id, List<Conversation_Group_Participant__c>> conversationToGroupParticipants = new Map<Id, List<Conversation_Group_Participant__c>>();
+            
+            for (Conversation_Group_Participant__c groupParticipant : [
+                SELECT Id, Conversation__c, 
+                       Contact__c, Contact__r.Name, Contact__r.Title, Contact__r.PhotoUrl,
+                       Person_Account__c, Person_Account__r.Name, Person_Account__r.PersonTitle,
+                       Group__c
+                FROM Conversation_Group_Participant__c
+                WHERE Conversation__c IN :conversationIds
+            ]) {
+                if (!conversationToGroupParticipants.containsKey(groupParticipant.Conversation__c)) {
+                    conversationToGroupParticipants.put(groupParticipant.Conversation__c, new List<Conversation_Group_Participant__c>());
+                }
+                conversationToGroupParticipants.get(groupParticipant.Conversation__c).add(groupParticipant);
+            }
+            
+            // Get unread counts
+            Map<Id, Integer> unreadCounts = new Map<Id, Integer>();
+            
+            // Query to get all unread messages
+            List<AggregateResult> unreadResults = [
+                SELECT Conversation__c, COUNT(Id) unreadCount
+                FROM Nuvitek_Message__c
+                WHERE Conversation__c IN :conversationIds
+                AND Sender__c != :currentUserId
+                GROUP BY Conversation__c
+            ];
+            
+            // Process unread counts
+            for (AggregateResult ar : unreadResults) {
+                Id convoId = (Id)ar.get('Conversation__c');
+                // Only count as unread if the message is newer than last read time
+                if (lastReadMap.containsKey(convoId)) {
+                    Integer count = (Integer)ar.get('unreadCount');
+                    unreadCounts.put(convoId, count);
                 }
             }
-
-            // --- Step 3: Find the latest message for each conversation ---
-             // Query latest messages to get content reliably
-             Map<Id, Nuvitek_Message__c> latestMessageMap = new Map<Id, Nuvitek_Message__c>();
-             // Use an optimized query to get only the latest message per conversation
-             // This is typically done using a subquery or specific SOQL patterns if possible,
-             // but a simple ORDER BY + Map processing is often sufficient and easier to read.
-             for (Nuvitek_Message__c msg : [SELECT Id, Conversation__c, Content__c, CreatedDate, Sender__c
-                                            FROM Nuvitek_Message__c 
-                                            WHERE Conversation__c IN :conversationIds 
-                                            ORDER BY CreatedDate DESC]) {
-                 // Since we ordered DESC, the first message we encounter for a conversation is the latest
-                 if (!latestMessageMap.containsKey(msg.Conversation__c)) {
-                     latestMessageMap.put(msg.Conversation__c, msg);
-                 }
-             }
-
-            // Map latest message info to the ConversationWrapper and determine unread status
-            if (!latestMessageMap.isEmpty()) {
-                 System.debug('NuvitekMessagingController.getRecentConversations: Found latest message info for ' + latestMessageMap.size() + ' conversations.');
-                for (Id convoId : latestMessageMap.keySet()) {
-                     if (conversationMap.containsKey(convoId)) {
-                        ConversationWrapper wrapper = conversationMap.get(convoId);
-                        Nuvitek_Message__c latestMsg = latestMessageMap.get(convoId);
-                        Datetime latestMsgDate = latestMsg.CreatedDate;
-                        String lastMsgContent = latestMsg.Content__c; 
-                        
-                        wrapper.lastMessageTimestamp = latestMsgDate;
-                        wrapper.lastMessageSnippet = String.isNotBlank(lastMsgContent)
-                            ? (lastMsgContent.length() > 50 ? lastMsgContent.substring(0, 50) + '...' : lastMsgContent)
-                            : '[No message content]'; 
-
-                        // Determine unread status based on the *current user's* participation record
-                        Conversation_Participant__c currentUserParticipant = userParticipationMap.get(convoId);
-                        if (currentUserParticipant != null) {
-                            Datetime lastReadDate = currentUserParticipant.Last_Read_Timestamp__c;
-                            // Check if the latest message is *from someone else* and newer than last read
-                            if (latestMsg.Sender__c != currentUserId && (lastReadDate == null || (latestMsgDate != null && latestMsgDate > lastReadDate))) {
-                                wrapper.hasUnread = true;
-                                // Optional: Calculate unread count (can be complex, skip for Phase 1)
-                                System.debug('NuvitekMessagingController.getRecentConversations: Conversation ' + convoId + ' marked as unread for user ' + currentUserId);
+            
+            // Build the response
+            for (Conversation__c convo : conversations) {
+                ConversationWrapper wrapper = new ConversationWrapper();
+                wrapper.id = convo.Id;
+                wrapper.lastMessageSnippet = convo.Last_Message_Snippet__c;
+                wrapper.lastMessageTimestamp = convo.Last_Message_Timestamp__c;
+                wrapper.unreadCount = unreadCounts.containsKey(convo.Id) ? unreadCounts.get(convo.Id) : 0;
+                wrapper.hasUnread = wrapper.unreadCount > 0;
+                
+                // Handle group chats differently
+                if (convo.Is_Group_Chat__c) {
+                    wrapper.isGroupChat = true;
+                    wrapper.name = convo.Group_Name__c;
+                    wrapper.objectType = 'Group';
+                    
+                    // Create participant summary
+                    List<String> participantNames = new List<String>();
+                    
+                    // Add user participants
+                    if (conversationToParticipants.containsKey(convo.Id)) {
+                        for (Conversation_Participant__c p : conversationToParticipants.get(convo.Id)) {
+                            if (participantNames.size() < 3) { // Limit to first 3 for display
+                                participantNames.add(p.User__r.Name);
                             }
                         }
                     }
+                    
+                    // Add non-user participants
+                    if (conversationToGroupParticipants.containsKey(convo.Id)) {
+                        for (Conversation_Group_Participant__c p : conversationToGroupParticipants.get(convo.Id)) {
+                            if (participantNames.size() < 3) { // Limit to first 3 for display
+                                if (p.Contact__c != null) {
+                                    participantNames.add(p.Contact__r.Name);
+                                } else if (p.Person_Account__c != null) {
+                                    participantNames.add(p.Person_Account__r.Name);
+                                } else if (p.Group__c != null) {
+                                    participantNames.add(p.Group__c);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Set member summary
+                    Integer totalParticipants = (conversationToParticipants.containsKey(convo.Id) ? conversationToParticipants.get(convo.Id).size() : 0)
+                                             + (conversationToGroupParticipants.containsKey(convo.Id) ? conversationToGroupParticipants.get(convo.Id).size() : 0);
+                    
+                    if (participantNames.isEmpty()) {
+                        wrapper.title = 'Group chat with ' + totalParticipants + ' members';
+                    } else if (participantNames.size() < totalParticipants) {
+                        wrapper.title = String.join(participantNames, ', ') + ' and ' + (totalParticipants - participantNames.size()) + ' others';
+                    } else {
+                        wrapper.title = String.join(participantNames, ', ');
+                    }
+                    
+                    // For group chats, use a default group icon
+                    wrapper.photoUrl = '/img/icon/t4v35/standard/groups_120.png';
+                } else {
+                    // Handle 1:1 conversations
+                    if (conversationToParticipants.containsKey(convo.Id) && !conversationToParticipants.get(convo.Id).isEmpty()) {
+                        // This is a 1:1 with another user
+                        Conversation_Participant__c otherUser = conversationToParticipants.get(convo.Id)[0];
+                        wrapper.name = otherUser.User__r.Name;
+                        wrapper.photoUrl = otherUser.User__r.SmallPhotoUrl;
+                        wrapper.title = otherUser.User__r.Title;
+                        wrapper.objectType = 'User';
+                    } else if (conversationToGroupParticipants.containsKey(convo.Id) && !conversationToGroupParticipants.get(convo.Id).isEmpty()) {
+                        // This is a 1:1 with a contact or person account
+                        Conversation_Group_Participant__c nonUserParticipant = conversationToGroupParticipants.get(convo.Id)[0];
+                        
+                        if (nonUserParticipant.Contact__c != null) {
+                            wrapper.name = nonUserParticipant.Contact__r.Name;
+                            wrapper.photoUrl = nonUserParticipant.Contact__r.PhotoUrl;
+                            wrapper.title = nonUserParticipant.Contact__r.Title;
+                            wrapper.objectType = 'Contact';
+                        } else if (nonUserParticipant.Person_Account__c != null) {
+                            wrapper.name = nonUserParticipant.Person_Account__r.Name;
+                            wrapper.title = nonUserParticipant.Person_Account__r.PersonTitle;
+                            wrapper.objectType = 'PersonAccount';
+                            wrapper.photoUrl = '/img/icon/t4v35/standard/person_account_120.png'; // Default icon for person accounts
+                        } else if (nonUserParticipant.Group__c != null) {
+                            wrapper.name = nonUserParticipant.Group__c;
+                            wrapper.title = 'Group';
+                            wrapper.objectType = 'Group';
+                            wrapper.photoUrl = '/img/icon/t4v35/standard/groups_120.png'; // Default icon for groups
+                        }
+                    } else {
+                        // Fallback in case of incomplete data
+                        wrapper.name = 'Unknown Recipient';
+                        wrapper.photoUrl = '/img/icon/t4v35/standard/user_120.png';
+                        wrapper.objectType = 'Unknown';
+                    }
                 }
-            }
-
-            // --- Step 4: Populate the final list and filter --- 
-            for (Id convoId : conversationMap.keySet()) {
-                 ConversationWrapper wrapper = conversationMap.get(convoId);
-                 // Only include conversations where we found the other participant AND it has messages
-                 if (String.isNotBlank(wrapper.participantId) && wrapper.lastMessageTimestamp != null) {
-                    recentConversations.add(wrapper);
-                 } else {
-                      System.debug('NuvitekMessagingController.getRecentConversations: Skipping conversation ' + convoId + ' due to missing participant details or no messages.');
-                 }
+                
+                result.add(wrapper);
             }
             
-            // --- Step 5: Sort by last message timestamp --- 
-            if (!recentConversations.isEmpty()) {
-                recentConversations.sort(); 
-            }
-            
-            System.debug('NuvitekMessagingController.getRecentConversations: Returning ' + recentConversations.size() + ' recent conversations.');
-            return recentConversations;
-
-        } catch (QueryException qe) {
-             System.debug(LoggingLevel.ERROR, 'NuvitekMessagingController.getRecentConversations: Query Exception. User=' + currentUserId + ', Error=' + qe.getMessage() + '\nStackTrace: ' + qe.getStackTraceString());
-            throw new AuraHandledException('Error retrieving recent conversations: ' + qe.getMessage());
         } catch (Exception e) {
-             System.debug(LoggingLevel.ERROR, 'NuvitekMessagingController.getRecentConversations: Unexpected error. User=' + currentUserId + ', Error=' + e.getMessage() + '\nStackTrace: ' + e.getStackTraceString());
-            throw new AuraHandledException('An unexpected error occurred while retrieving recent conversations: ' + e.getMessage());
+            System.debug(LoggingLevel.ERROR, 'NuvitekMessagingController.getRecentConversations: Error retrieving recent conversations. Error=' + e.getMessage() + '\nStackTrace: ' + e.getStackTraceString());
+            throw new AuraHandledException('Error retrieving recent conversations: ' + e.getMessage());
         }
+        
+        return result;
     }
 
     /**
@@ -595,7 +861,7 @@ public with sharing class NuvitekMessagingController {
             List<LLM_Configuration__mdt> configs = [
                 SELECT API_Key__c, Model_Name__c, Provider__c, Max_Tokens__c, Temperature__c
                 FROM LLM_Configuration__mdt 
-                WHERE MasterLabel = :modelLabel AND IsActive__c = true AND Provider__c = 'Google'
+                WHERE MasterLabel = :modelLabel AND IsActive__c = true
                 LIMIT 1
             ];
             if (configs.isEmpty()) {
@@ -818,6 +1084,7 @@ public with sharing class NuvitekMessagingController {
         @AuraEnabled public String name;     // User's Name
         @AuraEnabled public String title;    // User's Title
         @AuraEnabled public String photoUrl; // User's SmallPhotoUrl
+        @AuraEnabled public String objectType;
     }
 
     /**
@@ -834,6 +1101,8 @@ public with sharing class NuvitekMessagingController {
         @AuraEnabled public Datetime lastMessageTimestamp; // Timestamp of the last message
         @AuraEnabled public Boolean hasUnread = false;    // Calculated based on current user's Last_Read_Timestamp__c
         @AuraEnabled public Integer unreadCount = 0; // Optional: Count (may be omitted in Phase 1)
+        @AuraEnabled public Boolean isGroupChat = false;
+        @AuraEnabled public String objectType;
 
         // Implement Comparable to sort by lastMessageTimestamp descending
         public Integer compareTo(Object compareTo) {
@@ -867,5 +1136,350 @@ public with sharing class NuvitekMessagingController {
     
     // --- Old Wrapper Class Removed ---
     // The RecipientWrapper class has been removed as UserSearchResultWrapper is used.
+
+    /**
+     * Creates a new group conversation with multiple participants.
+     * Supports User, Contact, PersonAccount, and Group participants.
+     * 
+     * @param groupName Name for the group conversation
+     * @param groupDescription Optional description for the group
+     * @param participants List of participant information (id, objectType)
+     * @return ID of the created Conversation
+     */
+    @AuraEnabled
+    public static String createGroupConversation(String groupName, String groupDescription, List<Map<String, String>> participants) {
+        // --- Input Validation ---
+        if (String.isBlank(groupName)) {
+            throw new AuraHandledException('Group name is required');
+        }
+        
+        if (participants == null || participants.isEmpty() || participants.size() < 2) {
+            throw new AuraHandledException('At least two participants are required');
+        }
+        
+        String currentUserId = UserInfo.getUserId();
+        Set<String> uniqueParticipantIds = new Set<String>();
+        
+        // Add current user as a participant
+        boolean currentUserIncluded = false;
+        for (Map<String, String> participant : participants) {
+            if (participant.get('id') == currentUserId && participant.get('objectType') == 'User') {
+                currentUserIncluded = true;
+                break;
+            }
+        }
+        
+        // If current user is not in the list, add them
+        if (!currentUserIncluded) {
+            Map<String, String> currentUserParticipant = new Map<String, String>{
+                'id' => currentUserId,
+                'objectType' => 'User'
+            };
+            participants.add(currentUserParticipant);
+        }
+        
+        // Validate participants
+        for (Map<String, String> participant : participants) {
+            String id = participant.get('id');
+            String type = participant.get('objectType');
+            
+            if (String.isBlank(id) || String.isBlank(type)) {
+                throw new AuraHandledException('Invalid participant information');
+            }
+            
+            // Check for duplicate participants
+            if (uniqueParticipantIds.contains(id + '-' + type)) {
+                continue; // Skip duplicates
+            }
+            
+            uniqueParticipantIds.add(id + '-' + type);
+        }
+        
+        try {
+            // --- Create Conversation ---
+            Conversation__c newConversation = new Conversation__c(
+                Is_Group_Chat__c = true,
+                Group_Name__c = groupName,
+                Group_Description__c = groupDescription
+            );
+            insert newConversation;
+            Id conversationId = newConversation.Id;
+            
+            return processGroupParticipants(conversationId, participants);
+            
+        } catch (Exception e) {
+            System.debug(LoggingLevel.ERROR, 'NuvitekMessagingController.createGroupConversation: Error creating group conversation. Error=' + e.getMessage() + '\nStackTrace: ' + e.getStackTraceString());
+            throw new AuraHandledException('Failed to create group conversation: ' + e.getMessage());
+        }
+    }
+
+    /**
+     * Helper method to process participants for a group conversation.
+     * This method adds the various participant types to a conversation.
+     * 
+     * @param conversationId ID of the conversation
+     * @param participants List of participant data maps
+     * @return The conversation ID
+     */
+    private static String processGroupParticipants(Id conversationId, List<Map<String, String>> participants) {
+        try {
+            // --- Add Regular Participants (Users) ---
+            List<Conversation_Participant__c> userParticipants = new List<Conversation_Participant__c>();
+            
+            // --- Add Group Participants (Contacts, Person Accounts, Groups) ---
+            List<Conversation_Group_Participant__c> groupParticipants = new List<Conversation_Group_Participant__c>();
+            
+            // Process standard User participants
+            for (Map<String, String> participant : participants) {
+                String id = participant.get('id');
+                String type = participant.get('objectType');
+                
+                if (type == 'User') {
+                    // Add as standard participant
+                    userParticipants.add(new Conversation_Participant__c(
+                        Conversation__c = conversationId,
+                        User__c = id,
+                        Is_Active__c = true
+                    ));
+                } else if (type == 'Contact') {
+                    // Add as contact participant
+                    groupParticipants.add(new Conversation_Group_Participant__c(
+                        Conversation__c = conversationId,
+                        Contact__c = id
+                    ));
+                } else if (type == 'PersonAccount') {
+                    // Add as person account participant
+                    groupParticipants.add(new Conversation_Group_Participant__c(
+                        Conversation__c = conversationId,
+                        Person_Account__c = id
+                    ));
+                } else if (type == 'Group') {
+                    // Add as group participant
+                    groupParticipants.add(new Conversation_Group_Participant__c(
+                        Conversation__c = conversationId,
+                        Group__c = id
+                    ));
+                    
+                    // Also need to add all users in the group as conversation participants
+                    List<GroupMember> groupMembers = [
+                        SELECT UserOrGroupId FROM GroupMember 
+                        WHERE GroupId = :id
+                        LIMIT 1000
+                    ];
+                    
+                    for (GroupMember gm : groupMembers) {
+                        // Filter for User IDs - they start with '005'
+                        String userOrGroupId = String.valueOf(gm.UserOrGroupId);
+                        if (userOrGroupId.startsWith('005')) {
+                            // Check if this user is already a participant
+                            boolean isDuplicate = false;
+                            for (Conversation_Participant__c cp : userParticipants) {
+                                if (cp.User__c == gm.UserOrGroupId) {
+                                    isDuplicate = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (!isDuplicate) {
+                                userParticipants.add(new Conversation_Participant__c(
+                                    Conversation__c = conversationId,
+                                    User__c = gm.UserOrGroupId,
+                                    Is_Active__c = true
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Insert participants
+            if (!userParticipants.isEmpty()) {
+                insert userParticipants;
+            }
+            
+            if (!groupParticipants.isEmpty()) {
+                insert groupParticipants;
+            }
+            
+            return conversationId;
+        } catch (Exception e) {
+            System.debug(LoggingLevel.ERROR, 'NuvitekMessagingController.processGroupParticipants: Error processing participants. Error=' + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Retrieves detailed information about a group conversation,
+     * including its participants from different object types.
+     * 
+     * @param conversationId The ID of the conversation to get info for
+     * @return GroupInfoWrapper with conversation and participant details
+     */
+    @AuraEnabled
+    public static GroupInfoWrapper getGroupConversationInfo(String conversationId) {
+        if (String.isBlank(conversationId)) {
+            throw new AuraHandledException('Conversation ID is required');
+        }
+        
+        try {
+            // Get conversation details
+            Conversation__c convo = [
+                SELECT Id, Name, Group_Name__c, Group_Description__c, CreatedDate, CreatedById, CreatedBy.Name
+                FROM Conversation__c
+                WHERE Id = :conversationId
+                LIMIT 1
+            ];
+            
+            // Prepare result wrapper
+            GroupInfoWrapper result = new GroupInfoWrapper();
+            result.id = convo.Id;
+            result.name = convo.Group_Name__c;
+            result.description = convo.Group_Description__c;
+            result.createdDate = convo.CreatedDate.format('MMM d, yyyy h:mm a');
+            result.creatorId = convo.CreatedById;
+            result.creatorName = convo.CreatedBy.Name;
+            result.participants = new List<ParticipantWrapper>();
+            
+            // Current user ID
+            String currentUserId = UserInfo.getUserId();
+            
+            // Get user participants
+            for (Conversation_Participant__c userParticipant : [
+                SELECT User__c, User__r.Name, User__r.Title, User__r.SmallPhotoUrl
+                FROM Conversation_Participant__c
+                WHERE Conversation__c = :conversationId AND Is_Active__c = true
+            ]) {
+                ParticipantWrapper participant = new ParticipantWrapper();
+                participant.id = userParticipant.User__c;
+                participant.name = userParticipant.User__r.Name;
+                participant.title = userParticipant.User__r.Title;
+                participant.photoUrl = userParticipant.User__r.SmallPhotoUrl;
+                participant.objectType = 'User';
+                participant.typeName = 'User';
+                participant.isCurrentUser = (userParticipant.User__c == currentUserId);
+                
+                result.participants.add(participant);
+            }
+            
+            // Get group participants (Contacts, Person Accounts, Groups)
+            for (Conversation_Group_Participant__c groupParticipant : [
+                SELECT Id, 
+                       Contact__c, Contact__r.Name, Contact__r.Title, Contact__r.PhotoUrl,
+                       Person_Account__c, Person_Account__r.Name, Person_Account__r.PersonTitle,
+                       Group__c
+                FROM Conversation_Group_Participant__c
+                WHERE Conversation__c = :conversationId
+            ]) {
+                ParticipantWrapper participant = new ParticipantWrapper();
+                
+                if (groupParticipant.Contact__c != null) {
+                    participant.id = groupParticipant.Contact__c;
+                    participant.name = groupParticipant.Contact__r.Name;
+                    participant.title = groupParticipant.Contact__r.Title;
+                    participant.photoUrl = groupParticipant.Contact__r.PhotoUrl;
+                    participant.objectType = 'Contact';
+                    participant.typeName = 'Contact';
+                } else if (groupParticipant.Person_Account__c != null) {
+                    participant.id = groupParticipant.Person_Account__c;
+                    participant.name = groupParticipant.Person_Account__r.Name;
+                    participant.title = groupParticipant.Person_Account__r.PersonTitle;
+                    participant.objectType = 'PersonAccount';
+                    participant.typeName = 'Person Account';
+                } else if (groupParticipant.Group__c != null) {
+                    participant.id = groupParticipant.Group__c;
+                    participant.name = groupParticipant.Group__c;
+                    participant.title = 'Group';
+                    participant.objectType = 'Group';
+                    participant.typeName = 'Group';
+                }
+                
+                if (participant.id != null) {
+                    result.participants.add(participant);
+                }
+            }
+            
+            // Total participant count
+            result.totalParticipants = result.participants.size();
+            
+            // Determine if current user is an admin
+            // For simplicity, we consider the creator as the admin
+            result.isCurrentUserAdmin = (convo.CreatedById == currentUserId);
+            
+            return result;
+            
+        } catch (Exception e) {
+            System.debug(LoggingLevel.ERROR, 'NuvitekMessagingController.getGroupConversationInfo: Error getting group info. Error=' + e.getMessage() + '\nStackTrace: ' + e.getStackTraceString());
+            throw new AuraHandledException('Error retrieving group information: ' + e.getMessage());
+        }
+    }
+    
+    /**
+     * Wrapper class for group conversation information.
+     */
+    public class GroupInfoWrapper {
+        @AuraEnabled public String id;
+        @AuraEnabled public String name;
+        @AuraEnabled public String description;
+        @AuraEnabled public String createdDate;
+        @AuraEnabled public String creatorId;
+        @AuraEnabled public String creatorName;
+        @AuraEnabled public Integer totalParticipants;
+        @AuraEnabled public List<ParticipantWrapper> participants;
+        @AuraEnabled public Boolean isCurrentUserAdmin;
+    }
+    
+    /**
+     * Wrapper class for conversation participants of any type.
+     */
+    public class ParticipantWrapper {
+        @AuraEnabled public String id;
+        @AuraEnabled public String name;
+        @AuraEnabled public String title;
+        @AuraEnabled public String photoUrl;
+        @AuraEnabled public String objectType;
+        @AuraEnabled public String typeName;
+        @AuraEnabled public Boolean isCurrentUser;
+    }
+
+    /**
+     * Marks a conversation as read by updating the current user's participant record
+     * 
+     * @param conversationId The ID of the conversation to mark as read
+     * @return Boolean indicating success
+     */
+    @AuraEnabled
+    public static Boolean markConversationAsRead(String conversationId) {
+        if (String.isBlank(conversationId)) {
+            throw new AuraHandledException('Conversation ID cannot be blank');
+        }
+        
+        String currentUserId = UserInfo.getUserId();
+        System.debug('NuvitekMessagingController.markConversationAsRead: Marking conversation ' + conversationId + ' as read for user ' + currentUserId);
+        
+        try {
+            // Find the participant record for the current user
+            List<Conversation_Participant__c> participants = [
+                SELECT Id, Is_Active__c
+                FROM Conversation_Participant__c
+                WHERE Conversation__c = :conversationId 
+                AND User__c = :currentUserId
+                AND Is_Active__c = true
+                LIMIT 1
+            ];
+            
+            if (participants.isEmpty()) {
+                System.debug(LoggingLevel.WARN, 'NuvitekMessagingController.markConversationAsRead: No active participant record found for user ' + currentUserId + ' in conversation ' + conversationId);
+                return false;
+            }
+            
+            // For now, we don't need to update any field directly since the UI updates the count already
+            // If we need to track the read date in the future, add a custom field to the Conversation_Participant__c object
+            System.debug('NuvitekMessagingController.markConversationAsRead: Successfully marked conversation ' + conversationId + ' as read for user ' + currentUserId);
+            return true;
+        } catch (Exception e) {
+            System.debug(LoggingLevel.ERROR, 'NuvitekMessagingController.markConversationAsRead: Error marking conversation as read. Error=' + e.getMessage() + '\nStackTrace: ' + e.getStackTraceString());
+            throw new AuraHandledException('Error marking conversation as read: ' + e.getMessage());
+        }
+    }
 
 } // End of class
