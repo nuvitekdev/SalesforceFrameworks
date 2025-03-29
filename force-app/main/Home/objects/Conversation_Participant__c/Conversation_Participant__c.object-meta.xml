@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>Conversation Participant</label>
+    <pluralLabel>Conversation Participants</pluralLabel>
+    <nameField>
+        <label>Participant Name</label>
+        <type>AutoNumber</type>
+        <displayFormat>CP-{000000}</displayFormat>
+        <startingNumber>1</startingNumber>
+    </nameField>
+    <deploymentStatus>Deployed</deploymentStatus>
+    <sharingModel>ControlledByParent</sharingModel> <!-- Because Conversation__c is Master-Detail -->
+    <description>Links Users to a Conversation thread.</description>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>false</enableBulkApi>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>false</enableHistory>
+    <enableLicensing>false</enableLicensing>
+    <enableReports>true</enableReports> <!-- May be useful for reporting -->
+    <enableSearch>true</enableSearch>
+    <enableSharing>false</enableSharing> <!-- Controlled by parent -->
+    <enableStreamingApi>false</enableStreamingApi>
+</CustomObject> 

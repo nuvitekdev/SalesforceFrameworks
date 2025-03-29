@@ -1,4 +1,4 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, track, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import handleRequest from '@salesforce/apex/LLMController.handleRequest';
@@ -7,6 +7,9 @@ import sendMessage from '@salesforce/apex/NuvitekMessagingController.sendMessage
 import getMessages from '@salesforce/apex/NuvitekMessagingController.getMessages';
 import getUnreadMessageCount from '@salesforce/apex/NuvitekMessagingController.getUnreadMessageCount';
 import markAsRead from '@salesforce/apex/NuvitekMessagingController.markAsRead';
+import getRecentConversations from '@salesforce/apex/NuvitekMessagingController.getRecentConversations';
+import getChatSummary from '@salesforce/apex/NuvitekMessagingController.getChatSummary';
+import getConversationForUsers from '@salesforce/apex/NuvitekMessagingController.getConversationForUsers';
 
 // Constants
 const SEARCH_DELAY = 300; // ms delay for search to prevent too many server calls
@@ -22,8 +25,7 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     @api fontFamily = 'Arial, sans-serif';
     @api fontSize = '14px';
     @api cardTitle = 'Messaging';
-    @api defaultLLMName = 'GPT4o';  // Default LLM for summarization
-    @api searchObjects = 'User,Contact,Account,Lead'; // Comma-separated list of objects to search
+    @api defaultLLMName = 'Gemini 2.5';  // Default LLM for summarization
     @api checkNotificationsInterval = 60; // In seconds
     @api componentHeight = 400; // Component height in pixels
     @api sidebarWidth = '30%'; // Sidebar width as percentage or pixels
@@ -34,6 +36,7 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     @track searchResults = [];
     @track isSearching = false;
     @track selectedRecipient = null;
+    @track conversationId = null;
     @track newMessage = '';
     @track isLoading = false;
     @track hasError = false;
@@ -65,6 +68,9 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         { label: 'Courier', value: 'Courier, monospace' },
         { label: 'Georgia', value: 'Georgia, serif' }
     ];
+    @track isSidebarVisibleMobile = false; // State for mobile sidebar
+    @track recentConversations = []; // Array for recent conversations
+    @track isLoadingRecent = false; // Loading state for recent conversations
     
     searchTimeoutId = null;
     refreshIntervalId = null;
@@ -115,7 +121,7 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     get noMessagesMessage() {
         return this.selectedRecipient ? 
             `Start a conversation with ${this.selectedRecipient.name}` : 
-            'Select a recipient to start messaging';
+            'Select a recipient or start a new chat';
     }
 
     get componentStyle() {
@@ -152,6 +158,12 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         
         // Initial check for unread messages
         this.checkUnreadMessages();
+        
+        // Load recent conversations on initial load
+        this.loadRecentConversations();
+        
+        // Add listener for window resize to handle responsive changes
+        window.addEventListener('resize', this.handleResize.bind(this));
     }
 
     disconnectedCallback() {
@@ -163,6 +175,9 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         if (this.notificationCheckIntervalId) {
             clearInterval(this.notificationCheckIntervalId);
         }
+        
+        // Remove resize listener
+        window.removeEventListener('resize', this.handleResize.bind(this));
     }
 
     renderedCallback() {
@@ -277,47 +292,46 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     
     // Perform the search
     performSearch() {
-        if (this.searchTerm.length < 2) return;
-        
         this.isSearching = true;
+        this.searchResults = [];
         
-        // Split the comma-separated string of object types
-        const searchObjectsList = this.searchObjects.split(',').map(obj => obj.trim());
-        
-        searchRecipients({
-            searchTerm: this.searchTerm,
-            objectTypes: searchObjectsList
-        })
-        .then(results => {
-            this.searchResults = results.map(result => {
-                return {
-                    ...result,
-                    // Use a placeholder image if none is provided
-                    photoUrl: result.photoUrl || this.getPlaceholderImage(result.name)
-                };
+        // Remove objectTypes from the parameters sent to Apex
+        searchRecipients({ searchTerm: this.searchTerm })
+            .then(data => {
+                if (data) {
+                    this.searchResults = data.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        title: item.title || '', // Handle potentially null title
+                        photoUrl: item.photoUrl || this.getPlaceholderImage(item.name),
+                        objectType: 'User' // Hardcode objectType as User for Phase 1
+                    }));
+                    
+                    // Apply prioritization (optional, less relevant with only Users)
+                    const getPriority = (obj) => {
+                        switch(obj.objectType) {
+                            case 'User': return 1;
+                            // case 'Contact': return 2; // Keep for future phases if needed
+                            // case 'Account': return 3;
+                            // case 'Lead': return 4;
+                            default: return 5;
+                        }
+                    };
+                    this.searchResults.sort((a, b) => getPriority(a) - getPriority(b));
+                    
+                    console.log('Search Results:', JSON.parse(JSON.stringify(this.searchResults)));
+                } else {
+                    this.searchResults = [];
+                }
+            })
+            .catch(error => {
+                this.handleError(error, 'Error searching recipients.');
+                this.searchResults = [];
+            })
+            .finally(() => {
+                this.isSearching = false;
+                this.showSearchResults = true;
             });
-            
-            // Sort results: Users first, then Contacts, then other objects
-            this.searchResults.sort((a, b) => {
-                // Helper function to assign priority
-                const getPriority = (obj) => {
-                    if (obj.objectType === 'User') return 1;
-                    if (obj.objectType === 'Contact') return 2;
-                    return 3;
-                };
-                
-                const priorityA = getPriority(a);
-                const priorityB = getPriority(b);
-                
-                return priorityA - priorityB || a.name.localeCompare(b.name);
-            });
-        })
-        .catch(error => {
-            this.handleError(error, 'Error searching for recipients');
-        })
-        .finally(() => {
-            this.isSearching = false;
-        });
     }
 
     // Generate a placeholder image based on name (return data URL for image)
@@ -340,27 +354,65 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         const recipient = this.searchResults.find(result => result.id === recipientId);
         
         if (recipient) {
+            console.log('Selected recipient:', recipient);
+            this.resetConversationState(); // Clear old messages/state
             this.selectedRecipient = recipient;
-            this.searchTerm = '';
-            this.searchResults = [];
             this.showSearchResults = false;
+            this.searchTerm = ''; // Clear search term
+            this.isLoading = true; 
+            this.hideMobileSidebar(); // Close sidebar on mobile after selection
+
+            // --- Get or Create Conversation ID --- 
+            console.log(`Fetching conversation ID for user: ${recipient.id}`);
+            getConversationForUsers({ userId1: USER_ID, userId2: recipient.id })
+                .then(convoId => {
+                    console.log(`Conversation ID received: ${convoId}`);
+                    this.conversationId = convoId;
+                     // Now load messages using the conversation ID
+                    this.loadMessages(true); // Pass conversationId implicitly via this.conversationId
+                     // Also mark as read immediately upon opening
+                    this.markMessagesAsRead(); 
+                    this.updateRecentConversations(recipient); // Update recent list
+                })
+                .catch(error => {
+                    this.handleError(error, 'Error getting conversation details');
+                    this.isLoading = false; // Stop loading indicator on error
+                });
+        } else {
+            console.error('Selected recipient not found in search results');
+        }
+    }
+
+    /**
+     * Handle selecting a conversation from the recent list
+     */
+    handleRecentSelect(event) {
+        const conversationId = event.currentTarget.dataset.id;
+        const convo = this.recentConversations.find(c => c.id === conversationId);
+
+        if (convo) {
+            console.log('Selected recent conversation:', convo);
+            this.resetConversationState(); // Clear old messages/state
+            this.conversationId = conversationId; // Set the conversation ID directly
+            this.selectedRecipient = {
+                id: convo.participantId, 
+                name: convo.name,
+                photoUrl: convo.photoUrl,
+                title: convo.title
+                // objectType: 'User' // Assuming Phase 1 is User-only for recents
+            };
+            this.isLoading = true;
+            this.hideMobileSidebar(); // Close sidebar on mobile after selection
+
+            // Load messages for this conversation
+            this.loadMessages(true); 
+            // Mark as read upon opening
+            this.markMessagesAsRead();
+             // Update recent list (might just reorder or refresh unread status)
+            this.updateRecentConversations(this.selectedRecipient);
             
-            // Reset message-related state
-            this.messages = [];
-            this.messageOffset = 0;
-            this.allMessagesLoaded = false;
-            
-            // Load messages for this recipient
-            this.loadMessages(true);
-            
-            // Setup regular refresh for this conversation
-            if (this.refreshIntervalId) {
-                clearInterval(this.refreshIntervalId);
-            }
-            
-            this.refreshIntervalId = setInterval(() => {
-                this.checkForNewMessages();
-            }, REFRESH_INTERVAL);
+        } else {
+             console.error('Selected recent conversation not found');
         }
     }
 
@@ -373,6 +425,10 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         if (searchResultsContainer && !searchResultsContainer.contains(event.target) && 
             searchInput && !searchInput.contains(event.target)) {
             this.showSearchResults = false;
+            // Clear search term if results are closed by clicking away
+            if (this.searchTerm.length > 0 && this.searchResults.length === 0) {
+                this.searchTerm = ''; 
+            }
         }
     }
 
@@ -392,19 +448,20 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         }
         
         getMessages({
-            recipientId: this.selectedRecipient.id,
-            recipientType: this.selectedRecipient.objectType,
+            conversationId: this.conversationId,
             offset: this.messageOffset,
-            limit: 50 // Fetch 50 messages at a time
+            limitNum: 50,
+            newerThan: null
         })
         .then(result => {
             const newMessages = result.messages;
             
-            // Add formatted timestamp to each message
+            // Add formatted timestamp and content to each message
             const processedMessages = newMessages.map(msg => {
                 return {
                     ...msg,
                     formattedTimestamp: this.formatTimestamp(msg.timestamp),
+                    formattedContent: this.formatMessageContent(msg.content),
                     messageClass: msg.isFromUser ? 'message user-message' : 'message recipient-message'
                 };
             });
@@ -425,6 +482,13 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
             if (this.selectedRecipient && newMessages.length > 0) {
                 this.markMessagesAsRead();
             }
+            
+            // Update this conversation in the recent list
+            this.updateRecentConversations({
+                ...this.selectedRecipient,
+                lastMessageSnippet: this.newMessage.trim().substring(0, 50) + (this.newMessage.trim().length > 50 ? '...' : ''),
+                timestamp: new Date().toISOString()
+            });
         })
         .catch(error => {
             this.handleError(error, 'Error loading messages');
@@ -440,44 +504,63 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
 
     // Check for new messages
     checkForNewMessages() {
-        if (!this.selectedRecipient) return;
-        
+        if (this.isLoadingNewMessages || !this.hasInitialized || !this.selectedRecipient || !this.conversationId) {
+            // Don't check if already checking, not initialized, or no recipient/conversation selected
+            return; 
+        }
+
+        // --- Use conversationId --- 
+        if (!this.conversationId) {
+            console.warn('checkForNewMessages called without conversationId.');
+            return;
+        }
+
         this.isLoadingNewMessages = true;
-        
-        getMessages({
-            recipientId: this.selectedRecipient.id,
-            recipientType: this.selectedRecipient.objectType,
-            offset: 0,
-            limit: 10,
-            newerThan: this.getNewestMessageTimestamp()
+        const newestTimestamp = this.getNewestMessageTimestamp();
+        console.log(`Checking for new messages since ${newestTimestamp} in conversation ${this.conversationId}`);
+
+        getMessages({ 
+            conversationId: this.conversationId, // Pass conversation ID
+            offset: 0, 
+            limitNum: 50, // Fetch a decent batch in case many arrived
+            newerThan: newestTimestamp // Pass the timestamp of the latest known message
         })
         .then(result => {
             const newMessages = result.messages;
-            
-            if (newMessages.length > 0) {
-                // Process messages with formatted timestamp
-                const processedMessages = newMessages.map(msg => {
-                    return {
-                        ...msg,
-                        formattedTimestamp: this.formatTimestamp(msg.timestamp),
-                        messageClass: msg.isFromUser ? 'message user-message' : 'message recipient-message'
-                    };
-                });
-                
-                // Add new messages to the end
-                this.messages = [...this.messages, ...processedMessages];
-                
-                // Play a subtle notification sound if messages are from recipient
-                if (newMessages.some(msg => !msg.isFromUser)) {
+            if (newMessages && newMessages.length > 0) {
+                console.log(`Received ${newMessages.length} new messages.`);
+                const formattedNewMessages = newMessages.map(msg => ({
+                    ...msg,
+                    timestamp: new Date(msg.timestamp),
+                    formattedTimestamp: this.formatTimestamp(msg.timestamp),
+                    formattedContent: this.formatMessageContent(msg.content),
+                    messageClass: `message ${msg.isFromUser ? 'user-message' : 'recipient-message'}`
+                }));
+
+                // Add new messages to the top (or bottom if reversed) of the list
+                this.messages = [...this.messages, ...formattedNewMessages];
+
+                // Only show notification/sound if message is not from current user
+                const incomingMessages = formattedNewMessages.filter(msg => !msg.isFromUser);
+                if (incomingMessages.length > 0) {
+                    this.showBrowserNotification(incomingMessages[0]); // Show for the first incoming one
                     this.playNotificationSound();
+                    this.markMessagesAsRead(); // Mark as read since we just displayed them
                 }
-                
-                // Mark as read since conversation is open
-                this.markMessagesAsRead();
+
+                // Use requestAnimationFrame to ensure DOM updates before scrolling
+                requestAnimationFrame(() => {
+                    this.scrollToBottom();
+                });
+            } else {
+                console.log('No new messages found.');
             }
         })
         .catch(error => {
+            // Don't show toast for background refresh errors unless critical
             console.error('Error checking for new messages:', error);
+            // Optionally stop refresh if error persists
+            // this.stopMessageRefresh(); 
         })
         .finally(() => {
             this.isLoadingNewMessages = false;
@@ -521,17 +604,33 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
     markMessagesAsRead() {
         if (!this.selectedRecipient) return;
         
-        markAsRead({
-            recipientId: this.selectedRecipient.id,
-            recipientType: this.selectedRecipient.objectType
-        })
-        .then(() => {
-            // Refresh unread count
-            this.checkUnreadMessages();
-        })
-        .catch(error => {
-            console.error('Error marking messages as read:', error);
-        });
+        // --- Use conversationId if available --- 
+        if (!this.conversationId) {
+            console.warn('markMessagesAsRead called without conversationId.');
+            return;
+        }
+
+        console.log(`Marking conversation ${this.conversationId} as read.`);
+        markAsRead({ conversationId: this.conversationId }) // Pass conversation ID
+            .then(() => {
+                console.log('Successfully marked conversation as read.');
+                // Update local unread count immediately for responsiveness
+                this.unreadCount = 0; 
+                 // Update recent list immediately
+                const recentIndex = this.recentConversations.findIndex(c => c.id === this.conversationId);
+                if (recentIndex !== -1) {
+                    this.recentConversations[recentIndex].hasUnread = false;
+                    this.recentConversations[recentIndex].unreadCount = 0;
+                    // Trigger reactivity if needed (though tracking should handle it)
+                    this.recentConversations = [...this.recentConversations]; 
+                }
+                // Optionally trigger a full refresh of unread count from server if needed elsewhere
+                // this.checkUnreadMessages(); 
+            })
+            .catch(error => {
+                // Don't show toast for this background action unless debugging
+                 console.error('Error marking messages as read:', error);
+            });
     }
 
     // Handle new message input
@@ -564,42 +663,83 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
         
         this.isLoading = true;
         
-        sendMessage({
-            recipientId: this.selectedRecipient.id,
-            recipientType: this.selectedRecipient.objectType,
-            content: this.newMessage.trim()
-        })
-        .then(result => {
-            const timestamp = new Date().toISOString();
-            
-            // Add the new message to the messages array
-            this.messages = [
-                ...this.messages,
-                {
-                    id: result.messageId,
-                    content: this.newMessage,
-                    timestamp: timestamp,
-                    formattedTimestamp: this.formatTimestamp(timestamp),
-                    isFromUser: true,
-                    messageClass: 'message user-message',
-                    senderName: 'You',
-                    senderPhotoUrl: result.userPhotoUrl || this.getPlaceholderImage('You')
+        // --- Get or Create Conversation ID first if not available ---
+        if (!this.conversationId) {
+            console.warn('Attempting to send message without a conversationId. This should ideally be set when recipient is selected.');
+            // As a fallback, try to derive it here, though this might cause slight delays
+            // Ideally, getConversationForUsers should be called in handleRecipientSelect/handleRecentSelect
+            // This path is less likely if the UI flow is correct.
+            this.isLoading = true;
+            getConversationForUsers({ userId1: USER_ID, userId2: this.selectedRecipient.id })
+                .then(convoId => {
+                    this.conversationId = convoId;
+                    this.isLoading = false;
+                    this.sendNewMessage(); // Retry sending now that we have the ID
+                })
+                .catch(error => {
+                    this.handleError(error, 'Error initiating conversation before sending message.');
+                    this.isLoading = false;
+                });
+            return; // Exit here, will retry after getting convoId
+        }
+
+        const messageContent = this.newMessage.trim();
+        if (!messageContent) return;
+
+        this.isComposing = false; // Collapse input on send attempt
+        const tempMessageId = `temp_${Date.now()}`;
+        const timestamp = new Date().toISOString();
+
+        // Optimistically add the message to the UI
+        const optimisticMessage = {
+            id: tempMessageId,
+            content: messageContent,
+            formattedContent: this.formatMessageContent(messageContent), // Apply formatting
+            timestamp: new Date(timestamp),
+            formattedTimestamp: this.formatTimestamp(timestamp),
+            isFromUser: true,
+            messageClass: 'message user-message',
+            senderName: 'You', 
+            senderPhotoUrl: null // We'll get this from the response if needed
+        };
+        this.messages = [optimisticMessage, ...this.messages];
+        this.newMessage = '';
+        this.scrollToBottom();
+
+        // Call Apex to send the message
+        sendMessage({ recipientUserId: this.selectedRecipient.id, content: messageContent })
+            .then(result => {
+                console.log('Message sent successfully:', result);
+                // Update the temporary message with the real ID and confirm photo
+                const messageIndex = this.messages.findIndex(msg => msg.id === tempMessageId);
+                if (messageIndex !== -1) {
+                    this.messages[messageIndex].id = result.messageId;
+                    // Optionally update sender photo if it wasn't available before
+                    if (!this.messages[messageIndex].senderPhotoUrl && result.userPhotoUrl) {
+                        this.messages[messageIndex].senderPhotoUrl = result.userPhotoUrl;
+                    }
+                    // Ensure the conversationId is stored from the result
+                    if (result.conversationId) {
+                        this.conversationId = result.conversationId; 
+                    }
                 }
-            ];
-            
-            // Clear the message input
-            this.newMessage = '';
-            this.isComposing = false;
-            
-            // Scroll to bottom
-            this.scrollToBottom();
-        })
-        .catch(error => {
-            this.handleError(error, 'Error sending message');
-        })
-        .finally(() => {
-            this.isLoading = false;
-        });
+                 // Update recent conversations list
+                this.updateRecentConversations(this.selectedRecipient);
+                // No need to call checkForNewMessages immediately, rely on interval
+            })
+            .catch(error => {
+                this.handleError(error, 'Error sending message');
+                // Remove the optimistic message on failure
+                this.messages = this.messages.filter(msg => msg.id !== tempMessageId);
+            })
+            .finally(() => {
+                this.isLoading = false;
+                // Ensure input focus is managed correctly after send attempt
+                const textarea = this.template.querySelector('.message-input textarea');
+                if (textarea) {
+                    textarea.focus();
+                }
+            });
     }
 
     // Handle click on notification bell
@@ -669,54 +809,33 @@ export default class NuvitekMessaging extends NavigationMixin(LightningElement) 
 
     // Handle chat summarization
     summarizeChat() {
-        if (this.messages.length < 5) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Not Enough Messages',
-                message: 'Need at least 5 messages to generate a summary',
-                variant: 'info'
-            }));
+        if (!this.conversationId) {
+            this.handleError(null, 'Cannot summarize: No active conversation selected.');
             return;
         }
-        
+        if (!this.defaultLLMName) {
+             this.handleError(null, 'Cannot summarize: Default AI model name is not configured.');
+            return;
+        }
+
+        console.log(`Requesting summary for conversation ${this.conversationId} using model ${this.defaultLLMName}`);
         this.isSummarizingChat = true;
-        
-        // Prepare conversation text for summarization
-        const conversationText = this.messages.map(msg => {
-            const sender = msg.isFromUser ? 'You' : this.selectedRecipient.name;
-            return `${sender}: ${msg.content}`;
-        }).join('\n\n');
-        
-        // Create a summarization prompt
-        const summaryPrompt = `Please provide a concise summary of the following conversation, capturing key points and decisions:
+        this.showChatSummary = true; // Show the section with the loading spinner
+        this.chatSummary = ''; // Clear previous summary
 
-${conversationText}
-
-SUMMARY:`;
-        
-        // Call LLM to summarize
-        handleRequest({
-            recordId: null,
-            configName: this.defaultLLMName,
-            prompt: summaryPrompt,
-            operation: 'ask'
-        })
-        .then(result => {
-            this.chatSummary = result;
-            this.showChatSummary = true;
-            
-            // Show success toast
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Summary Generated',
-                message: 'Chat summary created successfully',
-                variant: 'success'
-            }));
-        })
-        .catch(error => {
-            this.handleError(error, 'Error generating summary');
-        })
-        .finally(() => {
-            this.isSummarizingChat = false;
-        });
+        getChatSummary({ conversationId: this.conversationId, modelLabel: this.defaultLLMName })
+            .then(summary => {
+                console.log('Summary received:', summary);
+                this.chatSummary = summary;
+            })
+            .catch(error => {
+                this.handleError(error, 'Error generating chat summary');
+                this.chatSummary = 'Failed to generate summary.'; // Display error in summary box
+            })
+            .finally(() => {
+                this.isSummarizingChat = false;
+                console.log('Summarization finished.');
+            });
     }
 
     // Toggle chat summary visibility
@@ -839,9 +958,39 @@ SUMMARY:`;
      * Add a toggleSidebar method to handle mobile sidebar visibility 
      */
     toggleSidebar() {
-        const sidebar = this.template.querySelector('.sidebar');
-        if (sidebar) {
-            sidebar.classList.toggle('mobile-visible');
+        const sidebar = this.template.querySelector('[data-id="sidebar"]');
+        const backdrop = this.template.querySelector('.sidebar-backdrop');
+        if (sidebar && backdrop) {
+            this.isSidebarVisibleMobile = !this.isSidebarVisibleMobile;
+            if (this.isSidebarVisibleMobile) {
+                sidebar.classList.add('mobile-visible');
+                backdrop.classList.add('visible');
+            } else {
+                sidebar.classList.remove('mobile-visible');
+                backdrop.classList.remove('visible');
+            }
+        }
+    }
+    
+    /**
+     * Handles clicking the backdrop to close the mobile sidebar
+     */
+    handleBackdropClick() {
+        if (this.isSidebarVisibleMobile) {
+            this.hideMobileSidebar();
+        }
+    }
+    
+    /**
+     * Explicitly hides the mobile sidebar
+     */
+    hideMobileSidebar() {
+        const sidebar = this.template.querySelector('[data-id="sidebar"]');
+        const backdrop = this.template.querySelector('.sidebar-backdrop');
+        if (sidebar && backdrop) {
+            this.isSidebarVisibleMobile = false;
+            sidebar.classList.remove('mobile-visible');
+            backdrop.classList.remove('visible');
         }
     }
 
@@ -916,5 +1065,157 @@ SUMMARY:`;
         } catch (error) {
             console.error('Error detecting container size:', error);
         }
+    }
+
+    /**
+     * Handles window resize events to manage sidebar visibility on desktop vs mobile
+     */
+    handleResize() {
+        const isMobile = window.innerWidth <= 767;
+        const sidebar = this.template.querySelector('[data-id="sidebar"]');
+        const backdrop = this.template.querySelector('.sidebar-backdrop');
+        const body = this.template.querySelector('.messaging-body');
+
+        if (!isMobile) {
+            // If switching to desktop view and mobile sidebar was open, hide it properly
+            if (this.isSidebarVisibleMobile) {
+                this.isSidebarVisibleMobile = false;
+                if (sidebar) sidebar.classList.remove('mobile-visible');
+                if (backdrop) backdrop.classList.remove('visible');
+            }
+            if (body) body.classList.remove('mobile-view');
+        } else {
+            if (body) body.classList.add('mobile-view');
+        }
+        
+        // Re-detect container size on resize
+        this.detectContainerSize();
+    }
+
+    /**
+     * Loads the list of recent conversations from Apex
+     */
+    loadRecentConversations() {
+        this.isLoadingRecent = true;
+        getRecentConversations()
+            .then(results => {
+                // Process results: generate placeholder images if needed
+                this.recentConversations = results.map(convo => ({
+                    ...convo,
+                    photoUrl: convo.photoUrl || this.getPlaceholderImage(convo.name)
+                }));
+            })
+            .catch(error => {
+                this.handleError(error, 'Error loading recent conversations');
+                this.recentConversations = []; // Clear on error
+            })
+            .finally(() => {
+                this.isLoadingRecent = false;
+            });
+    }
+    
+    /**
+     * Updates the recent conversations list when a new chat is started/selected.
+     * Moves the selected conversation to the top.
+     * @param {object} recipient - The recipient object selected (from search or recent)
+     */
+    updateRecentConversations(recipient) {
+        if (!recipient) return;
+
+        // Check if this conversation already exists in recent
+        const existingIndex = this.recentConversations.findIndex(convo => convo.id === recipient.id);
+        
+        let updatedRecents = [...this.recentConversations];
+
+        if (existingIndex > -1) {
+            // If exists, remove it from its current position
+            updatedRecents.splice(existingIndex, 1);
+        } 
+        
+        // Create a new entry or update the existing one for the top
+        const newEntry = {
+            id: recipient.id,
+            name: recipient.name,
+            photoUrl: recipient.photoUrl || this.getPlaceholderImage(recipient.name),
+            title: recipient.title,
+            objectType: recipient.objectType,
+            lastMessageSnippet: 'Conversation started', // Placeholder - update when messages load/send
+            hasUnread: false, // Assume read when selected
+            unreadCount: 0,
+            timestamp: new Date().toISOString() // Use current time for sorting initially
+        };
+
+        // Add the new/updated entry to the beginning of the array
+        updatedRecents.unshift(newEntry);
+
+        // Limit the number of recent conversations shown (e.g., 20)
+        if (updatedRecents.length > 20) {
+            updatedRecents = updatedRecents.slice(0, 20);
+        }
+
+        this.recentConversations = updatedRecents;
+    }
+    
+    /**
+     * Helper to check if there are recent conversations
+     */
+    get hasRecentConversations() {
+        return this.recentConversations.length > 0;
+    }
+    
+    /** 
+     * Reset conversation-specific state when changing recipients
+     */
+    resetConversationState() {
+        this.messages = [];
+        this.selectedRecipient = null;
+        this.conversationId = null; // <-- Reset conversation ID
+        this.messageOffset = 0;
+        this.allMessagesLoaded = false;
+        this.hasInitialized = false;
+        this.newMessage = '';
+        this.isComposing = false;
+        this.stopMessageRefresh(); // Stop refresh when changing conversations
+        this.showChatSummary = false; // Hide summary section
+        this.chatSummary = '';
+        this.isSummarizingChat = false;
+        console.log('Conversation state reset.');
+    }
+    
+    /**
+     * Start the interval timer to check for new messages
+     */
+    startMessageRefresh() {
+        // Clear existing interval first
+        if (this.refreshIntervalId) {
+            clearInterval(this.refreshIntervalId);
+        }
+        // Set new interval
+        this.refreshIntervalId = setInterval(() => {
+            this.checkForNewMessages();
+        }, REFRESH_INTERVAL);
+    }
+
+    /**
+     * Formats message content (e.g., for links, markdown in the future).
+     * Currently just returns content, ready for lwc:inner-html.
+     * @param {string} content - Raw message content
+     * @returns {string} - Formatted HTML string for display
+     */
+    formatMessageContent(content) {
+        // Basic link detection (replace with a more robust library if needed)
+        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        let formatted = content.replace(urlRegex, function(url) {
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        });
+        
+        // Simple newline to <br> conversion
+        formatted = formatted.replace(/\n/g, '<br />');
+        
+        // Basic bold/italic markdown (example)
+        // formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        return formatted; 
     }
 }

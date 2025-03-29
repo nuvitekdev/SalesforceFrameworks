@@ -36,6 +36,7 @@
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-smooth: 0.3s ease; /* Smoother transition */
     --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
     
     /* Component dimensions - Salesforce optimized */
@@ -149,12 +150,12 @@ lightning-card {
 
 /* Mobile toggle for sidebar */
 .mobile-toggle-container {
-    display: none;
+    display: none; /* Hidden by default, shown via media query */
     padding: 8px;
     position: absolute;
     top: 8px;
     left: 8px;
-    z-index: 10;
+    z-index: 1001; /* Ensure it's above sidebar */
 }
 
 .mobile-toggle {
@@ -179,11 +180,13 @@ lightning-card {
 /* Messaging body layout - Salesforce optimized */
 .messaging-body {
     display: grid;
+    /* Define grid columns */
     grid-template-columns: minmax(var(--sidebar-min-width), var(--sidebar-width)) 1fr;
     gap: 0;
-    height: var(--component-height);
-    min-height: var(--component-min-height);
-    max-height: var(--component-max-height);
+    /* Use component height from JS, ensure flexibility */
+    height: calc(var(--component-height, 400px) - var(--header-height) - 18px); /* Adjust based on header and padding */
+    min-height: calc(var(--component-min-height, 300px) - var(--header-height) - 18px);
+    max-height: calc(var(--component-max-height, 500px) - var(--header-height) - 18px);
     flex: 1;
     margin-top: 8px;
     border: 1px solid var(--border-color);
@@ -204,6 +207,7 @@ lightning-card {
     min-width: 0;
     overflow: hidden;
     transition: transform var(--transition-fast), opacity var(--transition-fast);
+    z-index: 1000; /* Ensure sidebar is correctly layered */
 }
 
 .search-container {
@@ -227,6 +231,77 @@ lightning-card {
     flex: 1;
     overflow-y: auto;
     min-height: 0;
+    padding-bottom: 10px; /* Add padding at the bottom */
+}
+
+/* Recipient Item Styling (for Recent list) */
+.recipient-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.recipient-item:last-child {
+    border-bottom: none;
+}
+
+.recipient-item:hover {
+    background-color: var(--background-alt);
+}
+
+.recipient-item-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.recipient-item-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.recipient-item-details {
+    overflow: hidden;
+    flex-grow: 1;
+}
+
+.recipient-item-name {
+    font-weight: var(--font-weight-medium);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.recipient-item-info {
+    font-size: calc(var(--font-size) - 2px);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.recipient-item-unread {
+    margin-left: 8px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 11px;
+    font-weight: var(--font-weight-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    flex-shrink: 0;
 }
 
 .placeholder-message {
@@ -235,6 +310,27 @@ lightning-card {
     text-align: center;
     padding: 20px;
     font-style: italic;
+}
+
+/* Sidebar Backdrop for Mobile Overlay */
+.sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 999; /* Below sidebar, above content */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-smooth), visibility var(--transition-smooth);
+    backdrop-filter: blur(4px); /* Basic blur effect */
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.sidebar-backdrop.visible {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* Search results */
@@ -333,6 +429,7 @@ lightning-card {
     justify-content: space-between;
     padding: 0 16px;
     border-bottom: 1px solid var(--border-color);
+    background-color: var(--background-elevated); /* Elevated background */
 }
 
 .recipient-info {
@@ -372,10 +469,10 @@ lightning-card {
 }
 
 .chat-summary {
-    background-color: var(--primary-light);
+    background-color: var(--background-alt); /* Use alt background */
     padding: 10px 16px;
     margin: 0;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-subtle); /* Subtle border */
     animation: fadeIn 0.3s ease;
 }
 
@@ -392,14 +489,14 @@ lightning-card {
 .summary-title {
     font-weight: var(--font-weight-medium);
     font-size: calc(var(--font-size) + 1px);
-    color: var(--primary-dark);
+    color: var(--text-color); /* Use standard text color */
     margin-right: auto;
 }
 
 .close-summary-button {
     background: transparent;
     border: none;
-    color: var(--primary-dark);
+    color: var(--text-secondary); /* Secondary text color */
     cursor: pointer;
     padding: 4px;
 }
@@ -411,6 +508,7 @@ lightning-card {
 .summary-content {
     font-size: var(--font-size);
     line-height: 1.5;
+    color: var(--text-secondary); /* Secondary text color for content */
 }
 
 .summary-loading {
@@ -423,7 +521,7 @@ lightning-card {
 
 .summary-loading p {
     margin-top: 8px;
-    color: var(--primary-dark);
+    color: var(--text-secondary); /* Use secondary color */
     font-style: italic;
 }
 
@@ -475,7 +573,7 @@ lightning-card {
     display: flex;
     margin-bottom: 8px;
     max-width: 80%;
-    animation: popUp 0.3s cubic-bezier(0.28, 0.84, 0.42, 1);
+    animation: popUp 0.3s cubic-bezier(0.28, 0.84, 0.42, 1); /* Keep popUp or refine */
 }
 
 .user-message {
@@ -487,20 +585,29 @@ lightning-card {
 }
 
 .message-bubble {
-    border-radius: var(--radius-md);
-    padding: 8px 12px;
+    border-radius: var(--radius-lg); /* Larger radius like iOS */
+    padding: 10px 14px; /* Slightly more padding */
     position: relative;
     box-shadow: var(--shadow-sm);
+    /* Add subtle gradient for depth */
+    background-image: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(0,0,0,0.05));
 }
 
 .user-message .message-bubble {
-    background-color: var(--chat-bubble-user);
-    border-bottom-right-radius: 4px;
+    background-color: var(--primary-color); /* Use primary color for user */
+    color: white; /* Ensure text is readable */
+    border-bottom-right-radius: var(--radius-sm); /* Slightly flatten one corner */
+    background-image: linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(0,0,0,0.1));
 }
 
 .recipient-message .message-bubble {
     background-color: var(--chat-bubble-recipient);
-    border-bottom-left-radius: 4px;
+    border-bottom-left-radius: var(--radius-sm); /* Slightly flatten one corner */
+}
+
+/* Adjust text color for user bubble based on theme */
+:host.theme-dark .user-message .message-bubble {
+    background-color: var(--primary-dark); /* Darker primary for dark mode user bubble */
 }
 
 .message-content {
@@ -515,6 +622,16 @@ lightning-card {
     color: var(--text-tertiary);
     margin-top: 4px;
     text-align: right;
+    opacity: 0.8; /* Make timestamp less prominent */
+}
+
+/* User message timestamp color */
+.user-message .message-timestamp {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+:host.theme-dark .user-message .message-timestamp {
+    color: rgba(245, 245, 247, 0.7);
 }
 
 /* Message input */
@@ -525,7 +642,8 @@ lightning-card {
     padding: 8px 12px;
     display: flex;
     align-items: flex-end;
-    gap: 8px;
+    gap: 10px; /* Slightly more gap */
+    background-color: var(--background-elevated); /* Elevated background */
 }
 
 .emoji-button-container {
@@ -796,8 +914,13 @@ lightning-card {
 /* Mobile & Small Tablets */
 @media (max-width: 767px) {
     .messaging-body {
-        grid-template-columns: 1fr;
-        height: 450px;
+        grid-template-columns: 1fr; /* Single column layout */
+        height: calc(100vh - 150px); /* Adjust height for mobile viewport, consider header */
+        min-height: 350px;
+        max-height: none; /* Allow full height */
+        border: none; /* Remove border on mobile */
+        border-radius: 0;
+        margin-top: 0;
     }
     
     .sidebar {
@@ -807,19 +930,20 @@ lightning-card {
         bottom: 0;
         width: 80%;
         max-width: 300px;
-        z-index: 9999;
+        z-index: 9999; /* Highest z-index */
         transform: translateX(-100%);
-        opacity: 0;
+        transition: transform var(--transition-smooth); /* Use smoother transition */
         box-shadow: var(--shadow-lg);
+        border-right: none; /* Remove border when overlay */
+        opacity: 1; /* Control visibility with transform */
     }
     
     .sidebar.mobile-visible {
         transform: translateX(0);
-        opacity: 1;
     }
     
     .mobile-toggle-container {
-        display: block;
+        display: block; /* Show toggle button on mobile */
     }
     
     .message {
@@ -875,12 +999,37 @@ lightning-card {
     height: 400px;
 }
 
-.slds-size_6-of-12-container .sidebar,
-.slds-size_4-of-12-container .sidebar {
+/* Apply sidebar width change only when not in mobile overlay mode */
+.slds-size_6-of-12-container .messaging-body:not(.mobile-view) .sidebar,
+.slds-size_4-of-12-container .messaging-body:not(.mobile-view) .sidebar {
     --sidebar-width: 40%;
 }
 
-/* Handle dark theme loading overlay */
+/* Dark theme adjustments */
+:host.theme-dark .user-message .message-bubble {
+    background-color: var(--primary-dark);
+}
+
+:host.theme-dark .sidebar {
+    background-color: var(--background); /* Use main dark background for overlay */
+}
+
+:host.theme-dark .recipient-item:hover {
+    background-color: var(--background-elevated);
+}
+
+:host.theme-dark .conversation-header {
+    background-color: var(--background); /* Use main dark bg */
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+:host.theme-dark .message-input-container {
+    background-color: var(--background); /* Use main dark bg */
+    border-top: 1px solid var(--border-subtle);
+}
+
 :host.theme-dark .loading-overlay {
-    background-color: rgba(29, 29, 31, 0.7);
+    background-color: rgba(29, 29, 31, 0.8); /* Darker overlay */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
