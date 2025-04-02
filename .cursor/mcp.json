@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@executeautomation/playwright-mcp-server"
+      ]
+    },
+    "server-sequential-thinking": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@smithery/cli@latest", "run", "@smithery-ai/server-sequential-thinking", "--key", "60816375-6277-480a-9824-974fc82bb563"]
+    }
+  }
+}
