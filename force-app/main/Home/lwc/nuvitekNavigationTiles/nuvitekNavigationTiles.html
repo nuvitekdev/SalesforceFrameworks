@@ -8,6 +8,12 @@
                  data-index={index}
                  onclick={handleWholeTemplateClick}>
                 
+                <!-- Background Image (if available) -->
+                <template if:true={tile.hasBgImage}>
+                    <div class="tile-bg-image" style="background-image: url('{tile.bgImageUrl}')"></div>
+                    <div class="tile-overlay" style={tile.overlayStyle}></div>
+                </template>
+                
                 <div class="tile-content">
                     <!-- Empty div to maintain layout structure where the request button was -->
                     <div class="tile-menu"></div>

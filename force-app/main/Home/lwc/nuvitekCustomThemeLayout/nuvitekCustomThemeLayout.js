@@ -2,6 +2,7 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getNavigationItems from '@salesforce/apex/NuvitekCustomThemeLayoutServices.getNavigationItems';
 import searchAcrossObjects from '@salesforce/apex/NuvitekCustomThemeLayoutServices.searchAcrossObjects';
+import { loadStyle } from 'lightning/platformResourceLoader';
 
 /**
  * @slot header This is the header slot
@@ -71,6 +72,11 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
     // FAB control
     @api showFab = false;
     @api fabUrl;
+    @api fabOptions = 'both'; // both, help_form, ai_assistant, url_link
+    @api helpFormLabel = 'Help Request';
+    @api aiAssistantLabel = 'AI Assistant';
+    @api helpFormIcon = 'utility:chat';
+    @api aiAssistantIcon = 'utility:einstein';
 
     // Video background properties
     @api showBackgroundVideo = false;
@@ -86,6 +92,8 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
     @track scrolled = false;
     @track mobileMenuOpen = false;
     @track helpFormOpen = false;
+    @track fabMenuOpen = false;
+    @track llmAssistantOpen = false;
     @track formSubmitted = false;
     @track formSubmissionMessage = '';
     @track styleInjectionTargets = [];
@@ -152,6 +160,10 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
 
         // Initialize footer column data if needed
         this.initColumnMenusData();
+
+        // Initialize new variables
+        this.fabMenuOpen = false;
+        this.llmAssistantOpen = false;
     }
 
     // Initialize column menus data
@@ -193,6 +205,38 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
         if (!this.ootbComponentsStyled && this.globalThemeOverride) {
             this.applyStylesToOOTBComponents();
             this.ootbComponentsStyled = true;
+        }
+        
+        // Set SVG paths for buttons
+        this.renderSvgIcons();
+    }
+
+    // Render SVG icons for the buttons
+    renderSvgIcons() {
+        try {
+            // Main FAB button icon
+            const mainButton = this.template.querySelector('.fab-button svg');
+            if (mainButton) {
+                mainButton.innerHTML = this.mainFabIconSvg;
+            }
+            
+            // Help form button icon
+            if (this.showHelpFormOption) {
+                const helpFormButton = this.template.querySelector('.fab-menu-item:first-child .fab-menu-button svg');
+                if (helpFormButton) {
+                    helpFormButton.innerHTML = this.helpFormIconSvg;
+                }
+            }
+            
+            // AI Assistant button icon
+            if (this.showAiAssistantOption) {
+                const aiButton = this.template.querySelector('.fab-menu-item:last-child .fab-menu-button svg');
+                if (aiButton) {
+                    aiButton.innerHTML = this.aiAssistantIconSvg;
+                }
+            }
+        } catch (error) {
+            console.error('Error rendering SVG icons:', error);
         }
     }
 
@@ -844,8 +888,15 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
     }
 
     handleFabClick() {
-        if (this.fabUrl) {
+        if (this.isUrlLink && this.fabUrl) {
             window.location.href = this.fabUrl;
+        } else if (this.fabOptions === 'help_form') {
+            this.toggleHelpForm();
+        } else if (this.fabOptions === 'ai_assistant') {
+            this.toggleLlmAssistant();
+        } else {
+            // Default to toggle menu when multiple options
+            this.toggleFabMenu();
         }
     }
 
@@ -862,7 +913,14 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
 
     toggleHelpForm() {
         this.helpFormOpen = !this.helpFormOpen;
-        this.formSubmitted = false;
+        
+        // Close menu if the form is being opened
+        if (this.helpFormOpen) {
+            this.fabMenuOpen = false;
+            this.llmAssistantOpen = false;
+            // Reset form state when opening
+            this.formSubmitted = false;
+        }
     }
 
     handleHelpFormSubmit(event) {
@@ -883,6 +941,47 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
                 form.reset();
             }
         }, 3000);
+    }
+
+    // Toggle the FAB menu
+    toggleFabMenu() {
+        // If not in menu mode, don't toggle the menu
+        if (this.fabOptions !== 'both') {
+            // For single option modes, directly trigger that option
+            if (this.fabOptions === 'help_form') {
+                this.toggleHelpForm();
+            } else if (this.fabOptions === 'ai_assistant') {
+                this.toggleLlmAssistant();
+            }
+            return;
+        }
+        
+        // Only toggle menu for 'both' option
+        this.fabMenuOpen = !this.fabMenuOpen;
+        
+        // Close other components if the menu is being opened
+        if (this.fabMenuOpen) {
+            this.helpFormOpen = false;
+            this.llmAssistantOpen = false;
+        }
+    }
+    
+    // Toggle the LLM Assistant dialog
+    toggleLlmAssistant() {
+        this.llmAssistantOpen = !this.llmAssistantOpen;
+        
+        // Close other components if the assistant is being opened
+        if (this.llmAssistantOpen) {
+            this.fabMenuOpen = false;
+            this.helpFormOpen = false;
+        }
+    }
+    
+    // Close all dialogs (used for backdrop clicks)
+    closeAllDialogs() {
+        this.fabMenuOpen = false;
+        this.helpFormOpen = false;
+        this.llmAssistantOpen = false;
     }
 
     // Computed properties
@@ -1059,10 +1158,90 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
     }
 
     get backdropClass() {
-        return this.helpFormOpen ? 'dialog-backdrop active' : 'dialog-backdrop';
+        return (this.helpFormOpen || this.llmAssistantOpen) ? 'dialog-backdrop active' : 'dialog-backdrop';
     }
 
     get isMinimalFooter() {
         return this.footerStyle === 'minimal';
+    }
+
+    // Get the class for the FAB menu based on its open state
+    get fabMenuClass() {
+        return this.fabMenuOpen ? 'fab-menu open' : 'fab-menu';
+    }
+    
+    // Get the class for the LLM Assistant dialog based on its open state
+    get llmAssistantDialogClass() {
+        return this.llmAssistantOpen ? 'help-form-dialog open' : 'help-form-dialog';
+    }
+
+    // Helper methods for FAB options
+    get showHelpFormOption() {
+        return this.fabOptions === 'both' || this.fabOptions === 'help_form';
+    }
+    
+    get showAiAssistantOption() {
+        return this.fabOptions === 'both' || this.fabOptions === 'ai_assistant';
+    }
+    
+    get isUrlLink() {
+        return this.fabOptions === 'url_link';
+    }
+    
+    // Convert SLDS icon name to SVG path for help form icon
+    get helpFormIconSvg() {
+        const iconName = this.helpFormIcon.toLowerCase();
+        
+        if (iconName.includes('chat')) {
+            return `<path d="M8 10.5C8 11.3284 7.32843 12 6.5 12C5.67157 12 5 11.3284 5 10.5C5 9.67157 5.67157 9 6.5 9C7.32843 9 8 9.67157 8 10.5Z" fill="currentColor" />
+                    <path d="M12.5 10.5C12.5 11.3284 11.8284 12 11 12C10.1716 12 9.5 11.3284 9.5 10.5C9.5 9.67157 10.1716 9 11 9C11.8284 9 12.5 9.67157 12.5 10.5Z" fill="currentColor" />
+                    <path d="M17 10.5C17 11.3284 16.3284 12 15.5 12C14.6716 12 14 11.3284 14 10.5C14 9.67157 14.6716 9 15.5 9C16.3284 9 17 9.67157 17 10.5Z" fill="currentColor" />
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.04346 16.4525C3.22094 16.8088 3.28001 17.2161 3.17712 17.6006L2.58151 19.8267C2.32295 20.793 3.20701 21.677 4.17335 21.4185L6.39939 20.8229C6.78393 20.72 7.19121 20.7791 7.54753 20.9565C8.88837 21.6244 10.4003 22 12 22ZM20 12C20 16.4183 16.4183 20 12 20C10.6867 20 9.44366 19.7117 8.32239 19.1953C7.50777 18.8117 6.56713 18.9307 5.86753 19.3562L4.17335 19.8229L4.63961 18.1288C5.06947 17.4292 5.18846 16.489 4.80525 15.6743C4.28876 14.5528 4 13.3099 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z" fill="currentColor" />`;
+        } else if (iconName.includes('help')) {
+            return `<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92c-.5.51-.86.97-1.04 1.69-.08.32-.13.68-.13 1.14h-2v-.5c0-.46.08-.9.22-1.31.2-.58.53-1.1.95-1.52l1.24-1.26c.46-.44.68-1.1.55-1.8-.13-.72-.69-1.33-1.39-1.53-1.11-.31-2.14.32-2.47 1.27-.12.35-.43.47-.82.47-.33 0-.67-.11-.82-.47C9.29 8.57 10.18 7 11.97 7c1.3 0 2.43.8 2.9 1.97.35 1.02.15 2.27-.8 3.28z" fill="currentColor"/>`;
+        } else if (iconName.includes('case')) {
+            return `<path d="M9 6h2v2H9V6zm4 0h2v2h-2V6zM9 10h2v2H9v-2zm4 0h2v2h-2v-2zm-4 4h2v2H9v-2zm4 0h2v2h-2v-2z" fill="currentColor"/>
+                   <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 16H5V5h14v14z" fill="currentColor"/>`;
+        } else {
+            // Default chat icon if none of the above
+            return `<path d="M8 10.5C8 11.3284 7.32843 12 6.5 12C5.67157 12 5 11.3284 5 10.5C5 9.67157 5.67157 9 6.5 9C7.32843 9 8 9.67157 8 10.5Z" fill="currentColor" />
+                    <path d="M12.5 10.5C12.5 11.3284 11.8284 12 11 12C10.1716 12 9.5 11.3284 9.5 10.5C9.5 9.67157 10.1716 9 11 9C11.8284 9 12.5 9.67157 12.5 10.5Z" fill="currentColor" />
+                    <path d="M17 10.5C17 11.3284 16.3284 12 15.5 12C14.6716 12 14 11.3284 14 10.5C14 9.67157 14.6716 9 15.5 9C16.3284 9 17 9.67157 17 10.5Z" fill="currentColor" />
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.04346 16.4525C3.22094 16.8088 3.28001 17.2161 3.17712 17.6006L2.58151 19.8267C2.32295 20.793 3.20701 21.677 4.17335 21.4185L6.39939 20.8229C6.78393 20.72 7.19121 20.7791 7.54753 20.9565C8.88837 21.6244 10.4003 22 12 22ZM20 12C20 16.4183 16.4183 20 12 20C10.6867 20 9.44366 19.7117 8.32239 19.1953C7.50777 18.8117 6.56713 18.9307 5.86753 19.3562L4.17335 19.8229L4.63961 18.1288C5.06947 17.4292 5.18846 16.489 4.80525 15.6743C4.28876 14.5528 4 13.3099 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z" fill="currentColor" />`;
+        }
+    }
+    
+    // Convert SLDS icon name to SVG path for AI assistant icon
+    get aiAssistantIconSvg() {
+        const iconName = this.aiAssistantIcon.toLowerCase();
+        
+        if (iconName.includes('einstein')) {
+            return `<path d="M17.72 11.41h-.5v-1.03h.5c.97 0 1.65-.68 1.65-1.64V7.7c0-.96-.68-1.64-1.65-1.64h-.5V4.07c0-1.7-1.36-3.07-3.05-3.07H6.32a3.07 3.07 0 00-3.05 3.07v14.86c0 1.7 1.36 3.07 3.05 3.07h6.86a3.06 3.06 0 003.04-3.07v-1.96h.5c.97 0 1.65-.67 1.65-1.64v-1.03c0-.97-.68-1.64-1.65-1.64h-.5v-1.04h.5c.97 0 1.65-.67 1.65-1.64V8.74c0-.96-.68-1.64-1.65-1.64h-.5V6.07h.5c.17 0 .31.14.31.36v1.03c0 .23.14.36.31.36h1.34c.17 0 .31-.14.31-.36V7.43c0-1.52-1.01-2.68-2.28-2.68h-.5V3.57c0-.4-.34-.71-.73-.71-.4 0-.73.32-.73.71v1.18h-.32c-.4 0-.73.32-.73.71 0 .4.34.71.73.71h.32v1h-4.23c-.4 0-.73.32-.73.71 0 .4.34.71.73.71h4.23v1h-.32c-.4 0-.73.32-.73.71 0 .4.34.71.73.71h.32v1.01h-.35c-.4 0-.73.32-.73.71 0 .39.33.71.73.71h.35v1.01h-.32c-.4 0-.73.32-.73.71 0 .39.34.71.73.71h.32v1.04h-4.25c-.4 0-.73.32-.73.71 0 .39.34.71.73.71h4.25v1h-.32c-.4 0-.73.32-.73.71 0 .39.34.71.73.71h.32v1.18c0 .4.34.71.73.71.4 0 .73-.32.73-.71v-1.18h.5c.17 0 .31.14.31.36v1.03c0 .23.14.36.31.36h1.34c.17 0 .31-.14.31-.36v-1.03c0-.22-.14-.36-.31-.36h-.5v-1h.5c.97 0 1.65-.67 1.65-1.64v-1.03c0-.97-.68-1.64-1.65-1.64h-.5v-1.01h.5c.97 0 1.65-.67 1.65-1.64V9.77c0-.96-.68-1.64-1.65-1.64h-.5V7.07h.5c.17 0 .31.14.31.36v1.03c0 .22.14.36.31.36h1.34c.17 0 .31-.14.31-.36V7.43c0-.22-.14-.36-.31-.36h-.5zm-7.98 7.89c.24.22.4.53.4.89 0 .59-.47 1.06-1.06 1.06s-1.06-.47-1.06-1.06c0-.36.15-.67.4-.89-.4-.23-.67-.66-.67-1.16 0-.65.47-1.2 1.08-1.3-.17-.2-.29-.46-.29-.76 0-.58.39-1.06.9-1.21-.05-.13-.08-.28-.08-.45 0-.74.6-1.33 1.33-1.33.74 0 1.33.6 1.33 1.33 0 .16-.03.32-.08.45.51.15.9.63.9 1.21 0 .3-.12.56-.29.76.61.1 1.08.65 1.08 1.3 0 .5-.27.93-.67 1.16.24.22.4.53.4.89 0 .59-.47 1.06-1.06 1.06s-1.06-.47-1.06-1.06c0-.36.15-.67.4-.89-.25-.13-.45-.35-.58-.62h-1.14c-.13.27-.33.48-.58.62zm5.56-8.19c.45 0 .82.37.82.82 0 .46-.37.83-.82.83-.46 0-.83-.37-.83-.83 0-.45.37-.82.83-.82zm0 3.51c.45 0 .82.37.82.82 0 .45-.37.82-.82.82-.46 0-.83-.37-.83-.82 0-.45.37-.82.83-.82zm0 3.5c.45 0 .82.37.82.83 0 .45-.37.82-.82.82-.46 0-.83-.37-.83-.82 0-.46.37-.83.83-.83z" fill="currentColor"/>`;
+        } else if (iconName.includes('bot')) {
+            return `<path d="M10.31 22H7.97c-.6 0-1.1-.44-1.2-1.02l-.34-2.17c-.25-.11-.52-.25-.75-.37l-2.08.62a1.22 1.22 0 01-1.41-.45l-1.2-2.06a1.22 1.22 0 01.12-1.48l1.47-1.58c-.02-.14-.04-.27-.04-.41s.02-.27.04-.41L1.12 11.1A1.22 1.22 0 011 9.62l1.2-2.07a1.22 1.22 0 011.41-.44l2.08.62c.24-.13.5-.25.75-.37l.35-2.17c.1-.58.59-1.02 1.19-1.02h2.34c.6 0 1.1.44 1.19 1.03l.35 2.16c.26.13.51.25.76.38l2.06-.62a1.21 1.21 0 011.42.44l1.2 2.07c.27.47.2 1.07-.13 1.47l-1.46 1.58c.03.14.04.28.04.42s-.01.28-.04.42l1.46 1.58c.33.4.4 1 .13 1.47l-1.2 2.07c-.28.47-.81.66-1.42.44l-2.06-.62c-.25.13-.5.26-.76.38l-.35 2.17c-.1.58-.59 1.03-1.19 1.03zM7 12c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2zm8.7 0c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2zm4.3 8.5a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM21 19a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0-1.5a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm1.5-1.5a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0-1.5a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" fill="currentColor"/>`;
+        } else if (iconName.includes('knowledge')) {
+            return `<path d="M16.39 15.53a.677.677 0 01-.2.48l-1.64 1.64c-.13.13-.3.2-.48.2s-.35-.07-.48-.2l-5.65-5.66a.677.677 0 01-.2-.48c0-.18.07-.35.2-.48l1.64-1.64c.13-.13.3-.2.48-.2s.35.07.48.2l5.66 5.66c.13.13.2.3.2.48zm4.12-4.11c0 .18-.07.35-.2.48l-1.64 1.64c-.13.13-.3.2-.48.2s-.35-.07-.48-.2l-5.66-5.66a.677.677 0 01-.2-.48c0-.18.07-.35.2-.48l1.64-1.64c.13-.13.3-.2.48-.2s.35.07.48.2l5.66 5.66c.13.13.2.3.2.48zM5.51 19.76a.877.877 0 00.68-.31l3.12-3.51c.17-.17.13-.44-.06-.61l-3.2-2.76a.44.44 0 00-.58.07L2.3 16.66a.415.415 0 00.04.61l2.52 2.34c.17.13.41.15.65.15zM11.62 4l-.7.42L9.01 6.06a.477.477 0 01-.45.09.494.494 0 01-.33-.33.477.477 0 01.09-.45l1.91-1.64.71-.42c.71-.42 1.63-.03 1.85.79l.22.82c.09.33-.12.42-.12.42l-.56.29c-.35.14-.48-.05-.48-.05s-.26-.36-.55-.3c-.3.05-.68.62-.68.62z" fill="currentColor"/>`;
+        } else if (iconName.includes('message')) {
+            return `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+        } else {
+            // Default AI icon
+            return `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+        }
+    }
+    
+    // Update the main FAB button icon to use the configured options
+    get mainFabIconSvg() {
+        if (this.isUrlLink) {
+            return `<path d="M11 5h2v14h-2z" fill="currentColor"/><path d="M5 11h14v2H5z" fill="currentColor"/>`;
+        } else if (this.fabOptions === 'help_form') {
+            return this.helpFormIconSvg;
+        } else if (this.fabOptions === 'ai_assistant') {
+            return this.aiAssistantIconSvg;
+        } else {
+            // Default plus icon for the menu
+            return `<path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+        }
     }
 }

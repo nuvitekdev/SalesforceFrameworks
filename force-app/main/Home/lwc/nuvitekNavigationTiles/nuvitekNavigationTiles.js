@@ -17,6 +17,7 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
     @api icons = '';
     @api colors = '';
     @api links = '';
+    @api bgImages = ''; // Property for background images
     
     // Theme properties from parent theme layout
     @api primaryColor = '#22BDC1'; // Default primary color
@@ -82,7 +83,7 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
         const tiles = this.template.querySelectorAll('.navigation-tile');
         tiles.forEach((tile) => {
             // Remove any existing style classes
-            tile.classList.remove('style-elevated', 'style-flat', 'style-bordered', 'style-gradient');
+            tile.classList.remove('style-elevated', 'style-flat', 'style-gradient', 'style-minimal', 'style-frosted', 'style-shadow', 'style-accent', 'style-subtle');
             // Add the current style class
             tile.classList.add(`style-${this.tileStyle}`);
         });
@@ -103,7 +104,7 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
     
     // Get a string representation of all properties for change detection
     getPropString() {
-        return `${this.titles}|${this.descriptions}|${this.icons}|${this.colors}|${this.links}|${this.tileStyle}|${this.columns}|${this.primaryColor}|${this.accentColor}|${this.textColor}`;
+        return `${this.titles}|${this.descriptions}|${this.icons}|${this.colors}|${this.links}|${this.bgImages}|${this.tileStyle}|${this.columns}|${this.primaryColor}|${this.accentColor}|${this.textColor}`;
     }
     
     // Computed properties for themed styling
@@ -141,6 +142,7 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
         const iconArray = this.splitAndTrim(this.icons);
         const colorArray = this.splitAndTrim(this.colors);
         const linkArray = this.splitAndTrim(this.links);
+        const bgImageArray = this.splitAndTrim(this.bgImages);
         
         this.tilesData = [];
         
@@ -149,30 +151,72 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
             if (titleArray[i]) {
                 // Get the color or use a default
                 const accentColor = colorArray[i] || '#0071e3';
+                // Check if we have a background image for this tile
+                const hasBgImage = bgImageArray[i] && bgImageArray[i].trim() !== '';
+                const bgImageUrl = hasBgImage ? bgImageArray[i].trim() : '';
                 
-                // Determine text color based on tile style
+                // Determine text color based on tile style and if there's a background image
                 let textColor = '#ffffff';
                 let backgroundStyle = '';
                 let borderStyle = '';
+                let hasOverlay = false;
+                let overlayStyle = '';
                 
                 // Apply different styles based on tile style
-                if (this.tileStyle === 'gradient') {
-                    // Create a subtle gradient using the accent color
-                    const lighterShade = this.lightenColor(accentColor, 30);
-                    backgroundStyle = `background: linear-gradient(135deg, ${accentColor} 0%, ${lighterShade} 100%);`;
-                } else if (this.tileStyle === 'bordered') {
-                    // Create a subtle border with the accent color and a white background
-                    backgroundStyle = `background-color: #ffffff;`;
-                    borderStyle = `border: 2px solid ${accentColor};`;
-                    textColor = '#1d1d1f'; // Dark text on light background
-                } else if (this.tileStyle === 'flat') {
-                    // Use a lighter version of the accent color for a more subtle look
-                    const lighterShade = this.lightenColor(accentColor, 85);
-                    backgroundStyle = `background-color: ${lighterShade};`;
-                    textColor = '#1d1d1f'; // Dark text on light background
+                if (hasBgImage) {
+                    // For background images, we use a dark overlay and white text
+                    backgroundStyle = `background-image: url('${bgImageUrl}'); background-size: cover; background-position: center;`;
+                    hasOverlay = true;
+                    overlayStyle = `background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7));`;
+                    textColor = '#ffffff';
                 } else {
-                    // Elevated style - use the accent color directly
-                    backgroundStyle = `background-color: ${accentColor};`;
+                    // Apply style based on the selected tileStyle
+                    switch(this.tileStyle) {
+                        case 'gradient':
+                            // Create a subtle gradient using the accent color
+                            const lighterShade = this.lightenColor(accentColor, 30);
+                            backgroundStyle = `background: linear-gradient(135deg, ${accentColor} 0%, ${lighterShade} 100%);`;
+                            break;
+                        case 'minimal':
+                            // Minimalist white with accent color elements
+                            backgroundStyle = `background-color: #ffffff;`;
+                            borderStyle = `border-bottom: 3px solid ${accentColor};`;
+                            textColor = '#1d1d1f';
+                            break;
+                        case 'frosted':
+                            // Frosted glass effect with accent color
+                            backgroundStyle = `background-color: ${this.hexToRgba(accentColor, 0.15)}; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);`;
+                            borderStyle = `border: 1px solid ${this.hexToRgba(accentColor, 0.3)};`;
+                            textColor = '#1d1d1f';
+                            break;
+                        case 'shadow':
+                            // Deep shadow effect
+                            backgroundStyle = `background-color: ${accentColor};`;
+                            borderStyle = `box-shadow: 6px 6px 0 0 ${this.darkenColor(accentColor, 20)};`;
+                            break;
+                        case 'accent':
+                            // Accent border with light background
+                            backgroundStyle = `background-color: ${this.lightenColor(accentColor, 95)};`;
+                            borderStyle = `border-left: 5px solid ${accentColor};`;
+                            textColor = '#1d1d1f';
+                            break;
+                        case 'subtle':
+                            // Subtle background with accent elements
+                            backgroundStyle = `background-color: ${this.lightenColor(accentColor, 92)};`;
+                            textColor = '#1d1d1f';
+                            break;
+                        case 'flat':
+                            // Use a lighter version of the accent color for a more subtle look
+                            const flatLighterShade = this.lightenColor(accentColor, 85);
+                            backgroundStyle = `background-color: ${flatLighterShade};`;
+                            textColor = '#1d1d1f';
+                            break;
+                        case 'elevated':
+                        default:
+                            // Elevated style - use the accent color directly
+                            backgroundStyle = `background-color: ${accentColor};`;
+                            break;
+                    }
                 }
                 
                 this.tilesData.push({
@@ -183,8 +227,12 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
                     accentColor: accentColor,
                     link: linkArray[i] || '',
                     hasIcon: iconArray[i] && iconArray[i].trim() !== '',
+                    hasBgImage: hasBgImage,
+                    bgImageUrl: bgImageUrl,
+                    hasOverlay: hasOverlay,
+                    overlayStyle: overlayStyle,
                     style: `${backgroundStyle} ${borderStyle} color: ${textColor};`,
-                    iconStyle: `color: ${this.tileStyle === 'bordered' || this.tileStyle === 'flat' ? accentColor : '#ffffff'};`,
+                    iconStyle: `color: ${this.tileStyle === 'minimal' || this.tileStyle === 'frosted' || this.tileStyle === 'accent' || this.tileStyle === 'subtle' || this.tileStyle === 'flat' ? accentColor : '#ffffff'};`,
                     titleStyle: `color: ${textColor};`,
                     descriptionStyle: `color: ${textColor}; opacity: 0.8;`,
                     isMenuOpen: false
@@ -222,6 +270,43 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
         return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     }
     
+    // Helper method to darken a color
+    darkenColor(color, percent) {
+        // Ensure color is in proper format
+        if (!color || !color.startsWith('#') || color.length !== 7) {
+            return '#0071e3'; // Return default blue if invalid color
+        }
+        
+        // Convert hex to RGB
+        let r = parseInt(color.substring(1, 3), 16);
+        let g = parseInt(color.substring(3, 5), 16);
+        let b = parseInt(color.substring(5, 7), 16);
+        
+        // Darken the color
+        r = Math.max(0, Math.floor(r * (1 - percent / 100)));
+        g = Math.max(0, Math.floor(g * (1 - percent / 100)));
+        b = Math.max(0, Math.floor(b * (1 - percent / 100)));
+        
+        // Convert back to hex
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    }
+    
+    // Helper method to convert hex to rgba
+    hexToRgba(hex, alpha = 1) {
+        // Ensure color is in proper format
+        if (!hex || !hex.startsWith('#') || hex.length !== 7) {
+            return 'rgba(0, 113, 227, ' + alpha + ')'; // Return default blue if invalid color
+        }
+        
+        // Convert hex to RGB
+        const r = parseInt(hex.substring(1, 3), 16);
+        const g = parseInt(hex.substring(3, 5), 16);
+        const b = parseInt(hex.substring(5, 7), 16);
+        
+        // Return rgba
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    
     get gridStyle() {
         // If we only have one tile and multiple columns, center it
         if (this.tilesData.length === 1 && this.columns > 1) {
@@ -252,7 +337,7 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
             }
         });
         
-        // Toggle the clicked menu
+        // Toggle the current menu
         this.tilesData[index].isMenuOpen = !this.tilesData[index].isMenuOpen;
     }
     

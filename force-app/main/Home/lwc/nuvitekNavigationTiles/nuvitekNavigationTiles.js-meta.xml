@@ -13,7 +13,7 @@
     <targetConfigs>
         <targetConfig targets="lightningCommunity__Default,lightning__AppPage,lightning__HomePage">
             <property name="columns" type="Integer" default="3" min="1" max="6" label="Number of Columns" description="Number of tiles to display per row"/>
-            <property name="tileStyle" type="String" default="elevated" label="Tile Style" description="Visual style for all tiles" datasource="elevated,flat,bordered,gradient"/>
+            <property name="tileStyle" type="String" default="elevated" label="Tile Style" description="Visual style for all tiles" datasource="elevated,flat,gradient,minimal,frosted,shadow,accent,subtle"/>
             
             <!-- Comma-delimited list properties -->
             <property name="titles" type="String" label="Tile Titles" default="Feature 1, Feature 2, Feature 3" description="Comma-separated list of tile titles"/>
@@ -21,6 +21,7 @@
             <property name="icons" type="String" label="Tile Icons" default="utility:info, utility:success, utility:settings" description="Comma-separated list of SLDS icon names"/>
             <property name="colors" type="String" label="Tile Colors" default="#0071e3, #34c759, #007aff" description="Comma-separated list of accent colors"/>
             <property name="links" type="String" label="Tile Links" default="/page1, /page2, /page3" description="Comma-separated list of links to navigate to when clicked"/>
+            <property name="bgImages" type="String" label="Background Images" default="" description="Comma-separated list of image URLs for background images (leave blank for color background)"/>
             
             <!-- Theme Properties -->
             <property name="primaryColor" type="String" label="Primary Color" default="#22BDC1" description="Primary color for theme elements (matches theme layout)"/>

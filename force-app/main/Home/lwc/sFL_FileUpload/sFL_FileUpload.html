@@ -1,0 +1,64 @@
+<template>
+    <div class="slds-card slds-var-p-around_medium">
+        <div if:true={recordId} class="slds-grid slds-grid_vertical">
+            <div class="slds-col">
+                <div class="slds-form-element">
+                    <label class="slds-form-element__label" for="file-upload-input">
+                        <span>{label}</span>
+                        <template if:true={required}>
+                            <abbr class="slds-required" title="required">*</abbr>
+                        </template>
+                    </label>
+                    <div class="slds-form-element__control">
+                        <lightning-file-upload
+                            name="fileUploader"
+                            accept={acceptedFileFormats}
+                            record-id={recordId}
+                            onuploadfinished={handleUploadFinished}
+                            onerror={handleError}
+                            multiple={multiple}
+                            disabled={isLoading}>
+                        </lightning-file-upload>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="slds-col slds-var-m-top_small" if:true={hasUploadedFiles}>
+                <div class="slds-box slds-theme_shade">
+                    <div class="slds-grid slds-grid_align-spread">
+                        <div class="slds-col">
+                            <p class="slds-text-heading_small slds-truncate">
+                                <lightning-icon icon-name="doctype:attachment" size="small" class="slds-var-m-right_x-small"></lightning-icon>
+                                Uploaded Files: {uploadedFileNames}
+                            </p>
+                        </div>
+                        <div class="slds-col slds-grow-none">
+                            <lightning-button-icon
+                                icon-name="utility:clear"
+                                alternative-text="Clear files"
+                                title="Clear files"
+                                variant="border-filled"
+                                onclick={handleClearFiles}>
+                            </lightning-button-icon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="slds-col slds-var-m-top_small" if:true={isLoading}>
+                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+            </div>
+        </div>
+        
+        <div if:false={recordId} class="slds-box slds-theme_error slds-var-m-bottom_medium">
+            <div class="slds-media slds-media_center">
+                <div class="slds-media__figure">
+                    <lightning-icon icon-name="utility:warning" alternative-text="Warning" size="small" variant="inverse"></lightning-icon>
+                </div>
+                <div class="slds-media__body">
+                    <p>Record ID is required to upload files. Please provide a valid record ID or use this component on a record page.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</template> 

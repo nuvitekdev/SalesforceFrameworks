@@ -2,10 +2,11 @@
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>62.0</apiVersion>
     <isExposed>true</isExposed>
-    <masterLabel>Nuvitek Theme Layout</masterLabel>
+    <masterLabel>Nuvitek Custom Theme Layout</masterLabel>
     <description>A highly customizable theme layout component that supports both default and custom header/footer components</description>
     <targets>
         <target>lightningCommunity__Page</target>
+                <target>lightning__HomePage</target>
         <target>lightningCommunity__Default</target>
         <target>lightningCommunity__Theme_Layout</target>
     </targets>
@@ -107,7 +108,18 @@
                 label="Show Floating Action Button"
                 description="Toggle to display floating action button" />
             <property name="fabUrl" type="String" label="FAB Action URL"
-                description="Link for floating action button" />
+                description="Link for floating action button (only used when FAB Options is set to 'URL Link')" />
+            <property name="fabOptions" type="String" default="both" label="FAB Options"
+                description="Select which options to show in the floating action button menu"
+                datasource="both,help_form,ai_assistant,url_link" />
+            <property name="helpFormLabel" type="String" default="Help Request" label="Help Form Label"
+                description="Label for the help request option in the FAB menu" />
+            <property name="aiAssistantLabel" type="String" default="AI Assistant" label="AI Assistant Label"
+                description="Label for the AI assistant option in the FAB menu" />
+            <property name="helpFormIcon" type="String" default="utility:chat" label="Help Form Icon"
+                description="Icon name for the help form option (e.g. utility:chat)" />
+            <property name="aiAssistantIcon" type="String" default="utility:einstein" label="AI Assistant Icon"
+                description="Icon name for the AI assistant option (e.g. utility:einstein)" />
 
             <!-- Footer configuration -->
             <property name="useDefaultFooter" type="Boolean" default="false"

@@ -444,24 +444,30 @@
             </template>
         </footer>
 
-        <!-- Floating action button (chat bot) -->
+        <!-- Floating action button with options -->
         <div class="fab" if:true={showFab}>
-            <button class="fab-button" aria-label="Help Request" onclick={toggleHelpForm}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M8 10.5C8 11.3284 7.32843 12 6.5 12C5.67157 12 5 11.3284 5 10.5C5 9.67157 5.67157 9 6.5 9C7.32843 9 8 9.67157 8 10.5Z"
-                        fill="currentColor" />
-                    <path
-                        d="M12.5 10.5C12.5 11.3284 11.8284 12 11 12C10.1716 12 9.5 11.3284 9.5 10.5C9.5 9.67157 10.1716 9 11 9C11.8284 9 12.5 9.67157 12.5 10.5Z"
-                        fill="currentColor" />
-                        <path
-                        d="M17 10.5C17 11.3284 16.3284 12 15.5 12C14.6716 12 14 11.3284 14 10.5C14 9.67157 14.6716 9 15.5 9C16.3284 9 17 9.67157 17 10.5Z"
-                        fill="currentColor" />
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.04346 16.4525C3.22094 16.8088 3.28001 17.2161 3.17712 17.6006L2.58151 19.8267C2.32295 20.793 3.20701 21.677 4.17335 21.4185L6.39939 20.8229C6.78393 20.72 7.19121 20.7791 7.54753 20.9565C8.88837 21.6244 10.4003 22 12 22ZM20 12C20 16.4183 16.4183 20 12 20C10.6867 20 9.44366 19.7117 8.32239 19.1953C7.50777 18.8117 6.56713 18.9307 5.86753 19.3562L4.17335 19.8229L4.63961 18.1288C5.06947 17.4292 5.18846 16.489 4.80525 15.6743C4.28876 14.5528 4 13.3099 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
-                        fill="currentColor" />
-                </svg>
+            <button class="fab-button" aria-label="Options" onclick={handleFabClick}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" lwc:dom="manual"></svg>
             </button>
+            
+            <!-- FAB Menu Options -->
+            <div class={fabMenuClass} if:false={isUrlLink}>
+                <!-- Help Request Option -->
+                <div class="fab-menu-item" if:true={showHelpFormOption}>
+                    <span class="fab-menu-label">{helpFormLabel}</span>
+                    <button class="fab-menu-button" onclick={toggleHelpForm} aria-label={helpFormLabel}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" lwc:dom="manual"></svg>
+                    </button>
+                </div>
+                
+                <!-- AI Assistant Option -->
+                <div class="fab-menu-item" if:true={showAiAssistantOption}>
+                    <span class="fab-menu-label">{aiAssistantLabel}</span>
+                    <button class="fab-menu-button" onclick={toggleLlmAssistant} aria-label={aiAssistantLabel}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" lwc:dom="manual"></svg>
+                    </button>
+                </div>
+            </div>
 
             <!-- Help Form Dialog -->
             <div class={helpFormDialogClass}>
@@ -508,9 +514,26 @@
                     </template>
                 </div>
             </div>
+            
+            <!-- LLM Assistant Dialog -->
+            <div class={llmAssistantDialogClass}>
+                <div class="help-form-dialog-header">
+                    <h2 class="help-form-title">AI Assistant</h2>
+                    <button class="help-form-close" onclick={toggleLlmAssistant}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="help-form-content llm-assistant-container">
+                    <!-- LLM Assistant component is loaded here -->
+                    <c-llm-assistant primary-color={primaryColor} accent-color={accentColor}></c-llm-assistant>
+                </div>
+            </div>
 
-            <!-- Overlay backdrop when form is open -->
-            <div class={backdropClass} onclick={toggleHelpForm}></div>
+            <!-- Overlay backdrop when dialogs are open -->
+            <div class={backdropClass} onclick={closeAllDialogs}></div>
         </div>
     </div>
 </template>

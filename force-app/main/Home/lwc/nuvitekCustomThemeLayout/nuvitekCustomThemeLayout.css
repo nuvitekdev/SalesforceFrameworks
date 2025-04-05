@@ -77,6 +77,11 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     line-height: var(--line-height-normal);
+    
+    /* Set up sticky footer layout */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Dark theme variant */
@@ -933,6 +938,11 @@
     border-radius: 50%;
     padding: 8px;
     backdrop-filter: blur(4px);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .theme-dark .scroll-indicator,
@@ -952,6 +962,9 @@
 /* Ensure the SVG inside uses the correct color */
 .scroll-icon svg {
     display: block;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
 }
 
 
@@ -959,6 +972,7 @@
 .main-content {
     margin-top: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
+    flex: 1; /* Make main content expand to fill available space, pushing footer down */
 }
 
 .content-container {
@@ -973,6 +987,7 @@
     border-top: 1px solid var(--border-color);
     padding-top: var(--spacing-xl);
     position: relative;
+    margin-top: auto; /* Help push footer to the bottom when needed */
 }
 
 .footer-container {
@@ -1152,6 +1167,7 @@
     padding-bottom: var(--spacing-xs);
     background-color: var(--background-alt); /* Keep gray background */
     border-top: 1px solid var(--border-color);
+    margin-top: auto; /* Ensure minimal footer sticks to bottom */
 }
 
 .site-footer.style-standard {
@@ -1507,7 +1523,6 @@
 
     /* Ensure components stack vertically with proper spacing */
     .hero-section > * {
-        width: 100%;
         margin-bottom: var(--spacing-lg);
     }
 
@@ -1528,6 +1543,19 @@
     .hero-subtitle {
         font-size: var(--font-size-lg);
     }
+    
+    /* Fix for scroll indicator on mobile */
+    .scroll-indicator {
+        bottom: 30px;
+        width: 36px;
+        height: 36px;
+        padding: 6px;
+    }
+    
+    .scroll-icon svg {
+        width: 20px;
+        height: 20px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1546,6 +1574,19 @@
     .mobile-menu-only {
         display: block;
         margin-right: 20px;
+    }
+    
+    /* Further adjust scroll indicator for smaller screens */
+    .scroll-indicator {
+        bottom: 20px;
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+    }
+    
+    .scroll-icon svg {
+        width: 18px;
+        height: 18px;
     }
 }
 
@@ -1750,4 +1791,125 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* FAB Menu styles */
+.fab-menu {
+    position: absolute;
+    bottom: 76px;
+    right: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all var(--transition-medium);
+    z-index: 99;
+}
+
+.fab-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    animation: springIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.fab-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.fab-menu-button {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: white;
+    box-shadow: var(--shadow-md);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: all var(--transition-medium);
+}
+
+.fab-menu-button:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: var(--shadow-lg);
+}
+
+.fab-menu-label {
+    background-color: white;
+    padding: 8px 14px;
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-sm);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color);
+    white-space: nowrap;
+    transition: all var(--transition-medium);
+}
+
+.fab-menu-button:hover + .fab-menu-label,
+.fab-menu-item:hover .fab-menu-label {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+/* LLM Assistant container styles */
+.llm-assistant-container {
+    height: 500px;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.help-form-dialog {
+    width: 420px;
+    max-width: 90vw;
+    max-height: 80vh;
+}
+
+/* Animation for FAB menu items */
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.fab-menu-item {
+    animation: fadeInRight 0.3s ease forwards;
+    animation-delay: calc(var(--item-index, 0) * 0.1s);
+    opacity: 0;
+}
+
+.fab-menu-item:nth-child(1) {
+    --item-index: 1;
+}
+
+.fab-menu-item:nth-child(2) {
+    --item-index: 2;
+}
+
+.fab-menu-item:nth-child(3) {
+    --item-index: 3;
+}
+
+/* Update the main FAB button to indicate it's a menu */
+.fab-button {
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.fab-button:hover {
+    transform: translateY(-5px) rotate(90deg);
 }
