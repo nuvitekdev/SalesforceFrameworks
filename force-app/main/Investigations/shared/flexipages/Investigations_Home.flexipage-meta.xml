@@ -107,6 +107,9 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>accentColor</name>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>colors</name>
                     <value>#3A7CA5, #4D9DE0, #2E8B57, #1F6AA6, #7E56B3, #F77E30</value>
                 </componentInstanceProperties>
@@ -124,7 +127,13 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>links</name>
-                    <value>/one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=OIG, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=EEO, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=Physical_Security, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=Law_Enforcement, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=General_Counsel, /one/one.app?source=aloha#/n/Whistleblower_Home</value>
+                    <value>/one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=OIG, /one/one.app?source=aloha#/n/EEO_Resolution_Hub, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=Physical_Security, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=Law_Enforcement, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=General_Counsel, /one/one.app?source=aloha#/n/Whistleblower_Home</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>primaryColor</name>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>textColor</name>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>tileStyle</name>

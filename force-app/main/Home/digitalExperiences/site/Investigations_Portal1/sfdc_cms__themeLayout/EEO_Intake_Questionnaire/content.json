@@ -1,0 +1,265 @@
+{
+  "type" : "sfdc_cms__themeLayout",
+  "title" : "EEO Intake Questionnaire",
+  "contentBody" : {
+    "component" : {
+      "attributes" : {
+        "accentColor" : "#D5DF23",
+        "aiAssistantIcon" : "utility:einstein",
+        "aiAssistantLabel" : "AI Assistant",
+        "applyThemeToSlots" : true,
+        "backgroundVideoDarkness" : 35,
+        "backgroundVideoFallbackUrl" : "null",
+        "backgroundVideoUrl" : "null",
+        "companyName" : "Nuvitek",
+        "ensureHomeNavItem" : true,
+        "fabOptions" : "both",
+        "fabUrl" : "null",
+        "footerColumnCount" : 3,
+        "footerColumnMenus" : "",
+        "footerColumnTitles" : "Products, Resources, Company",
+        "footerLegalText" : "All rights reserved. Terms and conditions apply.",
+        "footerNavigationMenuName" : "null",
+        "footerStyle" : "standard",
+        "footerTagline" : "Delivering innovative solutions since 2012",
+        "globalThemeOverride" : true,
+        "headerContainerWidth" : 100,
+        "headerNavigationMenuName" : "EEO_Compliance_Center_Navigation",
+        "headerSticky" : false,
+        "headerVariant" : "standard",
+        "helpFormIcon" : "utility:chat",
+        "helpFormLabel" : "Help Request",
+        "heroBackgroundDarkness" : 30,
+        "heroBackgroundImage" : "null",
+        "heroCTAPrimaryLabel" : "Get Started",
+        "heroCTAPrimaryUrl" : "null",
+        "heroCTASecondaryLabel" : "Learn More",
+        "heroCTASecondaryUrl" : "null",
+        "heroLayout" : "fullwidth",
+        "heroSubtitle" : "Discover innovative solutions designed with you in mind",
+        "heroTitle" : "Experience the Future Today",
+        "logoAltText" : "Nuvitek",
+        "logoUrl" : "",
+        "primaryColor" : "#22BDC1",
+        "profilePageUrl" : "/profile",
+        "searchObjects" : "Account,Contact",
+        "showBackgroundVideo" : false,
+        "showFab" : false,
+        "showHeroSection" : false,
+        "showProfileIcon" : false,
+        "showSearchInHeader" : true,
+        "socialLinkTitles" : "Facebook, Twitter, LinkedIn, Instagram",
+        "socialLinkUrls" : "",
+        "socialLinksCount" : 0,
+        "textColor" : "#1d1d1f",
+        "themeName" : "light",
+        "useDefaultFooter" : true,
+        "useDefaultHeader" : true
+      },
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"f2bc9a06-6008-45a9-a28e-2f2072111f27\",\"columns\":[{\"UUID\":\"cc01fd56-d60c-4775-97e3-6a92606572b6\",\"columnName\":\"Column 1\",\"columnKey\":\"headerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"851f473f-1772-4616-a77d-199aaa9e3f7a\",\"columns\":[{\"UUID\":\"425eafaa-215a-4baf-99f2-fa506981cd6c\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"5\",\"seedComponents\":[]},{\"UUID\":\"4cc53501-9fa4-4f56-b77d-75a9e7f7b8bd\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"606e53e1-441c-45c0-8119-de9c69b0bc28\",\"columnName\":\"Column 3\",\"columnKey\":\"332ca\",\"columnWidth\":\"5\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "dxpStyle" : {
+                      "padding" : {
+                        "bottom" : "5px",
+                        "left" : "5px",
+                        "right" : "5px",
+                        "top" : "5px"
+                      }
+                    }
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "activeLineWeight" : "3px",
+                        "backgroundColor" : "rgba(255, 255, 255, 0)",
+                        "dropdownAccordionIconSize" : "xx-small",
+                        "dropdownActiveLineWeight" : "5px",
+                        "dropdownBackgroundActiveColor" : "rgba(0, 0, 0, 0)",
+                        "dropdownBackgroundColor" : "",
+                        "dropdownBackgroundHoverColor" : "",
+                        "dropdownBottomBorderRadius" : "5px",
+                        "dropdownFontSizeOverride" : "",
+                        "dropdownFontWeightOverride" : "300",
+                        "dropdownItemPadding" : "{\"top\":\"10px\",\"right\":\"10px\",\"bottom\":\"10px\",\"left\":\"10px\"}",
+                        "dropdownLineHeightOverride" : "",
+                        "dropdownMenuPadding" : "{\"top\":\"0px\",\"right\":\"0px\",\"bottom\":\"0px\",\"left\":\"0px\"}",
+                        "dropdownOverrideTextStyle" : true,
+                        "dropdownShowDividerLines" : false,
+                        "dropdownTextDecorationOverride" : "",
+                        "dropdownTextStyle" : "body-regular",
+                        "dropdownTopBorderRadius" : "5px",
+                        "fontSizeOverride" : "",
+                        "fontWeightOverride" : "",
+                        "iconSize" : "xx-small",
+                        "itemBackgroundActiveColor" : "rgba(255, 255, 255, 0)",
+                        "itemBackgroundHoverColor" : "rgba(255, 255, 255, 0)",
+                        "lineHeightOverride" : "",
+                        "menuHorizontalAlignment" : "left",
+                        "overrideTextStyle" : false,
+                        "showHomeLink" : true,
+                        "showParentMenuIcon" : true,
+                        "spaceBetweenMenuItems" : "30px",
+                        "textDecorationOverride" : "",
+                        "textStyle" : "body-regular"
+                      },
+                      "definition" : "community_navigation:customizableNavigationBarContainer",
+                      "id" : "ef66bb34-bc8c-4a0f-94c9-2ffea6e849ad",
+                      "type" : "component"
+                    } ],
+                    "id" : "46bdc4ee-bf67-4e01-80dd-75a37bff52d9",
+                    "name" : "desktop",
+                    "title" : "Desktop View",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "burgerIconHorizontalAlignment" : "left",
+                        "modalAccordionIconSize" : "xx-small",
+                        "modalActiveBackgroundColor" : "rgba(255, 255, 255, 0)",
+                        "modalActiveLineWeight" : "5px",
+                        "modalFontSizeOverride" : "",
+                        "modalFontWeightOverride" : "",
+                        "modalItemPadding" : "{\"top\":\"10px\",\"right\":\"10px\",\"bottom\":\"10px\",\"left\":\"15px\"}",
+                        "modalLineHeightOverride" : "",
+                        "modalMenuPadding" : "{\"top\":\"0px\",\"right\":\"0px\",\"bottom\":\"0px\",\"left\":\"0px\"}",
+                        "modalOverrideTextStyle" : false,
+                        "modalShowDividerLines" : true,
+                        "modalSubmenuFontSizeOverride" : "",
+                        "modalSubmenuFontWeightOverride" : "300",
+                        "modalSubmenuLineHeightOverride" : "",
+                        "modalSubmenuOverrideTextStyle" : true,
+                        "modalSubmenuTextDecorationOverride" : "",
+                        "modalSubmenuTextStyle" : "body-regular",
+                        "modalTextDecorationOverride" : "",
+                        "modalTextStyle" : "body-regular",
+                        "showHomeLink" : true
+                      },
+                      "definition" : "community_navigation:customizableNavigationHamburgerMenuContainer",
+                      "id" : "2eb13e12-9721-4a31-a1eb-eafdfdf4e5de",
+                      "type" : "component"
+                    } ],
+                    "id" : "26e5ca5a-68c5-43a3-a473-2f54d23913f4",
+                    "name" : "mobile",
+                    "title" : "Mobile View",
+                    "type" : "region"
+                  } ],
+                  "definition" : "community_navigation:customizableNavigationMenu",
+                  "id" : "f7a1eb37-3cbb-4195-ac3f-ac9c1adab728",
+                  "type" : "component"
+                } ],
+                "id" : "425eafaa-215a-4baf-99f2-fa506981cd6c",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "id" : "4cc53501-9fa4-4f56-b77d-75a9e7f7b8bd",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "borderRadius" : "0px",
+                    "placeholderText" : "Search...",
+                    "showSearchButton" : true
+                  },
+                  "definition" : "dxp_search:searchInput",
+                  "id" : "b41a2353-422b-4e95-ad7b-474daaa1f7af",
+                  "type" : "component"
+                } ],
+                "id" : "606e53e1-441c-45c0-8119-de9c69b0bc28",
+                "name" : "332ca",
+                "title" : "Column 3",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "851f473f-1772-4616-a77d-199aaa9e3f7a",
+              "type" : "component"
+            } ],
+            "id" : "cc01fd56-d60c-4775-97e3-6a92606572b6",
+            "name" : "headerSection",
+            "title" : "Theme Header",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "f2bc9a06-6008-45a9-a28e-2f2072111f27",
+          "type" : "component"
+        } ],
+        "id" : "a5f91aeb-ef00-472b-bcfb-35b181ed178b",
+        "name" : "header",
+        "title" : "Theme Header",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"d2ab48df-9730-4c17-b5df-5083b4553cb0\",\"columns\":[{\"UUID\":\"c8916321-f464-4beb-b842-f610f305ec75\",\"columnName\":\"Column 1\",\"columnKey\":\"footerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "id" : "c8916321-f464-4beb-b842-f610f305ec75",
+            "name" : "footerSection",
+            "title" : "Theme Footer",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "d2ab48df-9730-4c17-b5df-5083b4553cb0",
+          "type" : "component"
+        } ],
+        "id" : "600db532-5b94-41af-b0e7-ac82664015cb",
+        "name" : "footer",
+        "title" : "Theme Footer",
+        "type" : "region"
+      }, {
+        "id" : "bd61ae63-f734-4161-b8a1-68f8d77769b0",
+        "name" : "default",
+        "type" : "region"
+      }, {
+        "id" : "79384508-eaeb-4d4d-a16c-1d6ccc5c2ff5",
+        "name" : "hero-media",
+        "type" : "region"
+      } ],
+      "definition" : "c:nuvitekCustomThemeLayout",
+      "id" : "de06722c-3cb8-47ef-b596-cf0af9c50bfb",
+      "type" : "component"
+    }
+  },
+  "urlName" : "eeo-intake-questionnaire"
+}

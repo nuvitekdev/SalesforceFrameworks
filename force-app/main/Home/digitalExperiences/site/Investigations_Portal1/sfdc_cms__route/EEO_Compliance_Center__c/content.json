@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "EEO Compliance Center",
+  "contentBody" : {
+    "activeViewId" : "EEO_Compliance_Center",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-eeo-compliance-center",
+    "urlPrefix" : "eeo-compliance-center"
+  },
+  "urlName" : "eeo-compliance-center"
+}

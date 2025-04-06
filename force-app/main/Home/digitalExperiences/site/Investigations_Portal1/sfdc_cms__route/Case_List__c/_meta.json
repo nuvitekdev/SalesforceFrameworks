@@ -1,0 +1,6 @@
+{
+  "apiName" : "Case_List__c",
+  "type" : "sfdc_cms__route",
+  "parentId" : "sfdc_cms__route/EEO_Support__c",
+  "path" : "routes"
+}

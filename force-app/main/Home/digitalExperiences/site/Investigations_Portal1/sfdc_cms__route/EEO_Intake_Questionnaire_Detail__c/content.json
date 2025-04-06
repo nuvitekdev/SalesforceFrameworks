@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "EEO Intake Questionnaire Detail",
+  "contentBody" : {
+    "activeViewId" : "EEO_Intake_Questionnaire_Detail",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "detail-EEO_Intake_Questionnaire__c",
+    "urlPrefix" : "eeo-intake-questionnaire"
+  },
+  "urlName" : "eeo-intake-questionnaire-detail"
+}

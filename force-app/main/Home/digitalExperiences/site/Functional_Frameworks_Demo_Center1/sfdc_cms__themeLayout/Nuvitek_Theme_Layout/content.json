@@ -5,12 +5,15 @@
     "component" : {
       "attributes" : {
         "accentColor" : "#D5DF23",
+        "aiAssistantIcon" : "utility:einstein",
+        "aiAssistantLabel" : "AI Assistant",
         "applyThemeToSlots" : true,
         "backgroundVideoDarkness" : 0,
         "backgroundVideoFallbackUrl" : "Nuvitek_Background_Image",
         "backgroundVideoUrl" : "",
         "companyName" : "Nuvitek",
         "ensureHomeNavItem" : false,
+        "fabOptions" : "both",
         "fabUrl" : "",
         "footerColumnCount" : 3,
         "footerColumnMenus" : "test",
@@ -24,6 +27,8 @@
         "headerNavigationMenuName" : "",
         "headerSticky" : true,
         "headerVariant" : "standard",
+        "helpFormIcon" : "utility:chat",
+        "helpFormLabel" : "Help Request",
         "heroBackgroundDarkness" : -60,
         "heroBackgroundImage" : "Nuvitek_PortalDemoCenter_Hero_Background_Image",
         "heroCTAPrimaryLabel" : "Connect with us",
@@ -37,6 +42,7 @@
         "logoUrl" : "",
         "primaryColor" : "rgb(34, 189, 193)",
         "profilePageUrl" : "/profile",
+        "searchObjects" : "Account,Contact",
         "showBackgroundVideo" : false,
         "showFab" : true,
         "showHeroSection" : true,
@@ -281,7 +287,7 @@
         "name" : "hero-media",
         "type" : "region"
       } ],
-      "definition" : "c:nuvitekThemeLayout",
+      "definition" : "c:nuvitekCustomThemeLayout",
       "id" : "05386e54-a865-42e7-a47e-0ea6edeb2eca",
       "type" : "component"
     }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>EEO_Intake_Questionnaire_Header</fullName>
+    <fields>Aggrieved_Person_del__c</fields>
+    <fields>Office_Phone__c</fields>
+    <fields>Place_of_Employment__c</fields>
+    <fields>Date_of_Incident__c</fields>
+    <fields>Does_the_Aggrieved_have_a_Representative__c</fields>
+    <fields>Representative__c</fields>
+    <label>EEO Intake Questionnaire Header</label>
+</CompactLayout>

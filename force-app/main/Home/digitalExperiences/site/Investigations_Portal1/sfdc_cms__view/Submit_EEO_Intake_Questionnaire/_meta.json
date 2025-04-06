@@ -1,0 +1,5 @@
+{
+  "apiName" : "Submit_EEO_Intake_Questionnaire",
+  "type" : "sfdc_cms__view",
+  "path" : "views"
+}

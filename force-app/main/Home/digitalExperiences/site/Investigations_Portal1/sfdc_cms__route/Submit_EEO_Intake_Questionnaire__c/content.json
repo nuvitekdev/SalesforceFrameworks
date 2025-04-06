@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Submit EEO Intake Questionnaire",
+  "contentBody" : {
+    "activeViewId" : "Submit_EEO_Intake_Questionnaire",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-submit-eeo-intake-questionnaire",
+    "urlPrefix" : "submit-eeo-intake-questionnaire"
+  },
+  "urlName" : "submit-eeo-intake-questionnaire"
+}

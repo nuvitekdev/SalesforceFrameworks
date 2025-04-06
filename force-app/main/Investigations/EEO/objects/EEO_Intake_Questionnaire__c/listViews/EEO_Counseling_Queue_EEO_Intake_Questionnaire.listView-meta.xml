@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>EEO_Counseling_Queue_EEO_Intake_Questionnaire</fullName>
+    <columns>NAME</columns>
+    <columns>Aggrieved_Person_del__c</columns>
+    <columns>Place_of_Employment__c</columns>
+    <columns>Basis__c</columns>
+    <columns>Does_the_Aggrieved_have_a_Representative__c</columns>
+    <filterScope>Queue</filterScope>
+    <label>EEO Counseling Queue</label>
+    <queue>EEO_Counseling_Queue</queue>
+    <sharedTo>
+        <allInternalUsers></allInternalUsers>
+    </sharedTo>
+</ListView>

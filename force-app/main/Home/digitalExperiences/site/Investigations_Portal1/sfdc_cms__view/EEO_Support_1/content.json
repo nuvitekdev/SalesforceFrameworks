@@ -1,0 +1,80 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "EEO Support",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"5815cc7b-5b2e-418b-8c42-12a72ce8af84\",\"columns\":[{\"UUID\":\"c560f14b-b24d-4b07-8504-db0b9253b6d5\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"6\",\"seedComponents\":[]},{\"UUID\":\"aa430117-56a1-46c4-b4ca-8ac32da15725\",\"columnName\":\"Column 2\",\"columnKey\":\"188f0\",\"columnWidth\":\"6\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "flowName" : "{\"flowName\":\"SFL_EEOSupportForm\",\"flowLabel\":\"SFL_EEOSupportForm\"}"
+              },
+              "definition" : "dxp_flow:flow",
+              "id" : "1e10d89d-46c8-43f2-8f52-57fcd75eb8cc",
+              "type" : "component"
+            } ],
+            "id" : "c560f14b-b24d-4b07-8504-db0b9253b6d5",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          }, {
+            "children" : [ {
+              "attributes" : { },
+              "definition" : "c:eeoFaqAccordion",
+              "id" : "2ce16f8b-936d-4323-8e83-f4c0eb965082",
+              "type" : "component"
+            } ],
+            "id" : "aa430117-56a1-46c4-b4ca-8ac32da15725",
+            "name" : "188f0",
+            "title" : "Column 2",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "5815cc7b-5b2e-418b-8c42-12a72ce8af84",
+          "type" : "component"
+        } ],
+        "id" : "fc7c2329-7136-4996-9a3a-ba57cbbdbca2",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "pageTitle" : "EEO Support",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "141d6b6c-5857-4873-9cd0-a7f0667e6cf2",
+          "type" : "component"
+        } ],
+        "id" : "9740a8ec-d4bb-4f26-aa66-05fccad1d66f",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "c19afbff-89f3-43e7-9241-acdca04b2a56",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "ew5rEwtXqEfgm9PJ0zAAxXRPrJe6US",
+    "viewType" : "custom-eeo-support"
+  },
+  "urlName" : "eeo-support"
+}

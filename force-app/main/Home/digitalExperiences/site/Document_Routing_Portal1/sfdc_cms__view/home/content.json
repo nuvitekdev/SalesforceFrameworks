@@ -26,7 +26,7 @@
                 "descriptions" : "Streamline all official communications with intelligent routing plus approval workflows and comprehensive archiving, Track and manage critical tasks with smart assignment routing plus deadline monitoring and workload analytics, Review and process policy documents with collaborative editing plus approval routing and version control, Set goals and track performance initiatives with milestone management plus resource allocation and impact measurement, Build and process digital forms with validation logic plus workflow routing and mobile accessibility, Manage public inquiries with case routing plus response tracking and satisfaction monitoring, Administer fellowship programs with application processing plus performance tracking and program evaluation, Process public records requests with automated routing plus document search and compliance verification",
                 "icons" : "utility:email, utility:task, utility:note, utility:chart, utility:form, utility:customer, utility:education, utility:record",
                 "links" : "/page1, /page2, /page3",
-                "tileStyle" : "flat",
+                "tileStyle" : "gradient",
                 "titles" : "Correspondence Hub, Task Command Center, Directive Portal, Improvement Tracker, Forms Builder, Constituent Services, Fellowship Portal, FOIA Center"
               },
               "definition" : "c:nuvitekNavigationTiles",

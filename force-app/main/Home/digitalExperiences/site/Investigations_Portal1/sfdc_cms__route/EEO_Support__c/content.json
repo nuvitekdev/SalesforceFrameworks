@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "EEO Support",
+  "contentBody" : {
+    "activeViewId" : "EEO_Support_1",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-eeo-support",
+    "urlPrefix" : "eeo-support"
+  },
+  "urlName" : "eeo-support"
+}

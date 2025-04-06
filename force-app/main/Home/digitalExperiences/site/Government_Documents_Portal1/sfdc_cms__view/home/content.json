@@ -25,7 +25,7 @@
                 "columns" : 3,
                 "descriptions" : "Manage the complete lifecycle of permits and licenses with automated verification plus inspection scheduling and renewal tracking, Streamline business entity registrations with document validation plus certificate generation and compliance verification, Centralize document intake and routing with classification tools plus workflow automation and secure archiving, Automate procurement processes with vendor management plus budget verification and comprehensive spend analytics, Create and manage contracts with template libraries plus approval workflows and milestone tracking features, Manage the complete procurement lifecycle with vendor evaluation plus award determination and performance monitoring, Plan IT investments with cost estimation tools plus benefit analysis and decision support visualizations, Ensure policy compliance in decision-making with risk evaluation plus meeting management and audit support, Verify qualifications with secure document verification plus background check integration and credential tracking",
                 "icons" : "utility:approval, utility:company, utility:file, utility:moneybag, utility:contract, utility:cart, utility:strategy, utility:hierarchy, utility:identity",
-                "links" : "/page1, /page2, /page3",
+                "links" : "/page1, /page2, /page3,/invoice-home",
                 "tileStyle" : "gradient",
                 "titles" : "Permit & Licensing Center, Business Registration Portal, Applications Hub, Purchasing & Invoicing, Contract Management, Acquisition Workspace, Investment Planning, Governance Framework, Credentialing System"
               },

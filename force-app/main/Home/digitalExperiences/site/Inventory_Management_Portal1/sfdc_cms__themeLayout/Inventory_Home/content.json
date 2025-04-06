@@ -5,12 +5,15 @@
     "component" : {
       "attributes" : {
         "accentColor" : "#D5DF23",
+        "aiAssistantIcon" : "utility:einstein",
+        "aiAssistantLabel" : "AI Assistant",
         "applyThemeToSlots" : true,
         "backgroundVideoDarkness" : 0,
         "backgroundVideoFallbackUrl" : "",
         "backgroundVideoUrl" : "",
         "companyName" : "Nuvitek",
         "ensureHomeNavItem" : false,
+        "fabOptions" : "both",
         "fabUrl" : "",
         "footerColumnCount" : 3,
         "footerColumnMenus" : "",
@@ -24,6 +27,8 @@
         "headerNavigationMenuName" : "",
         "headerSticky" : false,
         "headerVariant" : "standard",
+        "helpFormIcon" : "utility:chat",
+        "helpFormLabel" : "Help Request",
         "heroBackgroundDarkness" : -50,
         "heroBackgroundImage" : "Inventory_Portal_Hero_Image",
         "heroCTAPrimaryLabel" : "",
@@ -118,7 +123,7 @@
         "name" : "hero-media",
         "type" : "region"
       } ],
-      "definition" : "c:nuvitekThemeLayout",
+      "definition" : "c:nuvitekCustomThemeLayout",
       "id" : "d0d0659a-4c09-4160-ad47-a2cbc12dc177",
       "type" : "component"
     }

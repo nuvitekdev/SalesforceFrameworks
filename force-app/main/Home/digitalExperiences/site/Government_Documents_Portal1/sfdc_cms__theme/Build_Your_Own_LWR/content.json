@@ -5,14 +5,20 @@
     "activeBrandingSetId" : "Build_Your_Own_LWR",
     "definitionName" : "byo",
     "layouts" : [ {
+      "layoutId" : "Invoicing_Home",
+      "layoutType" : "5plGTuePZfwIrrYbUQHxBLEZOTXUZv"
+    }, {
+      "layoutId" : "Government_Document_Home",
+      "layoutType" : "BchiVUrCt6ia0dGjCNfMSPVqFHLSOe"
+    }, {
       "layoutId" : "snaThemeLayout",
       "layoutType" : "ServiceNotAvailable"
     }, {
       "layoutId" : "scopedHeaderAndFooter",
       "layoutType" : "Inner"
     }, {
-      "layoutId" : "Government_Document_Home",
-      "layoutType" : "BchiVUrCt6ia0dGjCNfMSPVqFHLSOe"
+      "layoutId" : "Regular_Invoicing_Pages",
+      "layoutType" : "ciEHyfuuzkL25ZzygQZOolI0iOyTXQ"
     } ]
   },
   "urlName" : "build-your-own-lwr"

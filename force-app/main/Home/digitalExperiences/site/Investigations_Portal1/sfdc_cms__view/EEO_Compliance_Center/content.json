@@ -1,0 +1,101 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "EEO Compliance Center",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"bec9c7ab-a1b6-402d-b67c-8c50eac6b54a\",\"columns\":[{\"UUID\":\"2143babb-f7c5-46b7-bba8-30319a52c2ad\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "accentColor" : "#D5DF23",
+                "colors" : "#4D9DE0, #2E8B57, #7E56B3",
+                "columns" : 3,
+                "descriptions" : "View your existing EEO Intake Questionnaires, Submit an EEO Intake Questionnaire for a new complaint, View your requests for support",
+                "icons" : "utility:info, utility:checkin, utility:case",
+                "links" : "/eeo-compliance-center/eeo-intake-questionnaire/EEO_Intake_Questionnaire__c/All_EEO_Intake_Questionnaires, /eeo-compliance-center/submit-eeo-intake-questionnaire, /eeo-compliance-center/eeo-support",
+                "primaryColor" : "#22BDC1",
+                "textColor" : "#1d1d1f",
+                "tileStyle" : "gradient",
+                "titles" : "Existing EEO Complaints, New EEO Intake Questionnaire, EEO Support Cases"
+              },
+              "definition" : "c:nuvitekNavigationTiles",
+              "id" : "0e998f02-6216-4d37-bb19-aa6156ea0031",
+              "type" : "component"
+            } ],
+            "id" : "2143babb-f7c5-46b7-bba8-30319a52c2ad",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "bec9c7ab-a1b6-402d-b67c-8c50eac6b54a",
+          "type" : "component"
+        }, {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"cb1cca8b-cd54-4d03-b54e-6efe26492b49\",\"columns\":[{\"UUID\":\"23b93831-eb6c-4a40-b48e-d482fd8bb9c9\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "id" : "23b93831-eb6c-4a40-b48e-d482fd8bb9c9",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "cb1cca8b-cd54-4d03-b54e-6efe26492b49",
+          "type" : "component"
+        } ],
+        "id" : "f62ef3f5-524d-43b6-bad3-11ff98ec2dfa",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "pageTitle" : "EEO Compliance Center",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "a53a3b3b-b1fa-43be-9772-37d790c2ee8a",
+          "type" : "component"
+        } ],
+        "id" : "5942e925-14a4-4cea-84eb-5eaac5305177",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "b907700c-57ea-4b58-8e4b-069348ac2e71",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "EEOInvestigations",
+    "viewType" : "custom-eeo-compliance-center"
+  },
+  "urlName" : "eeo-compliance-center"
+}

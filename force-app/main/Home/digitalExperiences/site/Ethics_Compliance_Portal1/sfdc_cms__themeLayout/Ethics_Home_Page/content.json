@@ -5,12 +5,15 @@
     "component" : {
       "attributes" : {
         "accentColor" : "#D5DF23",
+        "aiAssistantIcon" : "utility:einstein",
+        "aiAssistantLabel" : "AI Assistant",
         "applyThemeToSlots" : true,
         "backgroundVideoDarkness" : 35,
         "backgroundVideoFallbackUrl" : "",
         "backgroundVideoUrl" : "Ethics_Portal_Background_Hero_Video",
         "companyName" : "Nuvitek",
         "ensureHomeNavItem" : false,
+        "fabOptions" : "both",
         "fabUrl" : "",
         "footerColumnCount" : 3,
         "footerColumnMenus" : "",
@@ -24,6 +27,8 @@
         "headerNavigationMenuName" : "",
         "headerSticky" : false,
         "headerVariant" : "standard",
+        "helpFormIcon" : "utility:chat",
+        "helpFormLabel" : "Help Request",
         "heroBackgroundDarkness" : 30,
         "heroBackgroundImage" : "null",
         "heroCTAPrimaryLabel" : "",
@@ -37,6 +42,7 @@
         "logoUrl" : "",
         "primaryColor" : "rgb(34, 189, 193)",
         "profilePageUrl" : "/profile",
+        "searchObjects" : "Account,Contact",
         "showBackgroundVideo" : true,
         "showFab" : false,
         "showHeroSection" : true,
@@ -117,7 +123,7 @@
         "name" : "hero-media",
         "type" : "region"
       } ],
-      "definition" : "c:nuvitekThemeLayout",
+      "definition" : "c:nuvitekCustomThemeLayout",
       "id" : "6677f773-6065-4e3c-b106-af2e960189f8",
       "type" : "component"
     }

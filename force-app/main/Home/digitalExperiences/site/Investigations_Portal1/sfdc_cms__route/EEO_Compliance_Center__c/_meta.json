@@ -1,0 +1,5 @@
+{
+  "apiName" : "EEO_Compliance_Center__c",
+  "type" : "sfdc_cms__route",
+  "path" : "routes"
+}

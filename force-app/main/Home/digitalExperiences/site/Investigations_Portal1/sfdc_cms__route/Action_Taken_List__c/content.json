@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Action Taken List",
+  "contentBody" : {
+    "activeViewId" : "Action_Taken_List",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "list-Action_Taken__c",
+    "urlPrefix" : "action-taken"
+  },
+  "urlName" : "action-taken-list"
+}

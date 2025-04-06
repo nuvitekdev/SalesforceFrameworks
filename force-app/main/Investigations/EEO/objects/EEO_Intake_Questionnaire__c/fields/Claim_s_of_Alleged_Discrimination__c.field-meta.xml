@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Claim_s_of_Alleged_Discrimination__c</fullName>
+    <label>Claim(s) of Alleged Discrimination</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>MultiselectPicklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Appointment/Hire</fullName>
+                <default>false</default>
+                <label>Appointment/Hire</label>
+            </value>
+            <value>
+                <fullName>Assignment Of Duties</fullName>
+                <default>false</default>
+                <label>Assignment Of Duties</label>
+            </value>
+            <value>
+                <fullName>Awards</fullName>
+                <default>false</default>
+                <label>Awards</label>
+            </value>
+            <value>
+                <fullName>Conversion To Full-Time</fullName>
+                <default>false</default>
+                <label>Conversion To Full-Time</label>
+            </value>
+            <value>
+                <fullName>Disciplinary Action-Demotion</fullName>
+                <default>false</default>
+                <label>Disciplinary Action-Demotion</label>
+            </value>
+            <value>
+                <fullName>Disciplinary Action-Reprimand</fullName>
+                <default>false</default>
+                <label>Disciplinary Action-Reprimand</label>
+            </value>
+            <value>
+                <fullName>Disciplinary Action-Suspension</fullName>
+                <default>false</default>
+                <label>Disciplinary Action-Suspension</label>
+            </value>
+            <value>
+                <fullName>Disciplinary Action-Termination</fullName>
+                <default>false</default>
+                <label>Disciplinary Action-Termination</label>
+            </value>
+            <value>
+                <fullName>Disciplinary Action-Other</fullName>
+                <default>false</default>
+                <label>Disciplinary Action-Other</label>
+            </value>
+            <value>
+                <fullName>Disciplinary Action-Duty Hours</fullName>
+                <default>false</default>
+                <label>Disciplinary Action-Duty Hours</label>
+            </value>
+            <value>
+                <fullName>Disciplinary Action-Evaluation/Appraisal</fullName>
+                <default>false</default>
+                <label>Disciplinary Action-Evaluation/Appraisal</label>
+            </value>
+            <value>
+                <fullName>Disciplinary Action-Examination/Test</fullName>
+                <default>false</default>
+                <label>Disciplinary Action-Examination/Test</label>
+            </value>
+            <value>
+                <fullName>Harassment-Non-Sexual</fullName>
+                <default>false</default>
+                <label>Harassment-Non-Sexual</label>
+            </value>
+            <value>
+                <fullName>Harassment-Sexual</fullName>
+                <default>false</default>
+                <label>Harassment-Sexual</label>
+            </value>
+            <value>
+                <fullName>Harassment-Hostile Work Environment (non-sexual)</fullName>
+                <default>false</default>
+                <label>Harassment-Hostile Work Environment (non-sexual)</label>
+            </value>
+            <value>
+                <fullName>Harassment-Hostile Work Environment (sexual)</fullName>
+                <default>false</default>
+                <label>Harassment-Hostile Work Environment (sexual)</label>
+            </value>
+            <value>
+                <fullName>Harassment-Medical Examination</fullName>
+                <default>false</default>
+                <label>Harassment-Medical Examination</label>
+            </value>
+            <value>
+                <fullName>Harassment-Pay Including Overtime</fullName>
+                <default>false</default>
+                <label>Harassment-Pay Including Overtime</label>
+            </value>
+            <value>
+                <fullName>Harassment- Performance Evaluation/ Appraisal</fullName>
+                <default>false</default>
+                <label>Harassment- Performance Evaluation/ Appraisal</label>
+            </value>
+            <value>
+                <fullName>Harassment-Promotion/Non-Selection</fullName>
+                <default>false</default>
+                <label>Harassment-Promotion/Non-Selection</label>
+            </value>
+            <value>
+                <fullName>Reassignment-Denied</fullName>
+                <default>false</default>
+                <label>Reassignment-Denied</label>
+            </value>
+            <value>
+                <fullName>Reassignment-Directed</fullName>
+                <default>false</default>
+                <label>Reassignment-Directed</label>
+            </value>
+            <value>
+                <fullName>Reassignment-Reasonable Accommodation – Disability</fullName>
+                <default>false</default>
+                <label>Reassignment-Reasonable Accommodation – Disability</label>
+            </value>
+            <value>
+                <fullName>Reassignment-Reinstatement</fullName>
+                <default>false</default>
+                <label>Reassignment-Reinstatement</label>
+            </value>
+            <value>
+                <fullName>Reassignment-Religious Accommodation</fullName>
+                <default>false</default>
+                <label>Reassignment-Religious Accommodation</label>
+            </value>
+            <value>
+                <fullName>Reassignment-Retirement</fullName>
+                <default>false</default>
+                <label>Reassignment-Retirement</label>
+            </value>
+            <value>
+                <fullName>Reassignment-Sex Stereotyping (LGBT- related discrimination only)</fullName>
+                <default>false</default>
+                <label>Reassignment-Sex Stereotyping (LGBT- related discrimination only)</label>
+            </value>
+            <value>
+                <fullName>Reassignment-Telework</fullName>
+                <default>false</default>
+                <label>Reassignment-Telework</label>
+            </value>
+            <value>
+                <fullName>Reassignment-Termination</fullName>
+                <default>false</default>
+                <label>Reassignment-Termination</label>
+            </value>
+            <value>
+                <fullName>Reassignment-Terms/Conditions Of Employment</fullName>
+                <default>false</default>
+                <label>Reassignment-Terms/Conditions Of Employment</label>
+            </value>
+            <value>
+                <fullName>Reassignment-Time And Attendance</fullName>
+                <default>false</default>
+                <label>Reassignment-Time And Attendance</label>
+            </value>
+            <value>
+                <fullName>Reassignment-Training</fullName>
+                <default>false</default>
+                <label>Reassignment-Training</label>
+            </value>
+            <value>
+                <fullName>Reassignment-Other</fullName>
+                <default>false</default>
+                <label>Reassignment-Other</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <visibleLines>4</visibleLines>
+</CustomField>

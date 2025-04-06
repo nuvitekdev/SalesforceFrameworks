@@ -1,0 +1,6 @@
+{
+  "apiName" : "Submission_Related_List__c",
+  "type" : "sfdc_cms__route",
+  "parentId" : "sfdc_cms__route/Whistleblower_Protection_Home__c",
+  "path" : "routes"
+}

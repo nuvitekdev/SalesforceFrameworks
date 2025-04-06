@@ -1,0 +1,5 @@
+{
+  "apiName" : "EEO_Compliance_Center",
+  "type" : "sfdc_cms__view",
+  "path" : "views"
+}
