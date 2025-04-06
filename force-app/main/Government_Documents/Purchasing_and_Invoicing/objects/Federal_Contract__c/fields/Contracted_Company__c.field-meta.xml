@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Contracted_Company__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <label>Contracted Company</label>
+    <referenceTo>Account</referenceTo>
+    <relationshipLabel>Federal Contracts (Contracted Company)</relationshipLabel>
+    <relationshipName>Federal_Contracts_Recieved</relationshipName>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Federal_Contract_Compact_Layout</fullName>
+    <fields>Contract_Number__c</fields>
+    <fields>Contracting_Department__c</fields>
+    <fields>Contracted_Company__c</fields>
+    <fields>Contract_Start_Date__c</fields>
+    <fields>Contract_End_Date__c</fields>
+    <label>Federal Contract Compact Layout</label>
+</CompactLayout>

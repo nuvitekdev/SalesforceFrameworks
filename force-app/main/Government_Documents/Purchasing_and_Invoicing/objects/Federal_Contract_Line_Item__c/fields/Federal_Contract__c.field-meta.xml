@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Federal_Contract__c</fullName>
+    <label>Federal Contract</label>
+    <referenceTo>Federal_Contract__c</referenceTo>
+    <relationshipLabel>Federal Contract Line Items</relationshipLabel>
+    <relationshipName>Federal_Contract_Line_Items</relationshipName>
+    <relationshipOrder>0</relationshipOrder>
+    <reparentableMasterDetail>false</reparentableMasterDetail>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>MasterDetail</type>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+</CustomField>

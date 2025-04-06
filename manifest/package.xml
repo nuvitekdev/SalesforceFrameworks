@@ -1,122 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
-<types>
-<members>Case.EEO Compliance Support</members>
-<name>BusinessProcess</name>
-</types>
-<types>
-<members>EEO_Intake_Questionnaire__c.EEO_Intake_Questionnaire_Header</members>
-<name>CompactLayout</name>
-</types>
-<types>
-<members>Investigations</members>
-<name>CustomApplication</name>
-</types>
-<types>
-<members>Account</members>
-<members>Account</members>
-<members>Case</members>
-<members>Contact</members>
-<members>EEO_Intake_Questionnaire__c</members>
-<name>CustomObject</name>
-</types>
-<types>
-<members>Alleged_Discriminating_Person__c</members>
-<members>EEO_Intake_Questionnaire__c</members>
-<members>EEO_Resolution_Hub</members>
-<members>New_EEO_Intake_Form</members>
-<members>Witness__c</members>
-<name>CustomTab</name>
-</types>
-<types>
-<members>EEOCompliance/NGiTItkcxBkQAfECSyiMxckgbKbcSu</members>
-<members>EEOCompliance</members>
-<name>Dashboard</name>
-</types>
-<types>
-<members>site/Investigations_Portal1</members>
-<name>DigitalExperienceBundle</name>
-</types>
-<types>
-<members>Investigations_Portal1</members>
-<name>ExperienceBundle</name>
-</types>
-<types>
-<members>Case_Record_Page</members>
-<members>EEO_Intake_Questionnaire_Record_Page</members>
-<members>EEO_Resolution_Hub</members>
-<members>Investigations_Home</members>
-<members>New_EEO_Intake_Form</members>
-<name>FlexiPage</name>
-</types>
-<types>
-<members>SFL_EEOIntake</members>
-<members>SFL_EEOSupportForm</members>
-<name>Flow</name>
-</types>
-<types>
-<members>*</members>
-<name>GlobalValueSet</name>
-</types>
-<types>
-<members>ADR_Workflow_Group</members>
-<members>EEO_Counseling_Group</members>
-<name>Group</name>
-</types>
-<types>
-<members>Account-Account Layout</members>
-<members>Alleged_Discriminating_Person__c-Alleged Discriminating Person Layout</members>
-<members>Case-EEO Support Case</members>
-<members>Contact-Contact Layout</members>
-<members>EEO_Intake_Questionnaire__c-EEO Intake Questionnaire Layout</members>
-<members>Witness__c-Witness Layout</members>
-<name>Layout</name>
-</types>
-<types>
-<members>Case.AllOpenCases</members>
-<members>Case.EEO_Compliance_Support_Case</members>
-<members>Case.MyCases</members>
-<members>Case.MyOpenCases</members>
-<members>Case.My_EEO_Compliance_Support_Cases</members>
-<members>EEO_Intake_Questionnaire__c.ADR_Workflow_Queue_EEO_Intake_Questionnaire</members>
-<members>EEO_Intake_Questionnaire__c.All</members>
-<members>EEO_Intake_Questionnaire__c.All_EEO_Intake_Questionnaires</members>
-<members>EEO_Intake_Questionnaire__c.EEO_Counseling_Queue_EEO_Intake_Questionnaire</members>
-<name>ListView</name>
-</types>
-<types>
-<members>EEO_Compliance_Center_Navigation</members>
-<name>NavigationMenu</name>
-</types>
-<types>
-<members>Investigations Portal</members>
-<name>Network</name>
-</types>
-<types>
-<members>EEO_Aggrieved_Person</members>
-<members>EEO_Counselor_Permissions</members>
-<name>PermissionSet</name>
-</types>
-<types>
-<members>ADR_Workflow_Queue</members>
-<members>EEO_Compliance_Support</members>
-<members>EEO_Counseling_Queue</members>
-<name>Queue</name>
-</types>
-<types>
-<members>Case.EEO_Compliance_Support</members>
-<name>RecordType</name>
-</types>
-<types>
-<members>unfiled$public/EEO_Intake_Questionnaires_Report_X3D</members>
-<name>Report</name>
-</types>
-<types>
-<members>*</members>
-<name>Role</name>
-</types>
-<types>
-<members>*</members>
-<name>SharingSet</name>
-</types>
-<version>63.0</version>
+    <types>
+        <members>Federal_Contract_Line_Item__c.Federal_Contract_Line_Item_Compact_Layout</members>
+        <members>Federal_Contract__c.Federal_Contract_Compact_Layout</members>
+        <members>Invoice_Payment__c.Invoice_Payment_Compact_Layout</members>
+        <members>Payable_Invoice_Line_Item__c.Payable_Invoice_Line_Item_Compact_Layout</members>
+        <members>Payable_Invoice__c.Payable_Invoice_Compact_Layout</members>
+        <name>CompactLayout</name>
+    </types>
+    <types>
+        <members>Federal_Contract_Line_Item__c</members>
+        <members>Federal_Contract__c</members>
+        <members>Invoice_Payment__c</members>
+        <members>Payable_Invoice_Line_Item__c</members>
+        <members>Payable_Invoice__c</members>
+        <name>CustomObject</name>
+    </types>
+    <types>
+        <members>Approve_Invoice_Payments</members>
+        <members>Certify_Invoice_Payments</members>
+        <members>Federal_Contract_Line_Item__c</members>
+        <members>Federal_Contract__c</members>
+        <members>Invoice_Payment__c</members>
+        <members>New_Invoice_Entry</members>
+        <members>Payable_Invoice_Line_Item__c</members>
+        <members>Payable_Invoice__c</members>
+        <members>Purchasing_and_Invoice_App_Page</members>
+        <name>CustomTab</name>
+    </types>
+    <types>
+        <members>Approve_Invoice_Payments</members>
+        <members>Certify_Invoice_Payments</members>
+        <members>Invoice_Payment</members>
+        <members>Payable_Invoice</members>
+        <members>Payable_Invoice_Line_Item</members>
+        <members>Purchasing_and_Invoice_App_Page</members>
+        <members>Purchasing_and_Invoice_Home_Page</members>
+        <name>FlexiPage</name>
+    </types>
+    <types>
+        <members>SFL_InvoicePaymentApproval</members>
+        <members>SFL_InvoicePaymentCertification</members>
+        <members>SFL_NewInvoiceInput</members>
+        <name>Flow</name>
+    </types>
+    <types>
+        <members>*</members>
+        <name>GlobalValueSet</name>
+    </types>
+    <types>
+        <members>Federal_Contract_Line_Item__c-Federal Contract Line Item Layout</members>
+        <members>Federal_Contract__c-Federal Contract Layout</members>
+        <members>Invoice_Payment__c-Invoice Payment Layout</members>
+        <members>Payable_Invoice_Line_Item__c-Payable Invoice Line Item Layout</members>
+        <members>Payable_Invoice__c-Payable Invoice Layout</members>
+        <name>Layout</name>
+    </types>
+    <types>
+        <members>Federal_Contract_Line_Item__c.All</members>
+        <members>Federal_Contract__c.All</members>
+        <members>Invoice_Payment__c.All</members>
+        <members>Payable_Invoice_Line_Item__c.All</members>
+        <members>Payable_Invoice__c.All</members>
+        <members>Payable_Invoice__c.All_Payable_Invoices</members>
+        <name>ListView</name>
+    </types>
+    <version>63.0</version>
 </Package>
