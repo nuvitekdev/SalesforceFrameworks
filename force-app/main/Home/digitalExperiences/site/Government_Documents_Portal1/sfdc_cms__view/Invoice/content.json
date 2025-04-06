@@ -1,0 +1,78 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Invoice",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"b4f2d5fe-d62b-4b1e-9ddd-13c2a0242847\",\"columns\":[{\"UUID\":\"12b9d96c-3158-4795-ab73-37de93aa0c46\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "accentColor" : "#D5DF23",
+                "colors" : "#8e7be1, #D79B8E, #00BCD4,",
+                "columns" : 3,
+                "descriptions" : "Input new invoice information, View My Invoices, Request Invoicing Support",
+                "icons" : "utility:info, utility:success, utility:settings",
+                "links" : "/invoice-home/create-invoice,/invoice-home/payable-invoice/Payable_Invoice__c/All, /invoice-home/invoice-support",
+                "primaryColor" : "#22BDC1",
+                "textColor" : "#1d1d1f",
+                "tileStyle" : "gradient",
+                "titles" : " New Invoice Entry, Invoices, Support"
+              },
+              "definition" : "c:nuvitekNavigationTiles",
+              "id" : "ee8d036c-4ddc-4b5b-9422-a98a1a7da17f",
+              "type" : "component"
+            } ],
+            "id" : "12b9d96c-3158-4795-ab73-37de93aa0c46",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "b4f2d5fe-d62b-4b1e-9ddd-13c2a0242847",
+          "type" : "component"
+        } ],
+        "id" : "cb8202aa-4c8e-4542-b027-5cb040dece44",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "pageTitle" : "Invoice",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "6c112179-9cfd-4f34-b4c5-bc96d1fd40bf",
+          "type" : "component"
+        } ],
+        "id" : "7d5bd114-85c5-46e7-a1f7-b11f2255c24f",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "35c2cd27-ba17-4b44-a4c9-a58b36075fa9",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "5plGTuePZfwIrrYbUQHxBLEZOTXUZv",
+    "viewType" : "custom-invoice"
+  },
+  "urlName" : "invoice"
+}

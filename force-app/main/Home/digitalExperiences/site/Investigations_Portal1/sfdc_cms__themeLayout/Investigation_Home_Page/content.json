@@ -1,0 +1,149 @@
+{
+  "type" : "sfdc_cms__themeLayout",
+  "title" : "Investigation Home Page",
+  "contentBody" : {
+    "component" : {
+      "attributes" : {
+        "accentColor" : "#D5DF23",
+        "aiAssistantIcon" : "utility:einstein",
+        "aiAssistantLabel" : "AI Assistant",
+        "applyThemeToSlots" : true,
+        "backgroundVideoDarkness" : 35,
+        "backgroundVideoFallbackUrl" : "",
+        "backgroundVideoUrl" : "Investigations_Hero_Background_Video",
+        "companyName" : "Nuvitek",
+        "ensureHomeNavItem" : false,
+        "fabOptions" : "both",
+        "fabUrl" : "",
+        "footerColumnCount" : 3,
+        "footerColumnMenus" : "",
+        "footerColumnTitles" : "Products, Resources, Company",
+        "footerLegalText" : "All rights reserved. Terms and conditions apply.",
+        "footerNavigationMenuName" : "",
+        "footerStyle" : "minimal",
+        "footerTagline" : "Delivering innovative solutions since 2012",
+        "globalThemeOverride" : true,
+        "headerContainerWidth" : 100,
+        "headerNavigationMenuName" : "",
+        "headerSticky" : false,
+        "headerVariant" : "standard",
+        "helpFormIcon" : "utility:chat",
+        "helpFormLabel" : "Help Request",
+        "heroBackgroundDarkness" : 30,
+        "heroBackgroundImage" : "",
+        "heroCTAPrimaryLabel" : "",
+        "heroCTAPrimaryUrl" : "",
+        "heroCTASecondaryLabel" : "",
+        "heroCTASecondaryUrl" : "",
+        "heroLayout" : "fullwidth",
+        "heroSubtitle" : "From case intake to final reports—a complete investigation platform that safeguards evidence, ensures compliance, and delivers actionable insights",
+        "heroTitle" : "Secure Oversight, Swift Resolution",
+        "logoAltText" : "",
+        "logoUrl" : "",
+        "primaryColor" : "#22BDC1",
+        "profilePageUrl" : "/profile",
+        "searchObjects" : "Account,Contact",
+        "showBackgroundVideo" : true,
+        "showFab" : false,
+        "showHeroSection" : true,
+        "showProfileIcon" : false,
+        "showSearchInHeader" : false,
+        "socialLinkTitles" : "Facebook, Twitter, LinkedIn, Instagram",
+        "socialLinkUrls" : "",
+        "socialLinksCount" : 0,
+        "textColor" : "rgb(0, 0, 0)",
+        "themeName" : "light",
+        "useDefaultFooter" : true,
+        "useDefaultHeader" : true
+      },
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"58445bec-a6ea-4464-bb1b-5e511c68d65d\",\"columns\":[{\"UUID\":\"3df609c1-c28e-43e9-a6e9-dc101c26f647\",\"columnName\":\"Column 1\",\"columnKey\":\"headerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "id" : "3df609c1-c28e-43e9-a6e9-dc101c26f647",
+            "name" : "headerSection",
+            "title" : "Theme Header",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "58445bec-a6ea-4464-bb1b-5e511c68d65d",
+          "type" : "component"
+        } ],
+        "id" : "60c67bab-8f9f-4a7c-9dc6-ef4e21a3cb55",
+        "name" : "header",
+        "title" : "Theme Header",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"4fae5e03-a9ef-433a-b3ad-34371fa54e11\",\"columns\":[{\"UUID\":\"9f7bb33b-2b8c-4114-b749-dbd1bc45756e\",\"columnName\":\"Column 1\",\"columnKey\":\"footerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "id" : "9f7bb33b-2b8c-4114-b749-dbd1bc45756e",
+            "name" : "footerSection",
+            "title" : "Theme Footer",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "4fae5e03-a9ef-433a-b3ad-34371fa54e11",
+          "type" : "component"
+        } ],
+        "id" : "099fe560-31ec-4095-8a6f-abf4f3e9852d",
+        "name" : "footer",
+        "title" : "Theme Footer",
+        "type" : "region"
+      }, {
+        "id" : "a3c77587-743d-4059-ad1b-7976c29be705",
+        "name" : "default",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "alignment" : "center",
+            "dxpStyle" : { },
+            "fit" : "contain",
+            "height" : 350,
+            "imageInfo" : "{\"imageInfoV1\":{\"url\":\"/sfsites/c/cms/delivery/media/MCPWGQKN4XBZHEZBQL6JBCJ5EEVY?lastModifiedDate=Thu Mar 20 21:00:44 GMT 2025\",\"altText\":\"\",\"contentKey\":\"MCPWGQKN4XBZHEZBQL6JBCJ5EEVY\",\"contentType\":null}}",
+            "overlayColor" : "",
+            "position" : "center center",
+            "width" : 100
+          },
+          "definition" : "dxp_base:image",
+          "id" : "6025927a-cffe-4813-9e14-8965535c27a6",
+          "type" : "component"
+        } ],
+        "id" : "582a9688-1982-4d10-b995-54d6930e3b19",
+        "name" : "hero-media",
+        "type" : "region"
+      } ],
+      "definition" : "c:nuvitekCustomThemeLayout",
+      "id" : "33b581bb-0d19-443e-952f-466866edf3e2",
+      "type" : "component"
+    }
+  },
+  "urlName" : "investigation-home-page"
+}

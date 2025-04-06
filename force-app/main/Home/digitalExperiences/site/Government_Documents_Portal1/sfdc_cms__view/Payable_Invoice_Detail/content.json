@@ -1,0 +1,89 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Payable Invoice Detail",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"a5fdfd40-5fa0-4b80-89be-a3c3b77ac821\",\"columns\":[{\"UUID\":\"977ee78a-f23f-43c0-a228-e2f693138f45\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "backgroundColor" : "rgb(243, 243, 243)",
+                "layout" : "{!Item._layout}",
+                "mainTitlePaddingHorizontal" : "none",
+                "mainTitlePaddingVertical" : "none",
+                "mainTitleText" : "Your text",
+                "mainTitleTextDisplayInfo" : "{\"textStyle\":\"heading-medium\",\"headingTag\":\"h3\",\"enableOverride\":false}",
+                "metadata" : "{!Item._metadata._context}",
+                "recordIdFromDataProvider" : "{!Item.Id}",
+                "showTitle" : true
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : { },
+                  "definition" : "dxp_page_layout:placeHolder",
+                  "id" : "0713c87d-6a4c-4fd5-9193-19735fd7b4aa",
+                  "type" : "component"
+                } ],
+                "id" : "f752def9-4ede-471e-8578-40ed5c3378d2",
+                "name" : "placeholder",
+                "title" : "placeholder",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_records:detailPanel",
+              "id" : "025881df-8a83-4bec-9570-398a0a833cb1",
+              "type" : "component"
+            } ],
+            "id" : "977ee78a-f23f-43c0-a228-e2f693138f45",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "a5fdfd40-5fa0-4b80-89be-a3c3b77ac821",
+          "type" : "component"
+        } ],
+        "id" : "7dd2b94a-3b6c-418f-9e0b-0db2a5cad299",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "pageTitle" : "{!Record._Object}: {!Record._Title}",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "d4bf80f1-0c2d-4c4d-a0f4-2fb5bacb4196",
+          "type" : "component"
+        } ],
+        "id" : "09c25543-83c4-40fb-aa2e-7b39b560a9d8",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "4d475d2e-01f0-4e3f-97ca-754277b3aa59",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "ciEHyfuuzkL25ZzygQZOolI0iOyTXQ",
+    "viewType" : "detail-Payable_Invoice__c"
+  },
+  "urlName" : "payable-invoice-detail"
+}

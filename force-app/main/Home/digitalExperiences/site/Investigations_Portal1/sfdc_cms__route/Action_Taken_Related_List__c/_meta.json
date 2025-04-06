@@ -1,6 +1,0 @@
-{
-  "apiName" : "Action_Taken_Related_List__c",
-  "type" : "sfdc_cms__route",
-  "parentId" : "sfdc_cms__route/Whistleblower_SLA__c",
-  "path" : "routes"
-}

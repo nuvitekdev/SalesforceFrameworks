@@ -1,6 +1,0 @@
-{
-  "apiName" : "Submit_EEO_Intake_Questionnaire__c",
-  "type" : "sfdc_cms__route",
-  "parentId" : "sfdc_cms__route/EEO_Compliance_Center__c",
-  "path" : "routes"
-}

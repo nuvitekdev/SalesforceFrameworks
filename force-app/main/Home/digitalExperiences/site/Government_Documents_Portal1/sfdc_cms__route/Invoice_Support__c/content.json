@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Invoice Support",
+  "contentBody" : {
+    "activeViewId" : "Invoice_Support",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-invoice-support",
+    "urlPrefix" : "invoice-support"
+  },
+  "urlName" : "invoice-support"
+}

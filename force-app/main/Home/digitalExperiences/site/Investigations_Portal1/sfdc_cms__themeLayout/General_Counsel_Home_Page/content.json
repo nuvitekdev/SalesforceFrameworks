@@ -1,0 +1,149 @@
+{
+  "type" : "sfdc_cms__themeLayout",
+  "title" : "General Counsel Home Page",
+  "contentBody" : {
+    "component" : {
+      "attributes" : {
+        "accentColor" : "#D5DF23",
+        "aiAssistantIcon" : "utility:einstein",
+        "aiAssistantLabel" : "AI Assistant",
+        "applyThemeToSlots" : true,
+        "backgroundVideoDarkness" : 35,
+        "backgroundVideoFallbackUrl" : "",
+        "backgroundVideoUrl" : "Investigations_Hero_Background_Video",
+        "companyName" : "Nuvitek",
+        "ensureHomeNavItem" : true,
+        "fabOptions" : "both",
+        "fabUrl" : "",
+        "footerColumnCount" : 3,
+        "footerColumnMenus" : "",
+        "footerColumnTitles" : "Products, Resources, Company",
+        "footerLegalText" : "All rights reserved. Terms and conditions apply.",
+        "footerNavigationMenuName" : "",
+        "footerStyle" : "minimal",
+        "footerTagline" : "Delivering innovative solutions since 2010",
+        "globalThemeOverride" : true,
+        "headerContainerWidth" : 100,
+        "headerNavigationMenuName" : "General_Counsel_Navigation",
+        "headerSticky" : false,
+        "headerVariant" : "standard",
+        "helpFormIcon" : "utility:chat",
+        "helpFormLabel" : "Help Request",
+        "heroBackgroundDarkness" : 30,
+        "heroBackgroundImage" : "",
+        "heroCTAPrimaryLabel" : "",
+        "heroCTAPrimaryUrl" : "",
+        "heroCTASecondaryLabel" : "",
+        "heroCTASecondaryUrl" : "",
+        "heroLayout" : "fullwidth",
+        "heroSubtitle" : "Integrated legal case management with privileged communications security and complete document history—providing expert legal guidance while maintaining ironclad confidentiality",
+        "heroTitle" : "Legal Counsel: Protecting Institutional Integrity",
+        "logoAltText" : "",
+        "logoUrl" : "",
+        "primaryColor" : "#22BDC1",
+        "profilePageUrl" : "/profile",
+        "searchObjects" : "Account,Contact",
+        "showBackgroundVideo" : true,
+        "showFab" : false,
+        "showHeroSection" : true,
+        "showProfileIcon" : false,
+        "showSearchInHeader" : true,
+        "socialLinkTitles" : "Facebook, Twitter, LinkedIn, Instagram",
+        "socialLinkUrls" : "",
+        "socialLinksCount" : 0,
+        "textColor" : "#1d1d1f",
+        "themeName" : "light",
+        "useDefaultFooter" : true,
+        "useDefaultHeader" : true
+      },
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"f29e8d7c-6b5a-4413-b2c1-d0e9f8a7b6c5\",\"columns\":[{\"UUID\":\"a4b3c2d1-e0f9-4e8d-7c6b-5a4b3c2d1e0f\",\"columnName\":\"Column 1\",\"columnKey\":\"headerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "id" : "a4b3c2d1-e0f9-4e8d-7c6b-5a4b3c2d1e0f",
+            "name" : "headerSection",
+            "title" : "Theme Header",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "f29e8d7c-6b5a-4413-b2c1-d0e9f8a7b6c5",
+          "type" : "component"
+        } ],
+        "id" : "d1e0f9e8-d7c6-4b5a-4b3c-2d1e0f9e8d7c",
+        "name" : "header",
+        "title" : "Theme Header",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"b6c5d4e3-f2a1-4b0c-9d8e-7f6a5b4c3d2e\",\"columns\":[{\"UUID\":\"e1f0a9b8-c7d6-4e5f-4a3b-2c1d0e9f8a7b\",\"columnName\":\"Column 1\",\"columnKey\":\"footerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "id" : "e1f0a9b8-c7d6-4e5f-4a3b-2c1d0e9f8a7b",
+            "name" : "footerSection",
+            "title" : "Theme Footer",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "b6c5d4e3-f2a1-4b0c-9d8e-7f6a5b4c3d2e",
+          "type" : "component"
+        } ],
+        "id" : "c6b5a4d3-e2f1-4c0b-9d8e-7f6a5b4c3d2e",
+        "name" : "footer",
+        "title" : "Theme Footer",
+        "type" : "region"
+      }, {
+        "id" : "f6e5d4c3-b2a1-4019-8f7e-6d5c4b3a2d1e",
+        "name" : "default",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "alignment" : "center",
+            "dxpStyle" : { },
+            "fit" : "contain",
+            "height" : 350,
+            "imageInfo" : "{\"imageInfoV1\":{\"url\":\"/sfsites/c/cms/delivery/media/MCPWGQKN4XBZHEZBQL6JBCJ5EEVY?lastModifiedDate=Thu Mar 20 21:00:44 GMT 2025\",\"altText\":\"\",\"contentKey\":\"MCPWGQKN4XBZHEZBQL6JBCJ5EEVY\",\"contentType\":null}}",
+            "overlayColor" : "",
+            "position" : "center center",
+            "width" : 100
+          },
+          "definition" : "dxp_base:image",
+          "id" : "a1b0c9d8-e7f6-4a5b-4c3d-2e1f0a9b8c7d",
+          "type" : "component"
+        } ],
+        "id" : "d1c0b9a8-e7f6-4a5b-4c3d-2e1f0a9b8c7d",
+        "name" : "hero-media",
+        "type" : "region"
+      } ],
+      "definition" : "c:nuvitekCustomThemeLayout",
+      "id" : "f1e0d9c8-b7a6-4543-2c1d-0e9f8a7b6c5d",
+      "type" : "component"
+    }
+  },
+  "urlName" : "general-counsel-home-page"
+}

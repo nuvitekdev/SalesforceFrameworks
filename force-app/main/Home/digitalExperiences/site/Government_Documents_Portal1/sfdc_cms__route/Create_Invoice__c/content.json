@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Create Invoice",
+  "contentBody" : {
+    "activeViewId" : "Create_Invoice",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-create-invoice",
+    "urlPrefix" : "create-invoice"
+  },
+  "urlName" : "create-invoice"
+}
