@@ -197,6 +197,7 @@ export default class SFL_FileUpload extends NavigationMixin(LightningElement) {
         // Ensure component is properly initialized in Experience sites
         if (this.recordId && this._renderedOnce !== true) {
             this._renderedOnce = true;
+            
             // Force refresh of file uploader if needed
             if (this.template.querySelector('lightning-file-upload')) {
                 this.template.querySelector('lightning-file-upload').focus();

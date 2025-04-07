@@ -24,15 +24,22 @@
             </div>
             
             <div class="slds-col slds-var-m-top_small" if:true={hasUploadedFiles}>
-                <div class="slds-box slds-theme_shade">
-                    <div class="slds-grid slds-grid_align-spread">
-                        <div class="slds-col">
-                            <p class="slds-text-heading_small slds-truncate">
-                                <lightning-icon icon-name="doctype:attachment" size="small" class="slds-var-m-right_x-small"></lightning-icon>
-                                Uploaded Files: {uploadedFileNames}
-                            </p>
+                <div class="slds-box slds-theme_shade file-container">
+                    <div class="slds-grid slds-grid_align-spread slds-wrap">
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_11-of-12">
+                            <div class="slds-media">
+                                <div class="slds-media__figure">
+                                    <lightning-icon icon-name="doctype:attachment" size="small"></lightning-icon>
+                                </div>
+                                <div class="slds-media__body">
+                                    <p class="slds-text-heading_small file-names-container">
+                                        <span class="slds-text-heading_small">Uploaded Files:</span> 
+                                        <span class="file-names">{uploadedFileNames}</span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="slds-col slds-grow-none">
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-12 slds-align_absolute-center">
                             <lightning-button-icon
                                 icon-name="utility:clear"
                                 alternative-text="Clear files"

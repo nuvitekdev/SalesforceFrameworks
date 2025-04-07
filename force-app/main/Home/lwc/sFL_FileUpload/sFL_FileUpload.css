@@ -1,0 +1,56 @@
+.file-container {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+.file-names-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.file-names {
+    font-size: 0.875rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal !important;
+    line-height: 1.4;
+    margin-top: 0.25rem;
+}
+
+/* Override any SLDS truncation classes */
+.file-names-container p,
+.file-names-container span {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+/* Responsive layout adjustments */
+@media (max-width: 768px) {
+    .slds-media {
+        flex-direction: column;
+    }
+    
+    .slds-media__figure {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+    
+    .slds-button-icon {
+        margin-top: 0.5rem;
+    }
+}
+
+/* Ensure the component is fully responsive */
+.slds-wrap {
+    flex-wrap: wrap;
+}
+
+/* Ensure lightning-file-upload is responsive */
+:host {
+    display: block;
+    width: 100%;
+} 
