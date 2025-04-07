@@ -29,7 +29,8 @@ export default class SFL_FileUpload extends NavigationMixin(LightningElement) {
             try {
                 // Check if we're in a flow
                 this.isFlow = result.type === 'standard__flow' || 
-                            (result.state && result.state.hasOwnProperty('c__flow'));
+                            (result.state && result.state.hasOwnProperty('c__flow')) ||
+                            window.location.href.indexOf('flow') > -1;
                 
                 // Check if we're in a community/experience site
                 this.isCommunity = window.location.href.indexOf('/s/') > -1 || 
@@ -194,14 +195,30 @@ export default class SFL_FileUpload extends NavigationMixin(LightningElement) {
     }
     
     renderedCallback() {
-        // Ensure component is properly initialized in Experience sites
-        if (this.recordId && this._renderedOnce !== true) {
+        // Ensure component is properly initialized in Experience sites and Flow
+        if (!this._renderedOnce) {
             this._renderedOnce = true;
             
+            // Apply flow-specific styling enhancements
+            if (this.isFlow) {
+                // Apply special flow styling to fix container dimensions
+                const fileUpload = this.template.querySelector('lightning-file-upload');
+                if (fileUpload) {
+                    fileUpload.style.maxWidth = '100%';
+                    fileUpload.style.width = '100%';
+                }
+                
+                // Add additional wrapper for flow context
+                const mainContainer = this.template.querySelector('.file-upload-container');
+                if (mainContainer) {
+                    mainContainer.classList.add('in-flow-container');
+                }
+            }
+            
             // Force refresh of file uploader if needed
-            if (this.template.querySelector('lightning-file-upload')) {
+            if (this.recordId && this.template.querySelector('lightning-file-upload')) {
                 this.template.querySelector('lightning-file-upload').focus();
             }
         }
     }
-} 
+}

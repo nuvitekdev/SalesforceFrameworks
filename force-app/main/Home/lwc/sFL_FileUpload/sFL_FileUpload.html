@@ -1,5 +1,5 @@
 <template>
-    <div class="slds-card slds-var-p-around_medium">
+    <div class="slds-card slds-var-p-around_medium file-upload-container">
         <div if:true={recordId} class="slds-grid slds-grid_vertical">
             <div class="slds-col">
                 <div class="slds-form-element">
@@ -33,7 +33,7 @@
                                 </div>
                                 <div class="slds-media__body">
                                     <p class="slds-text-heading_small file-names-container">
-                                        <span class="slds-text-heading_small">Uploaded Files:</span> 
+                                        <span class="slds-text-heading_small">Uploaded Files:</span>
                                         <span class="file-names">{uploadedFileNames}</span>
                                     </p>
                                 </div>
@@ -68,4 +68,4 @@
             </div>
         </div>
     </div>
-</template> 
+</template>
