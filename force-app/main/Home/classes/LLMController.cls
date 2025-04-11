@@ -11,9 +11,10 @@ public with sharing class LLMController {
     }
     
     @AuraEnabled
-    public static String handleRequest(String recordId, String configName, String prompt, String operation) {
+    public static String handleRequest(String recordId, String configName, String prompt, String operation, String relatedObjects) {
         System.debug('Handle request started');
         System.debug('Parameters - recordId: ' + recordId + ', configName: ' + configName + ', operation: ' + operation);
+        System.debug('Related Objects: ' + relatedObjects);
         System.debug('Prompt: ' + prompt);
         
         try {
@@ -31,7 +32,7 @@ public with sharing class LLMController {
             // Only get record context if a recordId is provided
             if (String.isNotBlank(recordId)) {
                 System.debug('Getting record context');
-                context = getRecordContext(recordId);
+                context = getRecordContext(recordId, relatedObjects);
                 System.debug('Context length: ' + context.length());
                 
                 System.debug('Getting attachments');
@@ -56,12 +57,14 @@ public with sharing class LLMController {
      * @description Checks a given record for potential anomalies, conflicts of interest, or inconsistencies using an AI model.
      * @param recordId The Id of the Salesforce record to analyze.
      * @param configName The DeveloperName of the LLM_Configuration__mdt to use.
+     * @param relatedObjects Comma-separated list of object API names to search across for related data.
      * @return String The AI's assessment (e.g., "YES - Conflict of interest detected: Submitter and Investigator are the same." or "NO").
      * @throws AuraHandledException if an error occurs during processing.
      */
     @AuraEnabled
-    public static String checkRecordForAnomalies(String recordId, String configName) {
+    public static String checkRecordForAnomalies(String recordId, String configName, String relatedObjects) {
         System.debug('Anomaly check started for recordId: ' + recordId + ' using config: ' + configName);
+        System.debug('Related Objects: ' + relatedObjects);
 
         // Validate inputs
         if (String.isBlank(recordId) || String.isBlank(configName)) {
@@ -82,7 +85,7 @@ public with sharing class LLMController {
             // Get the context for the specified record
             // This includes field values, related records, tasks, discussions, and document summaries.
             System.debug('Getting record context for anomaly check');
-            String context = getRecordContext(recordId);
+            String context = getRecordContext(recordId, relatedObjects);
             System.debug('Context length for anomaly check: ' + context.length());
             
             // --- Future Enhancement: Optionally include attachment analysis ---
@@ -126,7 +129,7 @@ public with sharing class LLMController {
         }
     }
     
-    private static String getRecordContext(String recordId) {
+    private static String getRecordContext(String recordId, String relatedObjects) {
         try {
             // Identify object type from record ID
             Schema.SObjectType objectType = Id.valueOf(recordId).getSObjectType();
@@ -237,6 +240,11 @@ public with sharing class LLMController {
             // Include document summaries
             context += getDocumentSummaries(recordId);
             
+            // Include related objects data if specified
+            if (String.isNotBlank(relatedObjects)) {
+                context += getRelatedObjectsData(recordId, relatedObjects);
+            }
+            
             return context;
         } catch (Exception e) {
             System.debug('ERROR in getRecordContext: ' + e.getMessage());
@@ -285,6 +293,244 @@ public with sharing class LLMController {
             System.debug('ERROR getting document summaries: ' + e.getMessage());
             return '\nError processing documents: ' + e.getMessage();
         }
+    }
+    
+    /**
+     * @description Search across specified objects for records related to the primary record
+     * @param recordId The Id of the primary Salesforce record
+     * @param objectsToSearch A comma-separated list of object API names to search across
+     * @return String Formatted text containing the related records information
+     */
+    private static String getRelatedObjectsData(String recordId, String objectsToSearch) {
+        if (String.isBlank(objectsToSearch) || String.isBlank(recordId)) {
+            return '';
+        }
+        
+        System.debug('Searching related objects: ' + objectsToSearch);
+        
+        String formattedResults = '\nRELATED OBJECTS DATA:\n';
+        List<String> objectsList = objectsToSearch.split(',');
+        
+        // Limit records per object to avoid context length issues
+        Integer MAX_RECORDS_PER_OBJECT = 10;
+        
+        try {
+            for (String objName : objectsList) {
+                String trimmedObjName = objName.trim();
+                if (String.isBlank(trimmedObjName)) continue;
+                
+                System.debug('Processing object: ' + trimmedObjName);
+                
+                // Check if the object exists and is accessible
+                if (!checkObjectAccessibility(trimmedObjName)) {
+                    formattedResults += '• ' + trimmedObjName + ': Object not accessible\n';
+                    continue;
+                }
+                
+                // Try to find related records
+                List<SObject> relatedRecords = queryRelatedRecords(trimmedObjName, recordId, MAX_RECORDS_PER_OBJECT);
+                
+                if (relatedRecords.isEmpty()) {
+                    formattedResults += '• ' + trimmedObjName + ': No related records found\n';
+                    continue;
+                }
+                
+                // Include information about the related records
+                formattedResults += '• ' + trimmedObjName + ' (' + relatedRecords.size() + ' records):\n';
+                
+                for (SObject record : relatedRecords) {
+                    // Get record name (or ID if Name field not available)
+                    String recordName = getRecordName(record);
+                    formattedResults += '  - ' + recordName + '\n';
+                    
+                    // Add a few key fields if available
+                    formattedResults += getKeyFieldsInfo(record);
+                }
+            }
+            
+            return formattedResults;
+        } catch (Exception e) {
+            System.debug('ERROR in getRelatedObjectsData: ' + e.getMessage());
+            System.debug('Stack trace: ' + e.getStackTraceString());
+            return '\nError fetching related objects data: ' + e.getMessage();
+        }
+    }
+    
+    /**
+     * Helper method to check if an object is accessible
+     */
+    private static Boolean checkObjectAccessibility(String objectName) {
+        try {
+            // Get the schema for the object
+            Schema.DescribeSObjectResult objDescribe = Schema.getGlobalDescribe().get(objectName).getDescribe();
+            return objDescribe.isAccessible();
+        } catch (Exception e) {
+            System.debug('Error checking object accessibility for ' + objectName + ': ' + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Helper method to query related records
+     */
+    private static List<SObject> queryRelatedRecords(String objectName, String recordId, Integer recordLimit) {
+        List<SObject> results = new List<SObject>();
+        
+        try {
+            // Get all accessible fields
+            Schema.DescribeSObjectResult objDescribe = Schema.getGlobalDescribe().get(objectName).getDescribe();
+            Map<String, Schema.SObjectField> fieldMap = objDescribe.fields.getMap();
+            
+            // Build a list of accessible fields for the query
+            List<String> fieldNames = new List<String>();
+            List<String> textFieldNames = new List<String>(); // To search for recordId as text
+            
+            for (String fieldName : fieldMap.keySet()) {
+                Schema.DescribeFieldResult field = fieldMap.get(fieldName).getDescribe();
+                if (field.isAccessible()) {
+                    fieldNames.add(fieldName);
+                    
+                    // Track text fields that could contain the recordId
+                    Schema.DisplayType fieldType = field.getType();
+                    if (fieldType == Schema.DisplayType.STRING || 
+                        fieldType == Schema.DisplayType.TEXTAREA ||
+                        fieldType == Schema.DisplayType.ID) {
+                        textFieldNames.add(fieldName);
+                    }
+                }
+            }
+            
+            // If we have no fields, return empty list
+            if (fieldNames.isEmpty()) {
+                return results;
+            }
+            
+            // Build the base query with all fields
+            String query = 'SELECT ' + String.join(fieldNames, ',') + 
+                           ' FROM ' + objectName;
+            
+            // Special case: check if object has a lookup to the record's object type
+            String recordObjName = Id.valueOf(recordId).getSObjectType().getDescribe().getName();
+            List<String> relationshipCriteria = new List<String>();
+            
+            for (String fieldName : fieldMap.keySet()) {
+                Schema.DescribeFieldResult field = fieldMap.get(fieldName).getDescribe();
+                
+                // Check if field is a reference to our record's object type
+                if (field.getType() == Schema.DisplayType.REFERENCE && field.isAccessible()) {
+                    List<Schema.SObjectType> refToTypes = field.getReferenceTo();
+                    for (Schema.SObjectType refType : refToTypes) {
+                        if (refType.getDescribe().getName() == recordObjName) {
+                            relationshipCriteria.add(fieldName + ' = :recordId');
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Build the WHERE clause - either by relationship or by searching text fields
+            if (!relationshipCriteria.isEmpty()) {
+                query += ' WHERE ' + String.join(relationshipCriteria, ' OR ');
+            } else if (!textFieldNames.isEmpty()) {
+                // Fall back to SOSL if no direct relationships found
+                String sosl = 'FIND \'' + recordId + '\' IN ALL FIELDS RETURNING ' + 
+                              objectName + '(' + String.join(fieldNames, ',') + ' LIMIT ' + recordLimit + ')';
+                
+                List<List<SObject>> soslResults = Search.query(sosl);
+                if (!soslResults.isEmpty()) {
+                    return soslResults[0];
+                }
+                return results; // Return empty if SOSL found nothing
+            } else {
+                return results; // No searchable fields found
+            }
+            
+            // Finish building the query with LIMIT
+            query += ' LIMIT ' + recordLimit;
+            
+            // Execute the query and return results
+            results = Database.query(query);
+            return results;
+            
+        } catch (Exception e) {
+            System.debug('Error querying related records for ' + objectName + ': ' + e.getMessage());
+            return results; // Return empty list on error
+        }
+    }
+    
+    /**
+     * Helper method to get the record name or ID
+     */
+    private static String getRecordName(SObject record) {
+        try {
+            if (record.get('Name') != null) {
+                return (String)record.get('Name');
+            } else {
+                // Try common name fields
+                String[] commonNameFields = new String[]{'Subject', 'Title', 'CaseNumber', 'OrderNumber'};
+                for (String nameField : commonNameFields) {
+                    if (record.get(nameField) != null) {
+                        return (String)record.get(nameField);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.debug('Error getting record name: ' + e.getMessage());
+        }
+        
+        // Fall back to ID
+        return record.Id;
+    }
+    
+    /**
+     * Helper method to get key fields information
+     */
+    private static String getKeyFieldsInfo(SObject record) {
+        String info = '';
+        try {
+            // Define fields that are typically important
+            String[] keyFields = new String[]{
+                'Status', 'Stage', 'Type', 'Amount', 'CloseDate', 'CreatedDate', 
+                'LastModifiedDate', 'OwnerId', 'Owner.Name', 'Description'
+            };
+            
+            for (String field : keyFields) {
+                try {
+                    Object value;
+                    
+                    // Handle relationship fields
+                    if (field.contains('.')) {
+                        String[] parts = field.split('\\.');
+                        SObject relatedObj = record.getSObject(parts[0]);
+                        if (relatedObj != null) {
+                            value = relatedObj.get(parts[1]);
+                        }
+                    } else {
+                        value = record.get(field);
+                    }
+                    
+                    if (value != null) {
+                        // Format based on field type
+                        if (value instanceof Datetime) {
+                            value = ((Datetime)value).format();
+                        } else if (value instanceof Date) {
+                            value = ((Date)value).format();
+                        } else if (value instanceof Id && field == 'OwnerId') {
+                            // Skip OwnerId if we have Owner.Name
+                            continue;
+                        }
+                        
+                        info += '    * ' + field + ': ' + value + '\n';
+                    }
+                } catch (Exception e) {
+                    // Skip fields that cause errors
+                    continue;
+                }
+            }
+        } catch (Exception e) {
+            System.debug('Error getting key fields info: ' + e.getMessage());
+        }
+        return info;
     }
     
     private static String getBaseQuery(String recordId) {

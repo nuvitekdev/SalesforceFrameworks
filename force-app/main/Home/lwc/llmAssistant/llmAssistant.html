@@ -20,33 +20,37 @@
             
             <div class="slds-p-horizontal_medium slds-p-bottom_medium">
                 
-                <!-- == Anomaly Check Loading Spinner == -->
-                <div if:true={anomalyCheckLoading} class="slds-is-relative slds-m-bottom_small slds-text-align_center" style="height: 2rem;">
-                    <lightning-spinner alternative-text="Checking for anomalies..." size="small"></lightning-spinner>
-                    <span class="slds-text-body_small slds-text-color_weak slds-m-left_small">Checking for potential issues...</span>
-                </div>
-                <!-- == End Anomaly Check Loading Spinner == -->
+                <!-- == Anomaly Detection Sections - Only show if enabled == -->
+                <template if:true={enableAnomalyDetection}>
+                    <!-- == Anomaly Check Loading Spinner == -->
+                    <div if:true={anomalyCheckLoading} class="slds-is-relative slds-m-bottom_small slds-text-align_center" style="height: 2rem;">
+                        <lightning-spinner alternative-text="Checking for anomalies..." size="small"></lightning-spinner>
+                        <span class="slds-text-body_small slds-text-color_weak slds-m-left_small">Checking for potential issues...</span>
+                    </div>
+                    <!-- == End Anomaly Check Loading Spinner == -->
 
-                <!-- == Anomaly Check Accordion == -->
-                <template if:true={showAnomalyBanner}>
-                    <lightning-accordion 
-                        allow-multiple-sections-open 
-                        active-section-name={activeAccordionSections} 
-                        class="slds-m-bottom_medium anomaly-accordion"
-                    >
-                        <lightning-accordion-section 
-                            name="anomalySection" 
-                            label="Potential Issues Detected"
-                            class="slds-theme_warning"
+                    <!-- == Anomaly Check Accordion == -->
+                    <template if:true={showAnomalyBanner}>
+                        <lightning-accordion 
+                            allow-multiple-sections-open 
+                            active-section-name={activeAccordionSections} 
+                            class="slds-m-bottom_medium anomaly-accordion"
                         >
-                            <div class="slds-p-horizontal_small slds-p-bottom_small accordion-content">
-                                <!-- Use rich text to format the message -->
-                                <lightning-formatted-rich-text value={anomalyBannerMessage}></lightning-formatted-rich-text>
-                            </div>
-                        </lightning-accordion-section>
-                    </lightning-accordion>
+                            <lightning-accordion-section 
+                                name="anomalySection" 
+                                label="Potential Issues Detected"
+                                class="slds-theme_warning"
+                            >
+                                <div class="slds-p-horizontal_small slds-p-bottom_small accordion-content">
+                                    <!-- Use rich text to format the message -->
+                                    <lightning-formatted-rich-text value={anomalyBannerMessage}></lightning-formatted-rich-text>
+                                </div>
+                            </lightning-accordion-section>
+                        </lightning-accordion>
+                    </template>
+                    <!-- == End Anomaly Check Accordion == -->
                 </template>
-                <!-- == End Anomaly Check Accordion == -->
+                <!-- == End Anomaly Detection Sections == -->
                 
                 <!-- Model selector remains the same -->
                 <template if:true={showModelSelector}>

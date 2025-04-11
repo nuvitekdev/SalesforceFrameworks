@@ -17,6 +17,8 @@
             <property name="defaultModelName" type="String" label="Default AI Model" description="DeveloperName of the default AI model to use (leave empty to allow user selection)"/>
             <property name="hideModelSelector" type="Boolean" default="false" label="Hide Model Selector" description="Set to true to hide the model selector dropdown"/>
             <property name="contextPrompt" type="String" label="Assistant Context" description="Custom context about where/how this assistant is being used (e.g., 'You are an assistant on the Investigations app home page and should focus on helping with case management')"/>
+            <property name="enableAnomalyDetection" type="Boolean" default="false" label="Enable Anomaly Detection" description="Set to true to enable automatic anomaly detection for this record"/>
+            <property name="relatedObjects" type="String" default="" label="Related Objects" description="Comma-separated list of object API names to search across for related data (e.g., 'Account,Contact,Opportunity')"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

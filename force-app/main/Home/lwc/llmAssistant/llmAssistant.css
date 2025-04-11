@@ -119,6 +119,16 @@
     transform: translateY(-1px);
 }
 
+.related-objects-badge {
+    background: rgba(var(--accent-color-rgb), 0.15) !important;
+    color: var(--accent-dark) !important;
+}
+
+.related-objects-badge:hover {
+    background: rgba(var(--accent-color-rgb), 0.25) !important;
+    transform: translateY(-1px);
+}
+
 /* Card styling using Nuvitek theme */
 lightning-card {
     --sds-c-card-color-background: var(--background) !important;

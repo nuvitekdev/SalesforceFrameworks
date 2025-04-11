@@ -17,6 +17,8 @@ export default class LLMAssistant extends LightningElement {
     @api hideModelSelector = false; // Whether to hide the model selector
     @api cardTitle = 'AI Assistant'; // Configurable title
     @api contextPrompt = '';       // Custom context to provide to the LLM about its purpose/placement
+    @api enableAnomalyDetection = false; // Whether to enable anomaly detection
+    @api relatedObjects = '';      // Comma-separated list of object API names to search across for related data
     
     @track llmOptions = [];
     @track selectedLLM;
@@ -75,6 +77,11 @@ export default class LLMAssistant extends LightningElement {
     // Check if "Analyze Record" button should be shown
     get showAnalyzeButton() {
         return !!this.recordId;
+    }
+    
+    // Check if related objects are configured
+    get hasRelatedObjects() {
+        return !!this.relatedObjects && this.relatedObjects.trim() !== '';
     }
 
     // Dynamically set CSS variables based on configured colors
@@ -636,7 +643,8 @@ SUMMARY:`;
             recordId: this.recordId || null, // Pass null if no record ID
             configName: this.selectedLLM,
             prompt: finalPrompt,
-            operation: operation
+            operation: operation,
+            relatedObjects: this.relatedObjects
         })
         .then(result => {
             
@@ -908,9 +916,13 @@ SUMMARY:`;
 
     // Perform the initial anomaly check when the component has the recordId and a model selected
     async performInitialAnomalyCheck() {
-        // Only run if we have a recordId and a selected LLM
-        if (!this.recordId || !this.selectedLLM || this.anomalyCheckLoading) {
-            console.log('Anomaly check skipped: Missing recordId, selectedLLM, or already loading.');
+        // Only run if anomaly detection is enabled, we have a recordId and a selected LLM
+        if (!this.enableAnomalyDetection || !this.recordId || !this.selectedLLM || this.anomalyCheckLoading) {
+            console.log('Anomaly check skipped: ' + 
+                (!this.enableAnomalyDetection ? 'Anomaly detection disabled, ' : '') +
+                (!this.recordId ? 'Missing recordId, ' : '') + 
+                (!this.selectedLLM ? 'No LLM selected, ' : '') + 
+                (this.anomalyCheckLoading ? 'Already loading' : ''));
             return;
         }
         
@@ -924,7 +936,8 @@ SUMMARY:`;
             // Call the Apex method
             const result = await checkRecordForAnomalies({ 
                 recordId: this.recordId, 
-                configName: this.selectedLLM 
+                configName: this.selectedLLM,
+                relatedObjects: this.relatedObjects
             });
 
             console.log('Anomaly check result received:', result);
