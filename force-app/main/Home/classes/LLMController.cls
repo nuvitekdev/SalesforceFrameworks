@@ -195,6 +195,12 @@ public with sharing class LLMController {
                     }
                 }
             }
+            
+            // Get field history tracking data
+            context += getFieldHistoryData(recordId, objectName);
+            
+            // Get child relationships (line items, invoices, etc.)
+            context += getChildRelationships(recordId, objectType);
 
             // Get activity history for context (works for most standard objects)
             try {
@@ -218,19 +224,140 @@ public with sharing class LLMController {
                 System.debug('Error fetching tasks: ' + e.getMessage());
             }
             
+            // Get events and meetings (calendar items)
+            try {
+                List<Event> recentEvents = [SELECT Subject, StartDateTime, EndDateTime, Location, Description, OwnerId, Owner.Name
+                                           FROM Event 
+                                           WHERE WhatId = :recordId
+                                           ORDER BY StartDateTime DESC 
+                                           LIMIT 5];
+                
+                if (!recentEvents.isEmpty()) {
+                    context += '\nRECENT EVENTS & MEETINGS:\n';
+                    for (Event e : recentEvents) {
+                        String dateTimeFormat = e.StartDateTime != null ? e.StartDateTime.format('MMM d, yyyy h:mm a') : 'Unknown date';
+                        String endTimeFormat = e.EndDateTime != null ? ' - ' + e.EndDateTime.format('h:mm a') : '';
+                        String location = String.isNotBlank(e.Location) ? ' (' + e.Location + ')' : '';
+                        
+                        context += '• ' + e.Subject + ' on ' + dateTimeFormat + endTimeFormat + location + ' - ' + e.Owner.Name + '\n';
+                    }
+                }
+            } catch (Exception e) {
+                System.debug('Error fetching events: ' + e.getMessage());
+            }
+            
+            // Get emails related to the record (EmailMessage)
+            try {
+                List<EmailMessage> recentEmails = [SELECT Subject, MessageDate, FromAddress, ToAddress, CcAddress, Status, HtmlBody
+                                                  FROM EmailMessage 
+                                                  WHERE RelatedToId = :recordId 
+                                                  ORDER BY MessageDate DESC 
+                                                  LIMIT 5];
+                
+                if (!recentEmails.isEmpty()) {
+                    context += '\nRECENT EMAILS:\n';
+                    for (EmailMessage em : recentEmails) {
+                        context += '• ' + em.Subject + ' (' + (em.MessageDate != null ? em.MessageDate.format() : 'Unknown date') + ')\n';
+                        context += '  From: ' + em.FromAddress + '\n';
+                        context += '  To: ' + em.ToAddress + '\n';
+                        
+                        // Add short snippet of the email body
+                        if (em.HtmlBody != null) {
+                            // Strip HTML and get truncated preview
+                            String plainBody = em.HtmlBody.replaceAll('<[^>]+>', ' ').replaceAll('\\s+', ' ').trim();
+                            if (plainBody.length() > 200) {
+                                plainBody = plainBody.substring(0, 197) + '...';
+                            }
+                            context += '  Preview: ' + plainBody + '\n';
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.debug('Error fetching emails: ' + e.getMessage());
+            }
+            
+            // Get any Notes related to the record
+            try {
+                // First, get ContentDocumentLink records
+                List<ContentDocumentLink> contentLinks = [
+                    SELECT ContentDocumentId 
+                    FROM ContentDocumentLink 
+                    WHERE LinkedEntityId = :recordId
+                ];
+                
+                if (!contentLinks.isEmpty()) {
+                    // Extract ContentDocumentIds
+                    Set<Id> contentDocIds = new Set<Id>();
+                    for (ContentDocumentLink link : contentLinks) {
+                        contentDocIds.add(link.ContentDocumentId);
+                    }
+                    
+                    // Then query for ContentNote records
+                    List<ContentNote> notes = [
+                        SELECT Id, Title, Content, CreatedDate, CreatedBy.Name
+                        FROM ContentNote
+                        WHERE Id IN :contentDocIds
+                        ORDER BY CreatedDate DESC
+                        LIMIT 5
+                    ];
+                    
+                    if (!notes.isEmpty()) {
+                        context += '\nNOTES:\n';
+                        for (ContentNote note : notes) {
+                            context += '• ' + note.Title + ' (Created by ' + note.CreatedBy.Name + ' on ' + note.CreatedDate.format() + ')\n';
+                            
+                            // Convert the note content from Base64 to readable text
+                            if (note.Content != null) {
+                                String noteBody = note.Content.toString();
+                                if (noteBody.length() > 300) {
+                                    noteBody = noteBody.substring(0, 297) + '...';
+                                }
+                                context += '  ' + noteBody.replaceAll('\n', '\n  ') + '\n';
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.debug('Error fetching notes: ' + e.getMessage());
+            }
+            
             // Get collaboration activity (works for feed-enabled objects)
             try {
-                List<FeedItem> recentPosts = [SELECT CreatedBy.Name, Body, CreatedDate
+                List<FeedItem> recentPosts = [SELECT CreatedBy.Name, Body, CreatedDate, CommentCount
                                              FROM FeedItem
                                              WHERE ParentId = :recordId
                                              ORDER BY CreatedDate DESC
-                                             LIMIT 3];
+                                             LIMIT 5];
                 
                 if (!recentPosts.isEmpty()) {
-                    context += '\nRECENT DISCUSSIONS:\n';
+                    context += '\nRECENT CHATTER POSTS:\n';
                     for (FeedItem post : recentPosts) {
-                        context += '• ' + post.CreatedBy.Name + ' (' + post.CreatedDate.format() + '): "' +
-                            post.Body.abbreviate(100) + '"\n';
+                        String commentInfo = post.CommentCount > 0 ? ' (' + post.CommentCount + ' comments)' : '';
+                        context += '• ' + post.CreatedBy.Name + ' on ' + post.CreatedDate.format() + commentInfo + ':\n';
+                        context += '  "' + post.Body.abbreviate(200).replaceAll('\n', '\n  ') + '"\n';
+                        
+                        // Get comments for the post if there are any
+                        if (post.CommentCount > 0) {
+                            try {
+                                List<FeedComment> comments = [SELECT CreatedBy.Name, CommentBody, CreatedDate
+                                                             FROM FeedComment
+                                                             WHERE FeedItemId = :post.Id
+                                                             ORDER BY CreatedDate ASC
+                                                             LIMIT 3];
+                                
+                                for (FeedComment comment : comments) {
+                                    context += '    ↳ ' + comment.CreatedBy.Name + ' replied on ' + comment.CreatedDate.format() + ':\n';
+                                    context += '      "' + comment.CommentBody.abbreviate(100).replaceAll('\n', '\n      ') + '"\n';
+                                }
+                                
+                                // Indicate if there are more comments
+                                if (post.CommentCount > 3) {
+                                    context += '    ↳ ' + (post.CommentCount - 3) + ' more comments\n';
+                                }
+                            } catch (Exception e) {
+                                System.debug('Error fetching comments: ' + e.getMessage());
+                            }
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -239,6 +366,9 @@ public with sharing class LLMController {
             
             // Include document summaries
             context += getDocumentSummaries(recordId);
+            
+            // Check for common important related objects based on the object type
+            context += getCommonRelatedObjectsContext(objectName, recordId);
             
             // Include related objects data if specified
             if (String.isNotBlank(relatedObjects)) {
@@ -249,6 +379,338 @@ public with sharing class LLMController {
         } catch (Exception e) {
             System.debug('ERROR in getRecordContext: ' + e.getMessage());
             throw new AuraHandledException('Failed to get record context: ' + e.getMessage());
+        }
+    }
+    
+    /**
+     * @description Get context for common related objects based on the parent object type
+     * This method handles fetching important related objects specific to the record's object type
+     * @param objectName API name of the parent object
+     * @param recordId Id of the parent record
+     * @return String Formatted text with related object information
+     */
+    private static String getCommonRelatedObjectsContext(String objectName, String recordId) {
+        String context = '';
+        Integer MAX_RECORDS = 10; // Maximum records to return per related object
+        
+        try {
+            // For Account records, get related contacts, opportunities, and cases
+            if (objectName == 'Account') {
+                // Get related contacts
+                try {
+                    List<Contact> contacts = [SELECT Id, Name, Title, Email, Phone 
+                                             FROM Contact 
+                                             WHERE AccountId = :recordId
+                                             ORDER BY LastModifiedDate DESC 
+                                             LIMIT :MAX_RECORDS];
+                    
+                    if (!contacts.isEmpty()) {
+                        context += '\nRELATED CONTACTS:\n';
+                        for (Contact c : contacts) {
+                            context += '• ' + c.Name;
+                            if (String.isNotBlank(c.Title)) context += ', ' + c.Title;
+                            if (String.isNotBlank(c.Email)) context += ' (Email: ' + c.Email + ')';
+                            if (String.isNotBlank(c.Phone)) context += ' (Phone: ' + c.Phone + ')';
+                            context += '\n';
+                        }
+                    }
+                } catch (Exception e) {
+                    System.debug('Error querying related contacts: ' + e.getMessage());
+                }
+                
+                // Get related opportunities
+                try {
+                    List<Opportunity> opportunities = [SELECT Id, Name, StageName, Amount, CloseDate
+                                                      FROM Opportunity
+                                                      WHERE AccountId = :recordId
+                                                      ORDER BY CloseDate DESC
+                                                      LIMIT :MAX_RECORDS];
+                    
+                    if (!opportunities.isEmpty()) {
+                        context += '\nRELATED OPPORTUNITIES:\n';
+                        for (Opportunity o : opportunities) {
+                            context += '• ' + o.Name + ' - ' + o.StageName;
+                            if (o.Amount != null) context += ' - $' + o.Amount;
+                            if (o.CloseDate != null) context += ' (Close Date: ' + o.CloseDate.format() + ')';
+                            context += '\n';
+                        }
+                    }
+                } catch (Exception e) {
+                    System.debug('Error querying related opportunities: ' + e.getMessage());
+                }
+                
+                // Get related cases
+                try {
+                    List<Case> cases = [SELECT Id, CaseNumber, Subject, Status, Priority, CreatedDate
+                                       FROM Case
+                                       WHERE AccountId = :recordId
+                                       ORDER BY CreatedDate DESC
+                                       LIMIT :MAX_RECORDS];
+                    
+                    if (!cases.isEmpty()) {
+                        context += '\nRELATED CASES:\n';
+                        for (Case c : cases) {
+                            context += '• Case #' + c.CaseNumber + ': ' + c.Subject;
+                            context += ' - Status: ' + c.Status + ', Priority: ' + c.Priority;
+                            context += ' (Created: ' + c.CreatedDate.format() + ')';
+                            context += '\n';
+                        }
+                    }
+                } catch (Exception e) {
+                    System.debug('Error querying related cases: ' + e.getMessage());
+                }
+            }
+            
+            // For Contact records, get related opportunities and cases
+            else if (objectName == 'Contact') {
+                // Get related opportunities
+                try {
+                    List<Opportunity> opportunities = [SELECT Id, Name, StageName, Amount, CloseDate
+                                                      FROM Opportunity
+                                                      WHERE ContactId = :recordId  // Primary contact
+                                                      ORDER BY CloseDate DESC
+                                                      LIMIT :MAX_RECORDS];
+                    
+                    if (!opportunities.isEmpty()) {
+                        context += '\nRELATED OPPORTUNITIES:\n';
+                        for (Opportunity o : opportunities) {
+                            context += '• ' + o.Name + ' - ' + o.StageName;
+                            if (o.Amount != null) context += ' - $' + o.Amount;
+                            if (o.CloseDate != null) context += ' (Close Date: ' + o.CloseDate.format() + ')';
+                            context += '\n';
+                        }
+                    }
+                } catch (Exception e) {
+                    System.debug('Error querying related opportunities: ' + e.getMessage());
+                }
+                
+                // Get related cases
+                try {
+                    List<Case> cases = [SELECT Id, CaseNumber, Subject, Status, Priority, CreatedDate
+                                       FROM Case
+                                       WHERE ContactId = :recordId
+                                       ORDER BY CreatedDate DESC
+                                       LIMIT :MAX_RECORDS];
+                    
+                    if (!cases.isEmpty()) {
+                        context += '\nRELATED CASES:\n';
+                        for (Case c : cases) {
+                            context += '• Case #' + c.CaseNumber + ': ' + c.Subject;
+                            context += ' - Status: ' + c.Status + ', Priority: ' + c.Priority;
+                            context += ' (Created: ' + c.CreatedDate.format() + ')';
+                            context += '\n';
+                        }
+                    }
+                } catch (Exception e) {
+                    System.debug('Error querying related cases: ' + e.getMessage());
+                }
+            }
+            
+            // For Case records, get related contact, account and case comments
+            else if (objectName == 'Case') {
+                // Get case comments
+                try {
+                    List<CaseComment> comments = [SELECT Id, CommentBody, CreatedDate, CreatedBy.Name, IsPublished
+                                                 FROM CaseComment
+                                                 WHERE ParentId = :recordId
+                                                 ORDER BY CreatedDate DESC
+                                                 LIMIT :MAX_RECORDS];
+                    
+                    if (!comments.isEmpty()) {
+                        context += '\nCASE COMMENTS:\n';
+                        for (CaseComment cc : comments) {
+                            String visibilityInfo = cc.IsPublished ? 'Public' : 'Private';
+                            context += '• ' + cc.CreatedBy.Name + ' (' + cc.CreatedDate.format() + ') - ' + visibilityInfo + ':\n';
+                            
+                            // Format comment text with indentation
+                            String commentText = cc.CommentBody;
+                            if (commentText != null) {
+                                if (commentText.length() > 300) {
+                                    commentText = commentText.substring(0, 297) + '...';
+                                }
+                                context += '  ' + commentText.replaceAll('\n', '\n  ') + '\n';
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.debug('Error querying case comments: ' + e.getMessage());
+                }
+            }
+            
+            // For Opportunity records, get related contacts, products, quotes
+            else if (objectName == 'Opportunity') {
+                // Get opportunity contact roles
+                try {
+                    List<OpportunityContactRole> contactRoles = [SELECT Id, ContactId, Contact.Name, Contact.Title, Role
+                                                                FROM OpportunityContactRole
+                                                                WHERE OpportunityId = :recordId
+                                                                ORDER BY CreatedDate DESC
+                                                                LIMIT :MAX_RECORDS];
+                    
+                    if (!contactRoles.isEmpty()) {
+                        context += '\nOPPORTUNITY CONTACT ROLES:\n';
+                        for (OpportunityContactRole ocr : contactRoles) {
+                            context += '• ' + ocr.Contact.Name;
+                            if (String.isNotBlank(ocr.Contact.Title)) context += ', ' + ocr.Contact.Title;
+                            if (String.isNotBlank(ocr.Role)) context += ' - Role: ' + ocr.Role;
+                            context += '\n';
+                        }
+                    }
+                } catch (Exception e) {
+                    System.debug('Error querying opportunity contact roles: ' + e.getMessage());
+                }
+                
+                // Get opportunity line items (products)
+                try {
+                    List<OpportunityLineItem> lineItems = [SELECT Id, Product2.Name, Quantity, UnitPrice, TotalPrice, Description
+                                                          FROM OpportunityLineItem
+                                                          WHERE OpportunityId = :recordId
+                                                          ORDER BY CreatedDate DESC
+                                                          LIMIT :MAX_RECORDS];
+                    
+                    if (!lineItems.isEmpty()) {
+                        context += '\nOPPORTUNITY PRODUCTS:\n';
+                        for (OpportunityLineItem oli : lineItems) {
+                            context += '• ' + oli.Product2.Name;
+                            if (oli.Quantity != null) context += ' - Qty: ' + oli.Quantity;
+                            if (oli.UnitPrice != null) context += ' - Unit Price: $' + oli.UnitPrice;
+                            if (oli.TotalPrice != null) context += ' - Total: $' + oli.TotalPrice;
+                            context += '\n';
+                        }
+                    }
+                } catch (Exception e) {
+                    System.debug('Error querying opportunity line items: ' + e.getMessage());
+                }
+            }
+            
+            // For Lead records, get conversion status and activities
+            else if (objectName == 'Lead') {
+                // If lead is converted, get converted account/contact/opportunity
+                try {
+                    Lead leadRecord = [SELECT Id, IsConverted, ConvertedAccountId, ConvertedContactId, ConvertedOpportunityId 
+                                      FROM Lead 
+                                      WHERE Id = :recordId 
+                                      LIMIT 1];
+                    
+                    if (leadRecord.IsConverted) {
+                        context += '\nLEAD CONVERSION DETAILS:\n';
+                        
+                        if (leadRecord.ConvertedAccountId != null) {
+                            Account convertedAccount = [SELECT Id, Name FROM Account WHERE Id = :leadRecord.ConvertedAccountId LIMIT 1];
+                            context += '• Converted to Account: ' + convertedAccount.Name + '\n';
+                        }
+                        
+                        if (leadRecord.ConvertedContactId != null) {
+                            Contact convertedContact = [SELECT Id, Name FROM Contact WHERE Id = :leadRecord.ConvertedContactId LIMIT 1];
+                            context += '• Converted to Contact: ' + convertedContact.Name + '\n';
+                        }
+                        
+                        if (leadRecord.ConvertedOpportunityId != null) {
+                            Opportunity convertedOpp = [SELECT Id, Name, StageName, Amount, CloseDate 
+                                                       FROM Opportunity 
+                                                       WHERE Id = :leadRecord.ConvertedOpportunityId 
+                                                       LIMIT 1];
+                            
+                            context += '• Converted to Opportunity: ' + convertedOpp.Name;
+                            if (convertedOpp.Amount != null) context += ' - $' + convertedOpp.Amount;
+                            context += ' - ' + convertedOpp.StageName;
+                            context += '\n';
+                        }
+                    }
+                } catch (Exception e) {
+                    System.debug('Error querying lead conversion details: ' + e.getMessage());
+                }
+            }
+
+            // For any object, try to get recent modified related records
+            context += getRecentModifiedRelatedRecords(recordId, MAX_RECORDS);
+            
+            return context;
+        } catch (Exception e) {
+            System.debug('ERROR in getCommonRelatedObjectsContext: ' + e.getMessage());
+            return '\nError fetching common related objects: ' + e.getMessage();
+        }
+    }
+    
+    /**
+     * @description Gets a summary of recently modified records linked to this record
+     * @param recordId The Id of the primary Salesforce record
+     * @param maxRecords The maximum number of records to return
+     * @return String Formatted text with recently modified related record information
+     */
+    private static String getRecentModifiedRelatedRecords(String recordId, Integer maxRecords) {
+        String context = '';
+        
+        try {
+            // Get ContentDocumentLinks for this record
+            List<ContentDocumentLink> links = [SELECT ContentDocumentId, LinkedEntityId 
+                                              FROM ContentDocumentLink 
+                                              WHERE LinkedEntityId = :recordId];
+            
+            // Get ContentDocumentIds
+            Set<Id> contentDocIds = new Set<Id>();
+            for (ContentDocumentLink link : links) {
+                contentDocIds.add(link.ContentDocumentId);
+            }
+            
+            // Join with a general modified query
+            // This uses a SOSL search to find records connected to our record
+            if (!Test.isRunningTest()) { // SOSL is not supported in tests
+                String searchQuery = 'FIND \'' + recordId + '\' IN ALL FIELDS RETURNING ';
+                
+                // Add standard objects commonly referenced
+                searchQuery += 'Account(Id, Name, LastModifiedDate ORDER BY LastModifiedDate DESC LIMIT ' + maxRecords + '), ';
+                searchQuery += 'Contact(Id, Name, LastModifiedDate ORDER BY LastModifiedDate DESC LIMIT ' + maxRecords + '), ';
+                searchQuery += 'Opportunity(Id, Name, StageName, LastModifiedDate ORDER BY LastModifiedDate DESC LIMIT ' + maxRecords + '), ';
+                searchQuery += 'Case(Id, CaseNumber, Subject, Status, LastModifiedDate ORDER BY LastModifiedDate DESC LIMIT ' + maxRecords + ')';
+                
+                // Execute the search
+                List<List<SObject>> searchResults = Search.query(searchQuery);
+                
+                if (searchResults != null && !searchResults.isEmpty()) {
+                    context += '\nRECENTLY MODIFIED CONNECTED RECORDS:\n';
+                    
+                    for (List<SObject> objList : searchResults) {
+                        if (objList == null || objList.isEmpty()) continue;
+                        
+                        String objType = objList[0].getSObjectType().getDescribe().getName();
+                        
+                        for (SObject obj : objList) {
+                            Datetime lastModified = (Datetime)obj.get('LastModifiedDate');
+                            if (lastModified == null) continue;
+                            
+                            context += '• ' + objType + ': ';
+                            
+                            // Name or equivalent
+                            if (obj.get('Name') != null) {
+                                context += (String)obj.get('Name');
+                            } else if (obj.get('CaseNumber') != null) {
+                                context += 'Case #' + (String)obj.get('CaseNumber');
+                                if (obj.get('Subject') != null) {
+                                    context += ': ' + (String)obj.get('Subject');
+                                }
+                            } else {
+                                context += 'Record ' + obj.Id;
+                            }
+                            
+                            // Status if available
+                            if (obj.get('Status') != null) {
+                                context += ' - ' + (String)obj.get('Status');
+                            } else if (obj.get('StageName') != null) {
+                                context += ' - ' + (String)obj.get('StageName');
+                            }
+                            
+                            // Last modified date
+                            context += ' (Modified: ' + lastModified.format() + ')\n';
+                        }
+                    }
+                }
+            }
+            
+            return context;
+        } catch (Exception e) {
+            System.debug('ERROR in getRecentModifiedRelatedRecords: ' + e.getMessage());
+            return '';
         }
     }
     
@@ -515,7 +977,7 @@ public with sharing class LLMController {
                             value = ((Datetime)value).format();
                         } else if (value instanceof Date) {
                             value = ((Date)value).format();
-                        } else if (value instanceof Id && field == 'OwnerId') {
+                        } else if (field == 'OwnerId') {
                             // Skip OwnerId if we have Owner.Name
                             continue;
                         }
@@ -623,12 +1085,20 @@ public with sharing class LLMController {
         
         String basePrompt;
         if (operation == 'summarize') {
-            basePrompt = 'Please provide a comprehensive summary of this Salesforce record including:\n\n' +
-            '1. Overview of the main record details\n' +
-            '2. Related records and their relationship to this record\n' +
-            '3. Recent activity and tasks\n' +
-            '4. Any files or attachments\n\n' +
-            'Format as a clear, structured report.\n\n';
+            // Enhanced prompt for summarization
+            basePrompt = 'Generate a concise yet comprehensive summary report for the following Salesforce record data. Structure the report clearly with numbered sections for:\n\n' +
+                         '1.  **Record Overview:** Key details of the main record. Elaborate on the key fields.\n' +
+                         '2.  **Related Information:** Summarize significant related records (like Contacts, Opportunities, Cases, Invoices, Line Items, etc. if present), highlighting their connection to the main record. Provide details from the available fields for these related records.\n' +
+                         '3.  **Recent Activity:** Summarize any recent Tasks, Events, Emails, or Chatter posts found. Be specific about the activity.\n' +
+                         '4.  **Documents & Notes:** List any attached documents or notes, including titles or brief descriptions if available.\n\n' +
+                         '**Style Guide:**\n' +
+                         '- Be professional, objective, and informative.\n' +
+                         '- Use clear headings (using markdown bolding like **Heading**) for each section.\n' +
+                         '- Use bullet points (•) for lists within sections.\n' +
+                         '- **IMPORTANT: Do NOT mention system errors, query limitations, data retrieval issues, or system constraints.** Focus *only* on summarizing the data *provided* in the context. Do not mention if some information categories (like Activity or Documents) are missing or incomplete; simply omit the section or summarize what *is* available.\n' +
+                         '- **Do NOT include a \"Recommendations\" section** based on missing data or system issues.\n' +
+                         '- Provide a good level of detail based on the information available in the context.\n\n' +
+                         '**RECORD DATA:**\n\n';
         } else {
             // For general questions, adjust the prompt based on whether there's a record context
             if (String.isBlank(context)) {
@@ -942,5 +1412,382 @@ public with sharing class LLMController {
             System.debug('Stack trace: ' + e.getStackTraceString());
             throw new AuraHandledException('Failed to parse API response: ' + e.getMessage());
         }
+    }
+
+    private static String getFieldHistoryData(String recordId, String objectName) {
+        String context = '';
+        try {
+            // For standard objects, the history table is ObjectNameHistory
+            // For custom objects, the history table is ObjectName__History
+            String historyObject = objectName;
+            
+            // Determine if it's a custom object (ends with __c)
+            if (objectName.endsWith('__c')) {
+                historyObject = objectName.replace('__c', '__History');
+            } else {
+                historyObject = objectName + 'History';
+            }
+            
+            // Check if the history object exists in the schema
+            Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
+            if (!gd.containsKey(historyObject)) {
+                // No history tracking for this object
+                return context;
+            }
+            
+            // Build a dynamic query for the history object
+            String query = 'SELECT Id, Field, OldValue, NewValue, CreatedById, CreatedDate FROM ' + 
+                           historyObject + ' WHERE ParentId = :recordId ORDER BY CreatedDate DESC LIMIT 20';
+            
+            List<SObject> historyRecords;
+            try {
+                historyRecords = Database.query(query);
+            } catch (Exception e) {
+                System.debug('Error executing history query: ' + e.getMessage());
+                return context;
+            }
+            
+            if (!historyRecords.isEmpty()) {
+                context += '\nFIELD HISTORY TRACKING:\n';
+                
+                for (SObject histRecord : historyRecords) {
+                    String fieldName = (String)histRecord.get('Field');
+                    Object oldValue = histRecord.get('OldValue');
+                    Object newValue = histRecord.get('NewValue');
+                    Datetime createdDate = (Datetime)histRecord.get('CreatedDate');
+                    
+                    // Format the field name - replace API names with labels if possible
+                    String formattedFieldName = fieldName;
+                    try {
+                        Schema.SObjectField fieldToken = Schema.getGlobalDescribe().get(objectName)?.getDescribe()?.fields?.getMap()?.get(fieldName);
+                        if (fieldToken != null) {
+                            formattedFieldName = fieldToken.getDescribe().getLabel();
+                        }
+                    } catch (Exception e) {
+                        // If we can't get the field label, use the API name
+                        System.debug('Could not get field label: ' + e.getMessage());
+                    }
+                    
+                    // Format the values
+                    String oldValueString = (oldValue != null) ? String.valueOf(oldValue) : 'null';
+                    String newValueString = (newValue != null) ? String.valueOf(newValue) : 'null';
+                    
+                    // Add the history record to the context
+                    context += '• ' + formattedFieldName + ' changed from "' + oldValueString + '" to "' + 
+                               newValueString + '" on ' + createdDate.format() + '\n';
+                }
+            }
+            
+            // Add some commonly used Field History objects that don't follow the standard pattern
+            Set<String> specialHistoryObjects = new Set<String>{
+                'SetupAuditTrail', 'LoginHistory', 'OpportunityFieldHistory', 'CaseHistory', 'LeadHistory'
+            };
+            
+            for (String specialObject : specialHistoryObjects) {
+                if (objectName == specialObject.replace('History', '').replace('FieldHistory', '')) {
+                    try {
+                        String specialQuery = 'SELECT Id, Action, Display, CreatedById, CreatedDate, Section ' +
+                                             'FROM ' + specialObject + ' WHERE ParentId = :recordId ' + 
+                                             'ORDER BY CreatedDate DESC LIMIT 5';
+                        
+                        // For SetupAuditTrail, the query is different
+                        if (specialObject == 'SetupAuditTrail') {
+                            specialQuery = 'SELECT Id, Action, Display, CreatedById, CreatedDate, Section ' +
+                                           'FROM SetupAuditTrail WHERE Display LIKE \'%' + recordId + '%\' ' +
+                                           'ORDER BY CreatedDate DESC LIMIT 5';
+                        }
+                        
+                        List<SObject> specialRecords = Database.query(specialQuery);
+                        if (!specialRecords.isEmpty()) {
+                            context += '\n' + specialObject.toUpperCase() + ':\n';
+                            for (SObject record : specialRecords) {
+                                context += '• ' + record.get('Action') + ': ' + record.get('Display');
+                                if (record.get('Section') != null) {
+                                    context += ' in ' + record.get('Section');
+                                }
+                                context += ' (' + ((Datetime)record.get('CreatedDate')).format() + ')\n';
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.debug('Error querying ' + specialObject + ': ' + e.getMessage());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.debug('Error in getFieldHistoryData: ' + e.getMessage());
+        }
+        
+        return context;
+    }
+
+    private static String getChildRelationships(String recordId, Schema.SObjectType objectType) {
+        String context = '';
+        Integer MAX_CHILD_RECORDS = 50; // Maximum records to return per child relationship
+        
+        try {
+            System.debug('Starting getChildRelationships for object: ' + objectType.getDescribe().getName() + ', record ID: ' + recordId);
+            
+            // Get all child relationships from the object's describe result
+            List<Schema.ChildRelationship> childRelationships = objectType.getDescribe().getChildRelationships();
+            System.debug('Found ' + childRelationships.size() + ' potential child relationships');
+            
+            // Track processed relationships to avoid duplicates
+            Set<String> processedRelationships = new Set<String>();
+            
+            // Track any errors we encounter
+            List<String> errors = new List<String>();
+            
+            for (Schema.ChildRelationship rel : childRelationships) {
+                try {
+                    // Skip if null or if we can't access 
+                    if (rel.getChildSObject() == null) {
+                        continue;
+                    }
+                    
+                    // Get the child object info
+                    Schema.SObjectType childObjectType = rel.getChildSObject();
+                    String childObjectName = childObjectType.getDescribe().getName();
+                    
+                    // Debug the relationship we're examining
+                    System.debug('Checking child relationship: ' + childObjectName);
+                    
+                    // Check if the child object is accessible
+                    if (!childObjectType.getDescribe().isAccessible()) {
+                        System.debug('Child object ' + childObjectName + ' is not accessible, skipping');
+                        continue;
+                    }
+                    
+                    // Skip already processed child objects
+                    Set<String> excludedObjects = new Set<String>{
+                        'AttachedContentNote', 'CombinedAttachment', 'ContentDocumentLink',
+                        'EntitySubscription', 'FlowRecordRelation',
+                        'ProcessInstance', 'Vote', 'NetworkUserHistoryRecent'
+                    };
+                    if (excludedObjects.contains(childObjectName)) {
+                        System.debug('Skipping excluded object ' + childObjectName);
+                        continue;
+                    }
+
+                    // Add known non-queryable objects or views to prevent exceptions
+                    Set<String> nonQueryableObjects = new Set<String>{
+                        'ActivityHistory', 'OpenActivity', 'NoteAndAttachment',
+                        'ProcessInstanceHistory', 'RecordActionHistory',
+                        'ContentDocumentLinkChangeEvent', 'ContentVersionChangeEvent',
+                        'EmailMessageChangeEvent', 'EventChangeEvent', 'EventRelationChangeEvent',
+                        'FeedCommentChangeEvent', 'FeedItemChangeEvent', 'FeedLikeChangeEvent',
+                        'FeedPollChoiceVoteChangeEvent', 'FeedSignalChangeEvent',
+                        'FeedTrackedChangeChangeEvent', 'FlowExecutionErrorEvent',
+                        'FlowOrchestrationWorkItemChangeEvent', 'FlowRecordRelationChangeEvent',
+                        'PendingServiceRoutingChangeEvent', 'ProcessExceptionChangeEvent',
+                        'ProcessExceptionEvent', 'ProcessInstanceChangeEvent',
+                        'RecordActionChangeEvent', 'RecordAlertChangeEvent',
+                        'TaskChangeEvent', 'TopicAssignmentChangeEvent',
+                        'UserDefinedLabelAssignmentChangeEvent', 'VideoCallChangeEvent',
+                        'VoiceCallChangeEvent'
+                        // Add any other relevant custom object history/change event objects if needed
+                    };
+                    if (nonQueryableObjects.contains(childObjectName)) {
+                        System.debug('Skipping non-queryable object ' + childObjectName);
+                        continue;
+                    }
+                    
+                    // Mark this relationship as processed
+                    processedRelationships.add(childObjectName);
+                    
+                    Schema.DescribeSObjectResult childObjectDescribe = childObjectType.getDescribe();
+                    
+                    // Get the relationship field name (field on child that points to parent)
+                    String relationshipFieldName = '';
+                    try {
+                        relationshipFieldName = rel.getField().getDescribe().getName();
+                        System.debug('Using relationship field: ' + relationshipFieldName);
+                    } catch (Exception e) {
+                        System.debug('Could not get relationship field name: ' + e.getMessage());
+                        errors.add('Error getting relationship field for ' + childObjectName + ': ' + e.getMessage());
+                        continue;
+                    }
+                    
+                    if (String.isBlank(relationshipFieldName)) {
+                        System.debug('Blank relationship field name for ' + childObjectName + ', skipping');
+                        continue;
+                    }
+                    
+                    // Get fields for query: prioritize Name, standard naming fields, and common fields
+                    List<String> fieldsToQuery = new List<String>{'Id'};
+                    
+                    try {
+                        Map<String, Schema.SObjectField> childFieldMap = childObjectDescribe.fields.getMap();
+                        
+                        // First try to get the Name field
+                        if (childFieldMap.containsKey('Name') && childFieldMap.get('Name').getDescribe().isAccessible()) {
+                            fieldsToQuery.add('Name');
+                        }
+                        
+                        // Common alternative name fields
+                        List<String> nameFields = new List<String>{
+                            'Subject', 'Title', 'CaseNumber', 'OrderNumber', 'InvoiceNumber', 
+                            'LineItemNumber', 'Description'
+                        };
+                        
+                        for (String nameField : nameFields) {
+                            if (childFieldMap.containsKey(nameField) && childFieldMap.get(nameField).getDescribe().isAccessible() && !fieldsToQuery.contains(nameField)) {
+                                fieldsToQuery.add(nameField);
+                            }
+                        }
+                        
+                        // Build and execute the query
+                        String fieldListStr = String.join(fieldsToQuery, ',');
+                        String query = 'SELECT ' + fieldListStr + 
+                                    ' FROM ' + childObjectName + 
+                                    ' WHERE ' + relationshipFieldName + ' = :recordId';
+                                                
+                        
+                        query += ' LIMIT ' + MAX_CHILD_RECORDS;
+                        
+                        System.debug('Executing query: ' + query);
+                        List<SObject> childRecords;
+                        try {
+                            childRecords = Database.query(query);
+                            System.debug('Found ' + childRecords.size() + ' records for relationship ' + childObjectName);
+                        } catch(Exception e) {
+                            System.debug('ERROR executing query for ' + childObjectName + ': ' + e.getMessage());
+                            errors.add('Error querying ' + childObjectName + ': ' + e.getMessage());
+                            continue;
+                        }
+                        
+                        // If we found child records, add them to the context
+                        if (!childRecords.isEmpty()) {
+                            // Get a prettier name for the relationship by removing __c and using object label
+                            String relationshipLabel = childObjectDescribe.getLabel();
+                            if (childRecords.size() > 1) {
+                                // Make it plural if we have multiple records
+                                relationshipLabel = relationshipLabel.endsWith('y') ? 
+                                    relationshipLabel.substring(0, relationshipLabel.length()-1) + 'ies' : 
+                                    (relationshipLabel.endsWith('s') ? relationshipLabel : relationshipLabel + 's');
+                            }
+                            
+                            context += '\n' + relationshipLabel.toUpperCase() + ' (' + childRecords.size() + 
+                                    (childRecords.size() == MAX_CHILD_RECORDS ? '+' : '') + '):\n';
+                            
+                            // Add each record
+                            for (SObject childRecord : childRecords) {
+                                try {
+                                    // Get the display name for this record
+                                    String recordName = getRecordDisplayName(childRecord, fieldsToQuery);
+                                    context += '• ' + recordName;
+                                    
+                                    // Dynamically add a few key available fields for context
+                                    Integer fieldsAdded = 0;
+                                    Integer MAX_FIELDS_TO_ADD = 4; // Max additional fields to show per record
+
+                                    // Define field type priorities for display
+                                    List<Schema.DisplayType> fieldTypePriority = new List<Schema.DisplayType>{
+                                        Schema.DisplayType.CURRENCY,
+                                        Schema.DisplayType.DATE,
+                                        Schema.DisplayType.DATETIME,
+                                        Schema.DisplayType.PICKLIST,
+                                        Schema.DisplayType.STRING,
+                                        Schema.DisplayType.TEXTAREA
+                                    };
+
+                                    // Sort available fields by priority then alphabetically
+                                    List<String> sortedFieldNames = new List<String>(childFieldMap.keySet());
+                                    sortedFieldNames.sort(); // Basic alphabetical sort
+
+                                    // Iterate through priority types first
+                                    Set<String> processedForDisplay = new Set<String>{ 'Id', 'Name', relationshipFieldName }; // Avoid re-displaying these
+                                    processedForDisplay.addAll(nameFields); // Avoid re-displaying common name fields
+
+                                    for (Schema.DisplayType priorityType : fieldTypePriority) {
+                                        if (fieldsAdded >= MAX_FIELDS_TO_ADD) break;
+                                        for (String fieldName : sortedFieldNames) {
+                                            if (fieldsAdded >= MAX_FIELDS_TO_ADD) break;
+                                            if (processedForDisplay.contains(fieldName)) continue;
+
+                                            Schema.DescribeFieldResult fieldDescribe = childFieldMap.get(fieldName).getDescribe();
+                                            if (fieldDescribe.getType() == priorityType && fieldDescribe.isAccessible()) {
+                                                Object fieldValue = childRecord.get(fieldName);
+                                                if (fieldValue != null) {
+                                                    String displayValue;
+                                                    // Format based on field type
+                                                    if (fieldValue instanceof Datetime) {
+                                                        displayValue = ((Datetime)fieldValue).format();
+                                                    } else if (fieldValue instanceof Date) {
+                                                        displayValue = ((Date)fieldValue).format();
+                                                    } else if (fieldDescribe.getType() == Schema.DisplayType.CURRENCY) {
+                                                        Decimal amount = (Decimal)fieldValue;
+                                                        displayValue = '$' + amount.setScale(2); 
+                                                    } else {
+                                                        displayValue = String.valueOf(fieldValue);
+                                                        // Truncate long text fields
+                                                        if (displayValue.length() > 100) {
+                                                            displayValue = displayValue.substring(0, 97) + '...';
+                                                        }
+                                                    }
+                                                    
+                                                    context += ' - ' + fieldDescribe.getLabel() + ': ' + displayValue;
+                                                    processedForDisplay.add(fieldName);
+                                                    fieldsAdded++;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    context += '\n';
+                                } catch (Exception e) {
+                                    // Log the error internally but *do not* add it to the context shown to the user
+                                    System.debug('Error processing child record ' + childRecord?.Id + ' for object ' + childObjectName + ': ' + e.getMessage());
+                                    // Optionally, could add a *very* generic, non-alarming note if needed, but generally avoid it.
+                                    // context += ' (some details might be unavailable)'; 
+                                    continue; // Skip this record but continue with others
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.debug('Error processing fields or querying for ' + childObjectName + ': ' + e.getMessage());
+                        // Do not add this error to the user-facing context
+                        // errors.add('Error processing fields/query for ' + childObjectName + ': ' + e.getMessage());
+                    }
+                } catch (Exception e) {
+                    System.debug('Error processing relationship for child object type: ' + e.getMessage());
+                     // Do not add this error to the user-facing context
+                    // errors.add('Error processing relationship: ' + e.getMessage());
+                    continue; // Skip this relationship but continue with others
+                }
+            }
+            
+            // REMOVED: Do not add internal error info to the context string sent to the LLM
+            // if (!errors.isEmpty()) {
+            //    context += '\nNOTE: Some related records may not be displayed due to the following errors:\n';
+            //    for (String error : errors) {
+            //        context += '- ' + error + '\n';
+            //    }
+            // }
+            
+            return context;
+        } catch (Exception e) {
+            System.debug('ERROR in getChildRelationships: ' + e.getMessage());
+            System.debug(e.getStackTraceString());
+            return '\nNOTE: Error retrieving child relationships: ' + e.getMessage();
+        }
+    }
+
+    /**
+     * Helper method to get a display name for a record
+     */
+    private static String getRecordDisplayName(SObject record, List<String> availableFields) {
+        // Priority order for finding a name field
+        List<String> nameFieldPriority = new List<String>{
+            'Name', 'Subject', 'Title', 'CaseNumber', 'OrderNumber', 'InvoiceNumber', 'Description'
+        };
+        
+        for (String field : nameFieldPriority) {
+            if (availableFields.contains(field) && record.get(field) != null) {
+                return String.valueOf(record.get(field));
+            }
+        }
+        
+        // Fall back to ID if no name field found
+        return String.valueOf(record.Id);
     }
 }
