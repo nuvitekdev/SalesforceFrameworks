@@ -6,7 +6,7 @@ public with sharing class LLMController {
                                                 Model_Name__c, Supports_Files__c 
                                                 FROM LLM_Configuration__mdt 
                                                 WHERE IsActive__c = true];
-        System.debug('Found configurations: ' + configs);
+        System.debug('Found configurations: ' + configs.size());
         return configs;
     }
     
@@ -14,37 +14,27 @@ public with sharing class LLMController {
     public static String handleRequest(String recordId, String configName, String prompt, String operation, String relatedObjects) {
         System.debug('Handle request started');
         System.debug('Parameters - recordId: ' + recordId + ', configName: ' + configName + ', operation: ' + operation);
-        System.debug('Related Objects: ' + relatedObjects);
-        System.debug('Prompt: ' + prompt);
         
         try {
-            System.debug('Fetching LLM configuration');
             LLM_Configuration__mdt config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, 
                                              Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
                                              FROM LLM_Configuration__mdt 
                                              WHERE DeveloperName = :configName 
                                              LIMIT 1];
-            System.debug('Found configuration: ' + config);
             
             String context = '';
             String attachments = '';
             
             // Only get record context if a recordId is provided
             if (String.isNotBlank(recordId)) {
-                System.debug('Getting record context');
                 context = getRecordContext(recordId, relatedObjects);
-                System.debug('Context length: ' + context.length());
                 
-                System.debug('Getting attachments');
                 attachments = config.Supports_Files__c ? getAttachmentsBase64(recordId) : '';
-                System.debug('Attachments length: ' + attachments.length());
             }
             
-            System.debug('Building full prompt');
             String fullPrompt = buildFullPrompt(operation, context, attachments, prompt);
             System.debug('Full prompt length: ' + fullPrompt.length());
             
-            System.debug('Making LLM call');
             return makeLLMCall(config, fullPrompt);
         } catch(Exception e) {
             System.debug('ERROR in handleRequest: ' + e.getMessage());
@@ -64,7 +54,6 @@ public with sharing class LLMController {
     @AuraEnabled
     public static String checkRecordForAnomalies(String recordId, String configName, String relatedObjects) {
         System.debug('Anomaly check started for recordId: ' + recordId + ' using config: ' + configName);
-        System.debug('Related Objects: ' + relatedObjects);
 
         // Validate inputs
         if (String.isBlank(recordId) || String.isBlank(configName)) {
@@ -74,29 +63,16 @@ public with sharing class LLMController {
 
         try {
             // Fetch the specified LLM configuration
-            System.debug('Fetching LLM configuration for anomaly check');
             LLM_Configuration__mdt config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, 
                                              Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
                                              FROM LLM_Configuration__mdt 
                                              WHERE DeveloperName = :configName 
                                              LIMIT 1];
-            System.debug('Found configuration for anomaly check: ' + config);
 
             // Get the context for the specified record
-            // This includes field values, related records, tasks, discussions, and document summaries.
-            System.debug('Getting record context for anomaly check');
             String context = getRecordContext(recordId, relatedObjects);
-            System.debug('Context length for anomaly check: ' + context.length());
             
-            // --- Future Enhancement: Optionally include attachment analysis ---
-            // String attachments = config.Supports_Files__c ? getAttachmentsBase64(recordId) : '';
-            // if(String.isNotBlank(attachments)) {
-            //     context += '\n\nATTACHMENT DATA (BASE64 ENCODED - Only include if essential for analysis):\n' + attachments; 
-            // }
-            // --- End Future Enhancement ---
-
             // Construct the prompt specifically for anomaly detection
-            // Updated prompt to request HTML formatting for better display in LWC
             String anomalyPrompt = 'Analyze the following Salesforce record data. Look specifically for potential issues such as: \n' + 
                                  '- Anomalies (e.g., unusual values, missing required information for the stage)\n' +
                                  '- Conflicts of Interest (e.g., the same person involved in conflicting roles like submitter and approver)\n' + 
@@ -110,12 +86,9 @@ public with sharing class LLMController {
                                  '  - Use <br> for line breaks where appropriate. Do NOT include the markdown `-` for bullets, use <li> instead.\n\n' +
                                  'RECORD DATA:\n' + context;
 
-            System.debug('Anomaly check prompt length: ' + anomalyPrompt.length());
-
             // Call the LLM with the specific anomaly detection prompt
-            System.debug('Making LLM call for anomaly check');
             String assessment = makeLLMCall(config, anomalyPrompt);
-            System.debug('Anomaly check assessment received: ' + assessment);
+            System.debug('Anomaly check completed successfully');
             
             // Return the raw assessment from the LLM
             return assessment;
@@ -959,6 +932,7 @@ public with sharing class LLMController {
             for (String field : keyFields) {
                 try {
                     Object value;
+                    Schema.DisplayType fieldType = null;
                     
                     // Handle relationship fields
                     if (field.contains('.')) {
@@ -969,20 +943,28 @@ public with sharing class LLMController {
                         }
                     } else {
                         value = record.get(field);
+                        // Try to get field type if possible
+                        try {
+                            Schema.SObjectType sobjectType = record.getSObjectType();
+                            if (sobjectType != null) {
+                                Schema.SObjectField fieldToken = sobjectType.getDescribe().fields.getMap().get(field);
+                                if (fieldToken != null) {
+                                    fieldType = fieldToken.getDescribe().getType();
+                                }
+                            }
+                        } catch (Exception e) {
+                            // Ignore errors trying to get field type
+                        }
                     }
                     
                     if (value != null) {
-                        // Format based on field type
-                        if (value instanceof Datetime) {
-                            value = ((Datetime)value).format();
-                        } else if (value instanceof Date) {
-                            value = ((Date)value).format();
-                        } else if (field == 'OwnerId') {
+                        if (field == 'OwnerId') {
                             // Skip OwnerId if we have Owner.Name
                             continue;
                         }
                         
-                        info += '    * ' + field + ': ' + value + '\n';
+                        String displayValue = formatFieldValue(value, fieldType);
+                        info += '    * ' + field + ': ' + displayValue + '\n';
                     }
                 } catch (Exception e) {
                     // Skip fields that cause errors
@@ -995,18 +977,7 @@ public with sharing class LLMController {
         return info;
     }
     
-    private static String getBaseQuery(String recordId) {
-        System.debug('Generating base query for ID: ' + recordId);
-        Schema.SObjectType sobjType = Id.valueOf(recordId).getSObjectType();
-        String fields = String.join(new List<String>(sobjType.getDescribe().fields.getMap().keySet()), ',');
-        String query = 'SELECT ' + fields + ' FROM ' + sobjType.getDescribe().getName() + ' WHERE Id = :recordId';
-        System.debug('Generated query: ' + query);
-        return query;
-    }
-    
     private static String getAttachmentsBase64(String recordId) {
-        System.debug('Getting attachments for record: ' + recordId);
-        
         // Set maximum total base64 content length (approximately 15k tokens = ~60k characters)
         Integer MAX_TOTAL_LENGTH = 60000;
         
@@ -1015,29 +986,32 @@ public with sharing class LLMController {
                                                FROM ContentDocumentLink 
                                                WHERE LinkedEntityId = :recordId
                                                LIMIT 5];
-            System.debug('Found ContentDocumentLinks: ' + links.size());
+            
+            if (links.isEmpty()) {
+                return '';
+            }
             
             Set<Id> contentDocumentIds = new Set<Id>();
             for(ContentDocumentLink link : links) {
                 contentDocumentIds.add(link.ContentDocumentId);
             }
-            System.debug('Content Document IDs: ' + contentDocumentIds);
             
             List<ContentVersion> versions = [SELECT Title, VersionData, FileExtension 
-                                             FROM ContentVersion 
-                                             WHERE ContentDocumentId IN :contentDocumentIds 
-                                             AND IsLatest = true];
-            System.debug('Found ContentVersions: ' + versions.size());
+                                            FROM ContentVersion 
+                                            WHERE ContentDocumentId IN :contentDocumentIds 
+                                            AND IsLatest = true];
+            
+            if (versions.isEmpty()) {
+                return '';
+            }
             
             String attachments = '';
             Integer currentLength = 0;
             
-            for(ContentVersion cv : versions) {
-                System.debug('Processing file: ' + cv.Title);
+            for (ContentVersion cv : versions) {
                 try {
                     // Skip if file is too large
-                    if(cv.VersionData.size() > 1000000) { // 1MB limit
-                        System.debug('File too large: ' + cv.Title);
+                    if (cv.VersionData.size() > 1000000) { // 1MB limit
                         attachments += '\n\n[FILE: ' + cv.Title + ' - Too large to process]';
                         continue;
                     }
@@ -1046,31 +1020,28 @@ public with sharing class LLMController {
                     Integer contentLength = base64Content.length();
                     
                     // Check if adding this content would exceed our limit
-                    if(currentLength + contentLength > MAX_TOTAL_LENGTH) {
-                        System.debug('Reached maximum content length limit');
+                    if (currentLength + contentLength > MAX_TOTAL_LENGTH) {
                         attachments += '\n\n[Additional files omitted due to size constraints]';
                         break;
                     }
                     
                     // If this single file's content is too large, truncate it
-                    if(contentLength > MAX_TOTAL_LENGTH) {
+                    if (contentLength > MAX_TOTAL_LENGTH) {
                         base64Content = base64Content.substring(0, MAX_TOTAL_LENGTH) + '... [content truncated]';
                     }
                     
                     attachments += '\n\n[FILE: ' + cv.Title + ' (' + cv.FileExtension + ')]\n' + base64Content;
                     currentLength += contentLength;
                     
-                } catch(Exception e) {
+                } catch (Exception e) {
                     System.debug('ERROR processing file ' + cv.Title + ': ' + e.getMessage());
-                    System.debug('Stack trace: ' + e.getStackTraceString());
                     attachments += '\n\n[FILE: ' + cv.Title + ' - Failed to process]';
                 }
             }
             
-            System.debug('Total attachments string length: ' + attachments.length());
             return attachments;
             
-        } catch(Exception e) {
+        } catch (Exception e) {
             System.debug('ERROR in getAttachmentsBase64: ' + e.getMessage());
             System.debug('Stack trace: ' + e.getStackTraceString());
             throw new AuraHandledException('Failed to process attachments: ' + e.getMessage());
@@ -1078,8 +1049,6 @@ public with sharing class LLMController {
     }
     
     private static String buildFullPrompt(String operation, String context, String attachments, String prompt) {
-        System.debug('Building full prompt');
-        
         // Approximate token count (4 chars ≈ 1 token)
         Integer maxTokens = 150000; // Lower than max to leave room for response
         
@@ -1150,10 +1119,7 @@ public with sharing class LLMController {
     }
     
     private static String makeLLMCall(LLM_Configuration__mdt config, String prompt) {
-        System.debug('Starting makeLLMCall');
-        System.debug('Provider: ' + config.Provider__c);
-        System.debug('Model: ' + config.Model_Name__c);
-        System.debug('Base URL: ' + config.Base_URL__c);
+        System.debug('Starting makeLLMCall for provider: ' + config.Provider__c + ', model: ' + config.Model_Name__c);
         
         // Set up retry logic parameters
         Integer maxRetries = 3;
@@ -1170,7 +1136,6 @@ public with sharing class LLMController {
                 // Common headers for all providers
                 req.setHeader('Content-Type', 'application/json');
                 
-                System.debug('Building request body');
                 Map<String,Object> requestBody = new Map<String,Object>();
                 
                 // Extract instructions from prompt
@@ -1179,7 +1144,6 @@ public with sharing class LLMController {
                 
                 switch on config.Provider__c {
                     when 'Anthropic' {
-                        System.debug('Preparing Anthropic request');
                         req.setHeader('x-api-key', config.API_Key__c);
                         req.setHeader('anthropic-version', '2023-06-01');
                         
@@ -1197,7 +1161,6 @@ public with sharing class LLMController {
                         };
                     }
                     when 'OpenAI', 'DeepSeek', 'OpenRouter' {
-                        System.debug('Preparing OpenAI/DeepSeek/OpenRouter request');
                         req.setHeader('Authorization', 'Bearer ' + config.API_Key__c);
                         
                         // Add HTTP-Referer for OpenRouter
@@ -1227,7 +1190,6 @@ public with sharing class LLMController {
                         };
                     }
                     when 'Google' {
-                        System.debug('Preparing Google request');
                         req.setHeader('x-goog-api-key', config.API_Key__c);
                         
                         // Create generationConfig
@@ -1281,13 +1243,10 @@ public with sharing class LLMController {
                 }
                 
                 String bodyJson = JSON.serialize(requestBody);
-                System.debug('Request body: ' + bodyJson);
                 req.setBody(bodyJson);
                 
-                System.debug('Making HTTP request...');
                 HttpResponse res = new Http().send(req);
-                System.debug('Response status: ' + res.getStatus());
-                System.debug('Response code: ' + res.getStatusCode());
+                System.debug('Response status: ' + res.getStatusCode() + ' ' + res.getStatus());
                 
                 // Handle non-200 responses
                 if (res.getStatusCode() != 200) {
@@ -1312,9 +1271,10 @@ public with sharing class LLMController {
                     throw new AuraHandledException(errorMsg);
                 }
                 
-                System.debug('Response body: ' + res.getBody());
                 // Parse the response and return
-                return parseResponse(config.Provider__c, res);
+                String result = parseResponse(config.Provider__c, res);
+                System.debug('LLM call completed successfully');
+                return result;
                 
             } catch (Exception e) {
                 System.debug('ERROR in makeLLMCall attempt ' + (currentRetry + 1) + ': ' + e.getMessage());
@@ -1336,72 +1296,66 @@ public with sharing class LLMController {
     }
     
     private static String parseResponse(String provider, HttpResponse res) {
-        System.debug('Starting parseResponse for provider: ' + provider);
-        System.debug('Response status code: ' + res.getStatusCode());
-        
         if (res.getStatusCode() != 200) {
             String errorMsg = 'API Error: ' + res.getStatus() + ' - ' + res.getBody();
             System.debug('ERROR: ' + errorMsg);
             throw new AuraHandledException(errorMsg);
         }
         
-        System.debug('Parsing response body: ' + res.getBody());
         Map<String,Object> response = (Map<String,Object>)JSON.deserializeUntyped(res.getBody());
-        System.debug('Deserialized response: ' + response);
         
         try {
             switch on provider {
                 when 'Anthropic' {
-                    System.debug('Parsing Anthropic response');
                     List<Object> content = (List<Object>)response.get('content');
                     Map<String,Object> firstContent = (Map<String,Object>)content[0];
                     String text = (String)firstContent.get('text');
                     // Remove markdown formatting and replace asterisks with dashes
                     text = text.replaceAll('\\*\\*', '').replaceAll('\\*', '-');
-                    System.debug('Extracted text: ' + text);
                     return text;
                 }
                 when 'OpenAI', 'DeepSeek', 'OpenRouter' {
-                    System.debug('Parsing OpenAI/DeepSeek/OpenRouter response');
                     List<Object> choices = (List<Object>)response.get('choices');
                     Map<String,Object> firstChoice = (Map<String,Object>)choices[0];
                     Map<String,Object> message = (Map<String,Object>)firstChoice.get('message');
                     String content = (String)message.get('content');
                     // Remove markdown formatting and replace asterisks with dashes
                     content = content.replaceAll('\\*\\*', '').replaceAll('\\*', '-');
-                    System.debug('Content extracted: ' + content);
                     return content;
                 }
                 when 'Google' {
-                    // Handle Gemini response
-                    System.debug('Parsing Google/Gemini response');
-                    if (response.containsKey('candidates')) {
-                        Object candidatesObj = response.get('candidates');
-                        if (candidatesObj instanceof List<Object>) {
-                            List<Object> candidates = (List<Object>)candidatesObj;
-                            if (!candidates.isEmpty()) {
-                                Map<String,Object> firstCandidate = (Map<String,Object>)candidates[0];
-                                if (firstCandidate.containsKey('content')) {
-                                    Map<String,Object> content = (Map<String,Object>)firstCandidate.get('content');
-                                    if (content.containsKey('parts')) {
-                                        List<Object> parts = (List<Object>)content.get('parts');
-                                        if (!parts.isEmpty()) {
-                                            Map<String,Object> firstPart = (Map<String,Object>)parts[0];
-                                            if (firstPart.containsKey('text')) {
-                                                String text = (String)firstPart.get('text');
-                                                // Remove markdown formatting and replace asterisks with dashes
-                                                text = text.replaceAll('\\*\\*', '').replaceAll('\\*', '-');
-                                                System.debug('Extracted text from Google/Gemini: ' + text);
-                                                return text;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    // Handle Gemini response - simplified nested structure traversal with null checks
+                    if (!response.containsKey('candidates') || 
+                        !(response.get('candidates') instanceof List<Object>) || 
+                        ((List<Object>)response.get('candidates')).isEmpty()) {
+                        throw new AuraHandledException('Invalid Gemini response structure: missing or empty candidates');
                     }
-                    // Fallback for Gemini
-                    throw new AuraHandledException('Invalid response structure from Google/Gemini API');
+                    
+                    Map<String,Object> firstCandidate = (Map<String,Object>)((List<Object>)response.get('candidates'))[0];
+                    
+                    if (!firstCandidate.containsKey('content') || 
+                        !(firstCandidate.get('content') instanceof Map<String,Object>)) {
+                        throw new AuraHandledException('Invalid Gemini response structure: missing content object');
+                    }
+                    
+                    Map<String,Object> content = (Map<String,Object>)firstCandidate.get('content');
+                    
+                    if (!content.containsKey('parts') || 
+                        !(content.get('parts') instanceof List<Object>) || 
+                        ((List<Object>)content.get('parts')).isEmpty()) {
+                        throw new AuraHandledException('Invalid Gemini response structure: missing or empty parts');
+                    }
+                    
+                    Map<String,Object> firstPart = (Map<String,Object>)((List<Object>)content.get('parts'))[0];
+                    
+                    if (!firstPart.containsKey('text')) {
+                        throw new AuraHandledException('Invalid Gemini response structure: missing text field');
+                    }
+                    
+                    String text = (String)firstPart.get('text');
+                    // Remove markdown formatting and replace asterisks with dashes
+                    text = text.replaceAll('\\*\\*', '').replaceAll('\\*', '-');
+                    return text;
                 }
                 when else {
                     throw new AuraHandledException('Unsupported provider: ' + provider);
@@ -1534,9 +1488,6 @@ public with sharing class LLMController {
             // Track processed relationships to avoid duplicates
             Set<String> processedRelationships = new Set<String>();
             
-            // Track any errors we encounter
-            List<String> errors = new List<String>();
-            
             for (Schema.ChildRelationship rel : childRelationships) {
                 try {
                     // Skip if null or if we can't access 
@@ -1584,7 +1535,6 @@ public with sharing class LLMController {
                         'TaskChangeEvent', 'TopicAssignmentChangeEvent',
                         'UserDefinedLabelAssignmentChangeEvent', 'VideoCallChangeEvent',
                         'VoiceCallChangeEvent'
-                        // Add any other relevant custom object history/change event objects if needed
                     };
                     if (nonQueryableObjects.contains(childObjectName)) {
                         System.debug('Skipping non-queryable object ' + childObjectName);
@@ -1603,7 +1553,6 @@ public with sharing class LLMController {
                         System.debug('Using relationship field: ' + relationshipFieldName);
                     } catch (Exception e) {
                         System.debug('Could not get relationship field name: ' + e.getMessage());
-                        errors.add('Error getting relationship field for ' + childObjectName + ': ' + e.getMessage());
                         continue;
                     }
                     
@@ -1640,7 +1589,7 @@ public with sharing class LLMController {
                         String query = 'SELECT ' + fieldListStr + 
                                     ' FROM ' + childObjectName + 
                                     ' WHERE ' + relationshipFieldName + ' = :recordId';
-                                                
+                                            
                         
                         query += ' LIMIT ' + MAX_CHILD_RECORDS;
                         
@@ -1651,7 +1600,6 @@ public with sharing class LLMController {
                             System.debug('Found ' + childRecords.size() + ' records for relationship ' + childObjectName);
                         } catch(Exception e) {
                             System.debug('ERROR executing query for ' + childObjectName + ': ' + e.getMessage());
-                            errors.add('Error querying ' + childObjectName + ': ' + e.getMessage());
                             continue;
                         }
                         
@@ -1708,22 +1656,7 @@ public with sharing class LLMController {
                                             if (fieldDescribe.getType() == priorityType && fieldDescribe.isAccessible()) {
                                                 Object fieldValue = childRecord.get(fieldName);
                                                 if (fieldValue != null) {
-                                                    String displayValue;
-                                                    // Format based on field type
-                                                    if (fieldValue instanceof Datetime) {
-                                                        displayValue = ((Datetime)fieldValue).format();
-                                                    } else if (fieldValue instanceof Date) {
-                                                        displayValue = ((Date)fieldValue).format();
-                                                    } else if (fieldDescribe.getType() == Schema.DisplayType.CURRENCY) {
-                                                        Decimal amount = (Decimal)fieldValue;
-                                                        displayValue = '$' + amount.setScale(2); 
-                                                    } else {
-                                                        displayValue = String.valueOf(fieldValue);
-                                                        // Truncate long text fields
-                                                        if (displayValue.length() > 100) {
-                                                            displayValue = displayValue.substring(0, 97) + '...';
-                                                        }
-                                                    }
+                                                    String displayValue = formatFieldValue(fieldValue, fieldDescribe.getType());
                                                     
                                                     context += ' - ' + fieldDescribe.getLabel() + ': ' + displayValue;
                                                     processedForDisplay.add(fieldName);
@@ -1737,32 +1670,18 @@ public with sharing class LLMController {
                                 } catch (Exception e) {
                                     // Log the error internally but *do not* add it to the context shown to the user
                                     System.debug('Error processing child record ' + childRecord?.Id + ' for object ' + childObjectName + ': ' + e.getMessage());
-                                    // Optionally, could add a *very* generic, non-alarming note if needed, but generally avoid it.
-                                    // context += ' (some details might be unavailable)'; 
                                     continue; // Skip this record but continue with others
                                 }
                             }
                         }
                     } catch (Exception e) {
                         System.debug('Error processing fields or querying for ' + childObjectName + ': ' + e.getMessage());
-                        // Do not add this error to the user-facing context
-                        // errors.add('Error processing fields/query for ' + childObjectName + ': ' + e.getMessage());
                     }
                 } catch (Exception e) {
                     System.debug('Error processing relationship for child object type: ' + e.getMessage());
-                     // Do not add this error to the user-facing context
-                    // errors.add('Error processing relationship: ' + e.getMessage());
                     continue; // Skip this relationship but continue with others
                 }
             }
-            
-            // REMOVED: Do not add internal error info to the context string sent to the LLM
-            // if (!errors.isEmpty()) {
-            //    context += '\nNOTE: Some related records may not be displayed due to the following errors:\n';
-            //    for (String error : errors) {
-            //        context += '- ' + error + '\n';
-            //    }
-            // }
             
             return context;
         } catch (Exception e) {
@@ -1789,5 +1708,37 @@ public with sharing class LLMController {
         
         // Fall back to ID if no name field found
         return String.valueOf(record.Id);
+    }
+
+    /**
+     * Format a field value for display, applying appropriate formatting based on type
+     * @param fieldValue The value to format
+     * @param fieldType The Schema.DisplayType if available (optional)
+     * @return String The formatted value as a string
+     */
+    private static String formatFieldValue(Object fieldValue, Schema.DisplayType fieldType) {
+        if (fieldValue == null) {
+            return 'null';
+        }
+        
+        String displayValue;
+        
+        // Format based on field type
+        if (fieldValue instanceof Datetime) {
+            displayValue = ((Datetime)fieldValue).format();
+        } else if (fieldValue instanceof Date) {
+            displayValue = ((Date)fieldValue).format();
+        } else if (fieldType == Schema.DisplayType.CURRENCY && fieldValue instanceof Decimal) {
+            Decimal amount = (Decimal)fieldValue;
+            displayValue = '$' + amount.setScale(2);
+        } else {
+            displayValue = String.valueOf(fieldValue);
+            // Truncate long text fields
+            if (displayValue.length() > 100) {
+                displayValue = displayValue.substring(0, 97) + '...';
+            }
+        }
+        
+        return displayValue;
     }
 }

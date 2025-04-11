@@ -1,5 +1,6 @@
-/* Nuvitek Theme Variables */
+/* Consolidated selectors for theme variables */
 :host {
+    /* Color system */
     --primary-color: #22BDC1;
     --primary-color-rgb: 34, 189, 193;
     --primary-dark: #1a9599;
@@ -10,6 +11,8 @@
     --accent-dark: #b8c11e;
     --accent-light: #e1e95c;
     --accent-text-color: #000000;
+    
+    /* UI colors */
     --text-color: #1d1d1f;
     --text-secondary: #6e6e73;
     --text-tertiary: #a1a1a6;
@@ -18,9 +21,13 @@
     --background-elevated: #fbfbfd;
     --border-color: rgba(0, 0, 0, 0.1);
     --border-subtle: rgba(0, 0, 0, 0.05);
+    
+    /* Shadows */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+    
+    /* Layout */
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 20px;
@@ -32,6 +39,8 @@
     --font-weight-semibold: 600;
     --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+    
+    /* Chat styles */
     --bg-color: #ffffff;
     --border-radius: 8px;
     --chat-bubble-user: var(--primary-light);
@@ -69,7 +78,7 @@
     background-color: var(--primary-color) !important;
 }
 
-/* Title container styling - Fixed positioning issue */
+/* Title container styling */
 .title-container {
     display: flex;
     width: 100%;
@@ -90,28 +99,32 @@
 }
 
 .title-spacer {
-    flex-grow: 1; /* This pushes the right side all the way to the right */
+    flex-grow: 1; /* Pushes right content to the right */
 }
 
 .title-right {
-    margin-left: auto; /* Extra safety to push to the right */
+    margin-left: auto;
     display: flex;
     align-items: center;
 }
 
-.scan-badge {
+/* Badges */
+.scan-badge, .related-objects-badge {
     display: flex;
     align-items: center;
-    background: rgba(var(--primary-color-rgb), 0.15) !important;
     border-radius: 12px;
     padding: 0.25rem 0.75rem;
     font-size: 12px;
-    color: var(--primary-color) !important;
     font-weight: var(--font-weight-medium);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     animation: fadeIn 0.5s ease-in-out;
     transition: all 0.2s ease;
-    margin-left: 12px; /* Add more space between title and badge */
+    margin-left: 12px;
+}
+
+.scan-badge {
+    background: rgba(var(--primary-color-rgb), 0.15) !important;
+    color: var(--primary-color) !important;
 }
 
 .scan-badge:hover {
@@ -129,7 +142,7 @@
     transform: translateY(-1px);
 }
 
-/* Card styling using Nuvitek theme */
+/* Card styling */
 lightning-card {
     --sds-c-card-color-background: var(--background) !important;
     --sds-c-card-shadow: var(--shadow-md) !important;
@@ -144,12 +157,12 @@ lightning-card:hover {
     transform: translateY(-2px);
 }
 
-/* Button global styling */
+/* Button styling */
 .slds-button {
     border-radius: var(--radius-sm) !important;
 }
 
-/* Brand variant buttons (ask question) */
+/* Brand variant buttons */
 lightning-button.ask-button button {
     background-color: var(--primary-color) !important;
     border-color: var(--primary-color) !important;
@@ -161,7 +174,7 @@ lightning-button.ask-button button:hover {
     border-color: var(--primary-dark) !important;
 }
 
-/* Neutral variant buttons with primary color accents */
+/* Neutral variant buttons */
 lightning-button.analyze-button button, 
 lightning-button.clear-button button {
     border-color: var(--primary-color) !important;
@@ -174,7 +187,7 @@ lightning-button.clear-button button:hover {
     border-color: var(--primary-dark) !important;
 }
 
-/* Button hover effect */
+/* Button hover effects */
 .ask-button, .analyze-button, .clear-button {
     position: relative;
     overflow: hidden;
@@ -185,7 +198,7 @@ lightning-button.clear-button button:hover {
     transform: translateY(-2px);
 }
 
-/* Input field styling */
+/* Form elements */
 lightning-textarea, lightning-combobox {
     --slds-c-input-radius-border: var(--radius-sm) !important;
     --slds-c-input-color-border: var(--border-color) !important;
@@ -194,162 +207,397 @@ lightning-textarea, lightning-combobox {
     --slds-c-input-color-border-focus: var(--primary-color) !important;
 }
 
-/* Enhanced input field focus */
 .question-input textarea:focus {
     box-shadow: 0 0 0 2px var(--primary-color) !important;
     transition: box-shadow 0.2s ease;
 }
 
-/* Labels */
+/* Form labels */
 lightning-textarea label, lightning-combobox label {
     color: var(--text-color) !important;
     font-weight: var(--font-weight-medium) !important;
     font-size: var(--font-size-sm) !important;
 }
 
-/* Loading spinner */
+/* Spinner */
 lightning-spinner {
-    --slds-c-spinner-color-background: var(--primary-color) !important;
-    --slds-c-spinner-color-brand: var(--primary-color) !important;
+    --lwc-colorBackground: var(--primary-color) !important;
+    --lwc-colorBackgroundSpinnerDot: var(--primary-color) !important;
 }
 
-/* Loading styles */
+/* Loading container */
 .loading-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 2rem 0;
-    animation: fadeIn 0.3s ease-in-out;
+    justify-content: center;
+    padding: 2rem 0;
+    text-align: center;
 }
 
 .loading-text {
     margin-top: 1rem;
     color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-    font-style: italic;
-    animation: pulse 1.5s infinite;
+    font-weight: var(--font-weight-medium);
+    animation: pulse 2s infinite;
 }
 
-/* Error container with shake animation */
+/* Error container */
 .error-container {
-    animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-    transform: translateX(0);
-    background-color: rgba(255, 59, 48, 0.1);
+    background-color: rgba(234, 0, 30, 0.1);
     border-radius: var(--radius-sm);
-}
-
-/* Results container */
-.response-container {
-    background: var(--background-elevated);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-subtle);
-    padding: 1.5rem;
-    margin-top: 1rem;
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-fast);
-    opacity: 0;
-    transform: translateY(10px);
-    animation: fadeInUp 0.5s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
-}
-
-/* Typing animation container */
-.typing-indicator-container {
-    margin-top: 1rem;
-}
-
-/* Typing indicator animation */
-.typing-indicator {
-    display: flex;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-}
-
-.typing-animation {
     display: flex;
     align-items: center;
 }
 
-.typing-animation span {
-    height: 8px;
-    width: 8px;
-    background: var(--primary-color);
-    border-radius: 50%;
+/* Response containers */
+.response-container, .typing-indicator-container {
+    background-color: var(--background-elevated);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    margin-top: 1rem;
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.typing-indicator-container {
+    margin-bottom: 1rem;
+}
+
+/* Typing indicator */
+.typing-indicator {
     display: inline-block;
-    margin-right: 5px;
-    animation: bounce 1.2s infinite ease-in-out;
+    position: relative;
+    width: 60px;
+    height: 30px;
+}
+
+.typing-animation {
+    text-align: center;
+}
+
+.typing-animation span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin: 0 2px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.typing-animation span:nth-child(1) {
+    animation-delay: -0.32s;
 }
 
 .typing-animation span:nth-child(2) {
-    animation-delay: 0.2s;
+    animation-delay: -0.16s;
 }
 
-.typing-animation span:nth-child(3) {
-    animation-delay: 0.4s;
-}
-
-/* Typing version of response container */
 .response-container.typing {
-    animation: none;
-    opacity: 0.95;
-    border-left: 3px solid var(--primary-color);
-    background: rgba(var(--primary-color-rgb), 0.05);
+    border: 1px dashed var(--primary-light);
+    background-color: rgba(var(--primary-color-rgb), 0.05);
 }
 
-/* Model badge styling */
+/* Model badge */
 .model-badge {
-    display: inline-block;
-    max-width: 100%;
-    white-space: normal;
-    word-wrap: break-word;
-    line-height: 1.4;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
     background-color: var(--model-badge-color) !important;
     color: var(--model-badge-text-color) !important;
-    transition: all 0.3s ease;
+    border-radius: 16px;
+    padding: 0.25rem 0.75rem;
+    font-weight: var(--font-weight-medium);
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    box-shadow: var(--shadow-sm);
 }
 
-/* Response text styling */
+/* Response text */
 .response-text {
-    color: var(--text-color);
     line-height: 1.6;
     font-size: var(--font-size-md);
+    color: var(--text-color);
+    word-break: break-word;
 }
 
-/* Copy button enhancement */
+/* Copy buttons */
 .copy-button, .copy-message-button {
-    transition: transform 0.2s ease;
+    position: relative;
 }
 
 .copy-button:hover, .copy-message-button:hover {
-    transform: scale(1.2);
+    background-color: rgba(var(--primary-color-rgb), 0.2) !important;
 }
 
-/* Ripple effect for buttons */
+/* Ripple effect */
 .ripple-effect {
     position: absolute;
+    background: rgba(var(--primary-color-rgb), 0.3);
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.6);
     transform: scale(0);
-    animation: ripple 0.5s linear;
+    animation: ripple 0.6s linear;
     pointer-events: none;
 }
 
-/* Lightning button icon overrides */
+/* Button icon styling */
 lightning-button-icon {
-    --sds-c-button-color-background: transparent !important;
-    --sds-c-button-color-border: transparent !important;
+    --sds-c-button-radius-border: var(--radius-sm) !important;
 }
 
 lightning-button-icon .slds-button {
     color: var(--primary-color) !important;
 }
 
-/* Animation keyframes */
+/* Actions buttons container */
+.action-buttons-container {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+/* Custom button styling */
+.custom-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    border-radius: var(--radius-sm);
+    padding: 0 1.25rem;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+    border: none;
+    outline: none;
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+}
+
+.custom-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.custom-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Primary button */
+.primary-button {
+    background-color: var(--primary-color);
+    color: var(--primary-text-color);
+}
+
+.primary-button:hover:not(:disabled) {
+    background-color: var(--primary-dark);
+}
+
+/* Secondary button */
+.secondary-button {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+    color: var(--primary-color);
+}
+
+.secondary-button:hover:not(:disabled) {
+    background-color: rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* Button icon */
+.button-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.5rem;
+}
+
+.button-icon svg {
+    fill: currentColor;
+}
+
+.button-label {
+    display: inline-block;
+}
+
+/* Button media queries */
+@media (max-width: 600px) {
+    .action-buttons-container {
+        flex-direction: column;
+    }
+    
+    .custom-button {
+        width: 100%;
+    }
+}
+
+@media (min-width: 601px) and (max-width: 768px) {
+    .custom-button {
+        padding: 0 1rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Bot icon */
+.bot-icon svg {
+    fill: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
+}
+
+/* Conversation styling */
+.conversation-header {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 1rem;
+    margin-top: 1.5rem;
+}
+
+.conversation-container {
+    max-height: 0;
+    overflow-y: hidden;
+    transition: max-height 0.5s ease-in-out;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-light) transparent;
+}
+
+.conversation-container[data-expanded="true"] {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Chat message styling */
+.chat-message {
+    margin-bottom: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    animation: fadeInUp 0.3s ease-out;
+    box-shadow: var(--shadow-sm);
+}
+
+.chat-message:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.chat-message[data-user="true"] {
+    background-color: var(--chat-bubble-user);
+    color: var(--chat-text-user);
+    margin-left: 1rem;
+    margin-right: 0;
+}
+
+.chat-message[data-user="false"] {
+    background-color: var(--chat-bubble-ai);
+    color: var(--chat-text-ai);
+    margin-right: 1rem;
+    margin-left: 0;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+    font-size: 0.8rem;
+}
+
+.message-sender {
+    font-weight: var(--font-weight-semibold);
+}
+
+.message-timestamp {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    margin-left: 0.5rem;
+}
+
+.message-model {
+    display: inline-block;
+    font-size: 0.65rem;
+    background-color: rgba(var(--primary-color-rgb), 0.2);
+    padding: 0.1rem 0.4rem;
+    border-radius: 10px;
+    margin-left: 0.5rem;
+}
+
+.message-content {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.message-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.chat-message:hover .message-actions {
+    opacity: 1;
+}
+
+.toggle-chat-button {
+    transform: rotate(0deg);
+    transition: transform 0.4s ease;
+}
+
+.toggle-chat-button[data-expanded="true"] {
+    transform: rotate(180deg);
+}
+
+.history-info {
+    font-style: italic;
+    opacity: 0.7;
+    text-align: center;
+}
+
+.summary-container {
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary-color);
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.summary-container:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.summary-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--primary-dark);
+}
+
+.summary-title {
+    font-weight: var(--font-weight-semibold);
+}
+
+.summary-content {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--text-color);
+}
+
+/* Animation definitions */
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(10px);
     }
     to {
         opacity: 1;
@@ -363,295 +611,25 @@ lightning-button-icon .slds-button {
 }
 
 @keyframes shake {
-    10%, 90% { transform: translateX(-1px); }
-    20%, 80% { transform: translateX(2px); }
-    30%, 50%, 70% { transform: translateX(-3px); }
-    40%, 60% { transform: translateX(3px); }
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
 }
 
 @keyframes pulse {
-    0% { opacity: 0.6; color: var(--primary-color); }
-    50% { opacity: 1; color: var(--primary-dark); }
-    100% { opacity: 0.6; color: var(--primary-color); }
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
 }
 
 @keyframes bounce {
-    0%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-8px); }
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
 }
 
 @keyframes ripple {
     to {
-        transform: scale(2.5);
+        transform: scale(4);
         opacity: 0;
     }
-}
-
-/* Action buttons container - Updated for better responsiveness */
-.action-buttons-container {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap; /* Allow buttons to wrap */
-    width: 100%;
-    margin-bottom: 1rem;
-}
-
-/* Custom button styling - Updated for better text handling */
-.custom-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: auto;
-    height: auto;
-    min-height: 32px;
-    position: relative;
-    overflow: visible;
-    border: 1px solid transparent;
-    gap: 0.5rem;
-    white-space: normal; /* Allow text to wrap */
-    flex: 0 1 auto; /* Don't force growth, allow shrinking */
-    max-width: 100%; /* Ensure button doesn't exceed container width */
-    margin-bottom: 0.5rem; /* Space between wrapped buttons */
-}
-
-.custom-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.custom-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-/* Primary button (Ask Question) */
-.primary-button {
-    background-color: var(--primary-color);
-    color: var(--primary-text-color);
-    border-color: var(--primary-color);
-}
-
-.primary-button:hover:not(:disabled) {
-    background-color: var(--primary-dark);
-    border-color: var(--primary-dark);
-}
-
-/* Secondary buttons (Analyze, Clear) */
-.secondary-button {
-    background-color: transparent;
-    color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.secondary-button:hover:not(:disabled) {
-    background-color: rgba(var(--primary-color-rgb), 0.1);
-    border-color: var(--primary-dark);
-}
-
-/* Button icon styling */
-.button-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0; /* Prevent icon from shrinking */
-}
-
-.button-icon svg {
-    fill: currentColor;
-}
-
-/* Button label needs to be visible */
-.button-label {
-    overflow: visible;
-    text-overflow: initial;
-    white-space: normal; /* Allow text wrapping in button labels */
-}
-
-/* Responsive adjustments for different screen sizes */
-@media (max-width: 600px) {
-    .action-buttons-container {
-        flex-direction: column; /* Stack buttons on very small screens */
-        gap: 8px;
-    }
-    
-    .custom-button {
-        width: 100%; /* Full width on mobile */
-        justify-content: center; /* Center text on mobile */
-    }
-}
-
-/* For medium screens where buttons might wrap */
-@media (min-width: 601px) and (max-width: 768px) {
-    .custom-button {
-        flex: 1 1 calc(50% - 12px); /* Two buttons per row with gap considered */
-        max-width: calc(50% - 12px);
-    }
-}
-
-/* Bot icon color fix */
-.bot-icon svg {
-    fill: var(--primary-color) !important;
-    background-color: var(--primary-color) !important;
-}
-
-/* Conversation History Styling */
-.conversation-header {
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border-subtle);
-    margin-bottom: 0.5rem;
-}
-
-.conversation-container {
-    max-height: 0;
-    overflow: hidden;
-    padding-right: 0.5rem;
-    margin-bottom: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.conversation-container[data-expanded="true"] {
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.chat-message {
-    display: flex;
-    flex-direction: column;
-    max-width: 90%;
-    padding: 0.75rem 1rem;
-    border-radius: var(--border-radius);
-    position: relative;
-    animation: fadeIn 0.3s ease-in-out;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.chat-message:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-}
-
-.chat-message[data-user="true"] {
-    align-self: flex-end;
-    background-color: var(--chat-bubble-user);
-    color: var(--chat-text-user);
-    border-bottom-right-radius: 4px;
-}
-
-.chat-message[data-user="false"] {
-    align-self: flex-start;
-    background-color: var(--chat-bubble-ai);
-    color: var(--chat-text-ai);
-    border-bottom-left-radius: 4px;
-}
-
-.message-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-    font-size: 0.75rem;
-}
-
-.message-sender {
-    font-weight: bold;
-}
-
-.message-timestamp {
-    color: inherit;
-    opacity: 0.7;
-    font-size: 0.7rem;
-}
-
-.message-model {
-    background-color: var(--model-badge-color);
-    color: var(--model-badge-text-color);
-    padding: 2px 8px;
-    border-radius: 8px;
-    font-size: 0.65rem;
-    margin-left: 0.5rem;
-}
-
-.message-content {
-    word-break: break-word;
-    line-height: 1.5;
-    color: inherit;
-}
-
-.message-actions {
-    position: absolute;
-    right: 0.5rem;
-    bottom: 0.5rem;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.chat-message:hover .message-actions {
-    opacity: 1;
-}
-
-.toggle-chat-button {
-    color: var(--primary-color);
-    transition: transform 0.3s ease;
-}
-
-/* Animation for the chevron icon */
-.toggle-chat-button[data-expanded="true"] {
-    transform: rotate(180deg);
-}
-
-/* History info and summary styling */
-.history-info {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    padding: 0.25rem 0;
-}
-
-.summary-container {
-    background-color: rgba(var(--primary-color-rgb), 0.1);
-    border-radius: var(--border-radius);
-    border-left: 3px solid var(--primary-color);
-    margin-bottom: 1rem;
-    transition: all 0.3s ease;
-}
-
-.summary-container:hover {
-    background-color: rgba(var(--primary-color-rgb), 0.15);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.summary-header {
-    display: flex;
-    align-items: center;
-    color: var(--primary-dark);
-    font-weight: 600;
-    font-size: 0.875rem;
-}
-
-.summary-title {
-    margin-left: 0.25rem;
-}
-
-.summary-content {
-    font-size: 0.875rem;
-    line-height: 1.4;
-}
-
-/* Ripple effect for custom buttons */
-.custom-button .ripple-effect {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.6);
-    transform: scale(0);
-    animation: ripple 0.5s linear;
-    pointer-events: none;
 }

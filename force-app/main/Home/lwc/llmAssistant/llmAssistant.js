@@ -49,6 +49,12 @@ export default class LLMAssistant extends LightningElement {
     @track activeAccordionSections = []; // Keep track of open sections
     // --- End Accordion Control ---
     
+    // Cache for memoized functions
+    colorCache = new Map();
+    styleCache = null;
+    lastPrimaryColor = null;
+    lastAccentColor = null;
+
     // Computed properties for text colors based on background brightness
     get primaryTextColor() {
         return this.getContrastColor(this.primaryColor);
@@ -86,6 +92,12 @@ export default class LLMAssistant extends LightningElement {
 
     // Dynamically set CSS variables based on configured colors
     get componentStyle() {
+        // Use cached style if colors haven't changed
+        if (this.styleCache && this.lastPrimaryColor === this.primaryColor && 
+            this.lastAccentColor === this.accentColor) {
+            return this.styleCache;
+        }
+        
         // Extract RGB values for rgba() usage
         const primaryRGB = this.hexToRgb(this.primaryColor);
         const accentRGB = this.hexToRgb(this.accentColor);
@@ -95,7 +107,8 @@ export default class LLMAssistant extends LightningElement {
         const accentTextColor = this.accentTextColor;
         const userChatTextColor = this.userChatTextColor;
 
-        return `--primary-color: ${this.primaryColor}; 
+        // Create the style string
+        this.styleCache = `--primary-color: ${this.primaryColor}; 
                 --primary-dark: ${this.adjustColor(this.primaryColor, -20)}; 
                 --primary-light: ${this.adjustColor(this.primaryColor, 20)};
                 --primary-color-rgb: ${primaryRGB};
@@ -111,6 +124,12 @@ export default class LLMAssistant extends LightningElement {
                 --chat-text-ai: ${this.aiChatTextColor};
                 --model-badge-color: ${this.primaryColor};
                 --model-badge-text-color: ${primaryTextColor};`;
+        
+        // Update cache tracking variables
+        this.lastPrimaryColor = this.primaryColor;
+        this.lastAccentColor = this.accentColor;
+        
+        return this.styleCache;
     }
     
     // Get contrast color (black or white) based on background brightness
@@ -118,21 +137,27 @@ export default class LLMAssistant extends LightningElement {
         // Default to black if no color provided
         if (!hexColor || !hexColor.startsWith('#')) return '#000000';
         
-        // Remove # if present
-        hexColor = hexColor.replace('#', '');
+        // Check cache first
+        const cacheKey = `contrast_${hexColor}`;
+        if (this.colorCache.has(cacheKey)) {
+            return this.colorCache.get(cacheKey);
+        }
         
-        // Convert to RGB
-        const r = parseInt(hexColor.substr(0, 2), 16);
-        const g = parseInt(hexColor.substr(2, 2), 16);
-        const b = parseInt(hexColor.substr(4, 2), 16);
+        // Parse hex color efficiently
+        const r = parseInt(hexColor.slice(1, 3), 16);
+        const g = parseInt(hexColor.slice(3, 5), 16);
+        const b = parseInt(hexColor.slice(5, 7), 16);
         
         // Calculate luminance using the perceived brightness formula
         // (Weighted average for human perception: R:0.299, G:0.587, B:0.114)
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
         
         // Use white text for dark backgrounds, black text for light backgrounds
-        // 0.5 is the threshold - adjust as needed
-        return luminance > 0.5 ? '#000000' : '#FFFFFF';
+        const result = luminance > 0.5 ? '#000000' : '#FFFFFF';
+        
+        // Cache the result
+        this.colorCache.set(cacheKey, result);
+        return result;
     }
     
     // Control visibility of model selector
@@ -346,12 +371,14 @@ SUMMARY:`;
     }
 
     connectedCallback() {
-        this.applyDynamicStyling();
+        console.log('LLM Assistant connected');
+        // Preload LLM configurations when connected
+        this.loadLLMConfigurations();
         
-        // Initialize empty conversation history array if needed
-        if (!this.conversationHistory) {
-            this.conversationHistory = [];
-        }
+        // Setup debounced handlers
+        this.debouncedPromptChange = this.debounce((event) => {
+            this.userPrompt = event.detail.value;
+        }, 300); // 300ms debounce
     }
     
     renderedCallback() {
@@ -404,43 +431,85 @@ SUMMARY:`;
         // and will be updated whenever the component properties change
     }
     
-    // Color manipulation helper function
-    adjustColor(color, amount) {
-        // Simple implementation - in production you'd want a more robust color manipulation
-        try {
-            if (!color || !color.startsWith('#')) return color;
-            
-            // Convert hex to RGB
-            let r = parseInt(color.substring(1, 3), 16);
-            let g = parseInt(color.substring(3, 5), 16);
-            let b = parseInt(color.substring(5, 7), 16);
-            
-            // Adjust each component
-            r = Math.max(0, Math.min(255, r + amount));
-            g = Math.max(0, Math.min(255, g + amount));
-            b = Math.max(0, Math.min(255, b + amount));
-            
-            // Convert back to hex
-            return '#' + 
-                ((1 << 24) + (r << 16) + (g << 8) + b)
-                .toString(16)
-                .slice(1);
-        } catch (e) {
-            console.error('Error adjusting color:', e);
-            return color; // Return original on error
+    // Debounce function to limit frequency of calls
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Load LLM configurations once instead of using wire that might re-run
+    loadLLMConfigurations() {
+        getLLMConfigurations()
+            .then(data => {
+                if (data && data.length > 0) {
+                    // Map configurations to combobox options
+                    this.llmOptions = data.map(config => ({
+                        label: config.MasterLabel,
+                        value: config.DeveloperName,
+                        provider: config.Provider__c,
+                        supportsFiles: config.Supports_Files__c
+                    }));
+                    
+                    console.log('LLM configuration options loaded:', this.llmOptions.length);
+                    
+                    // Set default model if specified in design attributes, or use the first model
+                    if (this.defaultModelName && this.llmOptions.some(opt => opt.value === this.defaultModelName)) {
+                        this.selectedLLM = this.defaultModelName;
+                    } else if (this.llmOptions.length > 0) {
+                        this.selectedLLM = this.llmOptions[0].value;
+                    }
+                    
+                    // Set the label after selecting the model
+                    if (this.selectedLLM) {
+                        const selectedOption = this.llmOptions.find(opt => opt.value === this.selectedLLM);
+                        this.selectedLLMLabel = selectedOption ? selectedOption.label : 'Unknown Model';
+                        
+                        // For a record page, perform an initial anomaly check
+                        if (this.enableAnomalyDetection && this.recordId) {
+                            this.performInitialAnomalyCheck();
+                        }
+                    }
+                } else {
+                    console.warn('No LLM configurations found');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading LLM configurations:', error);
+                this.showError(error.body?.message || 'Error fetching LLM configurations');
+            });
+    }
+
+    handlePromptChange(event) {
+        // Use the debounced version to avoid excessive state updates
+        this.debouncedPromptChange(event);
+    }
+    
+    handleModelChange(event) {
+        this.selectedLLM = event.detail.value;
+        const selectedOption = this.llmOptions.find(opt => opt.value === this.selectedLLM);
+        this.selectedLLMLabel = selectedOption ? selectedOption.label : 'Unknown Model';
+        console.log('Model changed to:', this.selectedLLMLabel);
+        // --- Trigger anomaly check if the model is changed manually and hasn't run yet ---
+        // This ensures it runs even if the default/first selection failed or wasn't ready
+        if (!this.anomalyCheckResult && !this.anomalyCheckLoading) {
+            this.performInitialAnomalyCheck();
         }
     }
 
-    // Simulate typing effect
+    // Simulate typing effect (optimized)
     simulateTyping(result) {
         const chars = result.split('');
-        let charIndex = 0;
         this.partialResponse = '';
         this.isTyping = true;
         
-        // Track last timestamp to calculate elapsed time
-        let lastTimestamp = Date.now();
-        // Store typing state across tab switches
+        // Using a state object makes it easier to maintain animation state
         const typingState = {
             chars: chars,
             charIndex: 0,
@@ -468,12 +537,36 @@ SUMMARY:`;
                     // Reset timer and calculate next delay
                     typingState.timeSinceLastChar = 0;
                     
-                    // FASTER TYPING: Reduced base typing delay from 5-20ms to 1-5ms
-                    typingState.nextCharDelay = Math.floor(Math.random() * 4) + 1; // 1-5ms
-                    
-                    // FASTER TYPING: Reduced punctuation pause from +50ms to +15ms
-                    if ('.!?,:;'.includes(typingState.chars[typingState.charIndex - 1])) {
-                        typingState.nextCharDelay += 15; // Shorter pause at punctuation
+                    // Faster typing with batch processing for better performance
+                    // Process multiple characters at once for common sequences
+                    if (typingState.charIndex < typingState.chars.length) {
+                        // Batch process spaces and common characters
+                        const currentChar = typingState.chars[typingState.charIndex - 1];
+                        
+                        // Optimize: Process multiple characters at once for better performance
+                        // at higher indexes when we're deeper in the text
+                        if (typingState.charIndex > 100) {
+                            // For long texts, speed up more significantly as we go
+                            typingState.nextCharDelay = 1; // Super fast
+                            
+                            // Batch process more characters at once in long texts
+                            if (typingState.charIndex % 5 === 0 && typingState.charIndex < typingState.chars.length - 10) {
+                                // Process 5 characters every 5th position for long text
+                                const batchSize = 5;
+                                if (typingState.charIndex + batchSize <= typingState.chars.length) {
+                                    this.partialResponse += typingState.chars.slice(typingState.charIndex, typingState.charIndex + batchSize).join('');
+                                    typingState.charIndex += batchSize;
+                                }
+                            }
+                        } else {
+                            // Normal speed for the beginning of text
+                            typingState.nextCharDelay = Math.floor(Math.random() * 4) + 1; // 1-5ms
+                        }
+                        
+                        // Shorter pause at punctuation
+                        if ('.!?,:;'.includes(currentChar)) {
+                            typingState.nextCharDelay += 15;
+                        }
                     }
                     
                     // Continue animation
@@ -507,65 +600,41 @@ SUMMARY:`;
         this.visibilityChangeHandler = handleVisibilityChange;
     }
 
-    @wire(getLLMConfigurations)
-    wiredConfigs({ data, error }) {
-        if (data) {            
-            // Map the configurations to combobox options
-            this.llmOptions = data.map(config => {
-                return {
-                    label: `${config.MasterLabel} (${config.Provider__c})`,
-                    value: config.DeveloperName
-                };
-            });
-            
-            // Select the default model if specified AND available
-            if (this.defaultModelName) {
-                const defaultOption = this.llmOptions.find(opt => opt.value === this.defaultModelName);
-                if (defaultOption) {
-                    this.selectedLLM = defaultOption.value;
-                    this.selectedLLMLabel = defaultOption.label;
-                    console.log('Default model selected:', this.selectedLLMLabel);
-                    // --- Trigger anomaly check after default model is set ---
-                    this.performInitialAnomalyCheck();
-                } else {
-                    console.warn(`Default model '${this.defaultModelName}' not found or inactive.`);
-                    // If default isn't valid, select the first available one
-                    if (this.llmOptions.length > 0) {
-                        this.selectedLLM = this.llmOptions[0].value;
-                        this.selectedLLMLabel = this.llmOptions[0].label;
-                        console.log('Selected first available model:', this.selectedLLMLabel);
-                         // --- Trigger anomaly check after first model is set ---
-                        this.performInitialAnomalyCheck();
-                    }
-                }
-            } else if (this.llmOptions.length > 0) {
-                 // If no default, select the first one
-                this.selectedLLM = this.llmOptions[0].value;
-                this.selectedLLMLabel = this.llmOptions[0].label;
-                console.log('No default model specified, selected first available:', this.selectedLLMLabel);
-                // --- Trigger anomaly check after first model is set ---
-                this.performInitialAnomalyCheck();
-            }
-        } else if (error) {
-            console.error('Error fetching LLM configurations:', error);
-            this.showError(error.body?.message || 'Error fetching LLM configurations');
+    // Adjust a hex color by a percentage amount (more efficient version)
+    adjustColor(color, amount) {
+        // Check cache first for performance
+        const cacheKey = `adjust_${color}_${amount}`;
+        if (this.colorCache.has(cacheKey)) {
+            return this.colorCache.get(cacheKey);
         }
-    }
-
-    handleModelChange(event) {
-        this.selectedLLM = event.detail.value;
-        const selectedOption = this.llmOptions.find(opt => opt.value === this.selectedLLM);
-        this.selectedLLMLabel = selectedOption ? selectedOption.label : 'Unknown Model';
-        console.log('Model changed to:', this.selectedLLMLabel);
-        // --- Trigger anomaly check if the model is changed manually and hasn't run yet ---
-        // This ensures it runs even if the default/first selection failed or wasn't ready
-        if (!this.anomalyCheckResult && !this.anomalyCheckLoading) {
-            this.performInitialAnomalyCheck();
+        
+        if (!color || !color.startsWith('#')) {
+            return color; // Return unchanged if invalid
         }
-    }
-
-    handlePromptChange(event) {
-        this.userPrompt = event.detail.value;
+        
+        let hex = color.slice(1);
+        
+        // Normalize to 6 digits
+        if (hex.length === 3) {
+            hex = hex.split('').map(c => c + c).join('');
+        }
+        
+        // Parse hex to RGB value directly
+        let r = parseInt(hex.slice(0, 2), 16);
+        let g = parseInt(hex.slice(2, 4), 16);
+        let b = parseInt(hex.slice(4, 6), 16);
+        
+        // Adjust each channel by percentage
+        r = Math.max(0, Math.min(255, r + amount));
+        g = Math.max(0, Math.min(255, g + amount));
+        b = Math.max(0, Math.min(255, b + amount));
+        
+        // Convert back to hex using template string for efficiency
+        const result = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        
+        // Cache the result
+        this.colorCache.set(cacheKey, result);
+        return result;
     }
 
     handleAsk() {
@@ -833,85 +902,130 @@ SUMMARY:`;
         this.provideFeedback(event.target, 'Message copied to clipboard');
     }
 
-    // Get all Lightning components on the page
+    // Get information about page components - optimized version
     getDOMInformation() {
+        // Skip scanning if it's already been done
+        if (this.pageComponentsScanned && this.pageComponents.length > 0) {
+            return this.pageComponents.join('\n');
+        }
+        
         const pageContent = [];
         
         try {
-            // Get the entire page container
-            const pageContainer = document.querySelector('one-record-home-flexipage2');
+            // Get the entire page container more efficiently with a direct selector
+            const componentSelector = 'one-record-home-flexipage2, one-record-home-flexipage';
+            const pageContainer = document.querySelector(componentSelector);
+            
             if (pageContainer) {
-                // Get all lightning cards
-                const cards = document.querySelectorAll('lightning-card');
-                cards.forEach(card => {
-                    const title = card.title || card.getAttribute('title') || 'Untitled Card';
-                    pageContent.push(`Lightning Card: ${title}`);
-                });
+                // Create a single cached NodeList for each component type
+                
+                // Get lightning cards - use attribute selector for efficiency
+                const cards = document.querySelectorAll('lightning-card[title]');
+                if (cards.length) {
+                    pageContent.push('Lightning Cards:');
+                    Array.from(cards).forEach(card => {
+                        const title = card.title || card.getAttribute('title') || 'Untitled Card';
+                        pageContent.push(`- ${title}`);
+                    });
+                }
 
-                // Get all tabs
-                const tabs = document.querySelectorAll('lightning-tab-bar lightning-tab');
+                // Get tabs more efficiently with a specific selector
+                const tabs = document.querySelectorAll('lightning-tab[label]');
                 if (tabs.length) {
-                    pageContent.push('Tabs found:');
-                    tabs.forEach(tab => {
+                    pageContent.push('Tabs:');
+                    Array.from(tabs).forEach(tab => {
                         const label = tab.label || tab.getAttribute('label') || 'Untitled Tab';
                         pageContent.push(`- ${label}`);
                     });
                 }
 
-                // Get all related lists
-                const relatedLists = document.querySelectorAll('lightning-related-list');
-                relatedLists.forEach(list => {
-                    const title = list.getAttribute('title') || 'Untitled Related List';
-                    pageContent.push(`Related List: ${title}`);
-                });
+                // Get related lists
+                const relatedLists = document.querySelectorAll('lightning-related-list[title]');
+                if (relatedLists.length) {
+                    pageContent.push('Related Lists:');
+                    Array.from(relatedLists).forEach(list => {
+                        const title = list.getAttribute('title') || 'Untitled Related List';
+                        pageContent.push(`- ${title}`);
+                    });
+                }
 
-                // Get all quick actions
-                const quickActions = document.querySelectorAll('lightning-action-bar lightning-button');
+                // Get actions more efficiently with specific selector
+                const quickActions = document.querySelectorAll('lightning-action-bar lightning-button[label]');
                 if (quickActions.length) {
                     pageContent.push('Quick Actions:');
-                    quickActions.forEach(action => {
+                    Array.from(quickActions).forEach(action => {
                         const label = action.label || action.getAttribute('label') || 'Untitled Action';
                         pageContent.push(`- ${label}`);
                     });
                 }
 
-                // Get all custom components (those starting with 'c-')
+                // Get custom components (those starting with 'c-')
+                // Use a more efficient attribute-starts-with selector
                 const customComponents = document.querySelectorAll('[data-component-id^="c-"]');
                 if (customComponents.length) {
                     pageContent.push('Custom Components:');
-                    customComponents.forEach(component => {
-                        const id = component.getAttribute('data-component-id');
+                    // Convert to array once and then map directly
+                    const componentIds = Array.from(customComponents)
+                        .map(comp => comp.getAttribute('data-component-id'))
+                        .filter(id => id); // Filter out null/undefined
+                    
+                    // Use Set to remove duplicates
+                    new Set(componentIds).forEach(id => {
                         pageContent.push(`- ${id}`);
                     });
                 }
             }
+            
+            // Store the scanned data for future use
+            this.pageComponents = pageContent;
+            this.pageComponentsScanned = true;
+            
         } catch (error) {
             console.error('Error gathering DOM information:', error);
             pageContent.push('Error gathering page component information');
+            // Don't mark as scanned on error so we'll try again next time
+            this.pageComponentsScanned = false;
         }
 
         return pageContent.join('\n');
     }
 
-    // Convert hex color to RGB values
+    // Convert hex color to RGB values - optimized version
     hexToRgb(hex) {
-        // Default fallback
-        if (!hex || !hex.startsWith('#')) return '34, 189, 193';
-        
-        // Remove the # if present
-        hex = hex.replace('#', '');
-        
-        // Handle shorthand hex
-        if (hex.length === 3) {
-            hex = hex.split('').map(char => char + char).join('');
+        // Check cache first
+        const cacheKey = `rgb_${hex}`;
+        if (this.colorCache.has(cacheKey)) {
+            return this.colorCache.get(cacheKey);
         }
         
-        // Parse the hex values
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
+        // Default fallback
+        if (!hex || typeof hex !== 'string' || !hex.startsWith('#')) {
+            return '34, 189, 193';
+        }
         
-        return `${r}, ${g}, ${b}`;
+        let r, g, b;
+        
+        // Handle different hex formats efficiently
+        if (hex.length === 4) {
+            // #RGB format
+            r = parseInt(hex.charAt(1) + hex.charAt(1), 16);
+            g = parseInt(hex.charAt(2) + hex.charAt(2), 16);
+            b = parseInt(hex.charAt(3) + hex.charAt(3), 16);
+        } else if (hex.length === 7) {
+            // #RRGGBB format
+            r = parseInt(hex.slice(1, 3), 16);
+            g = parseInt(hex.slice(3, 5), 16);
+            b = parseInt(hex.slice(5, 7), 16);
+        } else {
+            // Invalid format
+            return '34, 189, 193';
+        }
+        
+        const result = `${r}, ${g}, ${b}`;
+        
+        // Cache the result
+        this.colorCache.set(cacheKey, result);
+        return result;
     }
 
     // Perform the initial anomaly check when the component has the recordId and a model selected
