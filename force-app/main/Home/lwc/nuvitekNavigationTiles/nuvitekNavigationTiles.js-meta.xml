@@ -13,7 +13,7 @@
     <targetConfigs>
         <targetConfig targets="lightningCommunity__Default,lightning__AppPage,lightning__HomePage">
             <property name="columns" type="Integer" default="3" min="1" max="6" label="Number of Columns" description="Number of tiles to display per row"/>
-            <property name="tileStyle" type="String" default="elevated" label="Tile Style" description="Visual style for all tiles" datasource="elevated,flat,gradient,minimal,frosted,shadow,accent,subtle"/>
+            <property name="tileStyle" type="String" default="elevated" label="Tile Style" description="Visual style for all tiles" datasource="elevated,gradient,neomorphic,glassmorphic,accent,neumorphic,modern,material,soft,depth,glossy,shadow"/>
             
             <!-- Comma-delimited list properties -->
             <property name="titles" type="String" label="Tile Titles" default="Feature 1, Feature 2, Feature 3" description="Comma-separated list of tile titles"/>

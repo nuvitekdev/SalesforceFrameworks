@@ -71,45 +71,144 @@
 
 /* Tile style variants */
 .navigation-tile.style-elevated {
-    box-shadow: var(--tile-shadow-sm);
+    background-color: var(--elevated-bg-color, var(--theme-primary-color));
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    border: none;
+    transform: translateY(-4px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    color: white;
 }
 
-.navigation-tile.style-flat {
-    box-shadow: none;
+.navigation-tile.style-elevated:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
 }
 
-/* Removing bordered style since user finds it unappealing */
-/* .navigation-tile.style-bordered {
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: none;
-} */
+/* Shadow style with dramatic offset shadow */
+.navigation-tile.style-shadow {
+    background-color: var(--shadow-bg-color, var(--theme-primary-color));
+    box-shadow: 8px 8px 0 0 var(--shadow-accent-color, black);
+    border: 1px solid var(--shadow-accent-color, black);
+    transform: translate(-4px, -4px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    color: white;
+}
 
+.navigation-tile.style-shadow:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 var(--shadow-accent-color, black);
+}
+
+/* Gradient style with beautiful color transition */
 .navigation-tile.style-gradient {
+    background: linear-gradient(135deg, var(--theme-primary-color), var(--theme-accent-color));
+    color: white;
+    border: none;
     box-shadow: var(--tile-shadow-sm);
 }
 
-/* New tile styles */
-.navigation-tile.style-minimal {
-    box-shadow: none;
-    background-color: #ffffff;
+/* Neomorphic style with subtle shadows */
+.navigation-tile.style-neomorphic {
+    background-color: var(--neomorphic-bg-color, #f0f0f3);
+    box-shadow: 8px 8px 16px #d1d1d1, -8px -8px 16px #ffffff;
+    border: none;
+    border-radius: 16px;
 }
 
-.navigation-tile.style-frosted {
+/* Glassmorphic style with frosted glass effect */
+.navigation-tile.style-glassmorphic {
+    background-color: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+}
+
+/* Accent style with colored border and background */
+.navigation-tile.style-accent {
+    background-color: var(--accent-bg-color, rgba(255, 255, 255, 0.9));
+    border-left: 5px solid var(--accent-color, var(--theme-primary-color));
     box-shadow: var(--tile-shadow-sm);
 }
 
-.navigation-tile.style-shadow {
+/* Neumorphic style with inset effect */
+.navigation-tile.style-neumorphic {
+    background-color: var(--neumorphic-bg-color, #f0f0f3);
+    box-shadow: inset 5px 5px 10px rgba(0, 0, 0, 0.1), inset -5px -5px 10px rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 16px;
+}
+
+/* Modern style with darker colors */
+.navigation-tile.style-modern {
+    background-color: var(--modern-bg-color, var(--theme-primary-color));
     box-shadow: var(--tile-shadow-md);
+    border-radius: 16px;
+    border-bottom: 4px solid var(--modern-accent-color, white);
+    color: white;
 }
 
-.navigation-tile.style-accent {
-    box-shadow: none;
+/* Material design inspired with darker colors */
+.navigation-tile.style-material {
+    background-color: var(--material-bg-color, var(--theme-primary-color));
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    border: none;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    color: white;
 }
 
-.navigation-tile.style-subtle {
-    box-shadow: none;
+.navigation-tile.style-material::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: var(--material-accent-color, white);
+}
+
+/* Soft UI style */
+.navigation-tile.style-soft {
+    background-color: var(--soft-bg-color, #f8f9fa);
+    box-shadow: 6px 6px 12px #e8e8e8, -6px -6px 12px #ffffff;
+    border: none;
+    border-radius: 16px;
+}
+
+/* Depth style with darker colors */
+.navigation-tile.style-depth {
+    background-color: var(--depth-bg-color, var(--theme-primary-color));
+    color: white;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.12), 
+                0 2px 2px rgba(0,0,0,0.12), 
+                0 4px 4px rgba(0,0,0,0.12), 
+                0 8px 8px rgba(0,0,0,0.12);
+    border-top: 3px solid var(--depth-accent-color, white);
+    border-radius: 8px;
+}
+
+/* Glossy style with shine effect */
+.navigation-tile.style-glossy {
+    background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%), var(--glossy-bg-color);
+    color: white;
+    box-shadow: var(--tile-shadow-md);
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.navigation-tile.style-glossy::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0));
+    transform: rotate(30deg);
+    pointer-events: none;
 }
 
 /* Background image */

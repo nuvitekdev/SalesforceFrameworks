@@ -83,7 +83,20 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
         const tiles = this.template.querySelectorAll('.navigation-tile');
         tiles.forEach((tile) => {
             // Remove any existing style classes
-            tile.classList.remove('style-elevated', 'style-flat', 'style-gradient', 'style-minimal', 'style-frosted', 'style-shadow', 'style-accent', 'style-subtle');
+            tile.classList.remove(
+                'style-elevated', 
+                'style-gradient', 
+                'style-neomorphic', 
+                'style-glassmorphic', 
+                'style-accent', 
+                'style-neumorphic', 
+                'style-modern', 
+                'style-material', 
+                'style-soft', 
+                'style-depth', 
+                'style-glossy',
+                'style-shadow'
+            );
             // Add the current style class
             tile.classList.add(`style-${this.tileStyle}`);
         });
@@ -173,49 +186,76 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
                     // Apply style based on the selected tileStyle
                     switch(this.tileStyle) {
                         case 'gradient':
-                            // Create a subtle gradient using the accent color
-                            const lighterShade = this.lightenColor(accentColor, 30);
-                            backgroundStyle = `background: linear-gradient(135deg, ${accentColor} 0%, ${lighterShade} 100%);`;
+                            // Create a beautiful gradient using theme colors
+                            backgroundStyle = `background: linear-gradient(135deg, ${accentColor} 0%, ${this.lightenColor(accentColor, 30)} 100%);`;
+                            textColor = '#ffffff';
                             break;
-                        case 'minimal':
-                            // Minimalist white with accent color elements
-                            backgroundStyle = `background-color: #ffffff;`;
-                            borderStyle = `border-bottom: 3px solid ${accentColor};`;
+                        case 'neomorphic':
+                            // Soft shadow Neomorphic effect with accent color
+                            const neomorphicBg = this.lightenColor(accentColor, 90); // Very light version of the accent color
+                            backgroundStyle = `background-color: ${neomorphicBg}; --neomorphic-bg-color: ${neomorphicBg};`;
                             textColor = '#1d1d1f';
                             break;
-                        case 'frosted':
+                        case 'glassmorphic':
                             // Frosted glass effect with accent color
                             backgroundStyle = `background-color: ${this.hexToRgba(accentColor, 0.15)}; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);`;
                             borderStyle = `border: 1px solid ${this.hexToRgba(accentColor, 0.3)};`;
                             textColor = '#1d1d1f';
                             break;
-                        case 'shadow':
-                            // Deep shadow effect
-                            backgroundStyle = `background-color: ${accentColor};`;
-                            borderStyle = `box-shadow: 6px 6px 0 0 ${this.darkenColor(accentColor, 20)};`;
-                            break;
                         case 'accent':
-                            // Accent border with light background
-                            backgroundStyle = `background-color: ${this.lightenColor(accentColor, 95)};`;
+                            // Accent border with light background tinted with accent color
+                            const accentBg = this.hexToRgba(accentColor, 0.1);
+                            backgroundStyle = `background-color: ${accentBg}; --accent-bg-color: ${accentBg}; --accent-color: ${accentColor};`;
                             borderStyle = `border-left: 5px solid ${accentColor};`;
                             textColor = '#1d1d1f';
                             break;
-                        case 'subtle':
-                            // Subtle background with accent elements
-                            backgroundStyle = `background-color: ${this.lightenColor(accentColor, 92)};`;
+                        case 'neumorphic':
+                            // Inset shadow Neumorphic effect with light accent color
+                            const neumorphicBg = this.lightenColor(accentColor, 85);
+                            backgroundStyle = `background-color: ${neumorphicBg}; --neumorphic-bg-color: ${neumorphicBg};`;
                             textColor = '#1d1d1f';
                             break;
-                        case 'flat':
-                            // Use a lighter version of the accent color for a more subtle look
-                            const flatLighterShade = this.lightenColor(accentColor, 85);
-                            backgroundStyle = `background-color: ${flatLighterShade};`;
+                        case 'modern':
+                            // Clean modern style with darker accent color
+                            backgroundStyle = `background-color: ${this.hexToRgba(accentColor, 0.7)}; --modern-bg-color: ${this.hexToRgba(accentColor, 0.7)}; --modern-accent-color: ${this.lightenColor(accentColor, 30)};`;
+                            borderStyle = `border-bottom: 4px solid ${this.lightenColor(accentColor, 30)};`;
+                            textColor = '#ffffff';
+                            break;
+                        case 'material':
+                            // Material design style with darker accent color
+                            backgroundStyle = `background-color: ${this.hexToRgba(accentColor, 0.75)}; --material-bg-color: ${this.hexToRgba(accentColor, 0.75)}; --material-accent-color: ${this.lightenColor(accentColor, 20)};`;
+                            textColor = '#ffffff';
+                            break;
+                        case 'soft':
+                            // Soft UI style with light accent background
+                            const softBg = this.lightenColor(accentColor, 95);
+                            backgroundStyle = `background-color: ${softBg}; --soft-bg-color: ${softBg};`;
                             textColor = '#1d1d1f';
+                            break;
+                        case 'depth':
+                            // Layered shadow depth effect with darker accent color
+                            backgroundStyle = `background-color: ${this.hexToRgba(accentColor, 0.65)}; --depth-bg-color: ${this.hexToRgba(accentColor, 0.65)}; --depth-accent-color: ${this.lightenColor(accentColor, 25)};`;
+                            textColor = '#ffffff';
+                            break;
+                        case 'shadow':
+                            // Dramatic offset shadow style with darker background
+                            backgroundStyle = `background-color: ${this.hexToRgba(accentColor, 0.7)}; --shadow-bg-color: ${this.hexToRgba(accentColor, 0.7)}; --shadow-accent-color: ${this.darkenColor(accentColor, 20)};`;
+                            textColor = '#ffffff';
+                            break;
+                        case 'glossy':
+                            // Glossy effect with shine - use the accent color directly
+                            backgroundStyle = `background-color: ${accentColor}; --glossy-bg-color: ${accentColor};`;
+                            textColor = '#ffffff';
                             break;
                         case 'elevated':
-                        default:
-                            // Elevated style - use the accent color directly
-                            backgroundStyle = `background-color: ${accentColor};`;
+                            // Elevated effect with darker accent color
+                            backgroundStyle = `background-color: ${this.hexToRgba(accentColor, 0.8)}; --elevated-bg-color: ${this.hexToRgba(accentColor, 0.8)};`;
+                            textColor = '#ffffff';
                             break;
+                        default:
+                            // Elevated effect with darker accent color
+                            backgroundStyle = `background-color: ${this.hexToRgba(accentColor, 0.8)}; --elevated-bg-color: ${this.hexToRgba(accentColor, 0.8)};`;
+                            textColor = '#ffffff';
                     }
                 }
                 
@@ -232,7 +272,7 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
                     hasOverlay: hasOverlay,
                     overlayStyle: overlayStyle,
                     style: `${backgroundStyle} ${borderStyle} color: ${textColor};`,
-                    iconStyle: `color: ${this.tileStyle === 'minimal' || this.tileStyle === 'frosted' || this.tileStyle === 'accent' || this.tileStyle === 'subtle' || this.tileStyle === 'flat' ? accentColor : '#ffffff'};`,
+                    iconStyle: `color: ${this.tileStyle === 'gradient' || this.tileStyle === 'glossy' || this.tileStyle === 'modern' || this.tileStyle === 'material' || this.tileStyle === 'depth' || this.tileStyle === 'elevated' || this.tileStyle === 'shadow' || hasBgImage ? '#ffffff' : accentColor};`,
                     titleStyle: `color: ${textColor};`,
                     descriptionStyle: `color: ${textColor}; opacity: 0.8;`,
                     isMenuOpen: false
