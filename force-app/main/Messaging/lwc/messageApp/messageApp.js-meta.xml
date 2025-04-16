@@ -11,5 +11,6 @@
         <target>lightning__Tab</target>
         <target>lightningCommunity__Page</target>
         <target>lightningCommunity__Default</target>
+                <target>lightning__UtilityBar</target>
     </targets>
 </LightningComponentBundle> 
