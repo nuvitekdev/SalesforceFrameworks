@@ -4,6 +4,9 @@
  */
 public with sharing class MessageNotificationService {
     
+    // Static map to store unread counts in memory
+    private static Map<String, Integer> unreadCountMap = new Map<String, Integer>();
+    
     /**
      * Send a notification to a user when they receive a new message
      * @param messageId - The ID of the message
@@ -112,8 +115,12 @@ public with sharing class MessageNotificationService {
      * This is a placeholder - implement your preferred storage method
      */
     private static void storeUnreadCount(String userId, String channelName, Integer count) {
-        // Option 1: Platform Cache
-        Cache.Org.put('unread_' + userId + '_' + (channelName != null ? channelName : 'direct'), count);
+        // Use a static map instead of Platform Cache
+        String cacheKey = 'unread_' + userId + '_' + (channelName != null ? channelName : 'direct');
+        unreadCountMap.put(cacheKey, count);
+        
+        // Comment out Platform Cache code that requires configuration
+        // Cache.Org.put('unread_' + userId + '_' + (channelName != null ? channelName : 'direct'), count);
         
         // Option 2: Custom Setting (would need to be created)
         // UnreadMessages__c setting = UnreadMessages__c.getInstance(userId);
@@ -138,9 +145,11 @@ public with sharing class MessageNotificationService {
      */
     @AuraEnabled
     public static Integer getUnreadCount(String userId, String channelName) {
-        // Get from platform cache
+        // Use static map instead of Platform Cache
         String cacheKey = 'unread_' + userId + '_' + (channelName != null ? channelName : 'direct');
-        Integer count = (Integer)Cache.Org.get(cacheKey);
+        Integer count = unreadCountMap.get(cacheKey);
+        
+        // If count is null, just return 0
         return count != null ? count : 0;
     }
     

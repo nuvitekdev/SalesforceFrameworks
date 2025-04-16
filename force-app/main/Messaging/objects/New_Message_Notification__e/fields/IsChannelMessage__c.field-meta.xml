@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>IsChannelMessage__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Indicates if this is a channel message</description>
+    <externalId>false</externalId>
+    <isNameField>false</isNameField>
+    <label>Is Channel Message</label>
+    <type>Checkbox</type>
+</CustomField> 

@@ -85,7 +85,7 @@ public with sharing class MessageController {
     /**
      * Searches for users that match the search term
      * @param searchTerm - The search term to match against user names
-     * @return List<User> - List of matching users
+     * @return List<Map<String, Object>> - List of matching users
      */
     @AuraEnabled(cacheable=true)
     public static List<Map<String, Object>> searchUsers(String searchTerm) {
@@ -232,5 +232,52 @@ public with sharing class MessageController {
         );
         
         insert msg;
+    }
+
+    /**
+     * Get user information by ID
+     * @param userId - The ID of the user to retrieve
+     * @return MessageUserInfo - Basic information about the user
+     */
+    @AuraEnabled
+    public static MessageUserInfo getUserInfo(String userId) {
+        try {
+            User user = [
+                SELECT Id, Name, SmallPhotoUrl, Email, Title
+                FROM User
+                WHERE Id = :userId
+                LIMIT 1
+            ];
+            
+            MessageUserInfo info = new MessageUserInfo();
+            info.Id = user.Id;
+            info.Name = user.Name;
+            info.SmallPhotoUrl = user.SmallPhotoUrl;
+            info.Email = user.Email;
+            info.Title = user.Title;
+            
+            return info;
+        } catch (Exception e) {
+            throw new AuraHandledException('Error retrieving user information: ' + e.getMessage());
+        }
+    }
+
+    /**
+     * Inner class for returning user information
+     */
+    public class MessageUserInfo {
+        @AuraEnabled public String Id;
+        @AuraEnabled public String Name;
+        @AuraEnabled public String SmallPhotoUrl;
+        @AuraEnabled public String Email;
+        @AuraEnabled public String Title;
+        
+        /**
+         * Return the user Id
+         * @return String - The ID of the user
+         */
+        public String getUserId() {
+            return this.Id;
+        }
     }
 } 

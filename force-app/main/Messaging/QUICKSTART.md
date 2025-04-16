@@ -19,6 +19,15 @@ This quick start guide will help you get up and running with the Messaging App i
 3. **Verify the tab** is visible in the navigation menu
    - If not, add the "Messaging App" tab to your navigation menu in Setup
 
+4. **Configure Notifications**
+   - To enable global notifications, add the messageNotifier component to your app's utility bar:
+     1. Go to Setup → User Interface → App Manager
+     2. Find and edit your Lightning App
+     3. Select "Utility Items" in the App Builder
+     4. Click "Add Utility Item" and select "Custom Component"
+     5. Choose the "messageNotifier" component
+     6. Save your changes
+
 ### For Users
 
 1. **Access the app** by clicking on the "Messaging App" tab in your navigation menu
@@ -69,6 +78,16 @@ This quick start guide will help you get up and running with the Messaging App i
 2. The interface adapts automatically to your screen size
 3. Use the back button to navigate between conversations and contact/channel lists
 4. Messages update automatically every 5 seconds
+
+### Real-time Notifications
+
+1. **In-app notifications**
+   - Toast notifications appear automatically when you receive new messages
+   - Click a notification to navigate directly to that conversation
+   - Notifications work whether you're in the messaging app or elsewhere
+
+2. **Notification settings**
+   - Use the toggle in the sidebar of the messaging app to enable/disable notifications
 
 ## Troubleshooting Tips
 
