@@ -13,7 +13,6 @@ import markMessageAsRead from '@salesforce/apex/MessageController.markMessageAsR
 import searchRecipients from '@salesforce/apex/MessageController.searchRecipients';
 import getUnreadCount from '@salesforce/apex/MessageNotificationService.getUnreadCount';
 import USER_ID from '@salesforce/user/Id';
-import getUserInfo from '@salesforce/apex/MessageController.getUserInfo';
 
 // Import custom notification channel - commented out until message channel is properly configured
 // import { subscribe as subscribeToLMS, unsubscribe as unsubscribeFromLMS } from 'lightning/messageService';
@@ -68,16 +67,9 @@ export default class MessageApp extends LightningElement {
         
         // Load unread counts
         this.loadUnreadCounts();
-        
-        // Add event listener for message notifications
-        this.handleMessageNotificationBound = this.handleMessageNotification.bind(this);
-        window.addEventListener('messagenotification', this.handleMessageNotificationBound);
     }
     
     disconnectedCallback() {
-        // Remove event listener when component is destroyed
-        window.removeEventListener('messagenotification', this.handleMessageNotificationBound);
-        
         // Unsubscribe from events
         if (this.isDesktop() && this.subscription) {
             unsubscribe(this.subscription).catch(error => {
@@ -168,16 +160,6 @@ export default class MessageApp extends LightningElement {
     
     showChannelManager() {
         this.activeTab = 'channels';
-    }
-    
-    // Add this method to handle tab changes
-    handleTabChange(event) {
-        const tabName = event.currentTarget.dataset.tab;
-        if (tabName === 'direct') {
-            this.activeTab = 'people';
-        } else if (tabName === 'channels') {
-            this.activeTab = 'channels';
-        }
     }
     
     // Recipient selection handlers
@@ -605,225 +587,5 @@ export default class MessageApp extends LightningElement {
             }
         }
         return count;
-    }
-    
-    /**
-     * Handles notification events from the messageNotifier component
-     * @param {CustomEvent} event - The messagenotification event
-     */
-    handleMessageNotification(event) {
-        const messageData = event.detail;
-        
-        // Navigate to the appropriate conversation based on notification type
-        if (messageData.isChannelMessage) {
-            this.navigateToChannel(messageData.channelName);
-        } else {
-            this.navigateToConversation(messageData.recipientId);
-        }
-    }
-    
-    /**
-     * Navigate to a channel conversation
-     * @param {String} channelName - The name of the channel to navigate to
-     */
-    navigateToChannel(channelName) {
-        if (!channelName) return;
-        
-        // Set selected tab to channels
-        this.selectedTab = 'channels';
-        
-        // Find the channel in the list
-        const channelFound = this.channels.find(channel => channel.name === channelName);
-        
-        if (channelFound) {
-            // Select the channel
-            this.handleChannelSelect({detail: channelFound});
-        } else {
-            // Refresh channel list if not found
-            this.loadChannels().then(() => {
-                const channel = this.channels.find(ch => ch.name === channelName);
-                if (channel) {
-                    this.handleChannelSelect({detail: channel});
-                }
-            });
-        }
-    }
-    
-    /**
-     * Navigate to a direct conversation
-     * @param {String} recipientId - The ID of the recipient to navigate to
-     */
-    navigateToConversation(recipientId) {
-        if (!recipientId) return;
-        
-        // Set selected tab to people
-        this.selectedTab = 'people';
-        
-        // Find the recipient in recent conversations
-        const recipientFound = this.recentRecipients.find(r => r.id === recipientId);
-        
-        if (recipientFound) {
-            // Select the conversation
-            this.handleRecipientSelect({detail: recipientFound});
-        } else {
-            // Need to load user info and create a conversation
-            this.loadUserInfo(recipientId).then(userInfo => {
-                if (userInfo) {
-                    const recipient = {
-                        id: userInfo.Id,
-                        name: userInfo.Name,
-                        image: userInfo.SmallPhotoUrl,
-                        type: 'user'
-                    };
-                    this.handleRecipientSelect({detail: recipient});
-                }
-            });
-        }
-    }
-    
-    /**
-     * Load user information for a given user ID
-     * @param {String} userId - The ID of the user to load
-     * @returns {Promise} - A promise that resolves with the user info
-     */
-    loadUserInfo(userId) {
-        return getUserInfo({userId: userId})
-            .then(result => {
-                return result;
-            })
-            .catch(error => {
-                console.error('Error loading user info', error);
-                return null;
-            });
-    }
-    
-    // Add these getters to determine which tab is active
-    get isDirectTabActive() {
-        return this.activeTab === 'people';
-    }
-    
-    get isChannelsTabActive() {
-        return this.activeTab === 'channels';
-    }
-    
-    // Add these getters to handle unread badge logic
-    get hasUnreadDirectMessages() {
-        return this.totalUnreadDirectCount > 0;
-    }
-    
-    get hasUnreadChannelMessages() {
-        return this.totalUnreadChannelCount > 0;
-    }
-    
-    get unreadDirectCount() {
-        return this.totalUnreadDirectCount;
-    }
-    
-    get unreadChannelCount() {
-        return this.totalUnreadChannelCount;
-    }
-    
-    // Add mock implementations for filtered lists
-    get filteredUsers() {
-        // This would normally be populated from search results
-        return this.recentRecipients || [];
-    }
-    
-    get filteredChannels() {
-        // This would normally be populated from search results
-        return [];
-    }
-    
-    // Add hasRecipient getter for conditional rendering
-    get hasRecipient() {
-        return !!(this.recipientId || this.channelName);
-    }
-    
-    // Add this getter for the recipient or channel name display
-    get recipientOrChannelName() {
-        return this.channelName || this.recipientName || '';
-    }
-    
-    // Add this getter to determine if the current conversation is a channel
-    get isChannel() {
-        return !!this.channelName;
-    }
-    
-    // Add this getter for recent users display
-    get hasRecentUsers() {
-        return this.recentRecipients && this.recentRecipients.length > 0;
-    }
-    
-    get recentUsers() {
-        return this.recentRecipients || [];
-    }
-    
-    // Add these methods for search handling
-    handleUserSearch(event) {
-        const searchTerm = event.target.value;
-        // Implement user search functionality
-        // This would typically call an Apex method
-    }
-    
-    handleChannelSearch(event) {
-        const searchTerm = event.target.value;
-        // Implement channel search functionality
-        // This would typically call an Apex method
-    }
-
-    // Add this method to handle the back button click
-    handleBack() {
-        // Clear active conversation
-        this.recipientId = null;
-        this.recipientName = null;
-        this.channelName = null;
-        this.messages = [];
-        
-        // Stop real-time updates
-        if (this.isDesktop() && this.subscription) {
-            unsubscribe(this.subscription).catch(error => {
-                console.error('Error unsubscribing from platform events', error);
-            });
-        } else {
-            this.stopPolling();
-        }
-    }
-
-    // Add this method to handle notification toggle
-    handleNotificationToggle(event) {
-        this.notificationsEnabled = event.target.checked;
-        
-        // Show confirmation toast
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title: this.notificationsEnabled ? 'Notifications Enabled' : 'Notifications Disabled',
-                message: this.notificationsEnabled ? 
-                    'You will now receive toast notifications for new messages.' : 
-                    'You will no longer receive toast notifications for new messages.',
-                variant: 'success'
-            })
-        );
-    }
-
-    // Add these methods for message composition
-    handleMessageChange(event) {
-        this.currentMessage = event.target.value;
-    }
-
-    handleKeyPress(event) {
-        // Send message on Enter (but not with Shift+Enter for multiline)
-        if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            this.handleSendMessage();
-        }
-    }
-
-    // Add these getters for message composition
-    get messageText() {
-        return this.currentMessage || '';
-    }
-
-    get isSendDisabled() {
-        return !this.currentMessage || this.currentMessage.trim() === '';
     }
 } 

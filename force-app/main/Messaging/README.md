@@ -54,13 +54,6 @@ The solution consists of the following components:
 - Records secured via Salesforce sharing model
 - History tracking enabled
 
-### Real-time Notifications
-- Toast notifications for new messages using Platform Events
-- Recipient-specific notification filtering 
-- Direct navigation to conversations from notifications
-- Works globally when added to utility bar
-- Supports both direct messages and channel notifications
-
 ## Implementation Guide
 
 ### Step 1: Deploy the Solution

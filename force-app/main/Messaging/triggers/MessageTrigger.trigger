@@ -9,9 +9,6 @@ trigger MessageTrigger on Message__c (after insert, after update) {
             // Process new messages and send notifications
             List<MessageNotificationService.NotificationRequest> notifications = new List<MessageNotificationService.NotificationRequest>();
             
-            // For real-time toast notifications
-            List<New_Message_Notification__e> toastEvents = new List<New_Message_Notification__e>();
-            
             for (Message__c message : Trigger.new) {
                 // Only send notifications for messages to other users (not self)
                 if (message.Sender__c != message.Recipient__c) {
@@ -26,18 +23,6 @@ trigger MessageTrigger on Message__c (after insert, after update) {
                         // Get sender name
                         User sender = [SELECT Name FROM User WHERE Id = :message.Sender__c LIMIT 1];
                         req.senderName = sender.Name;
-                        
-                        // Create platform event for real-time toast notification
-                        New_Message_Notification__e event = new New_Message_Notification__e(
-                            RecipientId__c = message.Recipient__c,
-                            SenderName__c = sender.Name,
-                            MessageSnippet__c = message.Content__c.length() > 100 ? 
-                                             message.Content__c.substring(0, 97) + '...' : 
-                                             message.Content__c,
-                            MessageId__c = message.Id,
-                            IsChannelMessage__c = false
-                        );
-                        toastEvents.add(event);
                     } 
                     // For channel messages
                     else {
@@ -64,19 +49,6 @@ trigger MessageTrigger on Message__c (after insert, after update) {
                             channelReq.channelName = message.Channel__c;
                             
                             notifications.add(channelReq);
-                            
-                            // Create platform event for real-time toast notification
-                            New_Message_Notification__e event = new New_Message_Notification__e(
-                                RecipientId__c = participant,
-                                SenderName__c = sender.Name,
-                                MessageSnippet__c = message.Content__c.length() > 100 ? 
-                                                 message.Content__c.substring(0, 97) + '...' : 
-                                                 message.Content__c,
-                                MessageId__c = message.Id,
-                                IsChannelMessage__c = true,
-                                ChannelName__c = message.Channel__c
-                            );
-                            toastEvents.add(event);
                         }
                         
                         // Skip adding the main notification for channel messages
@@ -91,20 +63,6 @@ trigger MessageTrigger on Message__c (after insert, after update) {
             // Send notifications
             if (!notifications.isEmpty()) {
                 MessageNotificationService.sendMessageNotification(notifications);
-            }
-            
-            // Publish platform events for real-time toast notifications
-            if (!toastEvents.isEmpty()) {
-                List<Database.SaveResult> results = EventBus.publish(toastEvents);
-                
-                // Process save results to identify any failed publications
-                for (Database.SaveResult sr : results) {
-                    if (!sr.isSuccess()) {
-                        for (Database.Error err : sr.getErrors()) {
-                            System.debug('Error publishing toast notification event: ' + err.getMessage());
-                        }
-                    }
-                }
             }
         }
         
