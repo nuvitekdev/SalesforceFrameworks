@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Channel for Message change events</description>
+    <isExposed>true</isExposed>
+    <lightningMessageFields>
+        <description>The ID of the record that changed</description>
+        <fieldName>recordId</fieldName>
+    </lightningMessageFields>
+    <lightningMessageFields>
+        <description>The change type (CREATE, UPDATE, etc.)</description>
+        <fieldName>changeType</fieldName>
+    </lightningMessageFields>
+    <masterLabel>MessageChangeChannel</masterLabel>
+</LightningMessageChannel> 

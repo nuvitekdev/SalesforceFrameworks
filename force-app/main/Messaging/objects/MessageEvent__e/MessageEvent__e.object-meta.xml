@@ -5,4 +5,5 @@
     <label>Message Event</label>
     <pluralLabel>Message Events</pluralLabel>
     <publishBehavior>PublishAfterCommit</publishBehavior>
+    <description>Platform event for real-time message notifications</description>
 </CustomObject> 
