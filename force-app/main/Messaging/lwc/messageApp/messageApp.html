@@ -3,147 +3,70 @@
         <!-- Sidebar for recipient search and channels -->
         <div class="sidebar">
             <div class="tabs">
-                <div class="tab" data-tab="direct" data-active={isDirectTabActive} onclick={handleTabChange}>
-                    <lightning-icon icon-name="utility:user" size="small"></lightning-icon>
-                    <span>Direct</span>
-                    <!-- Unread direct message indicator -->
-                    <template if:true={hasUnreadDirectMessages}>
-                        <span class="unread-badge">{unreadDirectCount}</span>
-                    </template>
+                <div class="tab" onclick={showRecipientSearch} data-active={isRecipientSearchActive}>
+                    <lightning-icon icon-name="standard:user" size="small"></lightning-icon>
+                    <span>People</span>
                 </div>
-                <div class="tab" data-tab="channels" data-active={isChannelsTabActive} onclick={handleTabChange}>
-                    <lightning-icon icon-name="utility:groups" size="small"></lightning-icon>
+                <div class="tab" onclick={showChannelManager} data-active={isChannelManagerActive}>
+                    <lightning-icon icon-name="standard:groups" size="small"></lightning-icon>
                     <span>Channels</span>
-                    <!-- Unread channel message indicator -->
-                    <template if:true={hasUnreadChannelMessages}>
-                        <span class="unread-badge">{unreadChannelCount}</span>
-                    </template>
                 </div>
             </div>
             
-            <!-- Tab Content -->
-            <div class="tab-content">
-                <!-- Direct Messages -->
-                <template if:true={isDirectTabActive}>
-                    <lightning-input type="search" 
-                                   label="Search Users" 
-                                   placeholder="Start typing a name..."
-                                   onchange={handleUserSearch}
-                                   variant="label-hidden"
-                                   class="slds-m-bottom_small">
-                    </lightning-input>
-                    
-                    <ul>
-                        <template for:each={filteredUsers} for:item="user">
-                            <li key={user.id} class="recipient-item" data-recipient-id={user.id} data-recipient-name={user.name} onclick={handleRecipientSelect}>
-                                <div class="slds-grid slds-gutters">
-                                    <div class="slds-col slds-size_9-of-12">
-                                        <div class="slds-truncate">{user.name}</div>
-                                    </div>
-                                    <template if:true={user.unreadCount}>
-                                        <div class="slds-col slds-size_3-of-12 slds-text-align_right">
-                                            <span class="unread-badge">{user.unreadCount}</span>
-                                        </div>
-                                    </template>
-                                </div>
-                            </li>
-                        </template>
-                    </ul>
-                    
-                    <!-- Recently Contacted Users -->
-                    <template if:true={hasRecentUsers}>
-                        <div class="recent-list">
-                            <h3>Recently Contacted</h3>
-                            <ul>
-                                <template for:each={recentUsers} for:item="user">
-                                    <li key={user.id} class="recipient-item" data-recipient-id={user.id} data-recipient-name={user.name} onclick={handleRecipientSelect}>
-                                        <div class="slds-grid slds-gutters">
-                                            <div class="slds-col slds-size_9-of-12">
-                                                <div class="slds-truncate">{user.name}</div>
-                                            </div>
-                                            <template if:true={user.unreadCount}>
-                                                <div class="slds-col slds-size_3-of-12 slds-text-align_right">
-                                                    <span class="unread-badge">{user.unreadCount}</span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </li>
-                                </template>
-                            </ul>
-                        </div>
-                    </template>
-                </template>
+            <!-- Recipient Search Tab Content -->
+            <div if:true={isRecipientSearchActive} class="tab-content">
+                <c-recipient-search
+                    label="Search users or contacts"
+                    placeholder="Enter name to search..."
+                    onselect={handleRecipientSelect}>
+                </c-recipient-search>
                 
-                <!-- Channels -->
-                <template if:true={isChannelsTabActive}>
-                    <lightning-input type="search" 
-                                   label="Search Channels" 
-                                   placeholder="Start typing a channel name..."
-                                   onchange={handleChannelSearch}
-                                   variant="label-hidden"
-                                   class="slds-m-bottom_small">
-                    </lightning-input>
-                    
-                    <ul>
-                        <template for:each={filteredChannels} for:item="channel">
-                            <li key={channel.id} class="recipient-item" data-channel-id={channel.id} data-channel-name={channel.name} onclick={handleChannelSelect}>
-                                <div class="slds-grid slds-gutters">
-                                    <div class="slds-col slds-size_9-of-12">
-                                        <div class="slds-truncate">
-                                            <lightning-icon icon-name="utility:announcement" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
-                                            {channel.name}
-                                        </div>
+                <!-- Recent Conversations -->
+                <div class="recent-list">
+                    <h3 class="slds-text-heading_small">Recent Conversations</h3>
+                    <ul class="slds-has-dividers_bottom-space">
+                        <template if:true={recentRecipients.length}>
+                            <template for:each={recentRecipients} for:item="recipient">
+                                <li key={recipient.id} class="slds-item recipient-item" data-id={recipient.id} data-name={recipient.name} onclick={handleRecentRecipientSelect}>
+                                    <div class="slds-grid slds-grid_vertical-align-center">
+                                        <lightning-avatar src={recipient.icon} fallback-icon-name="standard:user" class="slds-m-right_small"></lightning-avatar>
+                                        <div class="slds-truncate">{recipient.name}</div>
                                     </div>
-                                    <template if:true={channel.unreadCount}>
-                                        <div class="slds-col slds-size_3-of-12 slds-text-align_right">
-                                            <span class="unread-badge">{channel.unreadCount}</span>
-                                        </div>
-                                    </template>
-                                </div>
+                                </li>
+                            </template>
+                        </template>
+                        <template if:false={recentRecipients.length}>
+                            <li class="slds-item slds-text-color_weak slds-p-around_small">
+                                No recent conversations
                             </li>
                         </template>
                     </ul>
-                </template>
+                </div>
             </div>
             
-            <!-- Notification Settings -->
-            <div class="notification-settings">
-                <div class="slds-form-element">
-                    <div class="slds-form-element__control">
-                        <div class="slds-checkbox_toggle">
-                            <input type="checkbox" name="notificationsEnabled" id="notificationsEnabled" 
-                                  checked={notificationsEnabled} onchange={handleNotificationToggle} />
-                            <label for="notificationsEnabled" class="slds-checkbox_toggle_label">
-                                <span class="slds-checkbox_toggle_label_text">
-                                    <lightning-icon icon-name="utility:notification" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
-                                    Notifications
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
+            <!-- Channel Manager Tab Content -->
+            <div if:true={isChannelManagerActive} class="tab-content">
+                <c-channel-manager
+                    onselect={handleChannelSelect}>
+                </c-channel-manager>
             </div>
         </div>
 
         <!-- Main messaging area -->
         <div class="messaging-container">
-            <template if:true={hasRecipient}>
+            <template if:true={hasActiveConversation}>
                 <!-- Header -->
                 <div class="message-header">
-                    <lightning-button-icon
-                        icon-name="utility:back"
-                        variant="border-filled"
-                        size="small"
-                        alternative-text="Back"
-                        class="back-button slds-m-right_small slds-is-relative slds-show_small"
-                        onclick={handleBack}>
-                    </lightning-button-icon>
-                    <h2>
-                        <template if:true={isChannel}>
-                            <lightning-icon icon-name="utility:announcement" size="small" class="slds-m-right_x-small"></lightning-icon>
-                        </template>
-                        {recipientOrChannelName}
-                    </h2>
+                    <template if:true={isBackVisible}>
+                        <lightning-button-icon 
+                            icon-name="utility:back" 
+                            variant="border-filled" 
+                            alternative-text="Back" 
+                            onclick={handleBackClick}
+                            class="back-button">
+                        </lightning-button-icon>
+                    </template>
+                    <h2>{headerTitle}</h2>
                 </div>
                 
                 <!-- Message List -->
@@ -151,95 +74,88 @@
                     <!-- Loading spinner -->
                     <template if:true={isLoading}>
                         <div class="loading-spinner">
-                            <lightning-spinner alternative-text="Loading messages" size="medium"></lightning-spinner>
+                            <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
                         </div>
                     </template>
                     
                     <!-- Messages -->
-                    <template if:true={hasMessages}>
-                        <template for:each={messages} for:item="message">
-                            <div key={message.id} 
-                                class="message" 
-                                data-my-message={message.isFromMe} 
-                                data-unread={message.isRead}>
-                                <div class="message-content">
-                                    <template if:false={message.isFromMe}>
-                                        <div class="sender-name">{message.senderName}</div>
-                                    </template>
-                                    <div class="message-text">{message.messageText}</div>
-                                    <div class="message-timestamp">
-                                        {message.formattedTimestamp}
-                                        <!-- Read status indicator for messages sent by user -->
-                                        <template if:true={message.isFromMe}>
-                                            <span class="read-status">
-                                                <template if:true={message.isRead}>
-                                                    <lightning-icon icon-name="utility:check" size="xx-small" class="read-icon"></lightning-icon>
-                                                </template>
-                                                <template if:false={message.isRead}>
-                                                    <lightning-icon icon-name="utility:check" size="xx-small" class="unread-icon"></lightning-icon>
-                                                </template>
-                                            </span>
+                    <template if:false={isLoading}>
+                        <template if:true={hasMessages}>
+                            <template for:each={messages} for:item="message">
+                                <div key={message.id} data-id={message.id} class="message" data-my-message={message.isMine}>
+                                    <div class="message-content">
+                                        <template if:false={message.isMine}>
+                                            <div class="sender-name">{message.senderName}</div>
                                         </template>
+                                        <div class="message-text">
+                                            {message.content}
+                                        </div>
+                                        <div class="message-timestamp">
+                                            <lightning-formatted-date-time 
+                                                value={message.timestamp} 
+                                                hour="2-digit" 
+                                                minute="2-digit"
+                                                time-zone-name="short">
+                                            </lightning-formatted-date-time>
+                                        </div>
                                     </div>
                                 </div>
+                            </template>
+                        </template>
+                        
+                        <!-- No messages -->
+                        <template if:false={hasMessages}>
+                            <div class="no-messages">
+                                No messages yet. Start a conversation!
                             </div>
                         </template>
-                    </template>
-                    
-                    <!-- No messages -->
-                    <template if:false={hasMessages}>
-                        <div class="no-messages">
-                            <p>No messages yet. Start a conversation!</p>
-                        </div>
                     </template>
                 </div>
                 
                 <!-- Compose Area -->
                 <div class="compose-area">
-                    <lightning-textarea name="messageInput" 
-                                      label="Message" 
-                                      placeholder="Type a message..." 
-                                      variant="label-hidden"
-                                      value={messageText}
-                                      onchange={handleMessageChange}
-                                      onkeypress={handleKeyPress}>
+                    <lightning-textarea 
+                        name="message"
+                        label="Message"
+                        placeholder="Type your message..."
+                        variant="label-hidden"
+                        value={currentMessage}
+                        onkeydown={handleKeyDown}
+                        onchange={handleInputChange}>
                     </lightning-textarea>
-                    <lightning-button-icon 
-                        icon-name="utility:send" 
-                        variant="brand" 
-                        alternative-text="Send Message" 
-                        disabled={isSendDisabled}
-                        onclick={handleSendMessage}>
-                    </lightning-button-icon>
+                    <lightning-button 
+                        label="Send" 
+                        variant="brand"
+                        icon-name="utility:send"
+                        onclick={handleSendMessage}
+                        disabled={isLoading}>
+                    </lightning-button>
                 </div>
             </template>
             
             <!-- Welcome state (no active conversation) -->
-            <template if:false={hasRecipient}>
+            <template if:false={hasActiveConversation}>
                 <div class="welcome-container">
                     <div class="welcome-content">
-                        <lightning-icon icon-name="utility:chat" size="large" class="slds-m-bottom_medium"></lightning-icon>
-                        <h2 class="slds-text-heading_medium slds-m-vertical_small">Welcome to Messaging</h2>
-                        <p>Select a recipient or channel to start messaging</p>
+                        <lightning-icon icon-name="standard:messaging_conversation" size="large"></lightning-icon>
+                        <h2 class="slds-text-heading_medium slds-m-top_medium">Welcome to Messaging</h2>
+                        <p class="slds-text-body_regular slds-m-top_small">
+                            Select a user or channel from the sidebar to start messaging.
+                        </p>
                     </div>
                 </div>
             </template>
             
             <!-- Error display -->
-            <template if:true={hasError}>
+            <template if:true={error}>
                 <div class="error-container">
-                    <div class="slds-notify slds-notify_alert slds-alert_error" role="alert">
-                        <span class="slds-assistive-text">Error</span>
-                        <h2>{errorMessage}</h2>
-                        <div class="slds-notify__close">
-                            <lightning-button-icon icon-name="utility:close" variant="bare-inverse" alternative-text="Close" onclick={clearError}></lightning-button-icon>
-                        </div>
-                    </div>
+                    <lightning-card title="Error" icon-name="utility:error">
+                        <p class="slds-p-horizontal_small">
+                            {error.body.message}
+                        </p>
+                    </lightning-card>
                 </div>
             </template>
         </div>
-        
-        <!-- Toast container for notifications -->
-        <div class="toast-container"></div>
     </div>
 </template> 

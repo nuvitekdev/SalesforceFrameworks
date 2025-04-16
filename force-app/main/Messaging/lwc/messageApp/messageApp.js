@@ -3,20 +3,14 @@
  * Provides real-time messaging functionality for both desktop and mobile devices
  * Uses Platform Events on desktop and polling on mobile for cross-platform compatibility
  */
-import { LightningElement, track, api, wire } from 'lwc';
+import { LightningElement, track, api } from 'lwc';
 import { subscribe, unsubscribe, isEmpEnabled } from 'lightning/empApi';
 import { refreshApex } from '@salesforce/apex';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getRecentMessages from '@salesforce/apex/MessageController.getRecentMessages';
 import sendMessage from '@salesforce/apex/MessageController.sendMessage';
 import markMessageAsRead from '@salesforce/apex/MessageController.markMessageAsRead';
 import searchRecipients from '@salesforce/apex/MessageController.searchRecipients';
-import getUnreadCount from '@salesforce/apex/MessageNotificationService.getUnreadCount';
 import USER_ID from '@salesforce/user/Id';
-
-// Import custom notification channel - commented out until message channel is properly configured
-// import { subscribe as subscribeToLMS, unsubscribe as unsubscribeFromLMS } from 'lightning/messageService';
-// import messageChannel from '@salesforce/messageChannel/MessageChangeChannel';
 
 const POLLING_INTERVAL = 5000; // 5 seconds
 
@@ -33,15 +27,12 @@ export default class MessageApp extends LightningElement {
     @track error;
     @track activeTab = 'people'; // 'people' or 'channels'
     @track recentRecipients = [];
-    @track unreadCounts = {}; // Map of recipient/channel ID to unread count
     
     userId = USER_ID;
     userName = '';
     subscription = {};
     pollingTimer;
     wiredMessagesResult;
-    messageSubscription; // for LMS
-    notificationsEnabled = true; // to control toast notifications
     
     // Lifecycle hooks
     connectedCallback() {
@@ -61,12 +52,6 @@ export default class MessageApp extends LightningElement {
         
         // Load any recent conversations
         this.loadRecentConversations();
-        
-        // Subscribe to custom notifications - temporarily disabled
-        // this.subscribeToNotifications();
-        
-        // Load unread counts
-        this.loadUnreadCounts();
     }
     
     disconnectedCallback() {
@@ -78,79 +63,6 @@ export default class MessageApp extends LightningElement {
         } else {
             this.stopPolling();
         }
-        
-        // Unsubscribe from message service - temporarily disabled
-        /*
-        if (this.messageSubscription) {
-            unsubscribeFromLMS(this.messageSubscription);
-        }
-        */
-    }
-    
-    // Subscribe to custom notifications via Lightning Message Service
-    subscribeToNotifications() {
-        // Temporarily disabled LMS code
-        /*
-        if (messageChannel) {
-            this.messageSubscription = subscribeToLMS(
-                messageChannel,
-                (message) => this.handleNotification(message),
-                { scope: 'APPLICATION' }
-            );
-        }
-        */
-    }
-    
-    // Handle incoming notification
-    handleNotification(message) {
-        // Temporarily disabled LMS code
-        /*
-        if (!message || !this.notificationsEnabled) return;
-        
-        // Show toast notification if the user is not in the current conversation
-        const isCurrentConversation = 
-            (message.channelName && message.channelName === this.channelName) ||
-            (message.senderId && message.senderId === this.recipientId);
-            
-        if (!isCurrentConversation) {
-            // Show toast notification
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: message.title || 'New Message',
-                    message: message.body || 'You have a new message',
-                    variant: 'info',
-                    mode: 'dismissable'
-                })
-            );
-            
-            // Update unread counts
-            this.loadUnreadCounts();
-        }
-        */
-    }
-    
-    // Load unread counts for all conversations
-    loadUnreadCounts() {
-        // For direct messages
-        getUnreadCount({ userId: this.userId, channelName: null })
-            .then(result => {
-                this.unreadCounts['direct'] = result;
-            })
-            .catch(error => {
-                console.error('Error loading unread counts:', error);
-            });
-            
-        // For channels - would need to load counts for each channel
-        // This is a placeholder for a more sophisticated implementation
-        getUnreadCount({ userId: this.userId, channelName: this.channelName })
-            .then(result => {
-                if (this.channelName) {
-                    this.unreadCounts[this.channelName] = result;
-                }
-            })
-            .catch(error => {
-                console.error('Error loading channel unread count:', error);
-            });
     }
     
     // Tab navigation methods
@@ -181,9 +93,6 @@ export default class MessageApp extends LightningElement {
         } else {
             this.startPolling();
         }
-        
-        // Clear unread count for this recipient
-        this.clearUnreadCount(recipient.id);
     }
     
     handleRecentRecipientSelect(event) {
@@ -203,9 +112,6 @@ export default class MessageApp extends LightningElement {
         } else {
             this.startPolling();
         }
-        
-        // Clear unread count for this recipient
-        this.clearUnreadCount(id);
     }
     
     // Channel selection handler
@@ -223,19 +129,6 @@ export default class MessageApp extends LightningElement {
             this.subscribeToMessages();
         } else {
             this.startPolling();
-        }
-        
-        // Clear unread count for this channel
-        this.clearUnreadCount(channelName);
-    }
-    
-    // Clear unread count for a recipient or channel
-    clearUnreadCount(id) {
-        if (id) {
-            this.unreadCounts[id] = 0;
-            
-            // In a real implementation, you would also update the server-side record
-            // This is just updating the UI for now
         }
     }
     
@@ -267,22 +160,10 @@ export default class MessageApp extends LightningElement {
         if (storedRecents) {
             try {
                 this.recentRecipients = JSON.parse(storedRecents);
-                
-                // Load unread counts for each recipient
-                this.recentRecipients.forEach(recipient => {
-                    this.loadUnreadCountForRecipient(recipient.id);
-                });
             } catch (e) {
                 this.recentRecipients = [];
             }
         }
-    }
-    
-    // Load unread count for a specific recipient
-    loadUnreadCountForRecipient(recipientId) {
-        // This would be a server call in a real implementation
-        // For now, we'll just use random numbers for demo purposes
-        this.unreadCounts[recipientId] = Math.floor(Math.random() * 5);
     }
     
     addToRecentRecipients(recipient) {
@@ -371,13 +252,6 @@ export default class MessageApp extends LightningElement {
             
             // Scroll to bottom
             this.scrollToBottom();
-            
-            // Clear unread count for this conversation
-            if (this.channelName) {
-                this.clearUnreadCount(this.channelName);
-            } else if (this.recipientId) {
-                this.clearUnreadCount(this.recipientId);
-            }
         })
         .catch(error => {
             this.error = error;
@@ -414,16 +288,6 @@ export default class MessageApp extends LightningElement {
             markMessageAsRead({ messageId: msg.Id })
                 .catch(error => console.error('Error marking message as read', error));
         });
-        
-        // Update unread counts if we marked messages as read
-        if (unreadMessages.length > 0) {
-            // Clear unread count for this conversation
-            if (this.channelName) {
-                this.clearUnreadCount(this.channelName);
-            } else if (this.recipientId) {
-                this.clearUnreadCount(this.recipientId);
-            }
-        }
     }
     
     handleSendMessage() {
@@ -463,32 +327,6 @@ export default class MessageApp extends LightningElement {
         if (this.isRelevantMessage(messageData)) {
             // Load messages to ensure we have the latest data
             this.loadMessages();
-        } else {
-            // Message is for a different conversation, update unread counts
-            this.loadUnreadCounts();
-            
-            // Show toast notification
-            if (this.notificationsEnabled) {
-                let title, body;
-                
-                if (messageData.Channel__c) {
-                    title = 'New message in ' + messageData.Channel__c;
-                } else {
-                    // Get sender name - in real implementation we'd have this info
-                    title = 'New message from ' + 'User';
-                }
-                
-                body = messageData.Content__c || 'New message received';
-                
-                this.dispatchEvent(
-                    new ShowToastEvent({
-                        title: title,
-                        message: body.length > 60 ? body.substring(0, 57) + '...' : body,
-                        variant: 'info',
-                        mode: 'dismissable'
-                    })
-                );
-            }
         }
     }
     
@@ -524,22 +362,6 @@ export default class MessageApp extends LightningElement {
         }, 100);
     }
     
-    // Toggle notifications
-    toggleNotifications() {
-        this.notificationsEnabled = !this.notificationsEnabled;
-        
-        // Show confirmation toast
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title: this.notificationsEnabled ? 'Notifications Enabled' : 'Notifications Disabled',
-                message: this.notificationsEnabled ? 
-                    'You will now receive toast notifications for new messages.' : 
-                    'You will no longer receive toast notifications for new messages.',
-                variant: 'success'
-            })
-        );
-    }
-    
     // Getters for template
     get hasMessages() {
         return this.messages && this.messages.length > 0;
@@ -565,27 +387,5 @@ export default class MessageApp extends LightningElement {
         // Show back button on mobile when in a conversation
         const isMobile = window.innerWidth <= 768;
         return isMobile && this.hasActiveConversation;
-    }
-    
-    // Get total unread count for direct messages
-    get totalUnreadDirectCount() {
-        let count = 0;
-        for (const id in this.unreadCounts) {
-            if (id !== 'direct' && !id.includes('channel_')) {
-                count += this.unreadCounts[id] || 0;
-            }
-        }
-        return count;
-    }
-    
-    // Get total unread count for channels
-    get totalUnreadChannelCount() {
-        let count = 0;
-        for (const id in this.unreadCounts) {
-            if (id.includes('channel_')) {
-                count += this.unreadCounts[id] || 0;
-            }
-        }
-        return count;
     }
 } 

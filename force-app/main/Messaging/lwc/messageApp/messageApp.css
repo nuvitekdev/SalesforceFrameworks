@@ -1,48 +1,55 @@
 /* App Container Layout */
 .message-app-container {
     display: flex;
-    height: 70vh;
-    min-height: 600px;
-    border: 1px solid #dddbda;
-    border-radius: 4px;
+    height: 100%;
+    min-height: 500px;
+    max-height: 700px;
+    border: 1px solid #d9dbdd;
+    border-radius: 8px;
     overflow: hidden;
+    background-color: #f3f3f3;
 }
 
 /* Sidebar Styles */
 .sidebar {
-    width: var(--sidebar-width);
-    border-right: 1px solid #dddbda;
+    width: 300px;
+    border-right: 1px solid #d9dbdd;
+    background-color: #fff;
     display: flex;
     flex-direction: column;
-    background-color: #f3f3f3;
 }
 
 .tabs {
     display: flex;
-    border-bottom: 1px solid #dddbda;
+    border-bottom: 1px solid #d9dbdd;
 }
 
 .tab {
     flex: 1;
-    text-align: center;
     padding: 12px;
+    text-align: center;
     cursor: pointer;
-    position: relative;
+    font-weight: 500;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.tab lightning-icon {
+    margin-bottom: 4px;
 }
 
 .tab[data-active="true"] {
-    background-color: #ffffff;
+    opacity: 1;
     border-bottom: 2px solid #0070d2;
 }
 
 .tab-content {
     flex: 1;
-    overflow-y: auto;
     padding: 12px;
+    overflow-y: auto;
 }
 
 .recent-list {
@@ -50,19 +57,21 @@
 }
 
 .recent-list h3 {
+    font-size: 14px;
+    font-weight: 600;
     margin-bottom: 8px;
-    font-size: 0.875rem;
-    color: #444444;
+    color: #706e6b;
 }
 
 .recipient-item {
     padding: 8px;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
 .recipient-item:hover {
-    background-color: #f2f2f2;
+    background-color: #f3f3f3;
 }
 
 /* Messaging Container */
@@ -70,28 +79,28 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;
+    background-color: #fff;
 }
 
 /* Header */
 .message-header {
+    background-color: #f3f3f3;
     padding: 12px 16px;
-    border-bottom: 1px solid #dddbda;
+    border-bottom: 1px solid #d9dbdd;
     display: flex;
     align-items: center;
 }
 
 .message-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2a2a2a;
     margin: 0;
-    font-size: 1rem;
-    font-weight: 700;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .back-button {
-    margin-right: 8px;
+    margin-right: 12px;
+    display: none;
 }
 
 /* Message List */
@@ -99,73 +108,56 @@
     flex: 1;
     overflow-y: auto;
     padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    background-color: #f8f8f8;
 }
 
 .message {
+    margin-bottom: 12px;
     display: flex;
-    max-width: 80%;
-    align-self: flex-start;
+    flex-direction: column;
 }
 
 .message[data-my-message="true"] {
-    align-self: flex-end;
+    align-items: flex-end;
 }
 
 .message-content {
+    padding: 12px;
     border-radius: 16px;
-    padding: 8px 12px;
-    background-color: #f3f3f3;
+    max-width: 80%;
+    word-wrap: break-word;
     position: relative;
+    margin-bottom: 4px;
 }
 
 .message[data-my-message="true"] .message-content {
-    background-color: #ddf4ff;
+    background-color: #0070d2;
+    color: white;
+    border-bottom-right-radius: 4px;
 }
 
-/* Highlight unread messages */
-.message[data-unread="false"] .message-content {
-    background-color: #d8edff;
-    font-weight: 500;
+.message[data-my-message="false"] .message-content {
+    background-color: #f0f0f0;
+    color: #2a2a2a;
+    border-bottom-left-radius: 4px;
 }
 
 .sender-name {
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 600;
     margin-bottom: 4px;
     color: #706e6b;
 }
 
-.message-text {
-    font-size: 0.875rem;
-    line-height: 1.25;
-    word-wrap: break-word;
-}
-
 .message-timestamp {
-    font-size: 0.65rem;
-    color: #706e6b;
-    margin-top: 4px;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.8);
     text-align: right;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 4px;
+    margin-top: 4px;
 }
 
-.read-status {
-    display: inline-flex;
-    align-items: center;
-}
-
-.read-icon {
-    --sds-c-icon-color-foreground-default: #0070d2;
-}
-
-.unread-icon {
-    --sds-c-icon-color-foreground-default: #706e6b;
+.message[data-my-message="false"] .message-timestamp {
+    color: #706e6b;
 }
 
 /* Loading Spinner */
@@ -178,34 +170,29 @@
 
 /* No Messages */
 .no-messages {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
+    text-align: center;
+    padding: 32px;
     color: #706e6b;
-    font-style: italic;
+    font-size: 14px;
 }
 
 /* Compose Area */
 .compose-area {
+    padding: 12px 16px;
+    border-top: 1px solid #d9dbdd;
+    background-color: #fff;
     display: flex;
     align-items: flex-end;
-    gap: 8px;
-    padding: 16px;
-    border-top: 1px solid #dddbda;
 }
 
 .compose-area lightning-textarea {
     flex: 1;
+    margin-right: 12px;
 }
 
 /* Error Container */
 .error-container {
-    position: absolute;
-    top: 0;
-    left: var(--sidebar-width);
-    right: 0;
-    z-index: 10;
+    margin: 16px;
 }
 
 /* Welcome Container */
@@ -218,48 +205,11 @@
 
 .welcome-content {
     text-align: center;
-    max-width: 400px;
-    padding: 24px;
+    padding: 32px;
 }
 
 .welcome-content lightning-icon {
     --sds-c-icon-color-foreground-default: #0070d2;
-}
-
-/* Unread badge styles */
-.unread-badge {
-    background-color: #ff0000;
-    color: white;
-    border-radius: 50%;
-    min-width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    font-weight: bold;
-    padding: 0 4px;
-}
-
-/* Notification settings styles */
-.notification-settings {
-    padding: 12px;
-    border-top: 1px solid #dddbda;
-}
-
-/* Toggle switch styling */
-.slds-checkbox_toggle {
-    width: 100%;
-}
-
-.slds-checkbox_toggle_label {
-    display: flex;
-    align-items: center;
-}
-
-.slds-checkbox_toggle_label_text {
-    display: flex;
-    align-items: center;
 }
 
 /* Mobile Responsive Styles */
