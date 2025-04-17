@@ -10,6 +10,7 @@ import findUserOrContact from "@salesforce/apex/NuvitekMessagingController.findU
 import startConversation from "@salesforce/apex/NuvitekMessagingController.startConversation";
 import createGroupConversation from "@salesforce/apex/NuvitekMessagingController.createGroupConversation";
 import generateAISummary from "@salesforce/apex/NuvitekMessagingController.generateAISummary";
+import deleteConversations from "@salesforce/apex/NuvitekMessagingController.deleteConversations";
 
 /**
  * Nuvitek Messaging Component
@@ -65,6 +66,14 @@ export default class NuvitekMessaging extends LightningElement {
     @track isOtherEntitySelection = false;
     @track selectedEntityType = 'All';
     
+    // Add these new properties to the component class after other @track properties
+    @track isSelectionMode = false;
+    @track selectedForAction = new Set();
+    @track showArchived = false;
+    @track archivedConversationIds = new Set();
+    
+    @track isConfirmingDelete = false;
+    
     // Initialize component
     connectedCallback() {
         this.initializeComponent();
@@ -93,6 +102,9 @@ export default class NuvitekMessaging extends LightningElement {
             // Get the current user
             const userResult = await getCurrentUser();
             this.currentUser = userResult;
+            
+            // Load archived conversation IDs from localStorage
+            this.loadArchivedConversations();
             
             // Subscribe to platform events
             await this.subscribeToEvents();
@@ -312,12 +324,14 @@ export default class NuvitekMessaging extends LightningElement {
             
             const result = await getConversations();
             
-            // Add formatted timestamps to each conversation
-            if (result) {
-                this.conversations = result.map(conv => {
+            // Process conversations to display the correct name based on current user
+            if (result && Array.isArray(result)) {
+                // Make sure conversations are properly formatted with additional UI fields
+                this.conversations = result.map(conversation => {
                     return {
-                        ...conv,
-                        formattedTime: this.formatTimestamp(conv.lastMessageDate)
+                        ...conversation,
+                        displayName: this.determineDisplayName(conversation),
+                        formattedTime: this.formatTimestamp(conversation.lastMessageDate)
                     };
                 });
             } else {
@@ -352,23 +366,18 @@ export default class NuvitekMessaging extends LightningElement {
             if (result) {
                 const newMessages = result.map(msg => this.formatMessage(msg));
                 
-                // Check if new messages are different from current ones before updating
-                const shouldUpdate = this.messages.length !== newMessages.length ||
-                    JSON.stringify(this.messages.map(m => m.id)) !== JSON.stringify(newMessages.map(m => m.id));
+                // Always update messages to ensure we're showing the latest
+                this.messages = newMessages;
                 
-                if (shouldUpdate) {
-                    this.messages = newMessages;
-                    
-                    // Handle scroll position based on context
-                    if (initialLoad || scrolledToBottom) {
-                        // For initial load or if user was at bottom, scroll to bottom
-                        this.scrollToBottom();
-                    } else if (messagesContainer) {
-                        // Otherwise maintain scroll position
-                        setTimeout(() => {
-                            messagesContainer.scrollTop = scrollPos;
-                        }, 10);
-                    }
+                // Handle scroll position based on context
+                if (initialLoad || scrolledToBottom) {
+                    // For initial load or if user was at bottom, scroll to bottom
+                    this.scrollToBottom();
+                } else if (messagesContainer) {
+                    // Otherwise maintain scroll position
+                    setTimeout(() => {
+                        messagesContainer.scrollTop = scrollPos;
+                    }, 10);
                 }
             } else {
                 this.messages = [];
@@ -770,14 +779,38 @@ export default class NuvitekMessaging extends LightningElement {
             // Add timestamp formatting
             conversation.formattedTime = this.formatTimestamp(conversation.lastMessageDate);
             
-            // Add the new conversation to the top of the list
-            this.conversations = [conversation, ...this.conversations];
+            // Check if this is a new conversation or an existing one
+            const existingIndex = this.conversations.findIndex(conv => conv.id === conversation.id);
             
-            // Select the new conversation and load its messages
-            this.selectedConversation = conversation;
+            if (existingIndex >= 0) {
+                // This is an existing conversation - update it in place
+                const updatedConversations = [...this.conversations];
+                updatedConversations[existingIndex] = {
+                    ...conversation,
+                    displayName: this.determineDisplayName(conversation)
+                };
+                
+                // Move conversation to top of list
+                const existingConvo = updatedConversations.splice(existingIndex, 1)[0];
+                this.conversations = [existingConvo, ...updatedConversations];
+                
+                // Select the existing conversation and load its messages
+                this.selectedConversation = existingConvo;
+            } else {
+                // This is a new conversation - add it to the top of the list
+                const newConversation = {
+                    ...conversation,
+                    displayName: this.determineDisplayName(conversation)
+                };
+                
+                this.conversations = [newConversation, ...this.conversations];
+                
+                // Select the new conversation
+                this.selectedConversation = newConversation;
+            }
             
-            // Load empty message list
-            this.messages = [];
+            // Always load messages for the conversation to ensure we're showing the latest
+            await this.loadMessages(conversation.id);
             
             // Close the modal
             this.showNewMessageModal = false;
@@ -791,6 +824,46 @@ export default class NuvitekMessaging extends LightningElement {
         } catch (error) {
             this.handleError(error);
         }
+    }
+    
+    // Helper function to determine the correct display name for a conversation
+    determineDisplayName(conversation) {
+        // Default to using the provided recipient name
+        let displayName = conversation.recipientName;
+        
+        // For non-group conversations, determine the proper display name
+        if (!conversation.isGroup && conversation.participants) {
+            // Get the other participants (not the current user)
+            const otherParticipants = conversation.participants.filter(
+                participantId => participantId !== this.currentUser.id
+            );
+            
+            // If there's one other participant
+            if (otherParticipants.length === 1) {
+                const otherParticipantId = otherParticipants[0];
+                
+                // If this user is sender, we need to show the recipient
+                if (conversation.senderId === this.currentUser.id) {
+                    // Show the recipient name if available, or use a generic name
+                    displayName = (conversation.recipientId !== this.currentUser.id) 
+                        ? conversation.recipientName 
+                        : "Other Participant";
+                } 
+                // If this user is recipient, we need to show the sender
+                else if (conversation.senderId && conversation.senderId !== this.currentUser.id) {
+                    // Use the sender name if we have it
+                    displayName = conversation.senderName || "Other Participant";
+                }
+                // If we still need to determine a name, try to infer it
+                else if (displayName === this.currentUser.name || 
+                        conversation.recipientId === this.currentUser.id) {
+                    // We need to show the other participant's name, but we don't have it directly
+                    displayName = "Other Participant";
+                }
+            }
+        }
+        
+        return displayName;
     }
     
     // Create a new group conversation
@@ -807,15 +880,19 @@ export default class NuvitekMessaging extends LightningElement {
             }
             
             // Prepare participant list
-            const participants = this.selectedSearchResults.map(p => ({
-                id: p.id,
-                type: p.userType
-            }));
+            const participants = this.selectedSearchResults.map(p => p.id);
+            
+            // Create a map of user IDs to user types
+            const userTypes = {};
+            this.selectedSearchResults.forEach(p => {
+                userTypes[p.id] = p.userType;
+            });
             
             // Call Apex method to create the group
             const conversation = await createGroupConversation({
-                groupName: this.groupName || null,
-                participants: participants
+                userIds: participants,
+                userTypes: userTypes,
+                groupName: this.groupName || null
             });
             
             // Add timestamp formatting
@@ -842,34 +919,26 @@ export default class NuvitekMessaging extends LightningElement {
     
     // Select a conversation to view
     handleSelectConversation(event) {
-        const conversationId = event.currentTarget.dataset.id;
-        const selectedConv = this.conversations.find(conv => conv.id === conversationId);
-        
-        if (selectedConv) {
-            // Mark all elements as not selected
-            this.template.querySelectorAll('.conversation-item').forEach(item => {
-                item.classList.remove('active');
-            });
+        try {
+            const conversationId = event.currentTarget.dataset.id;
             
-            // Mark the clicked element as selected
-            event.currentTarget.classList.add('active');
+            // Find the selected conversation
+            const selectedConvo = this.conversations.find(
+                conv => conv.id === conversationId
+            );
             
-            // Store previous conversation id to check if we're switching or staying on same conversation
-            const prevConversationId = this.selectedConversation?.id;
-            
-            // Update the selected conversation
-            this.selectedConversation = selectedConv;
-            
-            // Only load messages if we're switching to a different conversation
-            if (prevConversationId !== conversationId) {
+            if (selectedConvo) {
+                // Update the display name to ensure it's correct
+                selectedConvo.displayName = this.determineDisplayName(selectedConvo);
+                
+                this.selectedConversation = selectedConvo;
                 this.loadMessages(conversationId);
                 
-                // Close AI summary panel when changing conversations
-                this.showAISummary = false;
+                // Mark conversation as read (in a production app)
+                this.markConversationAsRead(conversationId);
             }
-            
-            // Mark as read in conversations list
-            this.markConversationAsRead(conversationId);
+        } catch (error) {
+            this.handleError(error);
         }
     }
     
@@ -956,7 +1025,7 @@ export default class NuvitekMessaging extends LightningElement {
     
     // Check if we have conversations
     get hasConversations() {
-        return this.conversations && this.conversations.length > 0;
+        return this.filteredConversations && this.filteredConversations.length > 0;
     }
     
     // Check if we have messages in the current conversation
@@ -1123,5 +1192,348 @@ export default class NuvitekMessaging extends LightningElement {
     // Close the summary panel
     closeSummary() {
         this.showAISummary = false;
+    }
+    
+    // Add this method to toggle between normal and selection mode
+    toggleSelectionMode() {
+        this.isSelectionMode = !this.isSelectionMode;
+        this.selectedForAction.clear();
+    }
+    
+    // Add this method to toggle conversation selection with improved handling
+    handleConversationSelect(event) {
+        if (!this.isSelectionMode) return;
+        
+        event.stopPropagation();
+        const conversationId = event.currentTarget.dataset.id;
+        
+        if (this.selectedForAction.has(conversationId)) {
+            this.selectedForAction.delete(conversationId);
+        } else {
+            this.selectedForAction.add(conversationId);
+        }
+        
+        // Force refresh the UI to show selection visually
+        this.conversations = [...this.conversations];
+    }
+    
+    // Add this method to handle archiving selected conversations with feedback
+    archiveSelected() {
+        if (this.selectedForAction.size === 0) {
+            this.showToast('Info', 'No conversations selected', 'info');
+            return;
+        }
+        
+        // Convert Set to Array for processing
+        const conversationsToArchive = Array.from(this.selectedForAction);
+        
+        // Add to archived set
+        conversationsToArchive.forEach(id => {
+            this.archivedConversationIds.add(id);
+        });
+        
+        // Clear selection
+        this.selectedForAction.clear();
+        
+        // Force refresh the conversations list to apply the filter
+        this.conversations = [...this.conversations];
+        
+        // Store archived IDs in localStorage for persistence
+        this.saveArchivedConversations();
+        
+        // Provide user feedback
+        const count = conversationsToArchive.length;
+        this.showToast('Success', `${count} conversation${count !== 1 ? 's' : ''} archived`, 'success');
+        
+        // Turn off selection mode
+        this.isSelectionMode = false;
+    }
+    
+    // Add this method to restore archived conversations with feedback
+    restoreSelected() {
+        if (this.selectedForAction.size === 0) {
+            this.showToast('Info', 'No conversations selected', 'info');
+            return;
+        }
+        
+        // Convert Set to Array for processing
+        const conversationsToRestore = Array.from(this.selectedForAction);
+        
+        // Remove from archived set
+        conversationsToRestore.forEach(id => {
+            this.archivedConversationIds.delete(id);
+        });
+        
+        // Clear selection
+        this.selectedForAction.clear();
+        
+        // Force refresh the conversations list to apply the filter
+        this.conversations = [...this.conversations];
+        
+        // Store archived IDs in localStorage for persistence
+        this.saveArchivedConversations();
+        
+        // Provide user feedback
+        const count = conversationsToRestore.length;
+        this.showToast('Success', `${count} conversation${count !== 1 ? 's' : ''} restored`, 'success');
+        
+        // Turn off selection mode
+        this.isSelectionMode = false;
+    }
+    
+    // Add this method to toggle between showing active or archived conversations
+    toggleArchivedView() {
+        this.showArchived = !this.showArchived;
+        
+        // Exit selection mode when switching views
+        this.isSelectionMode = false;
+        this.selectedForAction.clear();
+        
+        // Force refresh the UI
+        this.conversations = [...this.conversations];
+    }
+    
+    // Add this method to save archived conversation IDs to localStorage
+    saveArchivedConversations() {
+        if (window.localStorage) {
+            try {
+                const userId = this.currentUser?.id;
+                if (userId) {
+                    const key = `nuvitek_archived_conversations_${userId}`;
+                    localStorage.setItem(key, JSON.stringify(Array.from(this.archivedConversationIds)));
+                }
+            } catch (e) {
+                console.error('Error saving archived conversations to localStorage', e);
+            }
+        }
+    }
+    
+    // Add this method to load archived conversation IDs from localStorage
+    loadArchivedConversations() {
+        if (window.localStorage && this.currentUser) {
+            try {
+                const userId = this.currentUser.id;
+                const key = `nuvitek_archived_conversations_${userId}`;
+                const stored = localStorage.getItem(key);
+                
+                if (stored) {
+                    const archivedIds = JSON.parse(stored);
+                    this.archivedConversationIds = new Set(archivedIds);
+                }
+            } catch (e) {
+                console.error('Error loading archived conversations from localStorage', e);
+            }
+        }
+    }
+    
+    // Add a computed property to filter conversations based on archived status
+    get filteredConversations() {
+        if (!this.conversations) {
+            return [];
+        }
+        
+        return this.conversations
+            .filter(conversation => {
+                const isArchived = this.archivedConversationIds.has(conversation.id);
+                return this.showArchived ? isArchived : !isArchived;
+            })
+            .map(conversation => {
+                // Add selection state and CSS classes
+                const isSelected = this.selectedForAction.has(conversation.id);
+                const baseClass = 'conversation-item';
+                const selectedClass = isSelected ? ' selected' : '';
+                
+                return {
+                    ...conversation,
+                    selected: isSelected,
+                    itemClass: baseClass + selectedClass,
+                    // Add getters for each conversation item
+                    get selectionIcon() {
+                        return isSelected ? 'utility:check' : 'utility:add';
+                    },
+                    get selectionClass() {
+                        return isSelected ? 'selected-icon' : 'unselected-icon';
+                    }
+                };
+            });
+    }
+    
+    // Add computed properties for conversation item classes
+    get activeTabClass() {
+        return this.showArchived ? 'conversation-tab' : 'conversation-tab active';
+    }
+    
+    get archivedTabClass() {
+        return this.showArchived ? 'conversation-tab active' : 'conversation-tab';
+    }
+    
+    // Add getters for dynamic values to replace ternary expressions in HTML
+    get actionButtonIcon() {
+        return this.showArchived ? 'utility:back' : 'utility:archive';
+    }
+    
+    get actionButtonText() {
+        return this.showArchived ? 'Restore' : 'Archive';
+    }
+    
+    // Add method to handle action button click
+    handleActionButtonClick() {
+        if (this.showArchived) {
+            this.restoreSelected();
+        } else {
+            this.archiveSelected();
+        }
+    }
+    
+    // Handler for Active tab click
+    handleActiveTabClick() {
+        // Only do something if we're in archived view
+        if (this.showArchived) {
+            this.toggleArchivedView();
+        }
+    }
+    
+    // Handler for Archived tab click
+    handleArchivedTabClick() {
+        // Only do something if we're in active view
+        if (!this.showArchived) {
+            this.toggleArchivedView();
+        }
+    }
+    
+    // Handler for conversation click - delegates to the appropriate handler based on mode
+    handleConversationClick(event) {
+        const conversationId = event.currentTarget.dataset.id;
+        
+        if (this.isSelectionMode) {
+            // In selection mode, toggle selection
+            this.handleConversationSelect(event);
+        } else {
+            // In normal mode, select the conversation
+            this.handleSelectConversation(event);
+        }
+    }
+    
+    // Add this method to get the action buttons for the toolbar
+    get actionButtons() {
+        if (!this.isSelectionMode) return [];
+        
+        const buttons = [
+            {
+                name: 'cancel',
+                iconName: 'utility:close',
+                label: 'Cancel',
+                title: 'Cancel Selection',
+                variant: 'border-filled'
+            }
+        ];
+        
+        // Add action buttons based on current view
+        if (this.showArchived) {
+            buttons.push({
+                name: 'restore',
+                iconName: 'utility:back',
+                label: 'Restore',
+                title: 'Restore Selected',
+                variant: 'border-filled'
+            });
+        } else {
+            buttons.push({
+                name: 'archive',
+                iconName: 'utility:archive',
+                label: 'Archive',
+                title: 'Archive Selected',
+                variant: 'border-filled'
+            });
+        }
+        
+        // Add delete button to both views
+        buttons.push({
+            name: 'delete',
+            iconName: 'utility:delete',
+            label: 'Delete',
+            title: 'Delete Selected',
+            variant: 'border-filled',
+            class: 'delete-button'
+        });
+        
+        return buttons;
+    }
+    
+    handleActionClick(event) {
+        const action = event.target.dataset.name;
+        
+        switch (action) {
+            case 'cancel':
+                this.toggleSelectionMode();
+                break;
+            case 'archive':
+                this.archiveSelected();
+                break;
+            case 'restore':
+                this.restoreSelected();
+                break;
+            case 'delete':
+                this.confirmDelete();
+                break;
+            default:
+                break;
+        }
+    }
+    
+    confirmDelete() {
+        if (this.selectedForAction.size === 0) {
+            this.showToast('Info', 'No conversations selected', 'info');
+            return;
+        }
+        
+        this.isConfirmingDelete = true;
+    }
+    
+    cancelDelete() {
+        this.isConfirmingDelete = false;
+    }
+    
+    async handleDeleteConfirm() {
+        if (this.selectedForAction.size === 0) {
+            this.isConfirmingDelete = false;
+            return;
+        }
+        
+        this.isLoading = true;
+        this.isConfirmingDelete = false;
+        
+        try {
+            // Convert selection to array for apex
+            const conversationsToDelete = Array.from(this.selectedForAction);
+            
+            // Call apex to delete the conversations and their messages
+            const deletedCount = await deleteConversations({ conversationIds: conversationsToDelete });
+            
+            // If archived, remove from archived list
+            conversationsToDelete.forEach(id => {
+                if (this.archivedConversationIds.has(id)) {
+                    this.archivedConversationIds.delete(id);
+                }
+            });
+            
+            // Save updated archived list
+            this.saveArchivedConversations();
+            
+            // Clear selection
+            this.selectedForAction.clear();
+            this.isSelectionMode = false;
+            
+            // Refresh conversations
+            await this.loadConversations();
+            
+            // Show success message
+            const message = `${deletedCount} conversation${deletedCount !== 1 ? 's' : ''} permanently deleted`;
+            this.showToast('Success', message, 'success');
+        } catch (error) {
+            this.handleError(error);
+        } finally {
+            this.isLoading = false;
+        }
     }
 } 

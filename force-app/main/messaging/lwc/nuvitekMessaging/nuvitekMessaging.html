@@ -21,23 +21,70 @@
                 <div class="conversations-sidebar" if:false={selectedConversation}>
                     <div class="sidebar-header">
                         <h2>Messages</h2>
-                        <lightning-button-icon 
-                            icon-name="utility:add" 
-                            variant="border-filled" 
-                            alternative-text="New Message" 
-                            title="New Message" 
-                            onclick={handleNewMessage}>
-                        </lightning-button-icon>
+                        <div class="header-actions">
+                            <lightning-button-icon 
+                                if:false={isSelectionMode}
+                                icon-name="utility:add" 
+                                variant="border-filled" 
+                                alternative-text="New Message" 
+                                title="New Message" 
+                                onclick={handleNewMessage}
+                                class="header-icon">
+                            </lightning-button-icon>
+                            <lightning-button-icon 
+                                if:false={isSelectionMode}
+                                icon-name="utility:check" 
+                                variant="border-filled" 
+                                alternative-text="Select Conversations" 
+                                title="Select Conversations" 
+                                onclick={toggleSelectionMode}
+                                class="header-icon">
+                            </lightning-button-icon>
+                            
+                            <!-- Dynamic Action Buttons in Selection Mode -->
+                            <template if:true={isSelectionMode}>
+                                <template for:each={actionButtons} for:item="button">
+                                    <lightning-button-icon
+                                        key={button.name}
+                                        icon-name={button.iconName}
+                                        variant={button.variant}
+                                        alternative-text={button.label}
+                                        title={button.title}
+                                        data-name={button.name}
+                                        onclick={handleActionClick}
+                                        class={button.class}>
+                                    </lightning-button-icon>
+                                </template>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabs for Active/Archived -->
+                    <div class="conversation-tabs">
+                        <div class={activeTabClass} onclick={handleActiveTabClick}>
+                            Active
+                        </div>
+                        <div class={archivedTabClass} onclick={handleArchivedTabClick}>
+                            Archived
+                        </div>
                     </div>
                     
                     <!-- Conversations List -->
                     <div class="conversations-list">
                         <template if:true={hasConversations}>
-                            <template for:each={conversations} for:item="conversation">
+                            <template for:each={filteredConversations} for:item="conversation">
                                 <div key={conversation.id} 
-                                     class="conversation-item" 
+                                     class={conversation.itemClass}
                                      data-id={conversation.id} 
-                                     onclick={handleSelectConversation}>
+                                     onclick={handleConversationClick}>
+                                    <!-- Selection checkbox for selection mode -->
+                                    <div if:true={isSelectionMode} class="selection-indicator">
+                                        <lightning-icon 
+                                            icon-name={conversation.selectionIcon} 
+                                            size="x-small"
+                                            class={conversation.selectionClass}>
+                                        </lightning-icon>
+                                    </div>
                                     <div class="conversation-avatar">
                                         <template if:true={conversation.isGroup}>
                                             <lightning-avatar 
@@ -55,7 +102,7 @@
                                     </div>
                                     <div class="conversation-content">
                                         <div class="conversation-header">
-                                            <h3>{conversation.recipientName}</h3>
+                                            <h3>{conversation.displayName}</h3>
                                             <span class="conversation-time">{conversation.formattedTime}</span>
                                         </div>
                                         <div class="conversation-preview">
@@ -71,12 +118,17 @@
                         
                         <template if:false={hasConversations}>
                             <div class="empty-state">
-                                <p>No conversations yet</p>
-                                <lightning-button 
-                                    variant="brand" 
-                                    label="Start a Conversation" 
-                                    onclick={handleNewMessage}>
-                                </lightning-button>
+                                <template if:true={showArchived}>
+                                    <p>No archived conversations</p>
+                                </template>
+                                <template if:false={showArchived}>
+                                    <p>No conversations yet</p>
+                                    <lightning-button 
+                                        variant="brand" 
+                                        label="Start a Conversation" 
+                                        onclick={handleNewMessage}>
+                                    </lightning-button>
+                                </template>
                             </div>
                         </template>
                     </div>
@@ -99,7 +151,7 @@
                                     alternative-text="Group chat">
                                 </lightning-avatar>
                                 <div class="chat-participant-details">
-                                    <h2>{selectedConversation.recipientName}</h2>
+                                    <h2>{selectedConversation.displayName}</h2>
                                     <div class="group-participants">{selectedConversation.status}</div>
                                 </div>
                             </template>
@@ -110,7 +162,7 @@
                                     alternative-text={selectedConversation.recipientName}>
                                 </lightning-avatar>
                                 <div class="chat-participant-details">
-                                    <h2>{selectedConversation.recipientName}</h2>
+                                    <h2>{selectedConversation.displayName}</h2>
                                     <div class="participant-status">
                                         <template if:true={selectedConversation.isOnline}>
                                             <span class="online-indicator"></span>
@@ -379,6 +431,37 @@
                                     disabled={createEntityButtonDisabled}>
                                 </lightning-button>
                             </template>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+
+            <!-- Delete Confirmation Modal -->
+            <template if:true={isConfirmingDelete}>
+                <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header">
+                            <h2 class="slds-text-heading_medium">Confirm Delete</h2>
+                            <button class="slds-button slds-button_icon slds-modal__close" onclick={cancelDelete}>
+                                <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                            </button>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <p>Are you sure you want to delete the selected conversation(s)? This action cannot be undone and will permanently delete all messages.</p>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <lightning-button 
+                                variant="neutral" 
+                                label="Cancel" 
+                                onclick={cancelDelete} 
+                                class="slds-m-right_x-small">
+                            </lightning-button>
+                            <lightning-button 
+                                variant="destructive" 
+                                label="Delete Permanently" 
+                                onclick={handleDeleteConfirm}>
+                            </lightning-button>
                         </footer>
                     </div>
                 </section>

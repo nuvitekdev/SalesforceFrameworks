@@ -638,4 +638,84 @@
     100% {
         box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
     }
+}
+
+/* Header actions container */
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.header-icon {
+    margin-left: 0.25rem;
+}
+
+/* Tabs styling */
+.conversation-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.conversation-tab {
+    flex: 1;
+    text-align: center;
+    padding: 0.75rem 0;
+    font-weight: 500;
+    color: #706e6b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.conversation-tab.active {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.conversation-tab:hover:not(.active) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Selection mode styling */
+.conversation-item.selected {
+    background-color: rgba(21, 137, 238, 0.15);
+    border-left: 3px solid var(--primary-color);
+}
+
+.selection-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.5rem;
+    min-width: 24px;
+    min-height: 24px;
+}
+
+.selected-icon {
+    --sds-c-icon-color-foreground-default: white;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    padding: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transform: scale(1.1);
+    transition: all 0.2s ease;
+}
+
+.unselected-icon {
+    --sds-c-icon-color-foreground-default: #706e6b;
+    border: 1px solid #d8dde6;
+    border-radius: 50%;
+    padding: 1px;
+    background-color: white;
+}
+
+/* Add styling for the delete button */
+.delete-button {
+    --sds-c-icon-color-foreground: #ea001e;
+    --sds-c-icon-color-foreground-default: #ea001e;
+}
+
+.delete-button:hover {
+    --sds-c-icon-color-foreground: #ba0517;
+    --sds-c-icon-color-foreground-default: #ba0517;
 } 

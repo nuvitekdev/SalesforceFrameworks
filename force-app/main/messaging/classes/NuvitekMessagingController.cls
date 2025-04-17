@@ -44,13 +44,44 @@ public with sharing class NuvitekMessagingController {
             Id currentUserId = UserInfo.getUserId();
             List<Conversation> conversations = new List<Conversation>();
             
-            // Query for all conversations instead of filtering by participant
+            // Query for all conversations along with the most recent message to get sender info
             List<Conversation__c> allRecords = [
                 SELECT Id, RecipientName__c, RecipientId__c, RecipientProfileImage__c, 
                        LastMessage__c, LastMessageDate__c, Participants__c, IsGroup__c, GroupName__c
                 FROM Conversation__c 
                 ORDER BY LastMessageDate__c DESC
             ];
+            
+            // Get the latest message for each conversation to fetch sender details
+            Set<Id> conversationIds = new Set<Id>();
+            for (Conversation__c conv : allRecords) {
+                conversationIds.add(conv.Id);
+            }
+            
+            // Map to store the latest message sender details by conversation ID
+            Map<Id, Message__c> latestMessageMap = new Map<Id, Message__c>();
+            
+            // Query the latest message for each conversation
+            if (!conversationIds.isEmpty()) {
+                List<Message__c> latestMessages = [
+                    SELECT Id, Conversation__c, SenderId__c, SenderName__c, Timestamp__c 
+                    FROM Message__c 
+                    WHERE Conversation__c IN :conversationIds 
+                    ORDER BY Timestamp__c DESC
+                    LIMIT 1000
+                ];
+                
+                // Create a map of conversation ID to the latest message
+                Map<Id, Message__c> tempMap = new Map<Id, Message__c>();
+                for (Message__c msg : latestMessages) {
+                    if (!tempMap.containsKey(msg.Conversation__c) || 
+                        tempMap.get(msg.Conversation__c).Timestamp__c < msg.Timestamp__c) {
+                        tempMap.put(msg.Conversation__c, msg);
+                    }
+                }
+                
+                latestMessageMap = tempMap;
+            }
             
             // Filter on the client side
             for (Conversation__c record : allRecords) {
@@ -59,6 +90,16 @@ public with sharing class NuvitekMessagingController {
                     List<String> participants = (List<String>)JSON.deserialize(record.Participants__c, List<String>.class);
                     // Check if current user is a participant
                     if (participants.contains(currentUserId)) {
+                        // Get sender info from the latest message if available
+                        String senderId = null;
+                        String senderName = null;
+                        
+                        if (latestMessageMap.containsKey(record.Id)) {
+                            Message__c latestMsg = latestMessageMap.get(record.Id);
+                            senderId = latestMsg.SenderId__c;
+                            senderName = latestMsg.SenderName__c;
+                        }
+                        
                         // Determine if the other person is online (simplified example)
                         Boolean isOnline = false;
                         String status = 'Offline';
@@ -116,7 +157,9 @@ public with sharing class NuvitekMessagingController {
                                 false,
                                 0,    // Unread count would be calculated in a real implementation
                                 true, // This is a group
-                                participants // Add participants list
+                                participants, // Add participants list
+                                senderId,
+                                senderName
                             ));
                         } else {
                             // This is a 1-on-1 conversation
@@ -150,7 +193,11 @@ public with sharing class NuvitekMessagingController {
                                 record.LastMessageDate__c,
                                 record.RecipientProfileImage__c,
                                 isOnline,
-                                0 // Unread count would be calculated in a real implementation
+                                0, // Unread count
+                                false, // Not a group
+                                participants,
+                                senderId,
+                                senderName
                             ));
                         }
                     }
@@ -261,21 +308,67 @@ public with sharing class NuvitekMessagingController {
                 }
             }
             
-            // Check if conversation already exists
-            List<Conversation__c> existingConversations = [
-                SELECT Id, RecipientName__c, RecipientId__c, RecipientProfileImage__c, 
-                       LastMessage__c, LastMessageDate__c, Participants__c, IsGroup__c
-                FROM Conversation__c 
-                WHERE (RecipientId__c = :entityId OR 
-                      (IsGroup__c = true AND Name = :recipientName))
-                LIMIT 1
-            ];
+            // Check if conversation already exists - IMPROVED!
+            // First, check if the participants list contains exactly these two participants
+            // We need to find a conversation where:
+            // 1. The current user and this entity are the ONLY participants (for 1:1 chats)
+            // 2. OR we find the existing group conversation with matching name (for groups)
+            
+            List<Conversation__c> existingConversations = new List<Conversation__c>();
+            
+            if (isGroup) {
+                // For groups, find by name
+                existingConversations = [
+                    SELECT Id, RecipientName__c, RecipientId__c, RecipientProfileImage__c, 
+                           LastMessage__c, LastMessageDate__c, Participants__c, IsGroup__c
+                    FROM Conversation__c 
+                    WHERE IsGroup__c = true AND RecipientName__c = :recipientName
+                    LIMIT 1
+                ];
+            } else {
+                // For 1:1 conversations, find by participant
+                List<Conversation__c> potentialConversations = [
+                    SELECT Id, RecipientName__c, RecipientId__c, RecipientProfileImage__c, 
+                           LastMessage__c, LastMessageDate__c, Participants__c, IsGroup__c
+                    FROM Conversation__c 
+                    WHERE IsGroup__c = false
+                    ORDER BY LastMessageDate__c DESC
+                ];
+                
+                // Manually filter to find 1:1 conversation with exactly these two participants
+                for (Conversation__c convo : potentialConversations) {
+                    if (convo.Participants__c != null) {
+                        List<String> convoParticipants = (List<String>)JSON.deserialize(convo.Participants__c, List<String>.class);
+                        
+                        // Check if this conversation has exactly our two participants
+                        if (convoParticipants.size() == 2 && 
+                            convoParticipants.contains(currentUserId) && 
+                            convoParticipants.contains(entityId)) {
+                            existingConversations.add(convo);
+                            break; // Found what we're looking for
+                        }
+                    }
+                }
+            }
             
             Conversation__c convoRecord;
             
             if (!existingConversations.isEmpty()) {
                 // Use existing conversation
                 convoRecord = existingConversations[0];
+                
+                // Update recipient name to ensure it always shows correctly
+                if (!isGroup) {
+                    // For 1:1 chats, the recipient name depends on who's viewing
+                    // If the current user is the original recipient, we should update
+                    // the recipient name to show the other person
+                    if (convoRecord.RecipientId__c == currentUserId) {
+                        convoRecord.RecipientName__c = recipientName;
+                        convoRecord.RecipientId__c = entityId;
+                        convoRecord.RecipientProfileImage__c = recipientProfileImage;
+                        update convoRecord;
+                    }
+                }
             } else {
                 // Create a new conversation
                 convoRecord = new Conversation__c(
@@ -291,6 +384,24 @@ public with sharing class NuvitekMessagingController {
                 insert convoRecord;
             }
             
+            // Get the latest message sender for the conversation
+            String senderId = null;
+            String senderName = null;
+            
+            List<Message__c> latestMessages = [
+                SELECT Id, SenderId__c, SenderName__c
+                FROM Message__c
+                WHERE Conversation__c = :convoRecord.Id
+                ORDER BY Timestamp__c DESC
+                LIMIT 1
+            ];
+            
+            if (!latestMessages.isEmpty()) {
+                Message__c latestMsg = latestMessages[0];
+                senderId = latestMsg.SenderId__c;
+                senderName = latestMsg.SenderName__c;
+            }
+            
             if (isGroup) {
                 return new Conversation(
                     convoRecord.Id,
@@ -302,7 +413,9 @@ public with sharing class NuvitekMessagingController {
                     isOnline,
                     0,
                     true,
-                    participants
+                    participants,
+                    senderId,
+                    senderName
                 );
             } else {
                 return new Conversation(
@@ -313,7 +426,11 @@ public with sharing class NuvitekMessagingController {
                     convoRecord.LastMessageDate__c,
                     convoRecord.RecipientProfileImage__c,
                     isOnline,
-                    0
+                    0,
+                    false,
+                    participants,
+                    senderId,
+                    senderName
                 );
             }
         } catch (Exception e) {
@@ -602,11 +719,12 @@ public with sharing class NuvitekMessagingController {
     }
     
     /**
-     * Inner class to represent a conversation
+     * Inner class for Conversation data
      */
     public class Conversation {
         @AuraEnabled public String id;
         @AuraEnabled public String recipientName;
+        @AuraEnabled public String recipientId;
         @AuraEnabled public String status;
         @AuraEnabled public String lastMessage;
         @AuraEnabled public Datetime lastMessageDate;
@@ -615,40 +733,22 @@ public with sharing class NuvitekMessagingController {
         @AuraEnabled public Integer unreadCount;
         @AuraEnabled public Boolean isGroup;
         @AuraEnabled public List<String> participants;
+        @AuraEnabled public String senderId;     // Added for correct name display
+        @AuraEnabled public String senderName;   // Added for correct name display
         
         public Conversation(
-            String id,
-            String recipientName,
-            String status,
-            String lastMessage,
-            Datetime lastMessageDate,
-            String recipientProfileImage,
-            Boolean isOnline,
-            Integer unreadCount
-        ) {
-            this.id = id;
-            this.recipientName = recipientName;
-            this.status = status;
-            this.lastMessage = lastMessage;
-            this.lastMessageDate = lastMessageDate;
-            this.recipientProfileImage = recipientProfileImage;
-            this.isOnline = isOnline;
-            this.unreadCount = unreadCount;
-            this.isGroup = false;
-            this.participants = new List<String>();
-        }
-        
-        public Conversation(
-            String id,
-            String recipientName,
-            String status,
-            String lastMessage,
-            Datetime lastMessageDate,
-            String recipientProfileImage,
-            Boolean isOnline,
+            String id, 
+            String recipientName, 
+            String status, 
+            String lastMessage, 
+            Datetime lastMessageDate, 
+            String recipientProfileImage, 
+            Boolean isOnline, 
             Integer unreadCount,
             Boolean isGroup,
-            List<String> participants
+            List<String> participants,
+            String senderId,
+            String senderName
         ) {
             this.id = id;
             this.recipientName = recipientName;
@@ -660,6 +760,40 @@ public with sharing class NuvitekMessagingController {
             this.unreadCount = unreadCount;
             this.isGroup = isGroup;
             this.participants = participants;
+            this.senderId = senderId;
+            this.senderName = senderName;
+        }
+        
+        // Overloaded constructor for non-group conversations without sender info
+        public Conversation(
+            String id, 
+            String recipientName, 
+            String status, 
+            String lastMessage, 
+            Datetime lastMessageDate, 
+            String recipientProfileImage, 
+            Boolean isOnline, 
+            Integer unreadCount
+        ) {
+            this(id, recipientName, status, lastMessage, lastMessageDate, 
+                recipientProfileImage, isOnline, unreadCount, false, null, null, null);
+        }
+        
+        // Overloaded constructor for group conversations without sender info
+        public Conversation(
+            String id, 
+            String recipientName, 
+            String status, 
+            String lastMessage, 
+            Datetime lastMessageDate, 
+            String recipientProfileImage, 
+            Boolean isOnline, 
+            Integer unreadCount,
+            Boolean isGroup,
+            List<String> participants
+        ) {
+            this(id, recipientName, status, lastMessage, lastMessageDate, 
+                recipientProfileImage, isOnline, unreadCount, isGroup, participants, null, null);
         }
     }
     
@@ -753,16 +887,18 @@ public with sharing class NuvitekMessagingController {
             
             // Also get contact names if any participants are contacts
             List<String> contactIds = new List<String>();
-            for (String userId : allParticipants) {
-                if (userTypes.containsKey(userId) && userTypes.get(userId) == 'Contact') {
-                    contactIds.add(userId);
+            if (userTypes != null) {
+                for (String userId : allParticipants) {
+                    if (userTypes.containsKey(userId) && userTypes.get(userId) == 'Contact') {
+                        contactIds.add(userId);
+                    }
                 }
-            }
-            
-            if (!contactIds.isEmpty()) {
-                List<Contact> contacts = [SELECT Id, Name FROM Contact WHERE Id IN :contactIds];
-                for (Contact cnt : contacts) {
-                    participantNames.put(cnt.Id, cnt.Name);
+                
+                if (!contactIds.isEmpty()) {
+                    List<Contact> contacts = [SELECT Id, Name FROM Contact WHERE Id IN :contactIds];
+                    for (Contact cnt : contacts) {
+                        participantNames.put(cnt.Id, cnt.Name);
+                    }
                 }
             }
             
@@ -829,7 +965,9 @@ public with sharing class NuvitekMessagingController {
                 false,
                 0,
                 true, // isGroup
-                allParticipants // Add participants list
+                allParticipants, // Add participants list
+                null,
+                null
             );
         } catch (Exception e) {
             throw new AuraHandledException('Error creating group conversation: ' + e.getMessage());
@@ -939,5 +1077,55 @@ public with sharing class NuvitekMessagingController {
         }
         
         return prompt;
+    }
+    
+    /**
+     * Delete a conversation and all its messages
+     * 
+     * @param conversationId ID of the conversation to delete
+     * @return Boolean indicating if the deletion was successful
+     */
+    @AuraEnabled
+    public static Boolean deleteConversation(String conversationId) {
+        try {
+            // First delete all messages in the conversation
+            List<Message__c> messages = [SELECT Id FROM Message__c WHERE Conversation__c = :conversationId];
+            if (!messages.isEmpty()) {
+                delete messages;
+            }
+            
+            // Then delete the conversation itself
+            Conversation__c conversation = [SELECT Id FROM Conversation__c WHERE Id = :conversationId LIMIT 1];
+            delete conversation;
+            
+            return true;
+        } catch (Exception e) {
+            throw new AuraHandledException('Error deleting conversation: ' + e.getMessage());
+        }
+    }
+    
+    /**
+     * Delete multiple conversations and all their messages
+     * 
+     * @param conversationIds List of conversation IDs to delete
+     * @return Integer count of successfully deleted conversations
+     */
+    @AuraEnabled
+    public static Integer deleteConversations(List<String> conversationIds) {
+        try {
+            // Delete all messages in the selected conversations
+            List<Message__c> messages = [SELECT Id FROM Message__c WHERE Conversation__c IN :conversationIds];
+            if (!messages.isEmpty()) {
+                delete messages;
+            }
+            
+            // Delete the conversations
+            List<Conversation__c> conversations = [SELECT Id FROM Conversation__c WHERE Id IN :conversationIds];
+            delete conversations;
+            
+            return conversations.size();
+        } catch (Exception e) {
+            throw new AuraHandledException('Error deleting conversations: ' + e.getMessage());
+        }
     }
 } 
