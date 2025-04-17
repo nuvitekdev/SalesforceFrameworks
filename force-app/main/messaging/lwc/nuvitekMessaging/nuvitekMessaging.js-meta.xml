@@ -15,9 +15,29 @@
     <targetConfigs>
         <targetConfig targets="lightning__AppPage,lightning__RecordPage,lightning__HomePage">
             <property name="componentMaxHeight" type="Integer" label="Max Height (px)" description="Maximum height of the component in pixels" default="600" />
+            <property name="themeName" type="String" label="Theme" description="Default theme for the component" datasource="light,dark" default="light" />
+            <property name="primaryColor" type="String" label="Primary Color" description="Primary brand color (hex code)" default="#0070d2" />
+            <property name="accentColor" type="String" label="Accent Color" description="Secondary accent color for components like message bubbles (hex code)" default="#22BDC1" />
+            <property name="textColor" type="String" label="Text Color" description="Primary text color (hex code)" default="#1d1d1f" />
+            <property name="textSecondaryColor" type="String" label="Secondary Text Color" description="Secondary text color for less important text (hex code)" default="#6e6e73" />
+            <property name="backgroundColor" type="String" label="Background Color" description="Main background color (hex code)" default="#ffffff" />
+            <property name="backgroundAltColor" type="String" label="Alternative Background Color" description="Alternative background color for message area (hex code)" default="#f5f5f7" />
+            <property name="borderColor" type="String" label="Border Color" description="Color for borders and dividers (hex code)" default="#e0e5ee" />
+            <property name="messageOutgoingColor" type="String" label="Outgoing Message Color" description="Background color for outgoing messages (hex code)" default="#22BDC1" />
+            <property name="messageIncomingColor" type="String" label="Incoming Message Color" description="Background color for incoming messages (hex code)" default="#f3f5f7" />
         </targetConfig>
         <targetConfig targets="lightningCommunity__Default">
             <property name="componentMaxHeight" type="Integer" label="Max Height (px)" description="Maximum height of the component in pixels" default="600" />
+            <property name="themeName" type="String" label="Theme" description="Default theme for the component" datasource="light,dark" default="light" />
+            <property name="primaryColor" type="String" label="Primary Color" description="Primary brand color (hex code)" default="#0070d2" />
+            <property name="accentColor" type="String" label="Accent Color" description="Secondary accent color for components like message bubbles (hex code)" default="#22BDC1" />
+            <property name="textColor" type="String" label="Text Color" description="Primary text color (hex code)" default="#1d1d1f" />
+            <property name="textSecondaryColor" type="String" label="Secondary Text Color" description="Secondary text color for less important text (hex code)" default="#6e6e73" />
+            <property name="backgroundColor" type="String" label="Background Color" description="Main background color (hex code)" default="#ffffff" />
+            <property name="backgroundAltColor" type="String" label="Alternative Background Color" description="Alternative background color for message area (hex code)" default="#f5f5f7" />
+            <property name="borderColor" type="String" label="Border Color" description="Color for borders and dividers (hex code)" default="#e0e5ee" />
+            <property name="messageOutgoingColor" type="String" label="Outgoing Message Color" description="Background color for outgoing messages (hex code)" default="#22BDC1" />
+            <property name="messageIncomingColor" type="String" label="Incoming Message Color" description="Background color for incoming messages (hex code)" default="#f3f5f7" />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle> 

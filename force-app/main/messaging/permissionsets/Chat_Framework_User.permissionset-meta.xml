@@ -49,11 +49,7 @@
     
     <!-- Class Access -->
     <classAccesses>
-        <apexClass>LwcPlatformEventChatController</apexClass>
-        <enabled>true</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>LwcPlatformEventChatControllerTest</apexClass>
+        <apexClass>NuvitekMessagingController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
 </PermissionSet> 

@@ -20,6 +20,19 @@ export default class NuvitekMessaging extends LightningElement {
     channelName = "/event/Nuvitek_Message__e";
     subscription = null;
     
+    // Theme and branding properties
+    @api themeName = 'light';
+    @api primaryColor = '#0070d2';
+    @api secondaryColor = '#f3f3f3';
+    @api accentColor = '#22BDC1';
+    @api textColor = '#1d1d1f';
+    @api textSecondaryColor = '#6e6e73';
+    @api backgroundColor = '#ffffff';
+    @api backgroundAltColor = '#f5f5f7';
+    @api borderColor = '#e0e5ee';
+    @api messageOutgoingColor;
+    @api messageIncomingColor;
+    
     // State variables
     @track isLoading = true;
     @track error = null;
@@ -45,11 +58,65 @@ export default class NuvitekMessaging extends LightningElement {
     // Initialize component
     connectedCallback() {
         this.initializeComponent();
+        this.applyThemeDefaults();
+        // Listen for theme change events from nuvitekCustomThemeLayout
+        this.registerThemeListener();
     }
     
     // Clean up on disconnect
     disconnectedCallback() {
         this.unsubscribeFromEvents();
+    }
+    
+    // Apply default theme colors if not provided
+    applyThemeDefaults() {
+        // Set default message bubble colors if not provided
+        if (!this.messageOutgoingColor) {
+            this.messageOutgoingColor = this.accentColor || this.primaryColor;
+        }
+        if (!this.messageIncomingColor) {
+            this.messageIncomingColor = this.themeName === 'dark' ? '#3d3d3f' : '#f3f5f7';
+        }
+    }
+    
+    // Register listener for theme change events
+    registerThemeListener() {
+        window.addEventListener('nuvitek_theme_changed', (event) => {
+            if (event.detail) {
+                this.themeName = event.detail.theme || this.themeName;
+                
+                // Update colors based on new theme
+                if (this.themeName === 'dark') {
+                    this.applyDarkTheme(event.detail);
+                } else {
+                    this.applyLightTheme(event.detail);
+                }
+                
+                // Force re-render to apply new styles
+                this.template.host.classList.remove('theme-light', 'theme-dark');
+                this.template.host.classList.add(`theme-${this.themeName}`);
+            }
+        });
+    }
+    
+    // Apply dark theme colors
+    applyDarkTheme(themeDetail) {
+        this.backgroundColor = themeDetail.backgroundColor || '#1c1c1e';
+        this.backgroundAltColor = themeDetail.backgroundAltColor || '#2c2c2e';
+        this.textColor = themeDetail.textColor || '#ffffff';
+        this.textSecondaryColor = themeDetail.textSecondaryColor || '#8e8e93';
+        this.borderColor = themeDetail.borderColor || '#38383a';
+        this.messageIncomingColor = themeDetail.messageIncomingColor || '#3d3d3f';
+    }
+    
+    // Apply light theme colors
+    applyLightTheme(themeDetail) {
+        this.backgroundColor = themeDetail.backgroundColor || '#ffffff';
+        this.backgroundAltColor = themeDetail.backgroundAltColor || '#f5f5f7';
+        this.textColor = themeDetail.textColor || '#1d1d1f';
+        this.textSecondaryColor = themeDetail.textSecondaryColor || '#6e6e73';
+        this.borderColor = themeDetail.borderColor || '#e0e5ee';
+        this.messageIncomingColor = themeDetail.messageIncomingColor || '#f3f5f7';
     }
     
     // Initialize the component
@@ -77,6 +144,31 @@ export default class NuvitekMessaging extends LightningElement {
         } catch (error) {
             this.handleError(error);
         }
+    }
+    
+    // CSS custom properties for theme
+    get themeStyles() {
+        return `
+            --primary-color: ${this.primaryColor};
+            --secondary-color: ${this.secondaryColor};
+            --accent-color: ${this.accentColor};
+            --text-color: ${this.textColor};
+            --text-secondary: ${this.textSecondaryColor};
+            --background: ${this.backgroundColor};
+            --background-alt: ${this.backgroundAltColor};
+            --border-color: ${this.borderColor};
+            --message-outgoing-color: ${this.messageOutgoingColor || this.accentColor};
+            --message-incoming-color: ${this.messageIncomingColor};
+        `;
+    }
+    
+    // CSS styles based on max height and theme
+    get containerStyle() {
+        const heightStyle = this.componentMaxHeight 
+            ? `max-height: ${this.componentMaxHeight}px; height: ${this.componentMaxHeight}px;` 
+            : 'max-height: 600px; height: 600px;';
+        
+        return `${heightStyle} ${this.themeStyles}`;
     }
     
     // Subscribe to platform events for real-time messaging
@@ -143,20 +235,25 @@ export default class NuvitekMessaging extends LightningElement {
         if (this.selectedConversation && 
             payload.ConversationId__c === this.selectedConversation.id) {
             const isFromCurrentUser = payload.SenderId__c === this.currentUser.id;
-            const message = {
-                id: messageEvent.data.event.replayId,
-                content: payload.Message__c,
-                senderId: payload.SenderId__c,
-                senderName: payload.SenderName__c,
-                timestamp: payload.Timestamp__c,
-                isFromCurrentUser: isFromCurrentUser,
-                formattedTime: this.formatTimestamp(payload.Timestamp__c),
-                messageWrapperClass: isFromCurrentUser ? 'message-wrapper outgoing' : 'message-wrapper incoming',
-                messageBubbleClass: isFromCurrentUser ? 'message-bubble outgoing' : 'message-bubble incoming'
-            };
             
-            this.messages = [...this.messages, message];
-            this.scrollToBottom();
+            // Skip adding the message if it's from the current user 
+            // as we've already added it locally for immediate feedback
+            if (!isFromCurrentUser) {
+                const message = {
+                    id: messageEvent.data.event.replayId,
+                    content: payload.Message__c,
+                    senderId: payload.SenderId__c,
+                    senderName: payload.SenderName__c,
+                    timestamp: payload.Timestamp__c,
+                    isFromCurrentUser: isFromCurrentUser,
+                    formattedTime: this.formatTimestamp(payload.Timestamp__c),
+                    messageWrapperClass: isFromCurrentUser ? 'message-wrapper outgoing' : 'message-wrapper incoming',
+                    messageBubbleClass: isFromCurrentUser ? 'message-bubble outgoing' : 'message-bubble incoming'
+                };
+                
+                this.messages = [...this.messages, message];
+                this.scrollToBottom();
+            }
         }
         
         // Update conversations list with new message info
@@ -434,13 +531,6 @@ export default class NuvitekMessaging extends LightningElement {
                 container.scrollTop = container.scrollHeight;
             }
         }, 50);
-    }
-    
-    // CSS styles based on max height
-    get containerStyle() {
-        return this.componentMaxHeight 
-            ? `max-height: ${this.componentMaxHeight}px; height: ${this.componentMaxHeight}px;` 
-            : 'max-height: 600px; height: 600px;';
     }
     
     // Check if message input is empty
