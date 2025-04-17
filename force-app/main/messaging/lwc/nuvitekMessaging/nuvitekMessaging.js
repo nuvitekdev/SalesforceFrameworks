@@ -69,6 +69,7 @@ export default class NuvitekMessaging extends LightningElement {
     // Clean up on disconnect
     disconnectedCallback() {
         this.unsubscribeFromEvents();
+        this.showAISummary = false; // Ensure AI summary panel is closed when component is destroyed
     }
     
     // Initialize the component
@@ -670,6 +671,9 @@ export default class NuvitekMessaging extends LightningElement {
             this.selectedConversation = selectedConv;
             this.loadMessages(conversationId);
             
+            // Close AI summary panel when changing conversations
+            this.showAISummary = false;
+            
             // Mark as read in conversations list
             this.markConversationAsRead(conversationId);
         }
@@ -702,6 +706,7 @@ export default class NuvitekMessaging extends LightningElement {
     // Go back to conversations list
     handleBackToList() {
         this.selectedConversation = null;
+        this.showAISummary = false;
     }
     
     // Format timestamp for display
