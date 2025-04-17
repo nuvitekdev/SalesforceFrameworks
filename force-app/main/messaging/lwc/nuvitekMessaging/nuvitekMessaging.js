@@ -133,6 +133,7 @@ export default class NuvitekMessaging extends LightningElement {
             --message-incoming-color: ${this.messageIncomingColor};
             --message-outgoing-text-color: ${outgoingTextColor};
             --message-incoming-text-color: ${incomingTextColor};
+            --group-participants-color: ${headerTextColor};
         `;
     }
     
@@ -276,10 +277,14 @@ export default class NuvitekMessaging extends LightningElement {
         try {
             this.isLoading = true;
             const data = await getConversations();
-            this.conversations = data.map(conv => ({
-                ...conv,
-                formattedTime: this.formatTimestamp(conv.lastMessageDate)
-            }));
+            this.conversations = data.map(conv => {
+                // Keep the group participant list as status for groups
+                // Status is already populated with participant names from the controller
+                return {
+                    ...conv,
+                    formattedTime: this.formatTimestamp(conv.lastMessageDate)
+                };
+            });
             this.isLoading = false;
         } catch (error) {
             this.handleError(error);
@@ -358,6 +363,53 @@ export default class NuvitekMessaging extends LightningElement {
     // Handle message input change
     handleMessageChange(event) {
         this.newMessage = event.target.value;
+        
+        // Adjust textarea height if needed
+        this.adjustTextareaHeight();
+    }
+    
+    // Adjust textarea height based on content
+    adjustTextareaHeight() {
+        setTimeout(() => {
+            const textarea = this.template.querySelector('lightning-textarea');
+            if (textarea) {
+                const textareaElement = textarea.querySelector('textarea');
+                if (textareaElement) {
+                    // Reset height to recalculate
+                    textareaElement.style.height = 'auto';
+                    
+                    // Calculate new height (with max height limit)
+                    const maxHeight = 150; // Maximum height in pixels
+                    const newHeight = Math.min(textareaElement.scrollHeight, maxHeight);
+                    
+                    // Apply new height
+                    textareaElement.style.height = newHeight + 'px';
+                    
+                    // Scroll to bottom if we're at the bottom already
+                    if (this.isScrolledToBottom) {
+                        this.scrollToBottom();
+                    }
+                }
+            }
+        }, 0);
+    }
+    
+    // Check if scrolled to bottom
+    get isScrolledToBottom() {
+        const container = this.template.querySelector('.chat-messages');
+        if (container) {
+            const threshold = 30; // pixels from bottom
+            return (container.scrollHeight - container.scrollTop - container.clientHeight) < threshold;
+        }
+        return false;
+    }
+    
+    // Component lifecycle hooks
+    renderedCallback() {
+        if (!this._textareaInitialized && this.template.querySelector('lightning-textarea')) {
+            this._textareaInitialized = true;
+            this.adjustTextareaHeight();
+        }
     }
     
     // Search for users or contacts

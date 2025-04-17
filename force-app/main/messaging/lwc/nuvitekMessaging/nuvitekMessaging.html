@@ -41,7 +41,7 @@
                                     <div class="conversation-avatar">
                                         <template if:true={conversation.isGroup}>
                                             <lightning-avatar 
-                                                fallback-icon-name="standard:groups" 
+                                                fallback-icon-name="custom:custom84" 
                                                 alternative-text="Group chat">
                                             </lightning-avatar>
                                         </template>
@@ -95,12 +95,12 @@
                         <div class="chat-participant">
                             <template if:true={selectedConversation.isGroup}>
                                 <lightning-avatar 
-                                    fallback-icon-name="standard:groups" 
+                                    fallback-icon-name="custom:custom84" 
                                     alternative-text="Group chat">
                                 </lightning-avatar>
                                 <div class="chat-participant-details">
                                     <h2>{selectedConversation.recipientName}</h2>
-                                    <div class="participant-status">{selectedConversation.status}</div>
+                                    <div class="group-participants">{selectedConversation.status}</div>
                                 </div>
                             </template>
                             <template if:false={selectedConversation.isGroup}>
@@ -136,11 +136,9 @@
                                             </lightning-avatar>
                                         </div>
                                     </template>
-                                    <div class={message.messageBubbleClass}>
+                                    <div class={message.messageBubbleClass} title={message.senderName}>
                                         <template if:true={selectedConversation.isGroup}>
-                                            <template if:false={message.isFromCurrentUser}>
-                                                <div class="message-sender">{message.senderName}</div>
-                                            </template>
+                                            <div class="message-sender">{message.senderName}</div>
                                         </template>
                                         <div class="message-content">{message.content}</div>
                                         <div class="message-time">{message.formattedTime}</div>
@@ -163,7 +161,9 @@
                             placeholder="Type your message..." 
                             value={newMessage} 
                             onkeypress={handleMessageKeyPress} 
-                            onchange={handleMessageChange}>
+                            onchange={handleMessageChange}
+                            variant="label-hidden"
+                            class="message-input">
                         </lightning-textarea>
                         <lightning-button-icon 
                             icon-name="utility:send" 
@@ -171,7 +171,8 @@
                             alternative-text="Send" 
                             title="Send" 
                             disabled={isMessageEmpty}
-                            onclick={handleSendMessage}>
+                            onclick={handleSendMessage}
+                            class="send-button">
                         </lightning-button-icon>
                     </div>
                 </div>

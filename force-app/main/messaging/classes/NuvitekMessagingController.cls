@@ -47,7 +47,7 @@ public with sharing class NuvitekMessagingController {
             // Query for all conversations instead of filtering by participant
             List<Conversation__c> allRecords = [
                 SELECT Id, RecipientName__c, RecipientId__c, RecipientProfileImage__c, 
-                       LastMessage__c, LastMessageDate__c, Participants__c
+                       LastMessage__c, LastMessageDate__c, Participants__c, IsGroup__c, GroupName__c
                 FROM Conversation__c 
                 ORDER BY LastMessageDate__c DESC
             ];
@@ -63,38 +63,96 @@ public with sharing class NuvitekMessagingController {
                         Boolean isOnline = false;
                         String status = 'Offline';
                         
-                        if (record.RecipientId__c != null && record.RecipientId__c.startsWith('005')) {
-                            // If the recipient is a user, check their last login time
-                            try {
-                                User recipient = [
-                                    SELECT LastLoginDate 
-                                    FROM User 
-                                    WHERE Id = :record.RecipientId__c
-                                    LIMIT 1
-                                ];
-                                
-                                if (recipient.LastLoginDate != null && 
-                                    recipient.LastLoginDate > Datetime.now().addMinutes(-15)) {
-                                    isOnline = true;
-                                    status = 'Active now';
-                                } else if (recipient.LastLoginDate != null) {
-                                    status = 'Last seen ' + formatTimeSince(recipient.LastLoginDate);
+                        // Check if this is a group conversation
+                        if (record.IsGroup__c) {
+                            // Get participant names for group display
+                            Map<String, String> participantNames = new Map<String, String>();
+                            
+                            // Filter user IDs (can't use LIKE on ID fields)
+                            List<String> userIdsFiltered = new List<String>();
+                            for(String pId : participants) {
+                                if(pId.startsWith('005')) {
+                                    userIdsFiltered.add(pId);
                                 }
-                            } catch (Exception e) {
-                                // Recipient user might not exist anymore, continue with offline status
                             }
+                            
+                            // Query users with properly filtered IDs
+                            if (!userIdsFiltered.isEmpty()) {
+                                List<User> users = [SELECT Id, Name FROM User WHERE Id IN :userIdsFiltered];
+                                for (User usr : users) {
+                                    participantNames.put(usr.Id, usr.Name);
+                                }
+                            }
+                            
+                            // Create a list of participant names for display
+                            List<String> participantNamesList = new List<String>();
+                            for (String pId : participants) {
+                                if (participantNames.containsKey(pId)) {
+                                    participantNamesList.add(participantNames.get(pId));
+                                }
+                            }
+                            
+                            // Limit to a reasonable number to avoid overly long lists
+                            if (participantNamesList.size() > 10) {
+                                List<String> limitedNames = new List<String>();
+                                // Add first 10 names
+                                for (Integer i = 0; i < 10 && i < participantNamesList.size(); i++) {
+                                    limitedNames.add(participantNamesList[i]);
+                                }
+                                limitedNames.add('and ' + (participants.size() - 10) + ' more');
+                                participantNamesList = limitedNames;
+                            }
+                            
+                            // Set status to the comma-delimited list of participant names
+                            status = String.join(participantNamesList, ', ');
+                            
+                            conversations.add(new Conversation(
+                                record.Id,
+                                record.RecipientName__c,
+                                status,
+                                record.LastMessage__c,
+                                record.LastMessageDate__c,
+                                null, // Group doesn't have a profile image
+                                false,
+                                0,    // Unread count would be calculated in a real implementation
+                                true, // This is a group
+                                participants // Add participants list
+                            ));
+                        } else {
+                            // This is a 1-on-1 conversation
+                            if (record.RecipientId__c != null && record.RecipientId__c.startsWith('005')) {
+                                // If the recipient is a user, check their last login time
+                                try {
+                                    User recipient = [
+                                        SELECT LastLoginDate 
+                                        FROM User 
+                                        WHERE Id = :record.RecipientId__c
+                                        LIMIT 1
+                                    ];
+                                    
+                                    if (recipient.LastLoginDate != null && 
+                                        recipient.LastLoginDate > Datetime.now().addMinutes(-15)) {
+                                        isOnline = true;
+                                        status = 'Active now';
+                                    } else if (recipient.LastLoginDate != null) {
+                                        status = 'Last seen ' + formatTimeSince(recipient.LastLoginDate);
+                                    }
+                                } catch (Exception e) {
+                                    // Recipient user might not exist anymore, continue with offline status
+                                }
+                            }
+                            
+                            conversations.add(new Conversation(
+                                record.Id,
+                                record.RecipientName__c,
+                                status,
+                                record.LastMessage__c,
+                                record.LastMessageDate__c,
+                                record.RecipientProfileImage__c,
+                                isOnline,
+                                0 // Unread count would be calculated in a real implementation
+                            ));
                         }
-                        
-                        conversations.add(new Conversation(
-                            record.Id,
-                            record.RecipientName__c,
-                            status,
-                            record.LastMessage__c,
-                            record.LastMessageDate__c,
-                            record.RecipientProfileImage__c,
-                            isOnline,
-                            0 // Unread count would be calculated in a real implementation
-                        ));
                     }
                 }
             }
@@ -580,6 +638,28 @@ public with sharing class NuvitekMessagingController {
                 }
             }
             
+            // Create a list of participant names for display
+            List<String> participantNamesList = new List<String>();
+            for (String pId : allParticipants) {
+                if (participantNames.containsKey(pId)) {
+                    participantNamesList.add(participantNames.get(pId));
+                }
+            }
+            
+            // Limit to a reasonable number to avoid overly long lists
+            if (participantNamesList.size() > 10) {
+                List<String> limitedNames = new List<String>();
+                // Add first 10 names
+                for (Integer i = 0; i < 10 && i < participantNamesList.size(); i++) {
+                    limitedNames.add(participantNamesList[i]);
+                }
+                limitedNames.add('and ' + (allParticipants.size() - 10) + ' more');
+                participantNamesList = limitedNames;
+            }
+            
+            // Set status to the comma-delimited list of participant names
+            String status = String.join(participantNamesList, ', ');
+            
             // Create the group conversation
             String participants = JSON.serialize(allParticipants);
             String welcomeMessage = currentUser.Name + ' created group "' + groupName + '"';
@@ -598,12 +678,14 @@ public with sharing class NuvitekMessagingController {
             return new Conversation(
                 convoRecord.Id,
                 convoRecord.RecipientName__c,
-                'Group · ' + allParticipants.size() + ' members',
+                status,
                 convoRecord.LastMessage__c,
                 convoRecord.LastMessageDate__c,
                 null, // Group profile image could be implemented
                 false,
-                0
+                0,
+                true, // isGroup
+                allParticipants // Add participants list
             );
         } catch (Exception e) {
             throw new AuraHandledException('Error creating group conversation: ' + e.getMessage());

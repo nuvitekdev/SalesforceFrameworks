@@ -185,6 +185,7 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
+    transition: height 0.3s ease;
 }
 
 .chat-header {
@@ -291,11 +292,26 @@
     border-top: 1px solid var(--border-color, #e0e5ee);
     background-color: var(--background, #ffffff);
     flex-shrink: 0;
+    align-items: center;
+    position: relative;
 }
 
 .chat-input lightning-textarea {
     flex: 1;
-    margin-right: 0.5rem;
+    margin-right: 3rem;
+}
+
+.chat-input lightning-button-icon {
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Handle textarea auto-sizing */
+.chat-input .slds-form-element__control {
+    height: auto;
+    min-height: 2.5rem;
 }
 
 /* Dark mode input styling */
@@ -433,10 +449,22 @@
 }
 
 .message-sender {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    color: var(--primary-color, #22BDC1);
+    color: var(--message-incoming-text-color, #1d1d1f);
     margin-bottom: 0.25rem;
+    padding: 0 0.25rem;
+    letter-spacing: 0.01em;
+    display: block;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 0.25rem;
+}
+
+/* Style for sender name in user's own messages */
+.message-bubble.outgoing .message-sender {
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    text-align: left;
 }
 
 .chat-participant-details {
@@ -447,11 +475,13 @@
 
 .participant-status {
     font-size: 0.75rem;
-    color: #706e6b;
+    color: var(--header-text-color, #ffffff);
+    opacity: 0.85;
     display: flex;
     align-items: center;
 }
 
+/* Online indicator dot */
 .online-indicator {
     width: 8px;
     height: 8px;
@@ -459,4 +489,35 @@
     background-color: #04844b;
     margin-right: 0.5rem;
     display: inline-block;
+}
+
+/* Group participants styling */
+.group-participants {
+    font-size: 0.75rem;
+    color: var(--header-text-color, #ffffff);
+    margin-top: 0.1rem;
+    white-space: normal;
+    overflow: visible;
+    max-width: 100%;
+    line-height: 1.2;
+    opacity: 0.9;
+}
+
+/* Message input styling */
+.message-input {
+    resize: none;
+    transition: height 0.2s ease;
+}
+
+.message-input textarea {
+    resize: none;
+    min-height: 2.5rem;
+    max-height: 150px;
+    transition: height 0.2s ease;
+    overflow-y: auto;
+    padding-right: 2.5rem;
+}
+
+.send-button {
+    z-index: 2;
 } 
