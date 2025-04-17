@@ -9,6 +9,7 @@ import sendMessage from "@salesforce/apex/NuvitekMessagingController.sendMessage
 import findUserOrContact from "@salesforce/apex/NuvitekMessagingController.findUserOrContact";
 import startConversation from "@salesforce/apex/NuvitekMessagingController.startConversation";
 import createGroupConversation from "@salesforce/apex/NuvitekMessagingController.createGroupConversation";
+import generateAISummary from "@salesforce/apex/NuvitekMessagingController.generateAISummary";
 
 /**
  * Nuvitek Messaging Component
@@ -29,6 +30,9 @@ export default class NuvitekMessaging extends LightningElement {
     
     // Layout properties
     @api componentHeight = 600;
+    
+    // Functionality properties
+    @api disableInitialLoading = false;
     
     // State variables
     @track isLoading = false;
@@ -52,6 +56,11 @@ export default class NuvitekMessaging extends LightningElement {
     // Search input
     @track searchTerm = '';
     
+    // AI Summary related properties
+    @track showAISummary = false;
+    @track isGeneratingSummary = false;
+    @track conversationSummary = '';
+    
     // Initialize component
     connectedCallback() {
         this.initializeComponent();
@@ -65,7 +74,8 @@ export default class NuvitekMessaging extends LightningElement {
     // Initialize the component
     async initializeComponent() {
         try {
-            this.isLoading = true;
+            // Only show loading spinner if disableInitialLoading is false
+            this.isLoading = !this.disableInitialLoading;
             
             // Check if platform events are enabled
             const isEmpAvailable = await isEmpEnabled();
@@ -272,84 +282,130 @@ export default class NuvitekMessaging extends LightningElement {
         this.conversations = updatedConversations;
     }
     
-    // Load user's conversations
+    // Load conversations from the server
     async loadConversations() {
         try {
-            this.isLoading = true;
-            const data = await getConversations();
-            this.conversations = data.map(conv => {
-                // Keep the group participant list as status for groups
-                // Status is already populated with participant names from the controller
-                return {
-                    ...conv,
-                    formattedTime: this.formatTimestamp(conv.lastMessageDate)
-                };
-            });
+            // Only show loading if disableInitialLoading is false
+            if (!this.disableInitialLoading) {
+                this.isLoading = true;
+            }
+            
+            const result = await getConversations();
+            
+            // Add formatted timestamps to each conversation
+            if (result) {
+                this.conversations = result.map(conv => {
+                    return {
+                        ...conv,
+                        formattedTime: this.formatTimestamp(conv.lastMessageDate)
+                    };
+                });
+            } else {
+                this.conversations = [];
+            }
+            
             this.isLoading = false;
         } catch (error) {
             this.handleError(error);
         }
     }
     
-    // Load messages for a conversation
+    // Load messages for the selected conversation
     async loadMessages(conversationId) {
         if (!conversationId) return;
         
         try {
-            this.isLoading = true;
-            const data = await getMessages({ conversationId: conversationId });
-            this.messages = data.map(msg => ({
-                ...msg,
-                isFromCurrentUser: msg.senderId === this.currentUser.id,
-                formattedTime: this.formatTimestamp(msg.timestamp),
-                messageWrapperClass: msg.senderId === this.currentUser.id ? 'message-wrapper outgoing' : 'message-wrapper incoming',
-                messageBubbleClass: msg.senderId === this.currentUser.id ? 'message-bubble outgoing' : 'message-bubble incoming'
-            }));
-            this.scrollToBottom();
+            // Only show loading if disableInitialLoading is false
+            if (!this.disableInitialLoading) {
+                this.isLoading = true;
+            }
+            
+            const result = await getMessages({ conversationId: conversationId });
+            
+            // Add formatted timestamps to each message
+            if (result) {
+                this.messages = result.map(msg => this.formatMessage(msg));
+            } else {
+                this.messages = [];
+            }
+            
             this.isLoading = false;
+            
+            // Scroll to the bottom of the message container
+            this.scrollToBottom();
         } catch (error) {
             this.handleError(error);
         }
+    }
+    
+    // Format a message object with display properties
+    formatMessage(msg) {
+        return {
+            ...msg,
+            isFromCurrentUser: msg.senderId === this.currentUser.id,
+            formattedTime: this.formatTimestamp(msg.timestamp),
+            messageWrapperClass: msg.senderId === this.currentUser.id ? 'message-wrapper outgoing' : 'message-wrapper incoming',
+            messageBubbleClass: msg.senderId === this.currentUser.id ? 'message-bubble outgoing' : 'message-bubble incoming'
+        };
+    }
+    
+    // Generate a temporary local ID for optimistic UI updates
+    generateLocalId() {
+        return 'temp-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
     }
     
     // Send a new message
     async handleSendMessage() {
-        if (!this.newMessage.trim() || !this.selectedConversation) return;
+        if (!this.newMessage || !this.newMessage.trim() || !this.selectedConversation) {
+            return;
+        }
         
         try {
-            const messageContent = this.newMessage.trim();
-            this.newMessage = ''; // Clear input immediately for better UX
+            // Don't show loading spinner for sending messages if disableInitialLoading is true
+            if (!this.disableInitialLoading) {
+                this.isLoading = true;
+            }
             
-            // Create a message object to display in UI immediately
-            const newMessage = {
+            // Prepare the message text
+            const messageText = this.newMessage.trim();
+            
+            // Clear the input field immediately for better UX
+            this.newMessage = '';
+            
+            // Create a temporary optimistic message to show immediately
+            const tempMessage = {
                 id: this.generateLocalId(),
-                content: messageContent,
                 senderId: this.currentUser.id,
                 senderName: this.currentUser.name,
-                timestamp: new Date().toISOString(),
+                content: messageText,
+                timestamp: new Date(),
                 isFromCurrentUser: true,
-                formattedTime: this.formatTimestamp(new Date().toISOString()),
+                formattedTime: this.formatTimestamp(new Date()),
                 messageWrapperClass: 'message-wrapper outgoing',
                 messageBubbleClass: 'message-bubble outgoing'
             };
             
-            // Add to UI immediately
-            this.messages = [...this.messages, newMessage];
+            // Add the optimistic message to the UI
+            this.messages = [...this.messages, tempMessage];
+            
+            // Scroll to the bottom to show the new message
             this.scrollToBottom();
             
-            // Send to server
+            // Send the message to the server
             await sendMessage({
                 conversationId: this.selectedConversation.id,
-                message: messageContent
+                content: messageText
             });
+            
+            // Update the conversation list to show the new message
+            this.loadConversations();
+            
+            this.isLoading = false;
         } catch (error) {
             this.handleError(error);
+            // Restore the message if sending failed
+            this.newMessage = messageText;
         }
-    }
-    
-    // Generate a local ID for UI messages
-    generateLocalId() {
-        return 'local-' + Math.random().toString(36).substring(2, 15);
     }
     
     // Handle Enter key press in message input
@@ -406,6 +462,18 @@ export default class NuvitekMessaging extends LightningElement {
     
     // Component lifecycle hooks
     renderedCallback() {
+        // Apply container style
+        const container = this.template.querySelector('.messaging-container');
+        if (container) {
+            // Apply the container style
+            const heightStyle = this.componentHeight > 0 
+                ? `height: ${this.componentHeight}px; max-height: 100%;` 
+                : 'height: 100%;';
+            
+            container.style.cssText = `${heightStyle} ${this.themeStyles}`;
+        }
+        
+        // Adjust textarea height if needed
         if (!this._textareaInitialized && this.template.querySelector('lightning-textarea')) {
             this._textareaInitialized = true;
             this.adjustTextareaHeight();
@@ -502,65 +570,14 @@ export default class NuvitekMessaging extends LightningElement {
         this.groupName = event.target.value;
     }
     
-    // Create a group conversation
-    async createGroup() {
-        if (this.selectedSearchResults.length < 2) {
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: 'Error',
-                    message: 'Please select at least 2 participants for a group conversation',
-                    variant: 'error'
-                })
-            );
-            return;
-        }
-        
-        try {
-            this.isLoading = true;
-            
-            const userIds = this.selectedSearchResults.map(result => result.id);
-            const userTypes = {};
-            
-            this.selectedSearchResults.forEach(result => {
-                userTypes[result.id] = result.userType;
-            });
-            
-            // Call the createGroupConversation Apex method
-            const conversation = await createGroupConversation({
-                userIds: userIds,
-                userTypes: userTypes,
-                groupName: this.groupName
-            });
-            
-            // Add timestamp formatting
-            conversation.formattedTime = this.formatTimestamp(conversation.lastMessageDate);
-            
-            // Add the new conversation to the top of the list
-            this.conversations = [conversation, ...this.conversations];
-            
-            // Select the new conversation and load its messages
-            this.selectedConversation = conversation;
-            
-            // Load empty message list
-            this.messages = [];
-            
-            // Close the modal and reset state
-            this.showNewMessageModal = false;
-            this.searchTerm = '';
-            this.searchResults = [];
-            this.selectedSearchResults = [];
-            this.isCreatingGroup = false;
-            this.groupName = '';
-            this.isLoading = false;
-        } catch (error) {
-            this.handleError(error);
-        }
-    }
-    
     // Start a new conversation with selected user/contact
     async startNewConversation(userId, userType) {
         try {
-            this.isLoading = true;
+            // Only show loading if disableInitialLoading is false
+            if (!this.disableInitialLoading) {
+                this.isLoading = true;
+            }
+            
             // Call the startConversation Apex method to get the conversation object
             const conversation = await startConversation({ 
                 userId: userId, 
@@ -583,6 +600,53 @@ export default class NuvitekMessaging extends LightningElement {
             this.showNewMessageModal = false;
             this.searchTerm = '';
             this.searchResults = [];
+            this.isLoading = false;
+        } catch (error) {
+            this.handleError(error);
+        }
+    }
+    
+    // Create a new group conversation
+    async createGroup() {
+        if (this.selectedSearchResults.length < 2) {
+            this.showToast('Error', 'You need to select at least 2 participants for a group', 'error');
+            return;
+        }
+        
+        try {
+            // Only show loading if disableInitialLoading is false
+            if (!this.disableInitialLoading) {
+                this.isLoading = true;
+            }
+            
+            // Prepare participant list
+            const participants = this.selectedSearchResults.map(p => ({
+                id: p.id,
+                type: p.userType
+            }));
+            
+            // Call Apex method to create the group
+            const conversation = await createGroupConversation({
+                groupName: this.groupName || null,
+                participants: participants
+            });
+            
+            // Add timestamp formatting
+            conversation.formattedTime = this.formatTimestamp(conversation.lastMessageDate);
+            
+            // Add the new conversation to the top of the list
+            this.conversations = [conversation, ...this.conversations];
+            
+            // Select the new conversation
+            this.selectedConversation = conversation;
+            
+            // Reset state and close modal
+            this.showNewMessageModal = false;
+            this.searchTerm = '';
+            this.searchResults = [];
+            this.selectedSearchResults = [];
+            this.isCreatingGroup = false;
+            this.groupName = '';
             this.isLoading = false;
         } catch (error) {
             this.handleError(error);
@@ -750,5 +814,91 @@ export default class NuvitekMessaging extends LightningElement {
     
     set searchResults(value) {
         this._searchResults = value;
+    }
+    
+    // Helper to show toast notifications
+    showToast(title, message, variant) {
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: title,
+                message: message,
+                variant: variant || 'info'
+            })
+        );
+    }
+    
+    // Format the summary for display with rich text
+    get formattedSummary() {
+        if (!this.conversationSummary) {
+            return '';
+        }
+        
+        // Replace line breaks with HTML breaks for proper display
+        return this.conversationSummary.replace(/\n/g, '<br/>');
+    }
+    
+    // Handle AI summarize button click
+    async handleAISummarize() {
+        // If no conversation or no messages, do nothing
+        if (!this.selectedConversation || !this.hasMessages) {
+            this.showToast('Info', 'No messages to summarize', 'info');
+            return;
+        }
+        
+        // Toggle the summary display off if it's already showing
+        if (this.showAISummary && !this.isGeneratingSummary) {
+            this.showAISummary = false;
+            return;
+        }
+        
+        // Set up state for generating summary
+        this.showAISummary = true;
+        this.isGeneratingSummary = true;
+        this.conversationSummary = '';
+        
+        try {
+            // Create a detailed summary context with conversation information
+            const summaryContext = {
+                conversationId: this.selectedConversation.id,
+                conversationType: this.selectedConversation.isGroup ? 'Group' : 'Individual',
+                participants: this.selectedConversation.isGroup ? this.selectedConversation.status : this.selectedConversation.recipientName,
+                messageCount: this.messages.length,
+                startTime: this.messages.length > 0 ? this.messages[0].timestamp : null,
+                endTime: this.messages.length > 0 ? this.messages[this.messages.length - 1].timestamp : null
+            };
+            
+            // Format messages for the AI with full content
+            const messageData = this.messages.map(msg => ({
+                id: msg.id,
+                sender: msg.senderName,
+                content: msg.content,
+                timestamp: msg.timestamp,
+                isFromCurrentUser: msg.isFromCurrentUser
+            }));
+            
+            console.log('Sending conversation for summarization:', {
+                context: summaryContext,
+                messageCount: messageData.length
+            });
+            
+            // Call Apex method to generate summary
+            const result = await generateAISummary({
+                conversationContext: JSON.stringify(summaryContext),
+                messages: JSON.stringify(messageData)
+            });
+            
+            // Update state with generated summary
+            this.conversationSummary = result;
+            this.isGeneratingSummary = false;
+        } catch (error) {
+            this.handleError(error);
+            this.conversationSummary = 'Unable to generate summary at this time.';
+            this.isGeneratingSummary = false;
+        }
+    }
+    
+    // Close the summary panel
+    closeSummary() {
+        this.showAISummary = false;
     }
 } 

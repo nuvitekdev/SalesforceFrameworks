@@ -18,6 +18,10 @@
             <property name="componentHeight" type="Integer" label="Component Height" 
                 description="Height of the messaging component in pixels. If set to 0 or if the container is smaller, the component will adapt to available space." default="600" min="0" />
                 
+            <!-- Functionality Properties -->
+            <property name="disableInitialLoading" type="Boolean" label="Disable Initial Loading" 
+                description="When enabled, the component will not show a loading spinner on initialization, making it easier to remove from the page." default="false" />
+                
             <!-- Theme Properties -->
             <property name="primaryColor" type="String" label="Primary Color" 
                 description="Primary color used for headers, navigation elements, buttons, badges, and interactive elements. Controls the color of the conversation and chat headers, the 'new message' button, and the unread message badge." default="#22BDC1" />
@@ -33,6 +37,10 @@
             <property name="componentHeight" type="Integer" label="Component Height" 
                 description="Height of the messaging component in pixels. If set to 0 or if the container is smaller, the component will adapt to available space." default="600" min="0" />
                 
+            <!-- Functionality Properties -->
+            <property name="disableInitialLoading" type="Boolean" label="Disable Initial Loading" 
+                description="When enabled, the component will not show a loading spinner on initialization, making it easier to remove from the page." default="false" />
+                
             <!-- Theme Properties -->
             <property name="primaryColor" type="String" label="Primary Color" 
                 description="Primary color used for headers, navigation elements, buttons, badges, and interactive elements. Controls the color of the conversation and chat headers, the 'new message' button, and the unread message badge." default="#22BDC1" />
@@ -47,6 +55,10 @@
             <!-- Layout Properties -->
             <property name="componentHeight" type="Integer" label="Component Height" 
                 description="Height of the messaging component in pixels. If set to 0 or if the container is smaller, the component will adapt to available space." default="0" min="0" />
+                
+            <!-- Functionality Properties -->
+            <property name="disableInitialLoading" type="Boolean" label="Disable Initial Loading" 
+                description="When enabled, the component will not show a loading spinner on initialization, making it easier to remove from the page." default="false" />
                 
             <!-- Theme Properties -->
             <property name="primaryColor" type="String" label="Primary Color" 

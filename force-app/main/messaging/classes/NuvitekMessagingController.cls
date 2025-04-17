@@ -691,4 +691,109 @@ public with sharing class NuvitekMessagingController {
             throw new AuraHandledException('Error creating group conversation: ' + e.getMessage());
         }
     }
+    
+    /**
+     * Generate an AI summary of a conversation
+     * 
+     * @param conversationContext JSON string containing context about the conversation
+     * @param messages JSON string containing the messages to summarize
+     * @return A formatted summary of the conversation
+     */
+    @AuraEnabled
+    public static String generateAISummary(String conversationContext, String messages) {
+        try {
+            // Parse the context and messages
+            Map<String, Object> context = (Map<String, Object>)JSON.deserializeUntyped(conversationContext);
+            List<Object> messageList = (List<Object>)JSON.deserializeUntyped(messages);
+            
+            // Log the request for debugging
+            System.debug('Context: ' + context);
+            System.debug('Messages to summarize: ' + messageList.size());
+            
+            // Build the prompt for the AI model
+            String prompt = buildAISummaryPrompt(context, messageList);
+            
+            // Get the default LLM configuration to use
+            List<LLM_Configuration__mdt> configs = LLMController.getLLMConfigurations();
+            if (configs.isEmpty()) {
+                return 'Error: No LLM configurations available.';
+            }
+            
+            // Use the first available configuration (or you could filter for a specific one)
+            String configName = configs[0].DeveloperName;
+            
+            try {
+                // Call the LLM service via the LLMController
+                String summary = LLMController.handleRequest(
+                    null, // No record ID needed for conversation summary
+                    configName, 
+                    prompt,
+                    'no summarize', // Use the summarize operation type
+                    null // No related objects needed
+                );
+                
+                // Return the formatted summary from the AI model
+                return summary;
+            } catch (Exception e) {
+                System.debug('Error calling LLM service: ' + e.getMessage());
+                return 'Error generating AI summary: ' + e.getMessage();
+            }
+        } catch (Exception e) {
+            System.debug('Error in generateAISummary: ' + e.getMessage());
+            System.debug(e.getStackTraceString());
+            return 'Error processing conversation data: ' + e.getMessage();
+        }
+    }
+    
+    /**
+     * Build a detailed prompt for the AI model to summarize a conversation
+     * 
+     * @param context Map containing conversation context
+     * @param messageList List of messages to analyze
+     * @return Structured prompt for the AI model
+     */
+    private static String buildAISummaryPrompt(Map<String, Object> context, List<Object> messageList) {
+        String conversationType = (String)context.get('conversationType');
+        String participants = (String)context.get('participants');
+        Integer messageCount = messageList.size();
+        
+        // Start building the detailed prompt
+        String prompt = 'You are an AI assistant tasked with summarizing a conversation from Salesforce messaging.\n\n';
+        
+        // Add conversation context
+        prompt += 'CONVERSATION CONTEXT:\n';
+        prompt += '- Type: ' + (String.isNotBlank(conversationType) ? conversationType : 'Direct Message') + '\n';
+        prompt += '- Participants: ' + (String.isNotBlank(participants) ? participants : 'Unknown') + '\n';
+        prompt += '- Total Messages: ' + messageCount + '\n';
+        
+        if (context.containsKey('startTime') && context.containsKey('endTime')) {
+            prompt += '- Timeframe: ' + context.get('startTime') + ' to ' + context.get('endTime') + '\n';
+        }
+        
+        // Add instructions for the AI
+        prompt += '\nINSTRUCTIONS:\n';
+        prompt += '1. Analyze the conversation and provide a concise summary (3-4 paragraphs).\n';
+        prompt += '2. Identify the main topics discussed.\n';
+        prompt += '3. Extract any key questions, action items, or decisions made.\n';
+        prompt += '4. Note any important dates, numbers, or specific details mentioned.\n';
+        prompt += '5. Format your summary into sections: Overview, Key Points, and Action Items/Next Steps.\n';
+        prompt += '6. If the conversation is very short or lacks substantial content, acknowledge this briefly.\n\n';
+        
+        // Add the actual messages
+        prompt += 'MESSAGES:\n';
+        
+        // Process and add each message
+        for (Object msgObj : messageList) {
+            Map<String, Object> msg = (Map<String, Object>)msgObj;
+            String sender = (String)msg.get('sender');
+            String content = (String)msg.get('content');
+            String timestamp = (String)msg.get('timestamp');
+            
+            if (String.isNotBlank(content)) {
+                prompt += sender + ' (' + timestamp + '): ' + content + '\n\n';
+            }
+        }
+        
+        return prompt;
+    }
 } 
