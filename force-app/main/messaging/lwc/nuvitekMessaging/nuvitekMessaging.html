@@ -246,9 +246,33 @@
                                             onclick={toggleGroupCreation}
                                             disabled={groupButtonDisabled}>
                                         </lightning-button>
+                                        <lightning-button 
+                                            label="Other" 
+                                            variant={otherButtonVariant} 
+                                            onclick={toggleOtherEntityCreation}
+                                            disabled={otherButtonDisabled}>
+                                        </lightning-button>
                                     </lightning-button-group>
                                 </div>
                             </div>
+
+                            <!-- Entity type selection (only for Other option) -->
+                            <template if:true={isOtherEntitySelection}>
+                                <div class="slds-form-element slds-m-bottom_medium">
+                                    <label class="slds-form-element__label">Entity Type</label>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-select_container">
+                                            <select class="slds-select" onchange={handleEntityTypeChange}>
+                                                <option value="All">All</option>
+                                                <option value="PublicGroup">Public Group</option>
+                                                <option value="ChatterGroup">Chatter Group</option>
+                                                <option value="Queue">Queue</option>
+                                                <option value="Role">Role</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
 
                             <!-- Group name input (only for group chats) -->
                             <template if:true={isCreatingGroup}>
@@ -345,6 +369,14 @@
                                     label="Create Group" 
                                     onclick={createGroup} 
                                     disabled={createGroupButtonDisabled}>
+                                </lightning-button>
+                            </template>
+                            <template if:true={isOtherEntitySelection}>
+                                <lightning-button 
+                                    variant="brand" 
+                                    label="Start Conversation" 
+                                    onclick={startConversationWithEntity}
+                                    disabled={createEntityButtonDisabled}>
                                 </lightning-button>
                             </template>
                         </footer>

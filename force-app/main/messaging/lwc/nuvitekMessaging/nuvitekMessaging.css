@@ -73,6 +73,17 @@
     color: var(--header-text-color, #ffffff);
 }
 
+/* Sidebar title and archive toggle styles */
+.sidebar-title {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.archive-toggle {
+    margin-top: 4px;
+}
+
 .conversations-list {
     flex: 1;
     overflow-y: auto;
@@ -145,6 +156,23 @@
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
+}
+
+/* Conversation actions styles */
+.conversation-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    display: flex;
+    align-items: center;
+    padding-right: 8px;
+}
+
+.conversation-item:hover .conversation-actions {
+    opacity: 1;
+}
+
+.conversation-actions lightning-button-icon {
+    --sds-c-icon-color-foreground-default: #706e6b;
 }
 
 .unread-badge {
@@ -524,76 +552,59 @@
 
 /* Einstein AI Assistant Button */
 .einstein-assistant-button {
-    margin-left: auto;
-    width: 36px;
-    height: 36px;
-    position: relative;
     cursor: pointer;
-    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s cubic-bezier(0.28, 0.84, 0.42, 1);
-    background-color: rgba(255, 255, 255, 0.2);
-    animation: pulse 2s infinite;
+    padding: 8px;
+    border-radius: 50%;
+    background-color: #f5f5f7;
+    transition: background-color 0.2s ease;
 }
 
 .einstein-assistant-button:hover {
-    transform: translateY(-2px);
-    background-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #e0e5ee;
 }
 
 .einstein-icon {
-    fill: white;
-    transition: transform 0.3s ease;
-}
-
-.einstein-assistant-button:hover .einstein-icon {
-    transform: scale(1.1);
+    fill: #0070d2;
 }
 
 /* AI Summary Container */
 .ai-summary-container {
-    background-color: var(--background, #ffffff);
-    margin: 0 1rem 1rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    border: 1px solid #e0e5ee;
+    border-radius: 4px;
+    margin-bottom: 8px;
     overflow: hidden;
-    animation: slideDown 0.3s ease-out;
-    border: 1px solid var(--primary-color, #22BDC1);
-    max-height: 300px;
-    display: flex;
-    flex-direction: column;
 }
 
 .ai-summary-header {
+    background-color: #f5f5f7;
     display: flex;
     align-items: center;
-    padding: 0.75rem;
-    background-color: var(--primary-color, #22BDC1);
-    color: var(--header-text-color, #ffffff);
-    flex-shrink: 0;
-}
-
-.einstein-icon-small {
-    margin-right: 0.5rem;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e0e5ee;
 }
 
 .ai-summary-title {
-    font-weight: 600;
-    font-size: 0.9rem;
     flex-grow: 1;
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+.einstein-icon-small {
+    --sds-c-icon-color-foreground: #0070d2;
 }
 
 .close-summary-button {
-    color: var(--header-text-color, #ffffff);
+    --sds-c-icon-color-foreground: #706e6b;
 }
 
 .ai-summary-content {
-    padding: 1rem;
+    padding: 12px;
+    max-height: 200px;
     overflow-y: auto;
-    height: 100%;
 }
 
 .summary-loading {
@@ -601,19 +612,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
+    padding: 20px;
     text-align: center;
-}
-
-.summary-loading p {
-    margin-top: 0.75rem;
-    color: var(--text-secondary, #706e6b);
+    color: #706e6b;
 }
 
 .summary-text {
-    font-size: 0.9rem;
     line-height: 1.5;
-    color: var(--text-color, #1d1d1f);
+    white-space: pre-wrap;
 }
 
 /* Animation */

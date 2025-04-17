@@ -164,33 +164,38 @@ public with sharing class NuvitekMessagingController {
     }
     
     /**
-     * Create a new conversation or get an existing one with the specified user
+     * Create a new conversation or get an existing one with the specified entity
      * 
-     * @param userId The ID of the user or contact to chat with
-     * @param userType The type of user (User or Contact)
+     * @param entityId The ID of the entity to chat with (user, contact, group, etc.)
+     * @param entityType The type of entity (User, Contact, PublicGroup, ChatterGroup, Queue, Role)
      * @return Conversation object
      */
     @AuraEnabled
-    public static Conversation startConversation(String userId, String userType) {
+    public static Conversation startConversation(String entityId, String entityType) {
         try {
             Id currentUserId = UserInfo.getUserId();
             User currentUser = [SELECT Name FROM User WHERE Id = :currentUserId LIMIT 1];
             
-            // Get recipient information based on user type
+            // Get recipient information based on entity type
             String recipientName;
             String recipientProfileImage;
             Boolean isOnline = false;
             String status = 'Offline';
+            List<String> participants = new List<String>();
+            Boolean isGroup = false;
             
             // Default to User type if null
-            if (userType == null) {
-                userType = 'User';
+            if (entityType == null) {
+                entityType = 'User';
             }
             
-            if (userType == 'User') {
-                User recipient = [SELECT Id, Name, SmallPhotoUrl, LastLoginDate FROM User WHERE Id = :userId LIMIT 1];
+            participants.add(currentUserId); // Always add current user
+            
+            if (entityType == 'User') {
+                User recipient = [SELECT Id, Name, SmallPhotoUrl, LastLoginDate FROM User WHERE Id = :entityId LIMIT 1];
                 recipientName = recipient.Name;
                 recipientProfileImage = recipient.SmallPhotoUrl;
+                participants.add(recipient.Id);
                 
                 // Consider a user online if they've logged in within the last 15 minutes
                 if (recipient.LastLoginDate != null && 
@@ -200,33 +205,71 @@ public with sharing class NuvitekMessagingController {
                 } else if (recipient.LastLoginDate != null) {
                     status = 'Last seen ' + formatTimeSince(recipient.LastLoginDate);
                 }
-            } else if (userType == 'Contact') {
-                Contact recipient = [SELECT Id, Name, PhotoUrl FROM Contact WHERE Id = :userId LIMIT 1];
+            } else if (entityType == 'Contact') {
+                Contact recipient = [SELECT Id, Name, PhotoUrl FROM Contact WHERE Id = :entityId LIMIT 1];
                 recipientName = recipient.Name;
-                recipientProfileImage = recipient.PhotoUrl != null ? 
-                    recipient.PhotoUrl : '/img/icon/t4v35/standard/contact_120.png';
-            } else {
-                throw new AuraHandledException('Invalid user type: ' + userType);
-            }
-            
-            // Check if a conversation already exists with this user by querying all and filtering
-            List<Conversation__c> allConversations = [
-                SELECT Id, RecipientName__c, RecipientId__c, RecipientProfileImage__c, 
-                       LastMessage__c, LastMessageDate__c, Participants__c
-                FROM Conversation__c
-            ];
-            
-            List<Conversation__c> existingConversations = new List<Conversation__c>();
-            
-            // Filter conversations manually
-            for (Conversation__c conv : allConversations) {
-                if (conv.Participants__c != null) {
-                    List<String> participants = (List<String>)JSON.deserialize(conv.Participants__c, List<String>.class);
-                    if (participants.contains(currentUserId) && participants.contains(userId)) {
-                        existingConversations.add(conv);
+                recipientProfileImage = recipient.PhotoUrl;
+                participants.add(recipient.Id);
+                status = 'Contact';
+            } else if (entityType == 'PublicGroup') {
+                Group publicGroup = [SELECT Id, Name FROM Group WHERE Id = :entityId LIMIT 1];
+                recipientName = publicGroup.Name;
+                recipientProfileImage = null;
+                status = 'Public Group';
+                isGroup = true;
+                
+                // Add group members to participants
+                for (GroupMember member : [SELECT UserOrGroupId FROM GroupMember WHERE GroupId = :entityId]) {
+                    if (member.UserOrGroupId != null && String.valueOf(member.UserOrGroupId).startsWith('005')) {
+                        participants.add(member.UserOrGroupId);
                     }
                 }
+            } else if (entityType == 'ChatterGroup') {
+                CollaborationGroup chatterGroup = [SELECT Id, Name, SmallPhotoUrl FROM CollaborationGroup WHERE Id = :entityId LIMIT 1];
+                recipientName = chatterGroup.Name;
+                recipientProfileImage = chatterGroup.SmallPhotoUrl;
+                status = 'Chatter Group';
+                isGroup = true;
+                
+                // Add Chatter group members to participants
+                for (CollaborationGroupMember member : [SELECT MemberId FROM CollaborationGroupMember WHERE CollaborationGroupId = :entityId]) {
+                    participants.add(member.MemberId);
+                }
+            } else if (entityType == 'Queue') {
+                Group queue = [SELECT Id, Name FROM Group WHERE Id = :entityId LIMIT 1];
+                recipientName = queue.Name;
+                recipientProfileImage = null;
+                status = 'Queue';
+                isGroup = true;
+                
+                // Add queue members to participants
+                for (GroupMember member : [SELECT UserOrGroupId FROM GroupMember WHERE GroupId = :entityId]) {
+                    if (member.UserOrGroupId != null && String.valueOf(member.UserOrGroupId).startsWith('005')) {
+                        participants.add(member.UserOrGroupId);
+                    }
+                }
+            } else if (entityType == 'Role') {
+                UserRole role = [SELECT Id, Name FROM UserRole WHERE Id = :entityId LIMIT 1];
+                recipientName = role.Name;
+                recipientProfileImage = null;
+                status = 'Role';
+                isGroup = true;
+                
+                // Add users with this role to participants
+                for (User user : [SELECT Id FROM User WHERE UserRoleId = :entityId]) {
+                    participants.add(user.Id);
+                }
             }
+            
+            // Check if conversation already exists
+            List<Conversation__c> existingConversations = [
+                SELECT Id, RecipientName__c, RecipientId__c, RecipientProfileImage__c, 
+                       LastMessage__c, LastMessageDate__c, Participants__c, IsGroup__c
+                FROM Conversation__c 
+                WHERE (RecipientId__c = :entityId OR 
+                      (IsGroup__c = true AND Name = :recipientName))
+                LIMIT 1
+            ];
             
             Conversation__c convoRecord;
             
@@ -235,31 +278,44 @@ public with sharing class NuvitekMessagingController {
                 convoRecord = existingConversations[0];
             } else {
                 // Create a new conversation
-                String participants = JSON.serialize(new List<String>{currentUserId, userId});
-                String welcomeMessage = 'Start chatting with ' + recipientName;
-                
                 convoRecord = new Conversation__c(
-                    Participants__c = participants,
-                    RecipientId__c = userId,
+                    RecipientId__c = entityId,
                     RecipientName__c = recipientName,
                     RecipientProfileImage__c = recipientProfileImage,
-                    LastMessage__c = welcomeMessage,
-                    LastMessageDate__c = System.now()
+                    LastMessageDate__c = System.now(),
+                    LastMessage__c = 'Conversation started',
+                    IsGroup__c = isGroup,
+                    Participants__c = JSON.serialize(participants)
                 );
                 
                 insert convoRecord;
             }
             
-            return new Conversation(
-                convoRecord.Id,
-                convoRecord.RecipientName__c,
-                status,
-                convoRecord.LastMessage__c,
-                convoRecord.LastMessageDate__c,
-                convoRecord.RecipientProfileImage__c,
-                isOnline,
-                0
-            );
+            if (isGroup) {
+                return new Conversation(
+                    convoRecord.Id,
+                    convoRecord.RecipientName__c,
+                    status,
+                    convoRecord.LastMessage__c,
+                    convoRecord.LastMessageDate__c,
+                    convoRecord.RecipientProfileImage__c,
+                    isOnline,
+                    0,
+                    true,
+                    participants
+                );
+            } else {
+                return new Conversation(
+                    convoRecord.Id,
+                    convoRecord.RecipientName__c,
+                    status,
+                    convoRecord.LastMessage__c,
+                    convoRecord.LastMessageDate__c,
+                    convoRecord.RecipientProfileImage__c,
+                    isOnline,
+                    0
+                );
+            }
         } catch (Exception e) {
             throw new AuraHandledException('Error starting conversation: ' + e.getMessage());
         }
@@ -350,57 +406,145 @@ public with sharing class NuvitekMessagingController {
     }
     
     /**
-     * Search for users or contacts
+     * Search for users, contacts, and additional entity types
      * 
-     * @param searchTerm The search term to find users/contacts
+     * @param searchTerm The search term to find users/contacts/groups/queues/roles
+     * @param entityType The type of entity to search for (null for all)
      * @return List of SearchResult objects
      */
     @AuraEnabled
-    public static List<SearchResult> findUserOrContact(String searchTerm) {
+    public static List<SearchResult> findUserOrContact(String searchTerm, String entityType) {
         try {
             List<SearchResult> results = new List<SearchResult>();
-            
-            // Search for users
             String searchQuery = '%' + searchTerm + '%';
-            List<User> users = [
-                SELECT Id, Name, SmallPhotoUrl, Title
-                FROM User
-                WHERE Name LIKE :searchQuery AND Id != :UserInfo.getUserId() AND IsActive = true
-                LIMIT 10
-            ];
             
-            for (User u : users) {
-                results.add(new SearchResult(
-                    u.Id,
-                    'User',
-                    u.Name,
-                    u.Title != null ? u.Title : 'User',
-                    u.SmallPhotoUrl
-                ));
+            // If no specific entity type is specified or if it's 'User', search for users
+            if (entityType == null || entityType == 'All' || entityType == 'User') {
+                // Search for users
+                List<User> users = [
+                    SELECT Id, Name, SmallPhotoUrl, Title
+                    FROM User
+                    WHERE Name LIKE :searchQuery AND Id != :UserInfo.getUserId() AND IsActive = true
+                    LIMIT 10
+                ];
+                
+                for (User u : users) {
+                    results.add(new SearchResult(
+                        u.Id,
+                        'User',
+                        u.Name,
+                        u.Title != null ? u.Title : 'User',
+                        u.SmallPhotoUrl
+                    ));
+                }
             }
             
-            // Search for contacts
-            List<Contact> contacts = [
-                SELECT Id, Name, Title, PhotoUrl
-                FROM Contact
-                WHERE Name LIKE :searchQuery
-                LIMIT 10
-            ];
+            // If no specific entity type is specified or if it's 'Contact', search for contacts
+            if (entityType == null || entityType == 'All' || entityType == 'Contact') {
+                // Search for contacts
+                List<Contact> contacts = [
+                    SELECT Id, Name, Title, PhotoUrl
+                    FROM Contact
+                    WHERE Name LIKE :searchQuery
+                    LIMIT 10
+                ];
+                
+                for (Contact c : contacts) {
+                    String photoUrl = c.PhotoUrl != null ? c.PhotoUrl : '/img/icon/t4v35/standard/contact_120.png';
+                    results.add(new SearchResult(
+                        c.Id,
+                        'Contact',
+                        c.Name,
+                        c.Title != null ? c.Title : 'Contact',
+                        photoUrl
+                    ));
+                }
+            }
             
-            for (Contact c : contacts) {
-                String photoUrl = c.PhotoUrl != null ? c.PhotoUrl : '/img/icon/t4v35/standard/contact_120.png';
-                results.add(new SearchResult(
-                    c.Id,
-                    'Contact',
-                    c.Name,
-                    c.Title != null ? c.Title : 'Contact',
-                    photoUrl
-                ));
+            // Search for Public Groups if requested
+            if (entityType == null || entityType == 'All' || entityType == 'PublicGroup') {
+                List<Group> publicGroups = [
+                    SELECT Id, Name, DeveloperName
+                    FROM Group
+                    WHERE Name LIKE :searchQuery AND Type = 'Regular'
+                    LIMIT 10
+                ];
+                
+                for (Group g : publicGroups) {
+                    results.add(new SearchResult(
+                        g.Id,
+                        'PublicGroup',
+                        g.Name,
+                        'Public Group',
+                        '/img/icon/t4v35/standard/groups_120.png'
+                    ));
+                }
+            }
+            
+            // Search for Chatter Groups if requested
+            if (entityType == null || entityType == 'All' || entityType == 'ChatterGroup') {
+                List<CollaborationGroup> chatterGroups = [
+                    SELECT Id, Name, Description, SmallPhotoUrl
+                    FROM CollaborationGroup
+                    WHERE Name LIKE :searchQuery
+                    LIMIT 10
+                ];
+                
+                for (CollaborationGroup cg : chatterGroups) {
+                    String photoUrl = cg.SmallPhotoUrl != null ? cg.SmallPhotoUrl : '/img/icon/t4v35/standard/groups_120.png';
+                    results.add(new SearchResult(
+                        cg.Id,
+                        'ChatterGroup',
+                        cg.Name,
+                        'Chatter Group',
+                        photoUrl
+                    ));
+                }
+            }
+            
+            // Search for Queues if requested
+            if (entityType == null || entityType == 'All' || entityType == 'Queue') {
+                List<Group> queues = [
+                    SELECT Id, Name, DeveloperName
+                    FROM Group
+                    WHERE Name LIKE :searchQuery AND Type = 'Queue'
+                    LIMIT 10
+                ];
+                
+                for (Group q : queues) {
+                    results.add(new SearchResult(
+                        q.Id,
+                        'Queue',
+                        q.Name,
+                        'Queue',
+                        '/img/icon/t4v35/standard/queue_120.png'
+                    ));
+                }
+            }
+            
+            // Search for Roles if requested
+            if (entityType == null || entityType == 'All' || entityType == 'Role') {
+                List<UserRole> roles = [
+                    SELECT Id, Name, DeveloperName
+                    FROM UserRole
+                    WHERE Name LIKE :searchQuery
+                    LIMIT 10
+                ];
+                
+                for (UserRole r : roles) {
+                    results.add(new SearchResult(
+                        r.Id,
+                        'Role',
+                        r.Name,
+                        'Role',
+                        '/img/icon/t4v35/standard/user_role_120.png'
+                    ));
+                }
             }
             
             return results;
         } catch (Exception e) {
-            throw new AuraHandledException('Error searching for users/contacts: ' + e.getMessage());
+            throw new AuraHandledException('Error searching for entities: ' + e.getMessage());
         }
     }
     

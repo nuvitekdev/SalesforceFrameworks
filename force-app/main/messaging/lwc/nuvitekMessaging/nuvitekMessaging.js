@@ -61,6 +61,10 @@ export default class NuvitekMessaging extends LightningElement {
     @track isGeneratingSummary = false;
     @track conversationSummary = '';
     
+    // Add properties for other entity types
+    @track isOtherEntitySelection = false;
+    @track selectedEntityType = 'All';
+    
     // Initialize component
     connectedCallback() {
         this.initializeComponent();
@@ -216,17 +220,28 @@ export default class NuvitekMessaging extends LightningElement {
     // Handle incoming message from platform event
     handleIncomingMessage(messageEvent) {
         const payload = messageEvent.data.payload;
+        console.log('Received message event:', JSON.stringify(payload));
         
         // If message is for current conversation, add it to messages
         if (this.selectedConversation && 
             payload.ConversationId__c === this.selectedConversation.id) {
+            
+            // Check if we're at the bottom of the messages (to know if we should auto-scroll)
+            const isAtBottom = this.isScrolledToBottom;
+            
             const isFromCurrentUser = payload.SenderId__c === this.currentUser.id;
             
-            // Skip adding the message if it's from the current user 
-            // as we've already added it locally for immediate feedback
-            if (!isFromCurrentUser) {
+            // Only add the message if it's not from the current user or if it's not already in the messages array
+            // (to avoid duplicates from the optimistic UI update)
+            const isDuplicate = this.messages.some(msg => 
+                (msg.content === payload.Message__c && 
+                 msg.senderId === payload.SenderId__c &&
+                 Math.abs(new Date(msg.timestamp) - new Date(payload.Timestamp__c)) < 5000)
+            );
+            
+            if (!isDuplicate) {
                 const message = {
-                    id: messageEvent.data.event.replayId,
+                    id: messageEvent.data.event.replayId || this.generateLocalId(),
                     content: payload.Message__c,
                     senderId: payload.SenderId__c,
                     senderName: payload.SenderName__c,
@@ -238,11 +253,15 @@ export default class NuvitekMessaging extends LightningElement {
                 };
                 
                 this.messages = [...this.messages, message];
-                this.scrollToBottom();
+                
+                // Only scroll to bottom if we're already at the bottom or if this is our own message
+                if (isAtBottom || isFromCurrentUser) {
+                    this.scrollToBottom();
+                }
             }
         }
         
-        // Update conversations list with new message info
+        // Update conversations list with new message info without triggering reloads
         this.updateConversationWithNewMessage(payload);
     }
     
@@ -316,8 +335,14 @@ export default class NuvitekMessaging extends LightningElement {
         if (!conversationId) return;
         
         try {
-            // Only show loading if disableInitialLoading is false
-            if (!this.disableInitialLoading) {
+            // Store current scroll position
+            const messagesContainer = this.template.querySelector('.chat-messages');
+            const scrollPos = messagesContainer ? messagesContainer.scrollTop : 0;
+            const scrolledToBottom = this.isScrolledToBottom;
+            
+            // Only show loading if disableInitialLoading is false and if we're fetching for the first time
+            const initialLoad = !this.messages || this.messages.length === 0;
+            if (!this.disableInitialLoading && initialLoad) {
                 this.isLoading = true;
             }
             
@@ -325,15 +350,31 @@ export default class NuvitekMessaging extends LightningElement {
             
             // Add formatted timestamps to each message
             if (result) {
-                this.messages = result.map(msg => this.formatMessage(msg));
+                const newMessages = result.map(msg => this.formatMessage(msg));
+                
+                // Check if new messages are different from current ones before updating
+                const shouldUpdate = this.messages.length !== newMessages.length ||
+                    JSON.stringify(this.messages.map(m => m.id)) !== JSON.stringify(newMessages.map(m => m.id));
+                
+                if (shouldUpdate) {
+                    this.messages = newMessages;
+                    
+                    // Handle scroll position based on context
+                    if (initialLoad || scrolledToBottom) {
+                        // For initial load or if user was at bottom, scroll to bottom
+                        this.scrollToBottom();
+                    } else if (messagesContainer) {
+                        // Otherwise maintain scroll position
+                        setTimeout(() => {
+                            messagesContainer.scrollTop = scrollPos;
+                        }, 10);
+                    }
+                }
             } else {
                 this.messages = [];
             }
             
             this.isLoading = false;
-            
-            // Scroll to the bottom of the message container
-            this.scrollToBottom();
         } catch (error) {
             this.handleError(error);
         }
@@ -362,13 +403,12 @@ export default class NuvitekMessaging extends LightningElement {
         }
         
         try {
-            // Don't show loading spinner for sending messages if disableInitialLoading is true
-            if (!this.disableInitialLoading) {
-                this.isLoading = true;
-            }
-            
             // Prepare the message text
             const messageText = this.newMessage.trim();
+            
+            // Store current scroll position and status
+            const messagesContainer = this.template.querySelector('.chat-messages');
+            const isAtBottom = this.isScrolledToBottom;
             
             // Clear the input field immediately for better UX
             this.newMessage = '';
@@ -389,19 +429,46 @@ export default class NuvitekMessaging extends LightningElement {
             // Add the optimistic message to the UI
             this.messages = [...this.messages, tempMessage];
             
-            // Scroll to the bottom to show the new message
-            this.scrollToBottom();
+            // Only scroll if we were already at the bottom
+            if (isAtBottom) {
+                this.scrollToBottom();
+            }
             
-            // Send the message to the server
-            await sendMessage({
+            // Send the message to the server without waiting for UI updates
+            sendMessage({
                 conversationId: this.selectedConversation.id,
-                content: messageText
+                message: messageText
+            })
+            .then(() => {
+                // Silently update the conversation in the list without reloading
+                const updatedConversations = [...this.conversations];
+                const conversationIndex = updatedConversations.findIndex(
+                    conv => conv.id === this.selectedConversation.id
+                );
+                
+                if (conversationIndex !== -1) {
+                    // Update existing conversation locally
+                    updatedConversations[conversationIndex] = {
+                        ...updatedConversations[conversationIndex],
+                        lastMessage: messageText,
+                        lastMessageDate: new Date(),
+                        formattedTime: this.formatTimestamp(new Date())
+                    };
+                    
+                    // Move conversation to top of list
+                    const conversation = updatedConversations.splice(conversationIndex, 1)[0];
+                    updatedConversations.unshift(conversation);
+                    
+                    // Update conversations without triggering a reload
+                    this.conversations = updatedConversations;
+                }
+            })
+            .catch(error => {
+                this.handleError(error);
+                // Restore the message if sending failed
+                this.newMessage = messageText;
             });
             
-            // Update the conversation list to show the new message
-            this.loadConversations();
-            
-            this.isLoading = false;
         } catch (error) {
             this.handleError(error);
             // Restore the message if sending failed
@@ -481,7 +548,71 @@ export default class NuvitekMessaging extends LightningElement {
         }
     }
     
-    // Search for users or contacts
+    // Toggle between individual recipient, group, and other entity types
+    toggleGroupCreation() {
+        this.isCreatingGroup = !this.isCreatingGroup;
+        this.isOtherEntitySelection = false;
+        this.selectedSearchResults = [];
+        
+        // Reset selection state in search results
+        this.searchResults = this.searchResults.map(result => {
+            return { ...result, isSelected: false };
+        });
+    }
+    
+    // Toggle other entity selection mode
+    toggleOtherEntityCreation() {
+        this.isOtherEntitySelection = true;
+        this.isCreatingGroup = false;
+        this.selectedSearchResults = [];
+        
+        // Reset selection state in search results
+        this.searchResults = this.searchResults.map(result => {
+            return { ...result, isSelected: false };
+        });
+    }
+    
+    // Handle entity type change
+    handleEntityTypeChange(event) {
+        this.selectedEntityType = event.target.value;
+        // Reset search results when entity type changes
+        this.searchResults = [];
+        this.searchTerm = '';
+    }
+    
+    // Handle change in group name input
+    handleGroupNameChange(event) {
+        this.groupName = event.target.value;
+    }
+    
+    // Calculate button variants for different selection modes
+    get individualButtonVariant() {
+        return !this.isCreatingGroup && !this.isOtherEntitySelection ? 'brand' : 'neutral';
+    }
+    
+    get groupButtonVariant() {
+        return this.isCreatingGroup ? 'brand' : 'neutral';
+    }
+    
+    get otherButtonVariant() {
+        return this.isOtherEntitySelection ? 'brand' : 'neutral';
+    }
+    
+    get individualButtonDisabled() {
+        // This should only be disabled when it's already selected (normal mode)
+        // It should be enabled when in group or other mode
+        return !this.isCreatingGroup && !this.isOtherEntitySelection ? true : false;
+    }
+    
+    get groupButtonDisabled() {
+        return this.isCreatingGroup;
+    }
+    
+    get otherButtonDisabled() {
+        return this.isOtherEntitySelection;
+    }
+    
+    // Search for users, contacts, or other entities
     async handleSearch(event) {
         const searchTerm = event.target.value.trim();
         this.searchTerm = searchTerm;
@@ -494,22 +625,89 @@ export default class NuvitekMessaging extends LightningElement {
         
         try {
             this.isSearching = true;
-            const results = await findUserOrContact({ searchTerm });
+            
+            // Use the appropriate entity type for searching
+            let entityTypeForSearch = null;
+            if (this.isOtherEntitySelection) {
+                entityTypeForSearch = this.selectedEntityType;
+            }
+            
+            const results = await findUserOrContact({ 
+                searchTerm: searchTerm,
+                entityType: entityTypeForSearch
+            });
+            
             // Process results to add iconName and other necessary properties
             this.searchResults = results.map(result => {
+                let iconName = 'standard:user'; // Default icon
+                
+                // Set appropriate icon name based on type
+                switch(result.type) {
+                    case 'User':
+                        iconName = 'standard:user';
+                        break;
+                    case 'Contact':
+                        iconName = 'standard:contact';
+                        break;
+                    case 'PublicGroup':
+                        iconName = 'standard:groups';
+                        break;
+                    case 'ChatterGroup':
+                        iconName = 'standard:collaboration';
+                        break;
+                    case 'Queue':
+                        iconName = 'standard:queue';
+                        break;
+                    case 'Role':
+                        iconName = 'standard:user_role';
+                        break;
+                    default:
+                        iconName = 'standard:user';
+                }
+                
                 return {
                     ...result,
                     // Map the type to userType for the data attribute
                     userType: result.type,
-                    // Set appropriate icon name based on type
-                    iconName: result.type === 'User' ? 'standard:user' : 'standard:contact',
+                    // Set icon name
+                    iconName: iconName,
                     // Check if this result is already selected
                     isSelected: this.selectedSearchResults.some(selected => selected.id === result.id)
                 };
             });
+            
             this.isSearching = false;
         } catch (error) {
             this.handleError(error);
+        }
+    }
+    
+    // Update search input label based on selected mode
+    get searchInputLabel() {
+        if (this.isCreatingGroup) {
+            return 'Add Participants';
+        } else if (this.isOtherEntitySelection) {
+            // Provide more specific search labels based on entity type
+            switch(this.selectedEntityType) {
+                case 'All':
+                    return 'Search for all entity types';
+                case 'User':
+                    return 'Search for users';
+                case 'Contact':
+                    return 'Search for contacts';
+                case 'PublicGroup':
+                    return 'Search for public groups';
+                case 'ChatterGroup':
+                    return 'Search for chatter groups';
+                case 'Queue':
+                    return 'Search for queues';
+                case 'Role':
+                    return 'Search for users with this role';
+                default:
+                    return `Search for ${this.selectedEntityType}`;
+            }
+        } else {
+            return 'Search for users or contacts';
         }
     }
     
@@ -555,24 +753,8 @@ export default class NuvitekMessaging extends LightningElement {
         }
     }
     
-    // Toggle between single recipient and group conversation mode
-    toggleGroupCreation() {
-        this.isCreatingGroup = !this.isCreatingGroup;
-        this.selectedSearchResults = [];
-        
-        // Reset selection state in search results
-        this.searchResults = this.searchResults.map(result => {
-            return { ...result, isSelected: false };
-        });
-    }
-    
-    // Handle change in group name input
-    handleGroupNameChange(event) {
-        this.groupName = event.target.value;
-    }
-    
-    // Start a new conversation with selected user/contact
-    async startNewConversation(userId, userType) {
+    // Start a new conversation with selected user/contact/entity
+    async startNewConversation(entityId, entityType) {
         try {
             // Only show loading if disableInitialLoading is false
             if (!this.disableInitialLoading) {
@@ -581,8 +763,8 @@ export default class NuvitekMessaging extends LightningElement {
             
             // Call the startConversation Apex method to get the conversation object
             const conversation = await startConversation({ 
-                userId: userId, 
-                userType: userType 
+                entityId: entityId, 
+                entityType: entityType 
             });
             
             // Add timestamp formatting
@@ -602,6 +784,10 @@ export default class NuvitekMessaging extends LightningElement {
             this.searchTerm = '';
             this.searchResults = [];
             this.isLoading = false;
+            
+            // Reset other entity selection state
+            this.isOtherEntitySelection = false;
+            this.selectedEntityType = 'All';
         } catch (error) {
             this.handleError(error);
         }
@@ -668,11 +854,19 @@ export default class NuvitekMessaging extends LightningElement {
             // Mark the clicked element as selected
             event.currentTarget.classList.add('active');
             
-            this.selectedConversation = selectedConv;
-            this.loadMessages(conversationId);
+            // Store previous conversation id to check if we're switching or staying on same conversation
+            const prevConversationId = this.selectedConversation?.id;
             
-            // Close AI summary panel when changing conversations
-            this.showAISummary = false;
+            // Update the selected conversation
+            this.selectedConversation = selectedConv;
+            
+            // Only load messages if we're switching to a different conversation
+            if (prevConversationId !== conversationId) {
+                this.loadMessages(conversationId);
+                
+                // Close AI summary panel when changing conversations
+                this.showAISummary = false;
+            }
             
             // Mark as read in conversations list
             this.markConversationAsRead(conversationId);
@@ -732,12 +926,25 @@ export default class NuvitekMessaging extends LightningElement {
         }
     }
     
-    // Scroll messages to bottom
+    // Scroll to the bottom of messages
     scrollToBottom() {
+        // Use setTimeout to ensure DOM is updated before scrolling
         setTimeout(() => {
             const container = this.template.querySelector('.chat-messages');
             if (container) {
+                // Force a reflow to ensure heights are calculated correctly
+                void container.offsetHeight;
+                
+                // Set scroll position to bottom
                 container.scrollTop = container.scrollHeight;
+                
+                // Double-check the scroll position after a short delay
+                // This helps with certain edge cases where content might still be loading
+                setTimeout(() => {
+                    if (container.scrollTop + container.clientHeight < container.scrollHeight - 10) {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                }, 100);
             }
         }, 50);
     }
@@ -779,12 +986,23 @@ export default class NuvitekMessaging extends LightningElement {
         return this.isCreatingGroup;
     }
     
-    get searchInputLabel() {
-        return this.isCreatingGroup ? 'Add Participants' : 'Search for users or contacts';
-    }
-    
     get createGroupButtonDisabled() {
         return this.selectedSearchResults.length < 2;
+    }
+    
+    get createEntityButtonDisabled() {
+        return this.selectedSearchResults.length !== 1;
+    }
+    
+    // Start a conversation with the selected entity (for Other entity types)
+    startConversationWithEntity() {
+        if (this.selectedSearchResults.length !== 1) {
+            this.showToast('Error', 'Please select exactly one entity to start a conversation with', 'error');
+            return;
+        }
+        
+        const selectedEntity = this.selectedSearchResults[0];
+        this.startNewConversation(selectedEntity.id, selectedEntity.userType);
     }
     
     // Handle pill removal for selected participants
