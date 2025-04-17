@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>57.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Nuvitek Messaging</masterLabel>
+    <description>Modern messaging component for communicating with users and contacts</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__RecordPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+        <target>lightning__UtilityBar</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage,lightning__RecordPage,lightning__HomePage">
+            <property name="componentMaxHeight" type="Integer" label="Max Height (px)" description="Maximum height of the component in pixels" default="600" />
+        </targetConfig>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="componentMaxHeight" type="Integer" label="Max Height (px)" description="Maximum height of the component in pixels" default="600" />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle> 

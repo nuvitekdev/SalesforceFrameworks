@@ -1,0 +1,204 @@
+<template>
+    <div class="messaging-container" style={containerStyle}>
+        <!-- Loading spinner -->
+        <template if:true={isLoading}>
+            <div class="spinner-container">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+        
+        <!-- Error message -->
+        <template if:true={error}>
+            <div class="error-container">
+                <p>{error}</p>
+            </div>
+        </template>
+        
+        <!-- Main messaging interface -->
+        <template if:false={isLoading}>
+            <div class="messaging-wrapper">
+                <!-- Conversations Sidebar -->
+                <div class="conversations-sidebar" if:false={selectedConversation}>
+                    <div class="sidebar-header">
+                        <h2>Messages</h2>
+                        <lightning-button-icon 
+                            icon-name="utility:add" 
+                            variant="border-filled" 
+                            alternative-text="New Message" 
+                            title="New Message" 
+                            onclick={handleNewMessage}>
+                        </lightning-button-icon>
+                    </div>
+                    
+                    <!-- Conversations List -->
+                    <div class="conversations-list">
+                        <template if:true={hasConversations}>
+                            <template for:each={conversations} for:item="conversation">
+                                <div key={conversation.id} 
+                                     class="conversation-item" 
+                                     data-id={conversation.id} 
+                                     onclick={handleSelectConversation}>
+                                    <div class="conversation-avatar">
+                                        <lightning-avatar 
+                                            src={conversation.recipientProfileImage} 
+                                            fallback-icon-name="standard:user" 
+                                            alternative-text={conversation.recipientName}>
+                                        </lightning-avatar>
+                                    </div>
+                                    <div class="conversation-content">
+                                        <div class="conversation-header">
+                                            <h3>{conversation.recipientName}</h3>
+                                            <span class="conversation-time">{conversation.formattedTime}</span>
+                                        </div>
+                                        <div class="conversation-preview">
+                                            <p>{conversation.lastMessage}</p>
+                                            <template if:true={conversation.unreadCount}>
+                                                <span class="unread-badge">{conversation.unreadCount}</span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                        
+                        <template if:false={hasConversations}>
+                            <div class="empty-state">
+                                <p>No conversations yet</p>
+                                <lightning-button 
+                                    variant="brand" 
+                                    label="Start a Conversation" 
+                                    onclick={handleNewMessage}>
+                                </lightning-button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Chat Container -->
+                <div class="chat-container" if:true={selectedConversation}>
+                    <div class="chat-header">
+                        <lightning-button-icon 
+                            icon-name="utility:back" 
+                            variant="border-filled" 
+                            alternative-text="Back" 
+                            title="Back" 
+                            onclick={handleBackToList}>
+                        </lightning-button-icon>
+                        <div class="chat-participant">
+                            <lightning-avatar 
+                                src={selectedConversation.recipientProfileImage} 
+                                fallback-icon-name="standard:user" 
+                                alternative-text={selectedConversation.recipientName}>
+                            </lightning-avatar>
+                            <h2>{selectedConversation.recipientName}</h2>
+                        </div>
+                    </div>
+                    
+                    <!-- Messages -->
+                    <div class="chat-messages">
+                        <template if:true={hasMessages}>
+                            <template for:each={messages} for:item="message">
+                                <div key={message.id} 
+                                     class={message.messageWrapperClass}>
+                                    <template if:false={message.isFromCurrentUser}>
+                                        <div class="message-avatar">
+                                            <lightning-avatar 
+                                                fallback-icon-name="standard:user" 
+                                                alternative-text={message.senderName}>
+                                            </lightning-avatar>
+                                        </div>
+                                    </template>
+                                    <div class={message.messageBubbleClass}>
+                                        <div class="message-content">{message.content}</div>
+                                        <div class="message-time">{message.formattedTime}</div>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                        
+                        <template if:false={hasMessages}>
+                            <div class="empty-messages">
+                                <p>No messages yet. Start the conversation!</p>
+                            </div>
+                        </template>
+                    </div>
+                    
+                    <!-- Message Input -->
+                    <div class="chat-input">
+                        <lightning-textarea 
+                            name="messageInput" 
+                            placeholder="Type your message..." 
+                            value={newMessage} 
+                            onkeypress={handleMessageKeyPress} 
+                            onchange={handleMessageChange}>
+                        </lightning-textarea>
+                        <lightning-button-icon 
+                            icon-name="utility:send" 
+                            variant="brand" 
+                            alternative-text="Send" 
+                            title="Send" 
+                            disabled={isMessageEmpty}
+                            onclick={handleSendMessage}>
+                        </lightning-button-icon>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- New Message Modal -->
+            <template if:true={showNewMessageModal}>
+                <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header">
+                            <h2 class="slds-text-heading_medium">New Message</h2>
+                            <button class="slds-button slds-button_icon slds-modal__close" onclick={closeNewMessageModal}>
+                                <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                            </button>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <lightning-input 
+                                type="search" 
+                                label="Search for users or contacts" 
+                                value={searchTerm} 
+                                onchange={handleSearch}>
+                            </lightning-input>
+                            
+                            <template if:true={isSearching}>
+                                <div class="search-spinner">
+                                    <lightning-spinner alternative-text="Searching" size="small"></lightning-spinner>
+                                </div>
+                            </template>
+                            
+                            <template if:true={hasSearchResults}>
+                                <ul class="search-results">
+                                    <template for:each={searchResults} for:item="result">
+                                        <li key={result.id} 
+                                            class="search-result-item" 
+                                            data-id={result.id} 
+                                            data-type={result.userType} 
+                                            onclick={handleResultClick}>
+                                            <lightning-avatar 
+                                                fallback-icon-name={result.iconName} 
+                                                alternative-text={result.name}>
+                                            </lightning-avatar>
+                                            <div class="result-info">
+                                                <span class="result-name">{result.name}</span>
+                                                <span class="result-type">{result.userType}</span>
+                                            </div>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </template>
+                            
+                            <template if:false={hasSearchResults}>
+                                <div class="no-results" if:true={searchTerm}>
+                                    <p>No users or contacts found</p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+        </template>
+    </div>
+</template> 

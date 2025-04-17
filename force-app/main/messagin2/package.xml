@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>LWC_Chat__e</members>
+        <name>CustomObject</name>
+    </types>
+    <types>
+        <members>LWC_Chat__e.Message__c</members>
+        <members>LWC_Chat__e.FromUserId__c</members>
+        <members>LWC_Chat__e.FromUserName__c</members>
+        <members>LWC_Chat__e.ToUserId__c</members>
+        <members>Chat_Message__c</members>
+        <members>Chat_Message__c.Message_Text__c</members>
+        <members>Chat_Message__c.From_User_Id__c</members>
+        <members>Chat_Message__c.From_User_Name__c</members>
+        <members>Chat_Message__c.To_User_Id__c</members>
+        <name>CustomField</name>
+    </types>
+    <types>
+        <members>ChatController</members>
+        <name>ApexClass</name>
+    </types>
+    <types>
+        <members>chatApp</members>
+        <name>LightningComponentBundle</name>
+    </types>
+    <version>58.0</version>
+</Package> 
