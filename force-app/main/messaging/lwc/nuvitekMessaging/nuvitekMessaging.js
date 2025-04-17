@@ -8,6 +8,7 @@ import getMessages from "@salesforce/apex/NuvitekMessagingController.getMessages
 import sendMessage from "@salesforce/apex/NuvitekMessagingController.sendMessage";
 import findUserOrContact from "@salesforce/apex/NuvitekMessagingController.findUserOrContact";
 import startConversation from "@salesforce/apex/NuvitekMessagingController.startConversation";
+import createGroupConversation from "@salesforce/apex/NuvitekMessagingController.createGroupConversation";
 
 /**
  * Nuvitek Messaging Component
@@ -21,24 +22,23 @@ export default class NuvitekMessaging extends LightningElement {
     subscription = null;
     
     // Theme and branding properties
-    @api themeName = 'light';
-    @api primaryColor = '#0070d2';
-    @api secondaryColor = '#f3f3f3';
-    @api accentColor = '#22BDC1';
-    @api textColor = '#1d1d1f';
-    @api textSecondaryColor = '#6e6e73';
-    @api backgroundColor = '#ffffff';
-    @api backgroundAltColor = '#f5f5f7';
-    @api borderColor = '#e0e5ee';
-    @api messageOutgoingColor;
-    @api messageIncomingColor;
+    @api primaryColor = '#22BDC1';
+    @api accentColor = '#D5DF23';
+    @api messageOutgoingColor = '#22BDC1';
+    @api messageIncomingColor = '#D5DF23';
+    
+    // Layout properties
+    @api componentHeight = 600;
     
     // State variables
-    @track isLoading = true;
+    @track isLoading = false;
     @track error = null;
     @track searchResults = [];
+    @track selectedSearchResults = [];
     @track isSearching = false;
     @track showNewMessageModal = false;
+    @track isCreatingGroup = false;
+    @track groupName = '';
     
     // User data
     @track currentUser;
@@ -52,15 +52,9 @@ export default class NuvitekMessaging extends LightningElement {
     // Search input
     @track searchTerm = '';
     
-    // Height control for responsive design
-    @api componentMaxHeight;
-    
     // Initialize component
     connectedCallback() {
         this.initializeComponent();
-        this.applyThemeDefaults();
-        // Listen for theme change events from nuvitekCustomThemeLayout
-        this.registerThemeListener();
     }
     
     // Clean up on disconnect
@@ -68,60 +62,11 @@ export default class NuvitekMessaging extends LightningElement {
         this.unsubscribeFromEvents();
     }
     
-    // Apply default theme colors if not provided
-    applyThemeDefaults() {
-        // Set default message bubble colors if not provided
-        if (!this.messageOutgoingColor) {
-            this.messageOutgoingColor = this.accentColor || this.primaryColor;
-        }
-        if (!this.messageIncomingColor) {
-            this.messageIncomingColor = this.themeName === 'dark' ? '#3d3d3f' : '#f3f5f7';
-        }
-    }
-    
-    // Register listener for theme change events
-    registerThemeListener() {
-        window.addEventListener('nuvitek_theme_changed', (event) => {
-            if (event.detail) {
-                this.themeName = event.detail.theme || this.themeName;
-                
-                // Update colors based on new theme
-                if (this.themeName === 'dark') {
-                    this.applyDarkTheme(event.detail);
-                } else {
-                    this.applyLightTheme(event.detail);
-                }
-                
-                // Force re-render to apply new styles
-                this.template.host.classList.remove('theme-light', 'theme-dark');
-                this.template.host.classList.add(`theme-${this.themeName}`);
-            }
-        });
-    }
-    
-    // Apply dark theme colors
-    applyDarkTheme(themeDetail) {
-        this.backgroundColor = themeDetail.backgroundColor || '#1c1c1e';
-        this.backgroundAltColor = themeDetail.backgroundAltColor || '#2c2c2e';
-        this.textColor = themeDetail.textColor || '#ffffff';
-        this.textSecondaryColor = themeDetail.textSecondaryColor || '#8e8e93';
-        this.borderColor = themeDetail.borderColor || '#38383a';
-        this.messageIncomingColor = themeDetail.messageIncomingColor || '#3d3d3f';
-    }
-    
-    // Apply light theme colors
-    applyLightTheme(themeDetail) {
-        this.backgroundColor = themeDetail.backgroundColor || '#ffffff';
-        this.backgroundAltColor = themeDetail.backgroundAltColor || '#f5f5f7';
-        this.textColor = themeDetail.textColor || '#1d1d1f';
-        this.textSecondaryColor = themeDetail.textSecondaryColor || '#6e6e73';
-        this.borderColor = themeDetail.borderColor || '#e0e5ee';
-        this.messageIncomingColor = themeDetail.messageIncomingColor || '#f3f5f7';
-    }
-    
     // Initialize the component
     async initializeComponent() {
         try {
+            this.isLoading = true;
+            
             // Check if platform events are enabled
             const isEmpAvailable = await isEmpEnabled();
             if (!isEmpAvailable) {
@@ -146,27 +91,56 @@ export default class NuvitekMessaging extends LightningElement {
         }
     }
     
+    // Determine contrasting text color (black or white) for a background color
+    getContrastColor(hexColor) {
+        if (!hexColor) return '#ffffff'; // Default to white text if no color provided
+        
+        // Remove the # if it exists
+        hexColor = hexColor.replace('#', '');
+        
+        // Convert hex to RGB
+        let r = parseInt(hexColor.substr(0, 2), 16);
+        let g = parseInt(hexColor.substr(2, 2), 16);
+        let b = parseInt(hexColor.substr(4, 2), 16);
+        
+        // Calculate the brightness (using a weighted formula for perceived brightness)
+        let brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+        
+        // Return white for dark backgrounds, black for light backgrounds
+        return brightness > 160 ? '#000000' : '#ffffff';
+    }
+    
     // CSS custom properties for theme
     get themeStyles() {
+        // Get text colors based on background brightness
+        const headerTextColor = this.getContrastColor(this.primaryColor);
+        const outgoingTextColor = this.getContrastColor(this.messageOutgoingColor);
+        const incomingTextColor = this.getContrastColor(this.messageIncomingColor);
+        
+        // Default background and border colors
+        const backgroundColor = '#ffffff';
+        const backgroundAltColor = '#f5f5f7';
+        const borderColor = '#e0e5ee';
+        
         return `
             --primary-color: ${this.primaryColor};
-            --secondary-color: ${this.secondaryColor};
             --accent-color: ${this.accentColor};
-            --text-color: ${this.textColor};
-            --text-secondary: ${this.textSecondaryColor};
-            --background: ${this.backgroundColor};
-            --background-alt: ${this.backgroundAltColor};
-            --border-color: ${this.borderColor};
-            --message-outgoing-color: ${this.messageOutgoingColor || this.accentColor};
+            --background: ${backgroundColor};
+            --background-alt: ${backgroundAltColor};
+            --border-color: ${borderColor};
+            --header-text-color: ${headerTextColor};
+            --message-outgoing-color: ${this.messageOutgoingColor};
             --message-incoming-color: ${this.messageIncomingColor};
+            --message-outgoing-text-color: ${outgoingTextColor};
+            --message-incoming-text-color: ${incomingTextColor};
         `;
     }
     
-    // CSS styles based on max height and theme
+    // CSS styles based on responsive design
     get containerStyle() {
-        const heightStyle = this.componentMaxHeight 
-            ? `max-height: ${this.componentMaxHeight}px; height: ${this.componentMaxHeight}px;` 
-            : 'max-height: 600px; height: 600px;';
+        const heightStyle = this.componentHeight > 0 
+            ? `height: ${this.componentHeight}px; max-height: 100%;` 
+            : 'height: 100%;';
         
         return `${heightStyle} ${this.themeStyles}`;
     }
@@ -268,14 +242,20 @@ export default class NuvitekMessaging extends LightningElement {
         );
         
         if (conversationIndex !== -1) {
+            // Check if the message is from the current user
+            const isFromCurrentUser = messageData.SenderId__c === this.currentUser.id;
+            
             // Update existing conversation
             updatedConversations[conversationIndex] = {
                 ...updatedConversations[conversationIndex],
                 lastMessage: messageData.Message__c,
                 lastMessageDate: messageData.Timestamp__c,
                 formattedTime: this.formatTimestamp(messageData.Timestamp__c),
-                unreadCount: this.selectedConversation?.id === messageData.ConversationId__c 
-                    ? 0 
+                // Only increment unread count if:
+                // 1. Message is not from current user
+                // 2. The conversation isn't currently selected
+                unreadCount: this.selectedConversation?.id === messageData.ConversationId__c || isFromCurrentUser
+                    ? updatedConversations[conversationIndex].unreadCount || 0
                     : (updatedConversations[conversationIndex].unreadCount || 0) + 1
             };
             
@@ -401,7 +381,9 @@ export default class NuvitekMessaging extends LightningElement {
                     // Map the type to userType for the data attribute
                     userType: result.type,
                     // Set appropriate icon name based on type
-                    iconName: result.type === 'User' ? 'standard:user' : 'standard:contact'
+                    iconName: result.type === 'User' ? 'standard:user' : 'standard:contact',
+                    // Check if this result is already selected
+                    isSelected: this.selectedSearchResults.some(selected => selected.id === result.id)
                 };
             });
             this.isSearching = false;
@@ -414,7 +396,113 @@ export default class NuvitekMessaging extends LightningElement {
     handleResultClick(event) {
         const userId = event.currentTarget.dataset.id;
         const userType = event.currentTarget.dataset.type;
-        this.startNewConversation(userId, userType);
+        
+        if (this.isCreatingGroup) {
+            // For group creation, toggle selection
+            const index = this.selectedSearchResults.findIndex(result => result.id === userId);
+            
+            if (index === -1) {
+                // Add to selected list
+                const result = this.searchResults.find(result => result.id === userId);
+                if (result) {
+                    const selected = { ...result, isSelected: true };
+                    this.selectedSearchResults.push(selected);
+                    
+                    // Update search results to show as selected
+                    this.searchResults = this.searchResults.map(result => {
+                        if (result.id === userId) {
+                            return { ...result, isSelected: true };
+                        }
+                        return result;
+                    });
+                }
+            } else {
+                // Remove from selected list
+                this.selectedSearchResults.splice(index, 1);
+                
+                // Update search results to show as unselected
+                this.searchResults = this.searchResults.map(result => {
+                    if (result.id === userId) {
+                        return { ...result, isSelected: false };
+                    }
+                    return result;
+                });
+            }
+        } else {
+            // For regular 1-on-1 conversation
+            this.startNewConversation(userId, userType);
+        }
+    }
+    
+    // Toggle between single recipient and group conversation mode
+    toggleGroupCreation() {
+        this.isCreatingGroup = !this.isCreatingGroup;
+        this.selectedSearchResults = [];
+        
+        // Reset selection state in search results
+        this.searchResults = this.searchResults.map(result => {
+            return { ...result, isSelected: false };
+        });
+    }
+    
+    // Handle change in group name input
+    handleGroupNameChange(event) {
+        this.groupName = event.target.value;
+    }
+    
+    // Create a group conversation
+    async createGroup() {
+        if (this.selectedSearchResults.length < 2) {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error',
+                    message: 'Please select at least 2 participants for a group conversation',
+                    variant: 'error'
+                })
+            );
+            return;
+        }
+        
+        try {
+            this.isLoading = true;
+            
+            const userIds = this.selectedSearchResults.map(result => result.id);
+            const userTypes = {};
+            
+            this.selectedSearchResults.forEach(result => {
+                userTypes[result.id] = result.userType;
+            });
+            
+            // Call the createGroupConversation Apex method
+            const conversation = await createGroupConversation({
+                userIds: userIds,
+                userTypes: userTypes,
+                groupName: this.groupName
+            });
+            
+            // Add timestamp formatting
+            conversation.formattedTime = this.formatTimestamp(conversation.lastMessageDate);
+            
+            // Add the new conversation to the top of the list
+            this.conversations = [conversation, ...this.conversations];
+            
+            // Select the new conversation and load its messages
+            this.selectedConversation = conversation;
+            
+            // Load empty message list
+            this.messages = [];
+            
+            // Close the modal and reset state
+            this.showNewMessageModal = false;
+            this.searchTerm = '';
+            this.searchResults = [];
+            this.selectedSearchResults = [];
+            this.isCreatingGroup = false;
+            this.groupName = '';
+            this.isLoading = false;
+        } catch (error) {
+            this.handleError(error);
+        }
     }
     
     // Start a new conversation with selected user/contact
@@ -551,5 +639,64 @@ export default class NuvitekMessaging extends LightningElement {
     // Check if we have search results
     get hasSearchResults() {
         return this.searchResults && this.searchResults.length > 0;
+    }
+    
+    // Calculate button variants for group creation buttons
+    get individualButtonVariant() {
+        return this.isCreatingGroup ? 'neutral' : 'brand';
+    }
+    
+    get groupButtonVariant() {
+        return this.isCreatingGroup ? 'brand' : 'neutral';
+    }
+    
+    get individualButtonDisabled() {
+        return !this.isCreatingGroup;
+    }
+    
+    get groupButtonDisabled() {
+        return this.isCreatingGroup;
+    }
+    
+    get searchInputLabel() {
+        return this.isCreatingGroup ? 'Add Participants' : 'Search for users or contacts';
+    }
+    
+    get createGroupButtonDisabled() {
+        return this.selectedSearchResults.length < 2;
+    }
+    
+    // Handle pill removal for selected participants
+    handlePillRemove(event) {
+        const userId = event.target.dataset.id;
+        const userType = event.target.dataset.type;
+        
+        // Use the same logic as handleResultClick for consistency
+        this.handleResultClick({
+            currentTarget: { 
+                dataset: { 
+                    id: userId, 
+                    type: userType 
+                }
+            }
+        });
+    }
+    
+    // Add computed class for list items
+    get searchResults() {
+        if (!this._searchResults) {
+            return [];
+        }
+        
+        return this._searchResults.map(result => {
+            return {
+                ...result,
+                listItemClass: result.isSelected ? 'search-result-item selected' : 'search-result-item'
+            };
+        });
+    }
+    
+    set searchResults(value) {
+        this._searchResults = value;
     }
 } 

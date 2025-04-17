@@ -39,11 +39,19 @@
                                      data-id={conversation.id} 
                                      onclick={handleSelectConversation}>
                                     <div class="conversation-avatar">
-                                        <lightning-avatar 
-                                            src={conversation.recipientProfileImage} 
-                                            fallback-icon-name="standard:user" 
-                                            alternative-text={conversation.recipientName}>
-                                        </lightning-avatar>
+                                        <template if:true={conversation.isGroup}>
+                                            <lightning-avatar 
+                                                fallback-icon-name="standard:groups" 
+                                                alternative-text="Group chat">
+                                            </lightning-avatar>
+                                        </template>
+                                        <template if:false={conversation.isGroup}>
+                                            <lightning-avatar 
+                                                src={conversation.recipientProfileImage} 
+                                                fallback-icon-name="standard:user" 
+                                                alternative-text={conversation.recipientName}>
+                                            </lightning-avatar>
+                                        </template>
                                     </div>
                                     <div class="conversation-content">
                                         <div class="conversation-header">
@@ -85,12 +93,32 @@
                             onclick={handleBackToList}>
                         </lightning-button-icon>
                         <div class="chat-participant">
-                            <lightning-avatar 
-                                src={selectedConversation.recipientProfileImage} 
-                                fallback-icon-name="standard:user" 
-                                alternative-text={selectedConversation.recipientName}>
-                            </lightning-avatar>
-                            <h2>{selectedConversation.recipientName}</h2>
+                            <template if:true={selectedConversation.isGroup}>
+                                <lightning-avatar 
+                                    fallback-icon-name="standard:groups" 
+                                    alternative-text="Group chat">
+                                </lightning-avatar>
+                                <div class="chat-participant-details">
+                                    <h2>{selectedConversation.recipientName}</h2>
+                                    <div class="participant-status">{selectedConversation.status}</div>
+                                </div>
+                            </template>
+                            <template if:false={selectedConversation.isGroup}>
+                                <lightning-avatar 
+                                    src={selectedConversation.recipientProfileImage} 
+                                    fallback-icon-name="standard:user" 
+                                    alternative-text={selectedConversation.recipientName}>
+                                </lightning-avatar>
+                                <div class="chat-participant-details">
+                                    <h2>{selectedConversation.recipientName}</h2>
+                                    <div class="participant-status">
+                                        <template if:true={selectedConversation.isOnline}>
+                                            <span class="online-indicator"></span>
+                                        </template>
+                                        {selectedConversation.status}
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
                     
@@ -109,6 +137,11 @@
                                         </div>
                                     </template>
                                     <div class={message.messageBubbleClass}>
+                                        <template if:true={selectedConversation.isGroup}>
+                                            <template if:false={message.isFromCurrentUser}>
+                                                <div class="message-sender">{message.senderName}</div>
+                                            </template>
+                                        </template>
                                         <div class="message-content">{message.content}</div>
                                         <div class="message-time">{message.formattedTime}</div>
                                     </div>
@@ -149,15 +182,71 @@
                 <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
                     <div class="slds-modal__container">
                         <header class="slds-modal__header">
-                            <h2 class="slds-text-heading_medium">New Message</h2>
+                            <h2 class="slds-text-heading_medium">
+                                <template if:false={isCreatingGroup}>New Message</template>
+                                <template if:true={isCreatingGroup}>New Group</template>
+                            </h2>
                             <button class="slds-button slds-button_icon slds-modal__close" onclick={closeNewMessageModal}>
                                 <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
                             </button>
                         </header>
                         <div class="slds-modal__content slds-p-around_medium">
+                            <!-- Toggle for group creation -->
+                            <div class="slds-grid slds-gutters slds-m-bottom_medium">
+                                <div class="slds-col">
+                                    <lightning-button-group>
+                                        <lightning-button 
+                                            label="Individual" 
+                                            variant={individualButtonVariant} 
+                                            onclick={toggleGroupCreation}
+                                            disabled={individualButtonDisabled}>
+                                        </lightning-button>
+                                        <lightning-button 
+                                            label="Group" 
+                                            variant={groupButtonVariant} 
+                                            onclick={toggleGroupCreation}
+                                            disabled={groupButtonDisabled}>
+                                        </lightning-button>
+                                    </lightning-button-group>
+                                </div>
+                            </div>
+
+                            <!-- Group name input (only for group chats) -->
+                            <template if:true={isCreatingGroup}>
+                                <lightning-input 
+                                    type="text" 
+                                    label="Group Name (optional)" 
+                                    value={groupName} 
+                                    onchange={handleGroupNameChange}
+                                    placeholder="Enter a name for this group" 
+                                    class="slds-m-bottom_medium">
+                                </lightning-input>
+                                
+                                <!-- Selected participants display -->
+                                <template if:true={selectedSearchResults.length}>
+                                    <div class="selected-participants slds-m-bottom_medium">
+                                        <h3 class="slds-text-heading_small slds-m-bottom_x-small">
+                                            Selected ({selectedSearchResults.length})
+                                        </h3>
+                                        <div class="selected-chips">
+                                            <template for:each={selectedSearchResults} for:item="selected">
+                                                <lightning-pill 
+                                                    key={selected.id} 
+                                                    label={selected.name} 
+                                                    onremove={handlePillRemove}
+                                                    data-id={selected.id}
+                                                    data-type={selected.userType}>
+                                                    <lightning-icon icon-name={selected.iconName} slot="media"></lightning-icon>
+                                                </lightning-pill>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            
                             <lightning-input 
                                 type="search" 
-                                label="Search for users or contacts" 
+                                label={searchInputLabel} 
                                 value={searchTerm} 
                                 onchange={handleSearch}>
                             </lightning-input>
@@ -172,7 +261,7 @@
                                 <ul class="search-results">
                                     <template for:each={searchResults} for:item="result">
                                         <li key={result.id} 
-                                            class="search-result-item" 
+                                            class={result.listItemClass} 
                                             data-id={result.id} 
                                             data-type={result.userType} 
                                             onclick={handleResultClick}>
@@ -184,6 +273,13 @@
                                                 <span class="result-name">{result.name}</span>
                                                 <span class="result-type">{result.userType}</span>
                                             </div>
+                                            <template if:true={isCreatingGroup}>
+                                                <div class="selection-indicator">
+                                                    <template if:true={result.isSelected}>
+                                                        <lightning-icon icon-name="utility:check" size="x-small" variant="inverse"></lightning-icon>
+                                                    </template>
+                                                </div>
+                                            </template>
                                         </li>
                                     </template>
                                 </ul>
@@ -195,6 +291,24 @@
                                 </div>
                             </template>
                         </div>
+                        
+                        <!-- Actions footer -->
+                        <footer class="slds-modal__footer">
+                            <lightning-button 
+                                variant="neutral" 
+                                label="Cancel" 
+                                onclick={closeNewMessageModal} 
+                                class="slds-m-right_x-small">
+                            </lightning-button>
+                            <template if:true={isCreatingGroup}>
+                                <lightning-button 
+                                    variant="brand" 
+                                    label="Create Group" 
+                                    onclick={createGroup} 
+                                    disabled={createGroupButtonDisabled}>
+                                </lightning-button>
+                            </template>
+                        </footer>
                     </div>
                 </section>
                 <div class="slds-backdrop slds-backdrop_open"></div>

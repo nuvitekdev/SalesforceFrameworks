@@ -411,6 +411,8 @@ public with sharing class NuvitekMessagingController {
         @AuraEnabled public String recipientProfileImage;
         @AuraEnabled public Boolean isOnline;
         @AuraEnabled public Integer unreadCount;
+        @AuraEnabled public Boolean isGroup;
+        @AuraEnabled public List<String> participants;
         
         public Conversation(
             String id,
@@ -430,6 +432,32 @@ public with sharing class NuvitekMessagingController {
             this.recipientProfileImage = recipientProfileImage;
             this.isOnline = isOnline;
             this.unreadCount = unreadCount;
+            this.isGroup = false;
+            this.participants = new List<String>();
+        }
+        
+        public Conversation(
+            String id,
+            String recipientName,
+            String status,
+            String lastMessage,
+            Datetime lastMessageDate,
+            String recipientProfileImage,
+            Boolean isOnline,
+            Integer unreadCount,
+            Boolean isGroup,
+            List<String> participants
+        ) {
+            this.id = id;
+            this.recipientName = recipientName;
+            this.status = status;
+            this.lastMessage = lastMessage;
+            this.lastMessageDate = lastMessageDate;
+            this.recipientProfileImage = recipientProfileImage;
+            this.isOnline = isOnline;
+            this.unreadCount = unreadCount;
+            this.isGroup = isGroup;
+            this.participants = participants;
         }
     }
     
@@ -480,6 +508,105 @@ public with sharing class NuvitekMessagingController {
             this.name = name;
             this.title = title;
             this.profileImage = profileImage;
+        }
+    }
+    
+    /**
+     * Create a new group conversation with multiple participants
+     * 
+     * @param userIds List of user or contact IDs to include in the group
+     * @param userTypes Map of user IDs to their types (User or Contact)
+     * @param groupName Name of the group conversation
+     * @return Conversation object representing the group
+     */
+    @AuraEnabled
+    public static Conversation createGroupConversation(List<String> userIds, Map<String, String> userTypes, String groupName) {
+        try {
+            Id currentUserId = UserInfo.getUserId();
+            User currentUser = [SELECT Name FROM User WHERE Id = :currentUserId LIMIT 1];
+            
+            // Add current user to participants if not already included
+            List<String> allParticipants = new List<String>(userIds);
+            if (!allParticipants.contains(currentUserId)) {
+                allParticipants.add(currentUserId);
+            }
+            
+            // Get participant names for group display
+            Map<String, String> participantNames = new Map<String, String>();
+            
+            // Filter users from participants (can't use LIKE on ID fields)
+            List<String> userIdsFiltered = new List<String>();
+            for(String pId : allParticipants) {
+                // Check if it's a User ID (starts with 005)
+                if(pId.startsWith('005')) {
+                    userIdsFiltered.add(pId);
+                }
+            }
+            
+            // Query users with properly filtered IDs
+            List<User> users = [SELECT Id, Name FROM User WHERE Id IN :userIdsFiltered];
+            for (User usr : users) {
+                participantNames.put(usr.Id, usr.Name);
+            }
+            
+            // Also get contact names if any participants are contacts
+            List<String> contactIds = new List<String>();
+            for (String userId : allParticipants) {
+                if (userTypes.containsKey(userId) && userTypes.get(userId) == 'Contact') {
+                    contactIds.add(userId);
+                }
+            }
+            
+            if (!contactIds.isEmpty()) {
+                List<Contact> contacts = [SELECT Id, Name FROM Contact WHERE Id IN :contactIds];
+                for (Contact cnt : contacts) {
+                    participantNames.put(cnt.Id, cnt.Name);
+                }
+            }
+            
+            // Format group name if not provided
+            if (String.isBlank(groupName)) {
+                List<String> names = new List<String>();
+                for (String participant : allParticipants) {
+                    if (participant != currentUserId && participantNames.containsKey(participant)) {
+                        names.add(participantNames.get(participant));
+                    }
+                }
+                
+                if (names.size() <= 3) {
+                    groupName = String.join(names, ', ');
+                } else {
+                    groupName = String.join(new List<String>{names[0], names[1]}, ', ') + ' and ' + (names.size() - 2) + ' others';
+                }
+            }
+            
+            // Create the group conversation
+            String participants = JSON.serialize(allParticipants);
+            String welcomeMessage = currentUser.Name + ' created group "' + groupName + '"';
+            
+            Conversation__c convoRecord = new Conversation__c(
+                Participants__c = participants,
+                RecipientName__c = groupName,
+                IsGroup__c = true,
+                GroupName__c = groupName,
+                LastMessage__c = welcomeMessage,
+                LastMessageDate__c = System.now()
+            );
+            
+            insert convoRecord;
+            
+            return new Conversation(
+                convoRecord.Id,
+                convoRecord.RecipientName__c,
+                'Group · ' + allParticipants.size() + ' members',
+                convoRecord.LastMessage__c,
+                convoRecord.LastMessageDate__c,
+                null, // Group profile image could be implemented
+                false,
+                0
+            );
+        } catch (Exception e) {
+            throw new AuraHandledException('Error creating group conversation: ' + e.getMessage());
         }
     }
 } 
