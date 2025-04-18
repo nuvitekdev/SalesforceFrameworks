@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Support Requester</masterLabel>
+    <description>Component for creating support cases with screen recording and dynamic FAQ functionality</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+        <target>lightning__FlowScreen</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+        <target>lightning__HomePage</target>
+        <target>lightning__UtilityBar</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage,lightning__AppPage,lightning__HomePage,lightning__UtilityBar">
+            <!-- Support Case Settings -->
+            <property name="recordTypeId" type="String" label="Support Record Type ID" 
+                     description="Record Type ID for the support cases" required="false"/>
+            <property name="maxDuration" type="Integer" label="Maximum Video Duration (seconds)" 
+                     description="Maximum recording duration in seconds" default="300" min="30" max="600"/>
+            <property name="folderName" type="String" label="Folder Name" 
+                     description="Name of the folder where recordings will be saved" default="Support Recordings"/>
+            <property name="componentTitle" type="String" label="Component Title" 
+                     description="Title displayed in the component header" default="Support Request"/>
+            <property name="caseSubjectPrefix" type="String" label="Case Subject Prefix"
+                     description="Prefix added to the case subject (app name will be appended if available)"/>
+            
+            <!-- FAQ Settings -->
+            <property name="showFaqSection" type="Boolean" label="Show FAQ Section" 
+                     description="Display the FAQ section alongside the support requester" default="true"/>
+            <property name="faqHeaderTitle" type="String" label="FAQ Header Title" 
+                     description="Title for the FAQ section" default="Frequently Asked Questions"/>
+            <property name="showFaqAddButton" type="Boolean" label="Show FAQ Add Button" 
+                     description="Enable button for adding more FAQ items (for administrators)" default="false"/>
+            <property name="defaultFaqItems" type="String" label="Default FAQ Items" 
+                     description="JSON string containing default FAQ items" default='[{"question":"How do I submit a case?","answer":"Fill out the form, add a recording if needed, and click Submit."},{"question":"How long can my recording be?","answer":"Recordings can be up to 5 minutes long by default."}]'/>
+                     
+            <!-- Appearance Settings -->
+            <property name="primaryColor" type="String" label="Primary Color" 
+                     description="Primary color for component header and accents" default="#22BDC1"/>
+            <property name="accentColor" type="String" label="Accent Color" 
+                     description="Secondary color for progress bars and highlights" default="#D5DF23"/>
+            <property name="useDarkTheme" type="Boolean" label="Use Dark Theme" 
+                     description="Apply dark theme to the component" default="false"/>
+            <property name="showInstructions" type="Boolean" label="Show Instructions" 
+                     description="Display instructions panel below the recorder" default="true"/>
+            <property name="instructionsText" type="String" label="Instructions Text" 
+                     description="Custom instructions text for the support form"/>
+            <property name="countdownDuration" type="Integer" label="Countdown Duration" 
+                     description="Number of seconds to count down before recording starts" default="3" min="1" max="5"/>
+                     
+            <supportedFormFactors>
+                <supportedFormFactor type="Large" />
+                <supportedFormFactor type="Small" />
+            </supportedFormFactors>
+        </targetConfig>
+        
+        <targetConfig targets="lightning__FlowScreen">
+            <property name="recordTypeId" type="String" label="Support Record Type ID" 
+                     description="Record Type ID for the support cases" required="false"/>
+            <property name="maxDuration" type="Integer" label="Maximum Video Duration (seconds)" 
+                     description="Maximum recording duration in seconds" default="300" min="30" max="600"/>
+            <property name="folderName" type="String" label="Folder Name" 
+                     description="Name of the folder where recordings will be saved" default="Support Recordings"/>
+            <property name="componentTitle" type="String" label="Component Title" 
+                     description="Title displayed in the component header" default="Support Request"/>
+            <property name="primaryColor" type="String" label="Primary Color" 
+                     description="Primary color for component header and accents" default="#22BDC1"/>
+            <property name="accentColor" type="String" label="Accent Color" 
+                     description="Secondary color for progress bars and highlights" default="#D5DF23"/>
+            <property name="useDarkTheme" type="Boolean" label="Use Dark Theme" 
+                     description="Apply dark theme to the component" default="false"/>
+            <property name="showFaqSection" type="Boolean" label="Show FAQ Section" 
+                     description="Display the FAQ section alongside the support requester" default="true"/>
+            <property name="showInstructions" type="Boolean" label="Show Instructions" 
+                     description="Display instructions panel below the recorder" default="true"/>
+            <property name="faqHeaderTitle" type="String" label="FAQ Header Title" 
+                     description="Title for the FAQ section" default="Frequently Asked Questions"/>
+            <property name="requestCompleted" type="Boolean" label="Request Completed" 
+                     description="Indicates if a support request has been successfully created"/>
+        </targetConfig>
+        
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="recordTypeId" type="String" label="Support Record Type ID" 
+                     description="Record Type ID for the support cases" required="false"/>
+            <property name="maxDuration" type="Integer" label="Maximum Video Duration (seconds)" 
+                     description="Maximum recording duration in seconds" default="300" min="30" max="600"/>
+            <property name="folderName" type="String" label="Folder Name" 
+                     description="Name of the folder where recordings will be saved" default="Support Recordings"/>
+            <property name="componentTitle" type="String" label="Component Title" 
+                     description="Title displayed in the component header" default="Support Request"/>
+            <property name="primaryColor" type="String" label="Primary Color" 
+                     description="Primary color for component header and accents" default="#22BDC1"/>
+            <property name="accentColor" type="String" label="Accent Color" 
+                     description="Secondary color for progress bars and highlights" default="#D5DF23"/>
+            <property name="useDarkTheme" type="Boolean" label="Use Dark Theme" 
+                     description="Apply dark theme to the component" default="false"/>
+            <property name="showFaqSection" type="Boolean" label="Show FAQ Section" 
+                     description="Display the FAQ section alongside the support requester" default="true"/>
+            <property name="showInstructions" type="Boolean" label="Show Instructions" 
+                     description="Display instructions panel below the recorder" default="true"/>
+            <property name="faqHeaderTitle" type="String" label="FAQ Header Title" 
+                     description="Title for the FAQ section" default="Frequently Asked Questions"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle> 
