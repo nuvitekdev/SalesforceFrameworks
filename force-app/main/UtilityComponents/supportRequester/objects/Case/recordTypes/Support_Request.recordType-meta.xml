@@ -5,6 +5,7 @@
     <description>Record type for support requests submitted through the Support Requester component</description>
     <label>Support Request</label>
     <businessProcess>Support Process</businessProcess>
+    <compactLayoutAssignment>Support_Request_Compact</compactLayoutAssignment>
     <picklistValues>
         <picklist>Origin</picklist>
         <values>

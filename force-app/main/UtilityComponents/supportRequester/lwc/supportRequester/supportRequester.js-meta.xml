@@ -30,8 +30,6 @@
                      description="Allow users to record their screen" default="true"/>
             <property name="enableScreenshot" type="Boolean" label="Enable Screenshot" 
                      description="Allow users to capture screenshots" default="false"/>
-            <property name="captureMode" type="String" label="Default Capture Mode" 
-                     description="Default capture mode to show to users" default="recording" datasource="recording,screenshot,both"/>
             
             <!-- FAQ Settings -->
             <property name="showFaqSection" type="Boolean" label="Show FAQ Section" 
@@ -79,8 +77,6 @@
                      description="Allow users to record their screen" default="true"/>
             <property name="enableScreenshot" type="Boolean" label="Enable Screenshot" 
                      description="Allow users to capture screenshots" default="false"/>
-            <property name="captureMode" type="String" label="Default Capture Mode" 
-                     description="Default capture mode to show to users" default="recording" datasource="recording,screenshot,both"/>
             
             <!-- FAQ Settings -->
             <property name="showFaqSection" type="Boolean" label="Show FAQ Section" 
@@ -120,8 +116,6 @@
                      description="Allow users to record their screen" default="true"/>
             <property name="enableScreenshot" type="Boolean" label="Enable Screenshot" 
                      description="Allow users to capture screenshots" default="false"/>
-            <property name="captureMode" type="String" label="Default Capture Mode" 
-                     description="Default capture mode to show to users" default="recording" datasource="recording,screenshot,both"/>
             
             <property name="primaryColor" type="String" label="Primary Color" 
                      description="Primary color for component header and accents" default="#22BDC1"/>
@@ -154,8 +148,6 @@
                      description="Allow users to record their screen" default="true"/>
             <property name="enableScreenshot" type="Boolean" label="Enable Screenshot" 
                      description="Allow users to capture screenshots" default="false"/>
-            <property name="captureMode" type="String" label="Default Capture Mode" 
-                     description="Default capture mode to show to users" default="recording" datasource="recording,screenshot,both"/>
             
             <property name="primaryColor" type="String" label="Primary Color" 
                      description="Primary color for component header and accents" default="#22BDC1"/>

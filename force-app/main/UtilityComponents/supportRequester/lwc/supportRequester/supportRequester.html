@@ -76,6 +76,21 @@
                     
                     <!-- Media Capture Section -->
                     <template if:true={showMediaSection}>
+                        <!-- Instructions above media sections -->
+                        <template if:true={showInstructions}>
+                            <div class="instructions-container media-instructions">
+                                <div class="instructions-header">
+                                    <lightning-icon icon-name="utility:info" alternative-text="Information" size="small"></lightning-icon>
+                                    <h3>{instructionsTitle}</h3>
+                                </div>
+                                <div class="instructions-content">
+                                    <lightning-formatted-rich-text 
+                                        value={instructionsTextFormatted}>
+                                    </lightning-formatted-rich-text>
+                                </div>
+                            </div>
+                        </template>
+
                         <div class="media-sections-container">
                             <!-- Screen Recording Section - Directly shown when enabled -->
                             <template if:true={enableScreenRecording}>
@@ -271,21 +286,6 @@
                         </div>
                     </template>
                 </div>
-                
-                <!-- Instructions -->
-                <template if:true={showInstructions}>
-                    <div class="instructions-container">
-                        <div class="instructions-header">
-                            <lightning-icon icon-name="utility:info" alternative-text="Information" size="small"></lightning-icon>
-                            <h3>Instructions</h3>
-                        </div>
-                        <div class="instructions-content">
-                            <lightning-formatted-rich-text 
-                                value={instructionsTextFormatted}>
-                            </lightning-formatted-rich-text>
-                        </div>
-                    </div>
-                </template>
             </div>
             
             <!-- FAQ Section -->

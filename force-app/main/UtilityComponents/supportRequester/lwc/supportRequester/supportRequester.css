@@ -392,12 +392,10 @@
 
 .download-button {
     margin-right: 8px;
-    background-color: var(--primary-light);
     color: var(--primary-dark);
 }
 
 .download-button:hover {
-    background-color: var(--primary-color);
     color: white;
 }
 
@@ -422,6 +420,18 @@
     background-color: var(--background-alt);
     border-radius: var(--radius-md);
     border: 1px solid var(--border-subtle);
+}
+
+/* Special styling for media instructions */
+.media-instructions {
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+    border-left: 3px solid var(--primary-color);
+}
+
+.media-instructions .instructions-header h3 {
+    color: var(--primary-color);
 }
 
 .instructions-header {

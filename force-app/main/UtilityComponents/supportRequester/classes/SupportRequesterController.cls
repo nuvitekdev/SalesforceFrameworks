@@ -81,13 +81,19 @@ public with sharing class SupportRequesterController {
                 throw new AuraHandledException('Subject and description are required');
             }
             
+            // Get the Support_Request record type ID
+            Id supportRequestRecordTypeId = Schema.SObjectType.Case.getRecordTypeInfosByDeveloperName()
+                .get('Support_Request')
+                .getRecordTypeId();
+            
             // Create the case
             Case newCase = new Case(
                 Subject = subject,
                 Description = description,
                 Priority = String.isNotBlank(priority) ? priority : 'Medium',
                 Origin = 'Web',
-                Status = 'New'
+                Status = 'New',
+                RecordTypeId = supportRequestRecordTypeId
             );
             
             // Add application context if available

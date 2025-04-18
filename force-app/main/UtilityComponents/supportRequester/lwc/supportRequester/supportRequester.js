@@ -40,7 +40,7 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     // Media capture configuration
     @api enableScreenRecording = false;
     @api enableScreenshot = false;
-    @api captureMode = 'recording'; // Options: recording, screenshot, both
+    @api captureMode = ''; // This will be determined by enableScreenRecording and enableScreenshot
     
     // FAQ configuration properties
     @api showFaqSection = false;
@@ -132,16 +132,30 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
         return this.layoutOrientation === 'vertical' ? 'support-layout-vertical' : 'support-layout-horizontal';
     }
     
+    // Determine the effective captureMode based on what's enabled
+    get effectiveCaptureMode() {
+        if (this.enableScreenRecording && this.enableScreenshot) {
+            return this.captureMode || 'both';
+        } else if (this.enableScreenRecording) {
+            return 'recording';
+        } else if (this.enableScreenshot) {
+            return 'screenshot';
+        } else {
+            return this.captureMode || 'recording';
+        }
+    }
+    
     get showRecordingOption() {
-        return this.enableScreenRecording && (this.captureMode === 'recording' || this.captureMode === 'both');
+        // If enableScreenRecording is true or not explicitly set, show recording option
+        return this.enableScreenRecording !== false;
     }
     
     get showScreenshotOption() {
-        return this.enableScreenshot && (this.captureMode === 'screenshot' || this.captureMode === 'both');
+        return this.enableScreenshot && (this.effectiveCaptureMode === 'screenshot' || this.effectiveCaptureMode === 'both');
     }
     
     get showMediaTypeTabs() {
-        return this.enableScreenRecording && this.enableScreenshot && this.captureMode === 'both';
+        return this.enableScreenRecording && this.enableScreenshot && this.effectiveCaptureMode === 'both';
     }
     
     get isRecordingActive() {
@@ -161,7 +175,8 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     }
     
     get showMediaSection() {
-        return this.enableScreenRecording || this.enableScreenshot;
+        // Always show media section by default, to match previous behavior
+        return true;
     }
     
     // New getter to determine if download button should be shown
@@ -169,11 +184,26 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
         return this.showPreview && this.recordedChunks.length > 0;
     }
     
+    // Dynamic instructions title based on enabled features
+    get instructionsTitle() {
+        if (this.enableScreenRecording && this.enableScreenshot) {
+            return 'Recording and Screenshot Instructions';
+        } else if (this.enableScreenRecording) {
+            return 'Recording Instructions';
+        } else if (this.enableScreenshot) {
+            return 'Screenshot Instructions';
+        } else {
+            return 'Instructions';
+        }
+    }
+    
     // Lifecycle hooks
     connectedCallback() {
         this.loadStyles();
         this.detectAppContext();
         this.loadFaqItemsFromConfig();
+        this.enableScreenRecording = true;
+        this.showInstructions = true;
     }
     
     renderedCallback() {
@@ -525,26 +555,70 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
             this.permissionDenied = false;
             this.errorMessage = '';
             
-            // Request screen sharing
+            // Request screen sharing with audio
             navigator.mediaDevices.getDisplayMedia({ 
                 video: { 
                     cursor: 'always',
                     frameRate: { ideal: 30 }
                 },
-                audio: true 
-            })
-            .then(stream => {
-                this.mediaStream = stream;
-                this.showVideo = true;
-                this.streamActive = true;
-                
-                // Set the video element source
-                const videoElement = this.template.querySelector('.video-element');
-                if (videoElement) {
-                    videoElement.srcObject = stream;
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    sampleRate: 44100
                 }
-                
-                resolve();
+            })
+            .then(screenStream => {
+                // We need to explicitly get audio from the user's microphone
+                navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        sampleRate: 44100
+                    }
+                })
+                .then(audioStream => {
+                    // Combine both streams
+                    const combinedStream = new MediaStream();
+                    
+                    // Add all video tracks from screen stream
+                    screenStream.getVideoTracks().forEach(track => {
+                        combinedStream.addTrack(track);
+                    });
+                    
+                    // Add all audio tracks from microphone stream
+                    audioStream.getAudioTracks().forEach(track => {
+                        combinedStream.addTrack(track);
+                    });
+                    
+                    this.mediaStream = combinedStream;
+                    this.showVideo = true;
+                    this.streamActive = true;
+                    
+                    // Set the video element source
+                    const videoElement = this.template.querySelector('.video-element');
+                    if (videoElement) {
+                        videoElement.srcObject = combinedStream;
+                        videoElement.muted = true; // Mute during recording to prevent feedback
+                    }
+                    
+                    resolve();
+                })
+                .catch(error => {
+                    // Fall back to just screen with system audio if mic access fails
+                    console.warn('Microphone access denied, falling back to screen only:', error);
+                    this.mediaStream = screenStream;
+                    this.showVideo = true;
+                    this.streamActive = true;
+                    
+                    // Set the video element source
+                    const videoElement = this.template.querySelector('.video-element');
+                    if (videoElement) {
+                        videoElement.srcObject = screenStream;
+                        videoElement.muted = true;
+                    }
+                    
+                    resolve();
+                });
             })
             .catch(error => {
                 console.error('Permission error:', error);
@@ -578,8 +652,20 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
         if (!this.mediaStream) return;
         
         try {
-            // Create MediaRecorder instance
-            this.mediaRecorder = new MediaRecorder(this.mediaStream);
+            // Create MediaRecorder instance with appropriate MIME type and bitrate
+            const options = { 
+                mimeType: 'video/webm;codecs=vp9,opus',
+                videoBitsPerSecond: 2500000, // 2.5 Mbps
+                audioBitsPerSecond: 128000   // 128 kbps
+            };
+            
+            try {
+                this.mediaRecorder = new MediaRecorder(this.mediaStream, options);
+            } catch (e) {
+                // Fallback if preferred codecs are not supported
+                console.warn('Preferred codec not supported, using default:', e);
+                this.mediaRecorder = new MediaRecorder(this.mediaStream);
+            }
             
             // Set up event handlers
             this.mediaRecorder.ondataavailable = (event) => {
@@ -601,10 +687,14 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
                 // Make sure video element has all needed attributes for playback
                 const videoElement = this.template.querySelector('.video-element');
                 if (videoElement) {
+                    // Remove the stream source object
+                    videoElement.srcObject = null;
+                    // Set the blob URL
                     videoElement.src = this.videoUrl;
                     videoElement.controls = true;
-                    videoElement.muted = false;
+                    videoElement.muted = false; // Unmute for playback
                     videoElement.autoplay = false;
+                    videoElement.load(); // Force reload with new source
                 }
                 
                 // Stop all tracks
