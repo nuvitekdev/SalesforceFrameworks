@@ -174,12 +174,6 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
         this.loadStyles();
         this.detectAppContext();
         this.loadFaqItemsFromConfig();
-        
-        // Ensure at least one capture method is enabled
-        if (!this.enableScreenRecording && !this.enableScreenshot) {
-            // Default to recording if both are disabled
-            this.enableScreenRecording = true;
-        }
     }
     
     renderedCallback() {
