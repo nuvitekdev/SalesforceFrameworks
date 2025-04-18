@@ -18,6 +18,8 @@
     --text-color: #2a2a2a;
     --text-light: #ffffff;
     --text-muted: #4a4a4a;
+    --primary-text-color: #ffffff; /* Default, will be overridden by JS */
+    --accent-text-color: #000000; /* Default, will be overridden by JS */
     --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.08);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
     --shadow-lg: 0 6px 24px rgba(0, 0, 0, 0.16);
@@ -35,11 +37,10 @@
     box-shadow: var(--shadow-md);
     overflow: hidden;
     position: relative;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    transition: box-shadow var(--transition-fast);
 }
 
 .recorder-card:hover {
-    transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
 
@@ -280,20 +281,24 @@
 .submit-button {
     --slds-c-button-success-color-background: var(--primary-color) !important;
     --slds-c-button-success-color-background-hover: color-mix(in srgb, var(--primary-color) 90%, black) !important;
-    --slds-c-button-text-color: white !important; /* White text for good contrast on teal */
+    --slds-c-button-text-color: var(--primary-text-color) !important;
     border: none !important;
 }
 
 /* Primary action (Start Recording) button with a less bright color */
 .primary-action .control-button:not([variant="destructive"]) {
-    --slds-c-button-brand-color-background: rgba(213, 223, 35, 0.8) !important;
-    --slds-c-button-brand-color-background-hover: rgba(213, 223, 35, 0.9) !important;
-    --slds-c-button-text-color: #000000 !important; /* Black text for better contrast on yellow-green */
+    --slds-c-button-brand-color-background: rgba(213, 223, 35, 1) !important;
+    --slds-c-button-brand-color-background-hover: rgb(35, 95, 223) !important;
+    --slds-c-button-text-color: var(--accent-text-color) !important;
+    font-weight: 600 !important; /* Making the text slightly bolder for improved readability */
 }
 
 /* Stop recording button needs white text */
 .primary-action .control-button[variant="destructive"] {
     --slds-c-button-text-color: #ffffff !important;
+    --slds-c-button-destructive-color-background: #ff3b30 !important;
+    --slds-c-button-destructive-color-background-hover: #e0352b !important;
+    font-weight: 600 !important;
 }
 
 /* Remove focus outline */
@@ -302,8 +307,16 @@
     box-shadow: none !important;
 }
 
+/* Consistent hover effect for all buttons */
 .control-button:hover {
     transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Specific hover effect for primary action button */
+.primary-action .control-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Spinner container */
@@ -339,11 +352,10 @@
     border-radius: var(--radius-md);
     padding: 1.25rem;
     box-shadow: var(--shadow-sm);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    transition: box-shadow var(--transition-fast);
 }
 
 .instructions-container:hover {
-    transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 

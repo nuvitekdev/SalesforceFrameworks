@@ -80,6 +80,24 @@ export default class InterviewRecorder extends LightningElement {
         root.style.setProperty('--accent-color', this.accentColor);
         root.style.setProperty('--accent-gradient', `linear-gradient(90deg, ${this.accentColor} 0%, ${this.adjustColor(this.accentColor, -20)} 100%)`);
         
+        // Determine text colors based on background brightness
+        const accentTextColor = this.getContrastingTextColor(this.accentColor);
+        const primaryTextColor = this.getContrastingTextColor(this.primaryColor);
+        
+        // Apply text colors
+        root.style.setProperty('--accent-text-color', accentTextColor);
+        root.style.setProperty('--primary-text-color', primaryTextColor);
+        
+        // Set button text colors based on background
+        setTimeout(() => {
+            const brandButtons = this.template.querySelectorAll('.primary-action .control-button:not([variant="destructive"])');
+            if (brandButtons.length) {
+                brandButtons.forEach(btn => {
+                    btn.style.setProperty('--slds-c-button-text-color', accentTextColor);
+                });
+            }
+        }, 0);
+        
         // Apply custom classes to buttons if configured
         if (this.customButtonClasses) {
             const buttons = this.template.querySelectorAll('lightning-button');
@@ -89,6 +107,46 @@ export default class InterviewRecorder extends LightningElement {
                 });
             });
         }
+    }
+    
+    // Utility function to determine if text should be black or white based on background color brightness
+    getContrastingTextColor(hexColor) {
+        // Default to black if no color provided
+        if (!hexColor) return '#000000';
+        
+        // Handle rgba format
+        if (hexColor.startsWith('rgba')) {
+            const rgbaValues = hexColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)/);
+            if (rgbaValues) {
+                const r = parseInt(rgbaValues[1], 10);
+                const g = parseInt(rgbaValues[2], 10);
+                const b = parseInt(rgbaValues[3], 10);
+                // Calculate brightness using YIQ formula
+                const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                // Return black for light backgrounds, white for dark backgrounds
+                return brightness >= 128 ? '#000000' : '#ffffff';
+            }
+        }
+        
+        // Convert 3-char hex to 6-char
+        let hex = hexColor.replace('#', '');
+        if (hex.length === 3) {
+            hex = hex.split('').map(char => char + char).join('');
+        }
+        
+        // Handle hex format
+        if (hex.length === 6) {
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            // Calculate brightness using YIQ formula
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            // Return black for light backgrounds, white for dark backgrounds
+            return brightness >= 128 ? '#000000' : '#ffffff';
+        }
+        
+        // Default to black if color format not recognized
+        return '#000000';
     }
     
     // Helper to darken/lighten a color
@@ -202,6 +260,10 @@ export default class InterviewRecorder extends LightningElement {
                 // Only set srcObject if it's different to avoid interrupting play requests
                 if (videoElement.srcObject !== this.stream) {
                     videoElement.srcObject = this.stream;
+                    
+                    // Always ensure video is muted during live preview to prevent feedback
+                    videoElement.muted = true;
+                    
                     // Make sure video is playing, with better error handling
                     videoElement.play().catch(err => {
                         console.error('Error playing video:', err);
@@ -253,21 +315,25 @@ export default class InterviewRecorder extends LightningElement {
     startRecording() {
         if (!this.stream) return;
         
-        // Close existing preview stream
-        if (this.stream) {
-            this.stream.getTracks().forEach(track => {
-                if (track.kind === 'audio') {
-                    track.stop();
-                }
-            });
-        }
+        // Stop any existing streams first to prevent interference
+        this.stopMediaTracks();
         
-        // Request permissions for camera AND microphone now
+        // Request permissions for camera AND microphone now with specific constraints for better quality
         navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                frameRate: { ideal: 30 }
+            },
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                sampleRate: 48000
+            }
         }).then(recordStream => {
             this.stream = recordStream;
+            this.streamActive = true;
             this.connectStreamToVideo();
             
             this.recordedChunks = [];
@@ -279,8 +345,20 @@ export default class InterviewRecorder extends LightningElement {
             // Initialize timer bar
             this.updateTimerBar();
             
-            // Setup MediaRecorder
-            this.mediaRecorder = new MediaRecorder(this.stream, { mimeType: 'video/webm' });
+            // Setup MediaRecorder with better encoding options
+            const options = { 
+                mimeType: 'video/webm;codecs=vp9,opus',
+                audioBitsPerSecond: 128000,
+                videoBitsPerSecond: 2500000
+            };
+            
+            try {
+                this.mediaRecorder = new MediaRecorder(this.stream, options);
+            } catch (e) {
+                // Fallback to default options if the browser doesn't support specified codecs
+                console.log('Using fallback MediaRecorder options');
+                this.mediaRecorder = new MediaRecorder(this.stream);
+            }
             
             // Handle data available event
             this.mediaRecorder.ondataavailable = (event) => {
@@ -291,6 +369,9 @@ export default class InterviewRecorder extends LightningElement {
             
             // Handle recording stop event
             this.mediaRecorder.onstop = () => {
+                // Stop all tracks to ensure microphone is turned off
+                this.stopMediaTracks();
+                
                 const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
                 this.recordedBlob = blob;
                 
@@ -304,10 +385,13 @@ export default class InterviewRecorder extends LightningElement {
                 // Now set up the recorded video
                 this.videoUrl = URL.createObjectURL(blob);
                 this.showPreview = true;
+                
+                // Reinitialize camera for further recording (without audio)
+                this.initializeCamera();
             };
             
-            // Start recording
-            this.mediaRecorder.start();
+            // Request data in shorter intervals for more reliable recording
+            this.mediaRecorder.start(1000); // Collect data every second
             
             // Setup timer for recording duration
             this.recordingInterval = setInterval(() => {
@@ -320,7 +404,18 @@ export default class InterviewRecorder extends LightningElement {
         }).catch(error => {
             console.error('Error accessing audio for recording:', error);
             this.errorMessage = 'Cannot access microphone. Please ensure you have granted permission.';
+            // Try to reinitialize just the camera
+            this.initializeCamera();
         });
+    }
+    
+    // Helper to stop all media tracks properly
+    stopMediaTracks() {
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => {
+                track.stop();
+            });
+        }
     }
     
     // Stop recording
@@ -462,11 +557,9 @@ export default class InterviewRecorder extends LightningElement {
             this.stopRecording();
         }
         
-        if (this.stream) {
-            this.stream.getTracks().forEach(track => track.stop());
-            this.stream = null;
-            this.streamActive = false;
-        }
+        this.stopMediaTracks();
+        this.stream = null;
+        this.streamActive = false;
         
         if (this.countdownInterval) {
             clearInterval(this.countdownInterval);
