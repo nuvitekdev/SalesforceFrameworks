@@ -112,6 +112,7 @@
             <property name="fabOptions" type="String" default="both" label="FAB Options"
                 description="Select which options to show in the floating action button menu"
                 datasource="both,help_form,ai_assistant,url_link" />
+            
             <property name="helpFormLabel" type="String" default="Help Request" label="Help Form Label"
                 description="Label for the help request option in the FAB menu" />
             <property name="aiAssistantLabel" type="String" default="AI Assistant" label="AI Assistant Label"

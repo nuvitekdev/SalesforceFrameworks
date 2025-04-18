@@ -1270,18 +1270,20 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transform: scale(0.9);
+    transform: scale(0.9) translateX(0);
     opacity: 0;
     pointer-events: none;
     transition: all var(--transition-medium);
     z-index: 1001;
     max-height: 80vh;
+    transform-origin: bottom right;
 }
 
 .help-form-dialog.open {
-    transform: scale(1);
+    transform: scale(1) translateX(0);
     opacity: 1;
     pointer-events: auto;
+    animation: springIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .help-form-dialog-header {
@@ -1912,4 +1914,157 @@
 
 .fab-button:hover {
     transform: translateY(-5px) rotate(90deg);
+}
+
+/* Support Requester Dialog Styles */
+.support-requester-dialog {
+    position: fixed;
+    bottom: 85px;
+    right: 20px;
+    width: 420px;
+    max-width: 90vw;
+    max-height: 80vh;
+    background-color: var(--background);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 1002;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9);
+    transform-origin: bottom right;
+}
+
+.support-requester-dialog.open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+    animation: springIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.support-requester-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.support-requester-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: var(--primary-color);
+    color: #fff;
+    border-radius: 12px 12px 0 0;
+}
+
+.support-requester-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.support-requester-close {
+    background: none;
+    border: none;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.support-requester-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.support-requester-content {
+    padding: 0;
+    flex-grow: 1;
+    overflow: auto;
+    width: 100%;
+    height: 100%;
+    max-height: calc(90vh - 20px); /* Account for close button */
+    border-radius: var(--radius-lg);
+}
+
+/* Dark theme support for Support Requester */
+.theme-dark .support-requester-dialog {
+    background-color: var(--nuvitek-surface-dark-color);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive styles for Support Requester */
+@media (max-width: 768px) {
+    .support-requester-dialog {
+        width: 100%;
+        max-width: 100%;
+        height: 90vh;
+        max-height: 90vh;
+        bottom: 0;
+        right: 0;
+        transform: translateY(100%);
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .support-requester-dialog.open {
+        transform: translateY(0);
+    }
+    
+    .help-form-dialog {
+        width: 100%;
+        max-width: 100%;
+        height: 90vh;
+        max-height: 90vh;
+        bottom: 0;
+        right: 0;
+        transform: translateY(100%);
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .help-form-dialog.open {
+        transform: translateY(0);
+    }
+}
+
+/* Dialog close button positioned at top-right */
+.dialog-close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.1);
+    border: none;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all var(--transition-fast);
+}
+
+.dialog-close-button:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+    transform: scale(1.1);
+}
+
+.theme-dark .dialog-close-button {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.theme-dark .dialog-close-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
 }

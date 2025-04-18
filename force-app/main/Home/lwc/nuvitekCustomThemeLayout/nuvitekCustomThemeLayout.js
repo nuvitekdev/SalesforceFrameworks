@@ -77,7 +77,7 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
     @api aiAssistantLabel = 'AI Assistant';
     @api helpFormIcon = 'utility:chat';
     @api aiAssistantIcon = 'utility:einstein';
-
+    
     // Video background properties
     @api showBackgroundVideo = false;
     @api backgroundVideoUrl;
@@ -94,8 +94,6 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
     @track helpFormOpen = false;
     @track fabMenuOpen = false;
     @track llmAssistantOpen = false;
-    @track formSubmitted = false;
-    @track formSubmissionMessage = '';
     @track styleInjectionTargets = [];
     @track mutationObserver;
     @track ootbComponentsStyled = false;
@@ -911,6 +909,7 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
         });
     }
 
+    // Toggle the help form (which is now the Support Requester)
     toggleHelpForm() {
         this.helpFormOpen = !this.helpFormOpen;
         
@@ -918,29 +917,7 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
         if (this.helpFormOpen) {
             this.fabMenuOpen = false;
             this.llmAssistantOpen = false;
-            // Reset form state when opening
-            this.formSubmitted = false;
         }
-    }
-
-    handleHelpFormSubmit(event) {
-        event.preventDefault();
-
-        // Here you would typically call an apex method to submit the form
-        // For now we'll just simulate a successful submission
-        this.formSubmitted = true;
-        this.formSubmissionMessage = 'Your help request has been submitted successfully! We\'ll get back to you soon.';
-
-        // Reset form after 3 seconds
-        setTimeout(() => {
-            this.helpFormOpen = false;
-            this.formSubmitted = false;
-            // Reset the form fields
-            const form = this.template.querySelector('.help-request-form');
-            if (form) {
-                form.reset();
-            }
-        }, 3000);
     }
 
     // Toggle the FAB menu
@@ -1003,6 +980,14 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
 
     get themeClass() {
         return `nuvitek-theme theme-${this.themeName}`;
+    }
+
+    get isDarkTheme() {
+        return this.themeName === 'dark';
+    }
+
+    get showFaqSection() {
+        return false; // Always hide FAQ section
     }
 
     get scrollIndicatorClass() {
@@ -1154,7 +1139,7 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(LightningE
     }
 
     get helpFormDialogClass() {
-        return this.helpFormOpen ? 'help-form-dialog open' : 'help-form-dialog';
+        return this.helpFormOpen ? 'dialog support-requester-dialog open' : 'dialog support-requester-dialog';
     }
 
     get backdropClass() {

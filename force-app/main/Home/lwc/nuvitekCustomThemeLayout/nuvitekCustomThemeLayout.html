@@ -471,48 +471,24 @@
 
             <!-- Help Form Dialog -->
             <div class={helpFormDialogClass}>
-                <div class="help-form-dialog-header">
-                    <h2 class="help-form-title">Submit a Help Request</h2>
-                    <button class="help-form-close" onclick={toggleHelpForm}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
-                    </button>
+                <div class="support-requester-content">
+                    <!-- The support requester LWC component -->
+                    <c-support-requester
+                        primary-color={primaryColor}
+                        accent-color={accentColor}
+                        use-dark-theme={isDarkTheme}
+                        layout-orientation="vertical"
+                        component-title={helpFormLabel}
+                        show-faq-section={showFaqSection}>
+                    </c-support-requester>
                 </div>
-                <div class="help-form-content">
-                    <template if:true={formSubmitted}>
-                        <div class="form-success-message">
-                            {formSubmissionMessage}
-                        </div>
-                    </template>
-                    <template if:false={formSubmitted}>
-                        <form class="help-request-form" onsubmit={handleHelpFormSubmit}>
-                            <div class="form-field">
-                                <label for="fullName">Full Name</label>
-                                <input type="text" id="fullName" name="fullName" placeholder="Your name" required />
-                            </div>
-                            <div class="form-field">
-                                <label for="email">Email</label>
-                                <input type="email" id="email" name="email" placeholder="Your email address" required />
-                            </div>
-                            <div class="form-field">
-                                <label for="subject">Subject</label>
-                                <input type="text" id="subject" name="subject" placeholder="Help request subject"
-                                    required />
-                            </div>
-                            <div class="form-field">
-                                <label for="message">Message</label>
-                                <textarea id="message" name="message"
-                                    placeholder="Please describe your issue or question..." rows="4"
-                                    required></textarea>
-                            </div>
-                            <div class="form-actions">
-                                <button type="submit" class="form-submit-button">Submit Request</button>
-                            </div>
-                        </form>
-                    </template>
-                </div>
+                <!-- Add close button to top right corner -->
+                <button class="dialog-close-button" onclick={toggleHelpForm}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
             </div>
             
             <!-- LLM Assistant Dialog -->

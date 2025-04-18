@@ -77,39 +77,8 @@
                     <!-- Media Capture Section -->
                     <template if:true={showMediaSection}>
                         <div class="media-sections-container">
-                            <!-- Toggle buttons for media types -->
-                            <div class="media-toggle-buttons">
-                                <template if:true={enableScreenRecording}>
-                                    <div class="toggle-button-container">
-                                        <span class="toggle-label">Screen Recording</span>
-                                        <lightning-input 
-                                            type="toggle"
-                                            label="Screen Recording"
-                                            variant="label-hidden"
-                                            checked={showRecordingSection}
-                                            onchange={handleToggleRecording}
-                                            class="toggle-switch">
-                                        </lightning-input>
-                                    </div>
-                                </template>
-                                
-                                <template if:true={enableScreenshot}>
-                                    <div class="toggle-button-container">
-                                        <span class="toggle-label">Screenshot</span>
-                                        <lightning-input 
-                                            type="toggle"
-                                            label="Screenshot"
-                                            variant="label-hidden"
-                                            checked={showScreenshotSection}
-                                            onchange={handleToggleScreenshot}
-                                            class="toggle-switch">
-                                        </lightning-input>
-                                    </div>
-                                </template>
-                            </div>
-                            
-                            <!-- Screen Recording Section -->
-                            <template if:true={showRecordingSection}>
+                            <!-- Screen Recording Section - Directly shown when enabled -->
+                            <template if:true={enableScreenRecording}>
                                 <div class="recorder-section">
                                     <div class="recorder-label">Screen Recording</div>
                                     
@@ -196,8 +165,8 @@
                                 </div>
                             </template>
                             
-                            <!-- Screenshot Section -->
-                            <template if:true={showScreenshotSection}>
+                            <!-- Screenshot Section - Directly shown when enabled -->
+                            <template if:true={enableScreenshot}>
                                 <div class="recorder-section">
                                     <div class="recorder-label">Screenshot</div>
                                     

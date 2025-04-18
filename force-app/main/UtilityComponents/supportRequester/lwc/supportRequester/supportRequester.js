@@ -63,8 +63,6 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     @track createdCaseNumber;
     
     // Media capture state
-    @track showRecordingSection = false;
-    @track showScreenshotSection = false;
     @track mediaStream;
     @track mediaRecorder;
     @track recordedChunks = [];
@@ -177,10 +175,6 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
             // Default to recording if both are disabled
             this.enableScreenRecording = true;
         }
-        
-        // Set default visibility
-        this.showRecordingSection = this.enableScreenRecording;
-        this.showScreenshotSection = this.enableScreenshot && (!this.enableScreenRecording || this.captureMode === 'both');
     }
     
     renderedCallback() {
@@ -805,35 +799,6 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
      */
     showSuccessToast(title, message) {
         this.showToastMessage(title, message, 'success');
-    }
-    
-    /**
-     * Handles the toggle for showing/hiding the recording section
-     */
-    handleToggleRecording(event) {
-        this.showRecordingSection = event.target.checked;
-        
-        // If recording is active and toggle is turned off, stop recording
-        if (!this.showRecordingSection && this.recording) {
-            this.stopRecording();
-        }
-        
-        // If recording is being turned off, discard any current recording
-        if (!this.showRecordingSection) {
-            this.discardRecording();
-        }
-    }
-    
-    /**
-     * Handles the toggle for showing/hiding the screenshot section
-     */
-    handleToggleScreenshot(event) {
-        this.showScreenshotSection = event.target.checked;
-        
-        // If screenshot section is being turned off, discard any current screenshot
-        if (!this.showScreenshotSection) {
-            this.discardScreenshot();
-        }
     }
     
     /**

@@ -35,13 +35,13 @@
             
             <!-- FAQ Settings -->
             <property name="showFaqSection" type="Boolean" label="Show FAQ Section" 
-                     description="Display the FAQ section alongside the support requester" default="true"/>
+                     description="Display the FAQ section alongside the support requester" default="false"/>
             <property name="faqHeaderTitle" type="String" label="FAQ Header Title" 
                      description="Title for the FAQ section" default="Frequently Asked Questions"/>
             <property name="defaultFaqItems" type="String" label="Default FAQ Items" 
                      description="JSON string containing default FAQ items" default='[{"question":"How do I submit a case?","answer":"Fill out the form, add a recording if needed, and click Submit."},{"question":"How long can my recording be?","answer":"Recordings can be up to 5 minutes long by default."}]'/>
             <property name="layoutOrientation" type="String" label="Layout Orientation" 
-                     description="Controls whether FAQ section appears to the right (horizontal) or below (vertical) the support form" default="horizontal" datasource="horizontal,vertical"/>
+                     description="Controls whether FAQ section appears to the right (horizontal) or below (vertical) the support form" default="vertical" datasource="horizontal,vertical"/>
                      
             <!-- Appearance Settings -->
             <property name="primaryColor" type="String" label="Primary Color" 
@@ -84,13 +84,13 @@
             
             <!-- FAQ Settings -->
             <property name="showFaqSection" type="Boolean" label="Show FAQ Section" 
-                     description="Display the FAQ section alongside the support requester" default="true"/>
+                     description="Display the FAQ section alongside the support requester" default="false"/>
             <property name="faqHeaderTitle" type="String" label="FAQ Header Title" 
                      description="Title for the FAQ section" default="Frequently Asked Questions"/>
             <property name="defaultFaqItems" type="String" label="Default FAQ Items" 
                      description="JSON string containing default FAQ items" default='[{"question":"How do I submit a case?","answer":"Fill out the form, add a recording if needed, and click Submit."},{"question":"How long can my recording be?","answer":"Recordings can be up to 5 minutes long by default."}]'/>
             <property name="layoutOrientation" type="String" label="Layout Orientation" 
-                     description="Controls whether FAQ section appears to the right (horizontal) or below (vertical) the support form" default="horizontal" datasource="horizontal,vertical"/>
+                     description="Controls whether FAQ section appears to the right (horizontal) or below (vertical) the support form" default="vertical" datasource="horizontal,vertical"/>
                      
             <!-- Appearance Settings -->
             <property name="primaryColor" type="String" label="Primary Color" 
@@ -130,13 +130,13 @@
             <property name="useDarkTheme" type="Boolean" label="Use Dark Theme" 
                      description="Apply dark theme to the component" default="false"/>
             <property name="showFaqSection" type="Boolean" label="Show FAQ Section" 
-                     description="Display the FAQ section alongside the support requester" default="true"/>
+                     description="Display the FAQ section alongside the support requester" default="false"/>
             <property name="showInstructions" type="Boolean" label="Show Instructions" 
                      description="Display instructions panel below the recorder" default="true"/>
             <property name="faqHeaderTitle" type="String" label="FAQ Header Title" 
                      description="Title for the FAQ section" default="Frequently Asked Questions"/>
             <property name="layoutOrientation" type="String" label="Layout Orientation" 
-                     description="Controls whether FAQ section appears to the right (horizontal) or below (vertical) the support form" default="horizontal" datasource="horizontal,vertical"/>
+                     description="Controls whether FAQ section appears to the right (horizontal) or below (vertical) the support form" default="vertical" datasource="horizontal,vertical"/>
             <property name="requestCompleted" type="Boolean" label="Request Completed" 
                      description="Indicates if a support request has been successfully created"/>
         </targetConfig>
@@ -153,7 +153,7 @@
             <property name="enableScreenRecording" type="Boolean" label="Enable Screen Recording" 
                      description="Allow users to record their screen" default="true"/>
             <property name="enableScreenshot" type="Boolean" label="Enable Screenshot" 
-                     description="Allow users to capture screenshots" default="true"/>
+                     description="Allow users to capture screenshots" default="false"/>
             <property name="captureMode" type="String" label="Default Capture Mode" 
                      description="Default capture mode to show to users" default="recording" datasource="recording,screenshot,both"/>
             
@@ -164,13 +164,13 @@
             <property name="useDarkTheme" type="Boolean" label="Use Dark Theme" 
                      description="Apply dark theme to the component" default="false"/>
             <property name="showFaqSection" type="Boolean" label="Show FAQ Section" 
-                     description="Display the FAQ section alongside the support requester" default="true"/>
+                     description="Display the FAQ section alongside the support requester" default="false"/>
             <property name="showInstructions" type="Boolean" label="Show Instructions" 
                      description="Display instructions panel below the recorder" default="true"/>
             <property name="faqHeaderTitle" type="String" label="FAQ Header Title" 
                      description="Title for the FAQ section" default="Frequently Asked Questions"/>
             <property name="layoutOrientation" type="String" label="Layout Orientation" 
-                     description="Controls whether FAQ section appears to the right (horizontal) or below (vertical) the support form" default="horizontal" datasource="horizontal,vertical"/>
+                     description="Controls whether FAQ section appears to the right (horizontal) or below (vertical) the support form" default="vertical" datasource="horizontal,vertical"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle> 
