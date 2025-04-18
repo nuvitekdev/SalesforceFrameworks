@@ -264,6 +264,10 @@ export default class InterviewRecorder extends LightningElement {
                     // Always ensure video is muted during live preview to prevent feedback
                     videoElement.muted = true;
                     
+                    // Add preview mode class to disable pointer events
+                    videoElement.classList.add('preview-mode');
+                    videoElement.classList.remove('playback-mode');
+                    
                     // Make sure video is playing, with better error handling
                     videoElement.play().catch(err => {
                         console.error('Error playing video:', err);
@@ -380,6 +384,10 @@ export default class InterviewRecorder extends LightningElement {
                 if (videoElement) {
                     videoElement.srcObject = null;
                     videoElement.pause();
+                    
+                    // Remove preview mode class and add playback mode class
+                    videoElement.classList.remove('preview-mode');
+                    videoElement.classList.add('playback-mode');
                 }
                 
                 // Now set up the recorded video
