@@ -391,48 +391,64 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
      * Uploads the recorded video and links it to the created case
      */
     uploadRecording(caseId) {
+        // Create an array to hold all our upload promises
+        const uploadPromises = [];
+        let recordingUploadStarted = false;
+        let screenshotUploadStarted = false;
+        
         // Handle video upload
         if (this.showPreview && this.recordedChunks.length > 0) {
+            recordingUploadStarted = true;
             const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
             const reader = new FileReader();
             
-            reader.onload = () => {
-                const base64Data = reader.result.split(',')[1];
-                const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
-                const fileName = `Support_Recording_${timestamp}.webm`;
+            const recordingPromise = new Promise((resolve, reject) => {
+                reader.onload = () => {
+                    const base64Data = reader.result.split(',')[1];
+                    const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
+                    const fileName = `Support_Recording_${timestamp}.webm`;
+                    
+                    saveSupportRecording({
+                        recordId: caseId,
+                        fileName: fileName,
+                        base64Data: base64Data,
+                        contentType: 'video/webm',
+                        folderName: this.folderName
+                    })
+                    .then(result => {
+                        console.log('Recording uploaded:', result);
+                        resolve(result);
+                    })
+                    .catch(error => {
+                        console.error('Error uploading recording:', error);
+                        // Show warning toast but continue
+                        this.showToastMessage(
+                            'Recording Upload Failed', 
+                            'Your recording could not be uploaded, but the case was created.',
+                            'warning'
+                        );
+                        resolve(null); // Resolve with null to allow other uploads to continue
+                    });
+                };
                 
-                saveSupportRecording({
-                    recordId: caseId,
-                    fileName: fileName,
-                    base64Data: base64Data,
-                    contentType: 'video/webm',
-                    folderName: this.folderName
-                })
-                .then(result => {
-                    console.log('Recording uploaded:', result);
-                    this.finalizeCaseCreation();
-                })
-                .catch(error => {
-                    console.error('Error uploading recording:', error);
-                    // Still show success as case was created, but note upload error
-                    this.showToastMessage(
-                        'Case Created - Recording Failed', 
-                        `Your case was created (${this.createdCaseNumber}) but the recording could not be uploaded.`,
-                        'warning'
-                    );
-                    this.finalizeCaseCreation();
-                });
-            };
+                reader.onerror = () => {
+                    reject(new Error('Failed to read recording file'));
+                };
+                
+                reader.readAsDataURL(blob);
+            });
             
-            reader.readAsDataURL(blob);
+            uploadPromises.push(recordingPromise);
         } 
-        // Handle screenshot upload
-        else if (this.showScreenshot && this.screenshotUrl) {
+        
+        // Handle screenshot upload - now a separate condition, not an else-if
+        if (this.showScreenshot && this.screenshotUrl) {
+            screenshotUploadStarted = true;
             const base64Data = this.screenshotUrl.split(',')[1];
             const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
             const fileName = `Support_Screenshot_${timestamp}.png`;
             
-            saveSupportRecording({
+            const screenshotPromise = saveSupportRecording({
                 recordId: caseId,
                 fileName: fileName,
                 base64Data: base64Data,
@@ -441,19 +457,47 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
             })
             .then(result => {
                 console.log('Screenshot uploaded:', result);
-                this.finalizeCaseCreation();
+                return result;
             })
             .catch(error => {
                 console.error('Error uploading screenshot:', error);
-                // Still show success as case was created, but note upload error
+                // Show warning toast but continue
                 this.showToastMessage(
-                    'Case Created - Screenshot Failed', 
-                    `Your case was created (${this.createdCaseNumber}) but the screenshot could not be uploaded.`,
+                    'Screenshot Upload Failed', 
+                    'Your screenshot could not be uploaded, but the case was created.',
                     'warning'
                 );
-                this.finalizeCaseCreation();
+                return null; // Return null to allow other uploads to continue
             });
+            
+            uploadPromises.push(screenshotPromise);
+        }
+        
+        // If we have started any uploads, wait for all to complete
+        if (uploadPromises.length > 0) {
+            Promise.all(uploadPromises)
+                .then(() => {
+                    // Show appropriate success message based on what was uploaded
+                    if (recordingUploadStarted && screenshotUploadStarted) {
+                        this.showSuccessToast('Case Created', 'Your case and media attachments were successfully submitted.');
+                    } else if (recordingUploadStarted) {
+                        this.showSuccessToast('Case Created', 'Your case and screen recording were successfully submitted.');
+                    } else if (screenshotUploadStarted) {
+                        this.showSuccessToast('Case Created', 'Your case and screenshot were successfully submitted.');
+                    }
+                    this.finalizeCaseCreation();
+                })
+                .catch(error => {
+                    console.error('Error in uploads:', error);
+                    this.showToastMessage(
+                        'Case Created - Attachments Failed', 
+                        `Your case was created (${this.createdCaseNumber}) but one or more attachments could not be uploaded.`,
+                        'warning'
+                    );
+                    this.finalizeCaseCreation();
+                });
         } else {
+            // No uploads to do, just finalize the case
             this.finalizeCaseCreation();
         }
     }
