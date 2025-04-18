@@ -1,0 +1,156 @@
+<template>
+    <div class="interview-recorder-container">
+        <!-- Container for video and controls -->
+        <div class="recorder-card">
+            <!-- Header with title -->
+            <div class="recorder-header">
+                <div class="recorder-title">{componentTitle}</div>
+                <template if:true={recording}>
+                    <div class="recording-indicator">
+                        <div class="recording-dot"></div>
+                        <span>Recording</span>
+                    </div>
+                </template>
+            </div>
+            
+            <!-- Record ID warning for Home Page -->
+            <template if:true={showRecordIdWarning}>
+                <div class="error-container">
+                    <div class="error-text">
+                        No record ID detected. This component automatically tries to detect a record ID from the URL.
+                        If you want to save recordings, please use this component on a record page or provide a recordId manually.
+                    </div>
+                </div>
+            </template>
+            
+            <!-- Video preview area -->
+            <div class="video-container">
+                <!-- Permission error state -->
+                <template if:true={permissionDenied}>
+                    <div class="permission-error">
+                        <lightning-icon icon-name="utility:error" alternative-text="Error" size="large" class="error-icon"></lightning-icon>
+                        <div class="error-message">{errorMessage}</div>
+                        <lightning-button
+                            label="Try Again"
+                            onclick={handleRetryPermissions}
+                            variant="brand"
+                            class="retry-button">
+                        </lightning-button>
+                    </div>
+                </template>
+                
+                <!-- Live preview or recorded preview -->
+                <template if:true={showVideo}>
+                    <video 
+                        class="video-element" 
+                        autoplay
+                        muted={streamActive}
+                        controls={showPreview}
+                        src={videoUrl}
+                        playsinline
+                    ></video>
+                </template>
+                
+                <!-- Countdown overlay -->
+                <template if:true={showCountdown}>
+                    <div class="countdown-overlay">
+                        <div class="countdown-number">{countdown}</div>
+                    </div>
+                </template>
+                
+                <!-- No video state -->
+                <template if:false={showVideo}>
+                    <div class="no-video">
+                        <lightning-icon icon-name="utility:video" alternative-text="Video" size="large"></lightning-icon>
+                        <p>Camera not initialized</p>
+                    </div>
+                </template>
+            </div>
+            
+            <!-- Recording timer progress -->
+            <template if:true={recording}>
+                <div class="timer-container">
+                    <div class="timer-progress">
+                        <div class="timer-bar" lwc:dom="manual"></div>
+                    </div>
+                    <div class="timer-display">{recordingTimeFormatted}</div>
+                </div>
+            </template>
+            
+            <!-- Recording controls -->
+            <div class="controls-container">
+                <!-- Primary Button: Record/Stop -->
+                <div class="primary-action">
+                    <lightning-button
+                        variant={recordButtonVariant}
+                        label={recordButtonLabel}
+                        onclick={handleRecordClick}
+                        disabled={recordButtonDisabled}
+                        class="control-button">
+                    </lightning-button>
+                </div>
+                
+                <!-- Action buttons (only show when there's a preview) -->
+                <template if:true={showPreview}>
+                    <div class="action-buttons">
+                        <lightning-button
+                            variant="neutral"
+                            label="Discard"
+                            onclick={handleDiscardClick}
+                            disabled={isProcessing}
+                            class="control-button discard-button">
+                        </lightning-button>
+                        <lightning-button
+                            variant="neutral"
+                            label="Download"
+                            onclick={handleDownloadClick}
+                            disabled={isProcessing}
+                            class="control-button download-button">
+                        </lightning-button>
+                        <lightning-button
+                            variant="success"
+                            label="Submit"
+                            onclick={handleSubmitClick}
+                            disabled={isProcessing}
+                            class="control-button submit-button">
+                        </lightning-button>
+                    </div>
+                </template>
+            </div>
+            
+            <!-- Loading spinner -->
+            <template if:true={isProcessing}>
+                <div class="spinner-container">
+                    <lightning-spinner alternative-text="Processing" size="medium"></lightning-spinner>
+                </div>
+            </template>
+            
+            <!-- Error message display -->
+            <template if:true={errorMessage}>
+                <div class="error-container">
+                    <div class="error-text">{errorMessage}</div>
+                </div>
+            </template>
+        </div>
+        
+        <!-- Instructions -->
+        <template if:true={showInstructions}>
+            <div class="instructions-container">
+                <div class="instructions-header">
+                    <lightning-icon icon-name="utility:info" alternative-text="Information" size="small"></lightning-icon>
+                    <h3>{instructionsTitle}</h3>
+                </div>
+                <div class="instructions-content">
+                    <ol>
+                        <li>Ensure your camera and microphone are connected and working properly.</li>
+                        <li>Click "Start Recording" when you're ready to begin.</li>
+                        <li>A {countdownDuration}-second countdown will appear before recording begins.</li>
+                        <li>Record your video interview response.</li>
+                        <li>Click "Stop Recording" when finished.</li>
+                        <li>Preview your recording and either submit or discard and try again.</li>
+                    </ol>
+                </div>
+            </div>
+        </template>
+    </div>
+</template> 
