@@ -164,6 +164,11 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
         return this.enableScreenRecording || this.enableScreenshot;
     }
     
+    // New getter to determine if download button should be shown
+    get showDownloadButton() {
+        return this.showPreview && this.recordedChunks.length > 0;
+    }
+    
     // Lifecycle hooks
     connectedCallback() {
         this.loadStyles();
@@ -599,6 +604,15 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
                 this.streamActive = false;
                 this.recording = false;
                 
+                // Make sure video element has all needed attributes for playback
+                const videoElement = this.template.querySelector('.video-element');
+                if (videoElement) {
+                    videoElement.src = this.videoUrl;
+                    videoElement.controls = true;
+                    videoElement.muted = false;
+                    videoElement.autoplay = false;
+                }
+                
                 // Stop all tracks
                 this.stopMediaTracks();
             };
@@ -942,5 +956,38 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
         this.screenshotPermissionDenied = false;
         this.screenshotErrorMessage = '';
         this.handleTakeScreenshot();
+    }
+    
+    /**
+     * Handles downloading the recorded video
+     */
+    handleDownloadClick() {
+        if (!this.recordedChunks.length || !this.videoUrl) {
+            this.showToastMessage('Error', 'No video available to download', 'error');
+            return;
+        }
+
+        try {
+            // Create a temporary anchor element
+            const downloadLink = document.createElement('a');
+            
+            // Set its href to the video URL
+            downloadLink.href = this.videoUrl;
+            
+            // Set the download attribute with a filename
+            const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
+            const fileName = `Support_Recording_${timestamp}.webm`;
+            downloadLink.download = fileName;
+            
+            // Append to body, click and remove
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            
+            this.showToastMessage('Success', 'Video download started', 'success');
+        } catch (error) {
+            console.error('Error downloading video:', error);
+            this.showToastMessage('Error', 'Failed to download video', 'error');
+        }
     }
 } 

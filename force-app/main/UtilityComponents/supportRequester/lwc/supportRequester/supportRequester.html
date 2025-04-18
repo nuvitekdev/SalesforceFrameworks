@@ -159,6 +159,17 @@
                                                     disabled={isProcessing}
                                                     class="control-button discard-button">
                                                 </lightning-button>
+                                                
+                                                <!-- Download button -->
+                                                <template if:true={showDownloadButton}>
+                                                    <lightning-button
+                                                        variant="neutral"
+                                                        label="Download"
+                                                        onclick={handleDownloadClick}
+                                                        disabled={isProcessing}
+                                                        class="control-button download-button">
+                                                    </lightning-button>
+                                                </template>
                                             </div>
                                         </template>
                                     </div>

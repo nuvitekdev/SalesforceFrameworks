@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>LastMessageDate__c</fullName>
-    <label>Last Message Date</label>
-    <required>false</required>
+    <fullName>IsArchived__c</fullName>
+    <defaultValue>false</defaultValue>
+    <label>Is Archived</label>
     <trackTrending>false</trackTrending>
-    <type>DateTime</type>
+    <type>Checkbox</type>
 </CustomField>

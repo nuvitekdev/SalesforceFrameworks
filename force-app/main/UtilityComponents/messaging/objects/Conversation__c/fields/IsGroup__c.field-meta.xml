@@ -3,8 +3,7 @@
     <fullName>IsGroup__c</fullName>
     <defaultValue>false</defaultValue>
     <description>Indicates if this is a group conversation with multiple participants</description>
-    <externalId>false</externalId>
     <label>Is Group</label>
     <trackTrending>false</trackTrending>
     <type>Checkbox</type>
-</CustomField> 
+</CustomField>

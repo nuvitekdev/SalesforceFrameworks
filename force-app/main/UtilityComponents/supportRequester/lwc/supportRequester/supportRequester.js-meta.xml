@@ -78,7 +78,7 @@
             <property name="enableScreenRecording" type="Boolean" label="Enable Screen Recording" 
                      description="Allow users to record their screen" default="true"/>
             <property name="enableScreenshot" type="Boolean" label="Enable Screenshot" 
-                     description="Allow users to capture screenshots" default="true"/>
+                     description="Allow users to capture screenshots" default="false"/>
             <property name="captureMode" type="String" label="Default Capture Mode" 
                      description="Default capture mode to show to users" default="recording" datasource="recording,screenshot,both"/>
             
