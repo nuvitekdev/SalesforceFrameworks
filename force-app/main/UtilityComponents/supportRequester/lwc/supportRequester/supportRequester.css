@@ -995,4 +995,20 @@
 /* Dark theme toggle switch */
 .support-requester-container[data-theme="dark"] .toggle-button-container {
     color: var(--text-color);
+}
+
+/* Add this near the top of the CSS file */
+
+.form-section-divider {
+    margin: 1.5rem 0 1rem;
+    border-bottom: 1px solid rgba(var(--primary-color-rgb), 0.3);
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.divider-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
 } 

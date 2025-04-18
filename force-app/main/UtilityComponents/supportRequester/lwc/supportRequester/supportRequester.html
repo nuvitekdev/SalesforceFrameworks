@@ -72,6 +72,83 @@
                                 onchange={handleAppContextChange}
                             />
                         </div>
+                        
+                        <!-- User Contact Information Section -->
+                        <div class="form-section-divider">
+                            <div class="divider-label">Contact Information</div>
+                        </div>
+                        
+                        <!-- Name Field - For all users but will be auto-populated for authenticated users -->
+                        <div class="form-field">
+                            <label for="userName">Name</label>
+                            <input 
+                                type="text" 
+                                id="suppliedName" 
+                                class="form-input" 
+                                placeholder="Your name"
+                                value={suppliedName}
+                                onchange={handleSuppliedNameChange}
+                                disabled={isNameFieldDisabled}
+                                required={isNameFieldRequired}
+                            />
+                        </div>
+                        
+                        <!-- Email Field -->
+                        <div class="form-field">
+                            <label for="userEmail">Email</label>
+                            <input 
+                                type="email" 
+                                id="userEmail" 
+                                class="form-input" 
+                                placeholder="Your email address"
+                                value={userEmail}
+                                onchange={handleEmailChange}
+                                required
+                            />
+                        </div>
+                        
+                        <!-- Phone Field -->
+                        <div class="form-field">
+                            <label for="userPhone">Phone</label>
+                            <input 
+                                type="tel" 
+                                id="userPhone" 
+                                class="form-input" 
+                                placeholder="Your phone number"
+                                value={userPhone}
+                                onchange={handlePhoneChange}
+                            />
+                        </div>
+                        
+                        <!-- Contact/User Fields - Only shown for portal users -->
+                        <template if:true={isPortalUser}>
+                            <div class="form-field">
+                                <label for="contactName">Contact</label>
+                                <input 
+                                    type="text" 
+                                    id="contactName" 
+                                    class="form-input" 
+                                    value={contactName}
+                                    disabled
+                                />
+                                <input type="hidden" id="contactId" value={contactId} />
+                            </div>
+                        </template>
+                        
+                        <!-- Internal User Field - Only shown for internal users -->
+                        <template if:false={isPortalUser}>
+                            <div class="form-field">
+                                <label for="userName">Submitted By</label>
+                                <input 
+                                    type="text" 
+                                    id="userName" 
+                                    class="form-input" 
+                                    value={userName}
+                                    disabled
+                                />
+                                <input type="hidden" id="userId" value={userId} />
+                            </div>
+                        </template>
                     </div>
                     
                     <!-- Media Capture Section -->

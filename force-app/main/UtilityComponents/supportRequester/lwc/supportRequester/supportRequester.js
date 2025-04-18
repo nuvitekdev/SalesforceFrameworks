@@ -6,6 +6,7 @@ import { CurrentPageReference } from 'lightning/navigation';
 // Apex methods 
 import saveSupportRecording from '@salesforce/apex/SupportRequesterController.saveSupportRecording';
 import createSupportCase from '@salesforce/apex/SupportRequesterController.createSupportCase';
+import getCurrentUserInfo from '@salesforce/apex/SupportRequesterController.getCurrentUserInfo';
 
 // Default instructions text if not provided through configuration
 const DEFAULT_INSTRUCTIONS = `
@@ -61,6 +62,17 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     @track errorMessage = '';
     @track createdCaseId;
     @track createdCaseNumber;
+    
+    // User information properties
+    @track userId;
+    @track userName = '';
+    @track userEmail = '';
+    @track userPhone = '';
+    @track isPortalUser = false;
+    @track contactId;
+    @track contactName = '';
+    @track suppliedName = '';
+    @track isAuthenticated = false;
     
     // Media capture state
     @track mediaStream;
@@ -124,6 +136,7 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     get isSubmitDisabled() {
         return !this.caseSubject.trim() || 
                !this.caseDescription.trim() || 
+               !this.userEmail.trim() ||
                this.isProcessing ||
                (this.recording);
     }
@@ -197,11 +210,21 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
         }
     }
     
+    // Computed properties for name field
+    get isNameFieldDisabled() {
+        return this.isAuthenticated;
+    }
+
+    get isNameFieldRequired() {
+        return !this.isAuthenticated;
+    }
+    
     // Lifecycle hooks
     connectedCallback() {
         this.loadStyles();
         this.detectAppContext();
         this.loadFaqItemsFromConfig();
+        this.loadUserInfo();
         this.enableScreenRecording = true;
         this.showInstructions = true;
     }
@@ -214,6 +237,42 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     disconnectedCallback() {
         this.stopMediaTracks();
         this.clearTimers();
+    }
+    
+    /**
+     * Loads current user information from Salesforce
+     */
+    loadUserInfo() {
+        getCurrentUserInfo()
+            .then(result => {
+                // Store user information
+                this.userId = result.userId;
+                this.userName = result.userName;
+                this.userEmail = result.userEmail || '';
+                this.userPhone = result.userPhone || '';
+                this.isPortalUser = result.isPortalUser;
+                this.isAuthenticated = true;
+                
+                // For portal users, set contact information
+                if (this.isPortalUser) {
+                    this.contactId = result.contactId;
+                    this.contactName = result.contactName;
+                    
+                    // Prefer contact email/phone over user email/phone for portal users
+                    if (result.contactEmail) this.userEmail = result.contactEmail;
+                    if (result.contactPhone) this.userPhone = result.contactPhone;
+                }
+                
+                // Set the supplied name from the authenticated user's name
+                this.suppliedName = this.userName;
+                
+                console.log('User info loaded:', this.userName, this.userEmail);
+            })
+            .catch(error => {
+                console.error('Error loading user info:', error);
+                this.isAuthenticated = false;
+                // Don't display error to user, just fall back to manual entry
+            });
     }
     
     /**
@@ -350,6 +409,27 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     }
     
     /**
+     * Handles email field changes
+     */
+    handleEmailChange(event) {
+        this.userEmail = event.target.value;
+    }
+    
+    /**
+     * Handles phone field changes
+     */
+    handlePhoneChange(event) {
+        this.userPhone = event.target.value;
+    }
+    
+    /**
+     * Handles supplied name field changes
+     */
+    handleSuppliedNameChange(event) {
+        this.suppliedName = event.target.value;
+    }
+    
+    /**
      * Submits the support case
      */
     handleSubmitCase() {
@@ -363,7 +443,11 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
             subject: this.caseSubject,
             description: this.caseDescription,
             priority: this.casePriority,
-            applicationContext: this.appContext
+            applicationContext: this.appContext,
+            email: this.userEmail,
+            phone: this.userPhone,
+            contactId: this.isPortalUser ? this.contactId : null,
+            suppliedName: this.suppliedName
         })
         .then(caseId => {
             // Store the created case ID
@@ -372,8 +456,8 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
             // Get the Case Number (will need to query for this in a real implementation)
             this.createdCaseNumber = 'Case-' + Math.floor(Math.random() * 10000); // Placeholder
             
-            // If we have a video recording, upload it and link to the case
-            if (this.showPreview && this.recordedChunks.length > 0) {
+            // If we have a video recording or screenshot, upload it and link to the case
+            if ((this.showPreview && this.recordedChunks.length > 0) || (this.showScreenshot && this.screenshotUrl)) {
                 this.uploadRecording(this.createdCaseId);
             } else {
                 this.finalizeCaseCreation();
@@ -542,16 +626,27 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
         this.casePriority = 'Medium';
         this.appContext = '';
         
+        // We don't reset contact info fields if the user is authenticated
+        if (!this.isAuthenticated) {
+            this.suppliedName = '';
+        }
+        
         // Directly clear the form fields in the DOM
         const subjectInput = this.template.querySelector('#caseSubject');
         const descriptionTextarea = this.template.querySelector('#caseDescription');
         const prioritySelect = this.template.querySelector('#casePriority');
         const appContextInput = this.template.querySelector('#appContext');
+        const suppliedNameInput = this.template.querySelector('#suppliedName');
         
         if (subjectInput) subjectInput.value = '';
         if (descriptionTextarea) descriptionTextarea.value = '';
         if (prioritySelect) prioritySelect.value = 'Medium';
         if (appContextInput) appContextInput.value = '';
+        
+        // Only clear name if not authenticated
+        if (!this.isAuthenticated && suppliedNameInput) {
+            suppliedNameInput.value = '';
+        }
         
         // Reset media state
         this.discardRecording();
