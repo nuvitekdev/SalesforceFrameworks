@@ -536,11 +536,22 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
      * Resets the form after submission
      */
     resetForm() {
-        // Reset form fields
+        // Reset form fields in the JavaScript
         this.caseSubject = '';
         this.caseDescription = '';
         this.casePriority = 'Medium';
         this.appContext = '';
+        
+        // Directly clear the form fields in the DOM
+        const subjectInput = this.template.querySelector('#caseSubject');
+        const descriptionTextarea = this.template.querySelector('#caseDescription');
+        const prioritySelect = this.template.querySelector('#casePriority');
+        const appContextInput = this.template.querySelector('#appContext');
+        
+        if (subjectInput) subjectInput.value = '';
+        if (descriptionTextarea) descriptionTextarea.value = '';
+        if (prioritySelect) prioritySelect.value = 'Medium';
+        if (appContextInput) appContextInput.value = '';
         
         // Reset media state
         this.discardRecording();
