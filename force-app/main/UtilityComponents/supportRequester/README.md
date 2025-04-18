@@ -5,17 +5,20 @@ A comprehensive Salesforce utility that allows users to create support cases wit
 ## Features
 
 - **Support Case Creation:** Easily create support cases with subject, description, priority, and application context
+- **Built-in Record Type:** Includes a dedicated 'Support_Request' record type for Case object - no configuration needed
 - **Screen Recording:** Record screen activity with audio narration to better explain issues
 - **Dynamic FAQ Section:** Display frequently asked questions that can be expanded/collapsed
+- **Persistent FAQ Storage:** FAQ items are stored in a dedicated Nuvitek_FAQ__c object for easy management
 - **Admin FAQ Management:** Admin mode for adding, editing, and removing FAQ items
 - **Custom Styling:** Configurable colors and theme to match your organization's branding
 - **Responsive Design:** Fully adaptive interface for desktop and mobile devices
 - **Flow Compatible:** Easy integration into your existing processes
+- **Utility Bar Support:** Can be added to utility bar for easy access from any page
 - **User-Friendly Interface:** Intuitive controls with clear instructions
 
 ## Components
 
-The Support Requester utility consists of two main components:
+The Support Requester utility consists of the following components:
 
 1. **LWC Component (`supportRequester`):**
    - Provides the user interface for creating support cases
@@ -28,13 +31,27 @@ The Support Requester utility consists of two main components:
    - Saves recordings as ContentDocument (Salesforce Files)
    - Links recordings to support cases
    - Retrieves available applications for context selection
+   - Manages FAQ items from the Nuvitek_FAQ__c object
+
+3. **Case Record Type (`Support_Request`):**
+   - Pre-configured record type for support requests
+   - Automatically applied to cases created through the component
+   - No manual record type ID configuration needed
+
+4. **Custom Object (`Nuvitek_FAQ__c`):**
+   - Stores FAQ items for the component
+   - Supports categories, ordering, and component association
+   - Allows for centralized FAQ management across the org
 
 ## Installation
 
-Deploy both components to your Salesforce org:
+Deploy all components to your Salesforce org:
 
 1. LWC Component: `force-app/main/UtilityComponents/supportRequester/lwc/supportRequester`
 2. Apex Controller: `force-app/main/UtilityComponents/supportRequester/classes/SupportRequesterController.cls`
+3. Case Record Type: `force-app/main/UtilityComponents/supportRequester/objects/Case/recordTypes/Support_Request.recordType-meta.xml`
+4. Custom Field: `force-app/main/UtilityComponents/supportRequester/objects/Case/fields/Application__c.field-meta.xml`
+5. Custom Object: `force-app/main/UtilityComponents/supportRequester/objects/Nuvitek_FAQ__c`
 
 ## Usage
 
@@ -46,6 +63,14 @@ The Support Requester can be used in several contexts:
 2. Drag the "Support Requester" component to the desired location
 3. Configure component properties (theme, colors, FAQ options)
 4. Save and activate the page
+
+### Utility Bar
+
+1. Go to Setup > App Manager and edit the desired app
+2. Select 'Utility Items' in the navigation menu
+3. Click 'Add Utility Item' and select 'Support Requester'
+4. Configure the component properties
+5. Save your changes
 
 ### Home Page
 
@@ -63,7 +88,6 @@ Include in a Flow to create guided support processes:
     <fields>
         <field>
             <lightning:supportRequester
-                recordTypeId="{!SupportRecordTypeId}"
                 maxDuration="300"
                 primaryColor="#0070D2"
                 accentColor="#04C000"
@@ -93,7 +117,7 @@ Add to Experience Cloud pages for external users to submit support requests:
 
 | Property | Description | Default |
 |----------|-------------|---------|
-| recordTypeId | ID of the support record type for cases | (Auto-detected) |
+| recordTypeId | ID of the support record type for cases (optional - will use built-in type if omitted) | (Uses built-in Support_Request type) |
 | maxDuration | Maximum recording time in seconds | 300 |
 | folderName | Name of folder to store recordings | "Support Recordings" |
 | componentTitle | Component header title | "Support Request" |
@@ -106,7 +130,7 @@ Add to Experience Cloud pages for external users to submit support requests:
 | showFaqSection | Display the FAQ section | true |
 | faqHeaderTitle | Title for the FAQ section | "Frequently Asked Questions" |
 | showFaqAddButton | Enable admin mode for managing FAQs | false |
-| defaultFaqItems | JSON string containing default FAQ items | (Basic FAQs) |
+| defaultFaqItems | JSON string containing default FAQ items (used only if no FAQs in database) | (Basic FAQs) |
 
 ### Appearance Settings
 
@@ -118,6 +142,25 @@ Add to Experience Cloud pages for external users to submit support requests:
 | showInstructions | Display instructions panel | true |
 | instructionsText | Custom instructions text | (Default help text) |
 | countdownDuration | Seconds to countdown before recording | 3 |
+
+## FAQ Management
+
+The component now stores FAQs in the `Nuvitek_FAQ__c` custom object with the following fields:
+
+| Field | Description |
+|-------|-------------|
+| Name | Auto-populated from Question (truncated if needed) |
+| Question__c | The question text for this FAQ item |
+| Answer__c | The answer text for this FAQ item |
+| Category__c | The category this FAQ belongs to (General, Support, Technical, Usage) |
+| Component__c | The component this FAQ is associated with (Support Requester, All Components) |
+| Order__c | The display order for this FAQ (lower numbers appear first) |
+
+FAQs can be managed in two ways:
+
+1. **Admin UI:** Enable `showFaqAddButton` in component settings to allow admins to add, edit, and delete FAQs directly from the component
+
+2. **Data Management:** Use data loader or setup UI to directly manage the `Nuvitek_FAQ__c` records
 
 ## Use Cases
 
@@ -155,12 +198,12 @@ The default implementation includes a placeholder method for retrieving availabl
    - Custom Objects
    - Query on Application object
 
-### Adding Custom Labels
+### Modifying the Record Type
 
-For full internationalization support:
+The component includes a built-in record type named `Support_Request` for Case. If you want to use a different record type:
 
-1. Create custom labels for all messages in the component
-2. Replace hardcoded strings with references to the custom labels
+1. You can specify a different record type ID using the `recordTypeId` property
+2. The built-in type is only used when no specific record type ID is provided
 
 ## Troubleshooting
 
@@ -170,10 +213,12 @@ For full internationalization support:
    - Verify browser compatibility
 
 2. **Support Case Not Created**
-   - Check record type ID is valid
+   - Check if the Support_Request record type was deployed successfully
    - Verify user has create permission for Case object
    - Look for validation rule conflicts
+   - Check the "Application__c" field is available on the Case object
 
 3. **FAQ Section Missing**
    - Verify the `showFaqSection` property is set to true
-   - Check JSON format for `defaultFaqItems` 
+   - Check if the Nuvitek_FAQ__c object was deployed successfully
+   - Add some FAQ records to the custom object if none exist 

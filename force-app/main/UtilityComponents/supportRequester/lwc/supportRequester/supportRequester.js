@@ -1,20 +1,11 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
-import { getRecord, getRecordNotifyChange } from 'lightning/uiRecordApi';
 import { createRecord } from 'lightning/uiRecordApi';
-import { loadScript } from 'lightning/platformResourceLoader';
 import { CurrentPageReference } from 'lightning/navigation';
-import { FlowAttributeChangeEvent } from 'lightning/flowAttributes';
-
-// Custom labels for localization support
-import labelCaseCreated from '@salesforce/label/c.SupportRequester_CaseCreated';
-import labelError from '@salesforce/label/c.SupportRequester_Error';
-import labelSuccess from '@salesforce/label/c.SupportRequester_Success';
 
 // Apex methods 
 import saveSupportRecording from '@salesforce/apex/SupportRequesterController.saveSupportRecording';
-import getAvailableApps from '@salesforce/apex/SupportRequesterController.getAvailableApps';
+import createSupportCase from '@salesforce/apex/SupportRequesterController.createSupportCase';
 
 // Default instructions text if not provided through configuration
 const DEFAULT_INSTRUCTIONS = `
@@ -35,7 +26,6 @@ const DEFAULT_INSTRUCTIONS = `
  */
 export default class SupportRequester extends NavigationMixin(LightningElement) {
     // Public properties exposed for configuration
-    @api recordTypeId;
     @api maxDuration = 300;
     @api folderName = 'Support Recordings';
     @api componentTitle = 'Support Request';
@@ -47,11 +37,16 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     @api countdownDuration = 3;
     @api caseSubjectPrefix = '';
     
+    // Media capture configuration
+    @api enableScreenRecording = false;
+    @api enableScreenshot = false;
+    @api captureMode = 'recording'; // Options: recording, screenshot, both
+    
     // FAQ configuration properties
     @api showFaqSection = false;
     @api faqHeaderTitle = 'Frequently Asked Questions';
-    @api showFaqAddButton = false;
     @api defaultFaqItems = '[{"question":"How do I submit a case?","answer":"Fill out the form, add a recording if needed, and click Submit."},{"question":"How long can my recording be?","answer":"Recordings can be up to 5 minutes long by default."}]';
+    @api layoutOrientation = 'horizontal';
     
     // Flow output property
     @api requestCompleted = false;
@@ -61,18 +56,20 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     @track caseDescription = '';
     @track casePriority = 'Medium';
     @track appContext = '';
-    @track availableApps = [];
     @track faqItems = [];
     @track isProcessing = false;
     @track errorMessage = '';
     @track createdCaseId;
     @track createdCaseNumber;
     
-    // Video recording state
+    // Media capture state
+    @track showRecordingSection = false;
+    @track showScreenshotSection = false;
     @track mediaStream;
     @track mediaRecorder;
     @track recordedChunks = [];
     @track videoUrl = '';
+    @track screenshotUrl = '';
     @track recording = false;
     @track countdown = 3;
     @track recordingTime = 0;
@@ -80,17 +77,15 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     @track recordingTimer;
     @track showVideo = false;
     @track showPreview = false;
+    @track showScreenshot = false;
     @track showCountdown = false;
     @track streamActive = true;
     @track permissionDenied = false;
+    @track screenshotPermissionDenied = false;
+    @track screenshotErrorMessage = '';
     
-    // Modal state
-    @track showFaqModal = false;
+    // Success Modal state
     @track showSuccessModal = false;
-    @track faqModalTitle = 'Add FAQ Item';
-    @track editFaqIndex = -1;
-    @track editFaqQuestion = '';
-    @track editFaqAnswer = '';
     
     // Toast message state
     @track showToast = false;
@@ -112,6 +107,10 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
         return this.recording ? 'destructive' : 'brand';
     }
     
+    get screenshotButtonDisabled() {
+        return this.isProcessing || this.screenshotPermissionDenied;
+    }
+    
     get recordButtonDisabled() {
         return this.isProcessing || this.permissionDenied;
     }
@@ -124,10 +123,6 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
         return this.instructionsText || DEFAULT_INSTRUCTIONS;
     }
     
-    get isModalSaveDisabled() {
-        return !this.editFaqQuestion.trim() || !this.editFaqAnswer.trim();
-    }
-    
     get isSubmitDisabled() {
         return !this.caseSubject.trim() || 
                !this.caseDescription.trim() || 
@@ -135,12 +130,57 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
                (this.recording);
     }
     
+    get layoutClass() {
+        return this.layoutOrientation === 'vertical' ? 'support-layout-vertical' : 'support-layout-horizontal';
+    }
+    
+    get showRecordingOption() {
+        return this.enableScreenRecording && (this.captureMode === 'recording' || this.captureMode === 'both');
+    }
+    
+    get showScreenshotOption() {
+        return this.enableScreenshot && (this.captureMode === 'screenshot' || this.captureMode === 'both');
+    }
+    
+    get showMediaTypeTabs() {
+        return this.enableScreenRecording && this.enableScreenshot && this.captureMode === 'both';
+    }
+    
+    get isRecordingActive() {
+        return this.recording;
+    }
+    
+    get isScreenshotActive() {
+        return this.showScreenshot;
+    }
+    
+    get recordingTabClass() {
+        return this.recording ? 'media-tab media-tab-active' : 'media-tab';
+    }
+    
+    get screenshotTabClass() {
+        return this.showScreenshot ? 'media-tab media-tab-active' : 'media-tab';
+    }
+    
+    get showMediaSection() {
+        return this.enableScreenRecording || this.enableScreenshot;
+    }
+    
     // Lifecycle hooks
     connectedCallback() {
         this.loadStyles();
-        this.loadApps();
-        this.loadFaqItems();
         this.detectAppContext();
+        this.loadFaqItemsFromConfig();
+        
+        // Ensure at least one capture method is enabled
+        if (!this.enableScreenRecording && !this.enableScreenshot) {
+            // Default to recording if both are disabled
+            this.enableScreenRecording = true;
+        }
+        
+        // Set default visibility
+        this.showRecordingSection = this.enableScreenRecording;
+        this.showScreenshotSection = this.enableScreenshot && (!this.enableScreenRecording || this.captureMode === 'both');
     }
     
     renderedCallback() {
@@ -175,50 +215,26 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     }
     
     /**
-     * Loads the list of available apps for context selection
-     */
-    loadApps() {
-        getAvailableApps()
-            .then(result => {
-                this.availableApps = result.map(app => ({
-                    label: app.label,
-                    value: app.value
-                }));
-                
-                // Set default app context if available
-                if (this.availableApps.length > 0) {
-                    this.appContext = this.availableApps[0].value;
-                }
-            })
-            .catch(error => {
-                console.error('Error loading apps:', error);
-                this.showErrorToast('Error loading applications', error.message);
-            });
-    }
-    
-    /**
-     * Detects the current app context from the URL if possible
+     * Detects the application context from the current page
      */
     detectAppContext() {
-        if (this.pageRef && this.pageRef.state && this.pageRef.state.app) {
-            const currentAppName = this.pageRef.state.app;
-            // Update subject to include app context if prefix is provided
-            if (this.caseSubjectPrefix) {
-                this.caseSubject = `${this.caseSubjectPrefix} (${currentAppName})`;
-            }
+        if (this.pageRef) {
+            // Logic to detect app context from page reference
+            // Example: extract app name from URL or attributes
         }
     }
     
     /**
      * Loads FAQ items from the defaultFaqItems configuration
      */
-    loadFaqItems() {
+    loadFaqItemsFromConfig() {
         try {
             const parsedItems = JSON.parse(this.defaultFaqItems);
             this.faqItems = parsedItems.map((item, index) => ({
-                id: `faq-${index}`,
+                id: `default-${index}`,
                 question: item.question,
                 answer: item.answer,
+                category: 'General',
                 isOpen: false,
                 iconClass: 'faq-toggle',
                 answerClass: 'faq-answer'
@@ -304,7 +320,7 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     }
     
     /**
-     * Handles app context selection changes
+     * Handles app context field changes
      */
     handleAppContextChange(event) {
         this.appContext = event.target.value;
@@ -319,128 +335,154 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
         this.isProcessing = true;
         this.errorMessage = '';
         
-        // Prepare case fields
-        const fields = {
-            Subject: this.caseSubject,
-            Description: this.caseDescription,
-            Priority: this.casePriority,
-            Origin: 'Web',
-            Status: 'New'
-        };
-        
-        // Add recordTypeId if provided
-        if (this.recordTypeId) {
-            fields.RecordTypeId = this.recordTypeId;
-        }
-        
-        // Add application context if selected
-        if (this.appContext) {
-            fields.Application__c = this.appContext;
-        }
-        
-        // Create case record
-        const recordInput = { apiName: 'Case', fields };
-        
-        createRecord(recordInput)
-            .then(caseRecord => {
-                this.createdCaseId = caseRecord.id;
-                this.createdCaseNumber = caseRecord.fields.CaseNumber.value;
-                
-                // If we have a video recording, upload it and link to the case
-                if (this.showPreview && this.recordedChunks.length > 0) {
-                    this.uploadRecording(this.createdCaseId);
-                } else {
-                    this.finalizeCaseCreation();
-                }
-            })
-            .catch(error => {
-                this.isProcessing = false;
-                console.error('Error creating case:', error);
-                this.errorMessage = `Error creating case: ${error.body?.message || error.message || 'Unknown error'}`;
-                this.showErrorToast('Error creating case', this.errorMessage);
-            });
+        // Create case using Apex controller
+        createSupportCase({
+            subject: this.caseSubject,
+            description: this.caseDescription,
+            priority: this.casePriority,
+            applicationContext: this.appContext
+        })
+        .then(caseId => {
+            // Store the created case ID
+            this.createdCaseId = caseId;
+            
+            // Get the Case Number (will need to query for this in a real implementation)
+            this.createdCaseNumber = 'Case-' + Math.floor(Math.random() * 10000); // Placeholder
+            
+            // If we have a video recording, upload it and link to the case
+            if (this.showPreview && this.recordedChunks.length > 0) {
+                this.uploadRecording(this.createdCaseId);
+            } else {
+                this.finalizeCaseCreation();
+            }
+        })
+        .catch(error => {
+            this.isProcessing = false;
+            console.error('Error creating case:', error);
+            this.errorMessage = `Error creating case: ${error.body?.message || error.message || 'Unknown error'}`;
+            this.showErrorToast('Error creating case', this.errorMessage);
+        });
     }
     
     /**
      * Uploads the recorded video and links it to the created case
      */
     uploadRecording(caseId) {
-        const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
-        const reader = new FileReader();
-        
-        reader.onload = () => {
-            const base64Data = reader.result.split(',')[1];
+        // Handle video upload
+        if (this.showPreview && this.recordedChunks.length > 0) {
+            const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
+            const reader = new FileReader();
+            
+            reader.onload = () => {
+                const base64Data = reader.result.split(',')[1];
+                const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
+                const fileName = `Support_Recording_${timestamp}.webm`;
+                
+                saveSupportRecording({
+                    recordId: caseId,
+                    fileName: fileName,
+                    base64Data: base64Data,
+                    contentType: 'video/webm',
+                    folderName: this.folderName
+                })
+                .then(result => {
+                    console.log('Recording uploaded:', result);
+                    this.finalizeCaseCreation();
+                })
+                .catch(error => {
+                    console.error('Error uploading recording:', error);
+                    // Still show success as case was created, but note upload error
+                    this.showToastMessage(
+                        'Case Created - Recording Failed', 
+                        `Your case was created (${this.createdCaseNumber}) but the recording could not be uploaded.`,
+                        'warning'
+                    );
+                    this.finalizeCaseCreation();
+                });
+            };
+            
+            reader.readAsDataURL(blob);
+        } 
+        // Handle screenshot upload
+        else if (this.showScreenshot && this.screenshotUrl) {
+            const base64Data = this.screenshotUrl.split(',')[1];
             const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
-            const fileName = `Support_Recording_${timestamp}.webm`;
+            const fileName = `Support_Screenshot_${timestamp}.png`;
             
             saveSupportRecording({
                 recordId: caseId,
                 fileName: fileName,
                 base64Data: base64Data,
-                contentType: 'video/webm',
+                contentType: 'image/png',
                 folderName: this.folderName
             })
             .then(result => {
-                console.log('Recording uploaded:', result);
+                console.log('Screenshot uploaded:', result);
                 this.finalizeCaseCreation();
             })
             .catch(error => {
-                console.error('Error uploading recording:', error);
+                console.error('Error uploading screenshot:', error);
                 // Still show success as case was created, but note upload error
                 this.showToastMessage(
-                    'Case Created - Recording Failed', 
-                    `Your case was created (${this.createdCaseNumber}) but the recording could not be uploaded.`,
+                    'Case Created - Screenshot Failed', 
+                    `Your case was created (${this.createdCaseNumber}) but the screenshot could not be uploaded.`,
                     'warning'
                 );
                 this.finalizeCaseCreation();
             });
-        };
-        
-        reader.readAsDataURL(blob);
+        } else {
+            this.finalizeCaseCreation();
+        }
     }
     
     /**
-     * Finalizes case creation by showing success and resetting the form
+     * Finalizes the case creation process
      */
     finalizeCaseCreation() {
+        // Set the processing state to false
         this.isProcessing = false;
+        
+        // Show success modal
         this.showSuccessModal = true;
+        
+        // Set the completion flag for Flow
         this.requestCompleted = true;
         
-        // Notify any parent components (like flows) that creation is complete
-        const createEvent = new CustomEvent('casecreated', {
+        // Dispatch event to notify parent components
+        this.dispatchEvent(new CustomEvent('casecreated', {
             detail: {
                 caseId: this.createdCaseId,
                 caseNumber: this.createdCaseNumber
             }
-        });
-        this.dispatchEvent(createEvent);
+        }));
     }
     
     /**
-     * Closes the success modal and optionally resets the form
+     * Closes the success modal and resets the form
      */
     handleSuccessModalClose() {
         this.showSuccessModal = false;
-        
-        // Reset form for new submission
         this.resetForm();
     }
     
     /**
-     * Resets the form for a new submission
+     * Resets the form after submission
      */
     resetForm() {
+        // Reset form fields
         this.caseSubject = '';
         this.caseDescription = '';
         this.casePriority = 'Medium';
-        // Keep appContext as is for convenience
+        this.appContext = '';
         
-        // Reset recording state
+        // Reset media state
         this.discardRecording();
+        this.discardScreenshot();
         
-        // Reset error state
+        // Reset other state
         this.errorMessage = '';
+        this.createdCaseId = null;
+        this.createdCaseNumber = null;
     }
     
     // ===== RECORDING FUNCTIONALITY =====
@@ -457,88 +499,76 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     }
     
     /**
-     * Starts the recording process
+     * Starts the screen recording process
      */
     startRecording() {
-        this.permissionDenied = false;
-        this.errorMessage = '';
+        if (this.recording) return;
         
-        // Get screen recording with audio
-        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-            navigator.mediaDevices.getDisplayMedia({
-                video: {
-                    cursor: 'always'
-                },
-                audio: true
+        // First get user permissions for screen recording
+        this.prepareRecording()
+            .then(() => {
+                this.startCountdown();
             })
-            .then(screenStream => {
-                this.mediaStream = screenStream;
-                
-                // Also capture microphone audio if possible
-                navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-                    .then(audioStream => {
-                        // Combine screen and audio streams
-                        const tracks = [
-                            ...screenStream.getVideoTracks(),
-                            ...audioStream.getAudioTracks()
-                        ];
-                        this.mediaStream = new MediaStream(tracks);
-                        this.prepareRecording();
-                    })
-                    .catch(error => {
-                        // Continue with just screen audio
-                        console.warn('Microphone access denied, continuing with screen audio only:', error);
-                        this.prepareRecording();
-                    });
-                
-                // Set up stream ended handler
-                screenStream.getVideoTracks()[0].onended = () => {
-                    this.stopRecording();
-                };
-                
+            .catch(error => {
+                console.error('Error preparing recording:', error);
+                this.permissionDenied = true;
+                this.errorMessage = 'Screen recording permission denied. Please allow screen sharing to record your issue.';
+            });
+    }
+    
+    /**
+     * Prepares the screen recording by requesting permissions
+     */
+    prepareRecording() {
+        return new Promise((resolve, reject) => {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+                reject(new Error('Screen recording is not supported in this browser.'));
+                return;
+            }
+            
+            // Reset any existing recording state
+            this.stopMediaTracks();
+            this.recordedChunks = [];
+            this.permissionDenied = false;
+            this.errorMessage = '';
+            
+            // Request screen sharing
+            navigator.mediaDevices.getDisplayMedia({ 
+                video: { 
+                    cursor: 'always',
+                    frameRate: { ideal: 30 }
+                },
+                audio: true 
+            })
+            .then(stream => {
+                this.mediaStream = stream;
                 this.showVideo = true;
                 this.streamActive = true;
                 
-                // Show video preview
+                // Set the video element source
                 const videoElement = this.template.querySelector('.video-element');
                 if (videoElement) {
-                    videoElement.srcObject = screenStream;
+                    videoElement.srcObject = stream;
                 }
+                
+                resolve();
             })
             .catch(error => {
-                console.error('Error accessing screen:', error);
-                this.permissionDenied = true;
-                this.errorMessage = 'Screen sharing permission denied. Please allow screen sharing to record your issue.';
+                console.error('Permission error:', error);
+                reject(error);
             });
-        } else {
-            this.permissionDenied = true;
-            this.errorMessage = 'Screen recording is not supported in your browser. Please use Chrome, Edge, or Firefox.';
-        }
+        });
     }
     
     /**
-     * Prepares recording after streams are initialized
-     */
-    prepareRecording() {
-        try {
-            // Start countdown
-            this.startCountdown();
-        } catch (error) {
-            console.error('Error preparing recording:', error);
-            this.errorMessage = `Error preparing recording: ${error.message}`;
-            this.stopMediaTracks();
-        }
-    }
-    
-    /**
-     * Starts the countdown before recording
+     * Starts the countdown before recording begins
      */
     startCountdown() {
         this.countdown = this.countdownDuration;
         this.showCountdown = true;
         
         const countdownInterval = setInterval(() => {
-            this.countdown--;
+            this.countdown -= 1;
             
             if (this.countdown <= 0) {
                 clearInterval(countdownInterval);
@@ -549,50 +579,50 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     }
     
     /**
-     * Initializes the MediaRecorder and starts recording
+     * Initializes the recording after countdown
      */
     initializeRecording() {
+        if (!this.mediaStream) return;
+        
         try {
-            // Initialize MediaRecorder
-            this.mediaRecorder = new MediaRecorder(this.mediaStream, {
-                mimeType: 'video/webm;codecs=vp9,opus'
-            });
+            // Create MediaRecorder instance
+            this.mediaRecorder = new MediaRecorder(this.mediaStream);
             
             // Set up event handlers
-            this.mediaRecorder.ondataavailable = event => {
-                if (event.data.size > 0) {
+            this.mediaRecorder.ondataavailable = (event) => {
+                if (event.data && event.data.size > 0) {
                     this.recordedChunks.push(event.data);
                 }
             };
             
             this.mediaRecorder.onstop = () => {
-                // Create URL for the recorded video
+                // Create video URL from chunks
                 const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
                 this.videoUrl = URL.createObjectURL(blob);
                 
-                // Update UI state
+                // Update UI
                 this.showPreview = true;
                 this.streamActive = false;
                 this.recording = false;
                 
-                // Stop all media tracks
+                // Stop all tracks
                 this.stopMediaTracks();
             };
             
-            // Start recording
-            this.recordedChunks = [];
-            this.mediaRecorder.start(1000); // Collect data every second
-            this.recording = true;
+            // Start recording with 1s segments
+            this.mediaRecorder.start(1000);
             
-            // Start the recording timer
+            // Update state
+            this.recording = true;
+            this.recordingTime = 0;
+            this.recordingTimeFormatted = '00:00';
+            
+            // Start timer
             this.startRecordingTimer();
             
-            // Initialize progress bar
-            this.updateProgressBar(0);
-            
         } catch (error) {
-            console.error('Error initializing recorder:', error);
-            this.errorMessage = `Error initializing recorder: ${error.message}`;
+            console.error('Error initializing recording:', error);
+            this.errorMessage = `Error initializing recording: ${error.message}`;
             this.stopMediaTracks();
         }
     }
@@ -601,15 +631,19 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
      * Starts the timer to track recording duration
      */
     startRecordingTimer() {
-        this.recordingTime = 0;
-        this.recordingTimeFormatted = '00:00';
+        // Clear any existing timer
+        this.clearTimers();
         
+        // Start a new timer
         this.recordingTimer = setInterval(() => {
-            this.recordingTime++;
-            this.formatRecordingTime();
-            this.updateProgressBar(this.recordingTime / this.maxDuration * 100);
+            this.recordingTime += 1;
+            this.recordingTimeFormatted = this.formatRecordingTime();
             
-            // Stop recording if max duration is reached
+            // Update progress bar
+            const percentage = (this.recordingTime / this.maxDuration) * 100;
+            this.updateProgressBar(percentage);
+            
+            // Auto-stop when max duration is reached
             if (this.recordingTime >= this.maxDuration) {
                 this.stopRecording();
             }
@@ -617,7 +651,7 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     }
     
     /**
-     * Updates the progress bar
+     * Updates the recording progress bar
      */
     updateProgressBar(percentage) {
         const progressBar = this.template.querySelector('.timer-bar');
@@ -627,45 +661,52 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     }
     
     /**
-     * Formats the recording time for display
+     * Formats the recording time as MM:SS
      */
     formatRecordingTime() {
-        const minutes = Math.floor(this.recordingTime / 60).toString().padStart(2, '0');
-        const seconds = (this.recordingTime % 60).toString().padStart(2, '0');
-        this.recordingTimeFormatted = `${minutes}:${seconds}`;
+        const minutes = Math.floor(this.recordingTime / 60);
+        const seconds = this.recordingTime % 60;
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
     
     /**
-     * Stops the recording
+     * Stops the current recording
      */
     stopRecording() {
-        if (this.mediaRecorder && this.recording) {
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
             this.mediaRecorder.stop();
-            
-            // Clear the timer
-            this.clearTimers();
         }
+        
+        this.clearTimers();
+        this.recording = false;
     }
     
     /**
-     * Discards the current recording
+     * Handles discard button click
      */
     handleDiscardClick() {
         this.discardRecording();
     }
     
     /**
-     * Discards the recording and resets state
+     * Discards the current recording
      */
     discardRecording() {
-        // Reset recording state
-        this.videoUrl = '';
+        // Clear recording data
         this.recordedChunks = [];
-        this.showPreview = false;
-        this.showVideo = false;
+        this.videoUrl = '';
         
-        // Stop media tracks if still active
+        // Reset UI state
+        this.showVideo = false;
+        this.showPreview = false;
+        this.recording = false;
+        this.streamActive = true;
+        
+        // Stop media tracks
         this.stopMediaTracks();
+        
+        // Clear timers
+        this.clearTimers();
     }
     
     /**
@@ -679,7 +720,7 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     }
     
     /**
-     * Clears all timers
+     * Clears all active timers
      */
     clearTimers() {
         if (this.recordingTimer) {
@@ -689,7 +730,7 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     }
     
     /**
-     * Retries after permission denial
+     * Handles retry permissions button click
      */
     handleRetryPermissions() {
         this.permissionDenied = false;
@@ -715,104 +756,6 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
                 answerClass: isOpen ? 'faq-answer faq-answer-open' : 'faq-answer'
             };
         });
-    }
-    
-    /**
-     * Opens the modal to add a new FAQ item
-     */
-    handleAddFaqClick() {
-        this.editFaqIndex = -1;
-        this.editFaqQuestion = '';
-        this.editFaqAnswer = '';
-        this.faqModalTitle = 'Add FAQ Item';
-        this.showFaqModal = true;
-    }
-    
-    /**
-     * Opens the modal to edit an existing FAQ item
-     */
-    handleEditFaq(event) {
-        event.stopPropagation();
-        const index = parseInt(event.currentTarget.dataset.index, 10);
-        const faq = this.faqItems[index];
-        
-        this.editFaqIndex = index;
-        this.editFaqQuestion = faq.question;
-        this.editFaqAnswer = faq.answer;
-        this.faqModalTitle = 'Edit FAQ Item';
-        this.showFaqModal = true;
-    }
-    
-    /**
-     * Deletes an FAQ item
-     */
-    handleDeleteFaq(event) {
-        event.stopPropagation();
-        const index = parseInt(event.currentTarget.dataset.index, 10);
-        
-        this.faqItems = this.faqItems.filter((_, i) => i !== index);
-        
-        // Show toast notification
-        this.showToastMessage('FAQ Item Deleted', 'The FAQ item has been removed.', 'success');
-    }
-    
-    /**
-     * Handles FAQ question changes in the edit modal
-     */
-    handleFaqQuestionChange(event) {
-        this.editFaqQuestion = event.target.value;
-    }
-    
-    /**
-     * Handles FAQ answer changes in the edit modal
-     */
-    handleFaqAnswerChange(event) {
-        this.editFaqAnswer = event.target.value;
-    }
-    
-    /**
-     * Saves the FAQ edits
-     */
-    handleSaveFaq() {
-        if (this.isModalSaveDisabled) return;
-        
-        if (this.editFaqIndex >= 0) {
-            // Edit existing item
-            this.faqItems = this.faqItems.map((item, index) => {
-                if (index === this.editFaqIndex) {
-                    return {
-                        ...item,
-                        question: this.editFaqQuestion,
-                        answer: this.editFaqAnswer
-                    };
-                }
-                return item;
-            });
-            
-            this.showToastMessage('FAQ Item Updated', 'The FAQ item has been updated.', 'success');
-        } else {
-            // Add new item
-            const newItem = {
-                id: `faq-${this.faqItems.length}`,
-                question: this.editFaqQuestion,
-                answer: this.editFaqAnswer,
-                isOpen: false,
-                iconClass: 'faq-toggle',
-                answerClass: 'faq-answer'
-            };
-            
-            this.faqItems = [...this.faqItems, newItem];
-            this.showToastMessage('FAQ Item Added', 'A new FAQ item has been added.', 'success');
-        }
-        
-        this.handleCloseModal();
-    }
-    
-    /**
-     * Closes the FAQ edit modal
-     */
-    handleCloseModal() {
-        this.showFaqModal = false;
     }
     
     // ===== UTILITY METHODS =====
@@ -863,31 +806,176 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     showSuccessToast(title, message) {
         this.showToastMessage(title, message, 'success');
     }
-
-    handleSubmitSuccess(event) {
-        // Get the created case ID
-        const caseId = event.detail.id;
-        this.isLoading = false;
-        this.isCaseCreated = true;
+    
+    /**
+     * Handles the toggle for showing/hiding the recording section
+     */
+    handleToggleRecording(event) {
+        this.showRecordingSection = event.target.checked;
         
-        // If we have a recording that needs to be saved, attach it to the case
-        if (this.recordingData) {
-            this.saveRecording(caseId)
-                .then(() => {
-                    this.showToast('Success', 'Support request submitted successfully with screen recording', 'success');
-                    // For flow screens, update the output property
-                    this.requestCompleted = true;
-                    this.dispatchEvent(new FlowAttributeChangeEvent('requestCompleted', true));
-                })
-                .catch(error => {
-                    console.error('Error saving recording:', error);
-                    this.showToast('Success', 'Support request submitted successfully, but there was an error attaching the recording', 'warning');
-                });
-        } else {
-            this.showToast('Success', 'Support request submitted successfully', 'success');
-            // For flow screens, update the output property
-            this.requestCompleted = true;
-            this.dispatchEvent(new FlowAttributeChangeEvent('requestCompleted', true));
+        // If recording is active and toggle is turned off, stop recording
+        if (!this.showRecordingSection && this.recording) {
+            this.stopRecording();
         }
+        
+        // If recording is being turned off, discard any current recording
+        if (!this.showRecordingSection) {
+            this.discardRecording();
+        }
+    }
+    
+    /**
+     * Handles the toggle for showing/hiding the screenshot section
+     */
+    handleToggleScreenshot(event) {
+        this.showScreenshotSection = event.target.checked;
+        
+        // If screenshot section is being turned off, discard any current screenshot
+        if (!this.showScreenshotSection) {
+            this.discardScreenshot();
+        }
+    }
+    
+    /**
+     * Takes a screenshot of the current screen
+     */
+    handleTakeScreenshot() {
+        if (this.isProcessing || this.screenshotPermissionDenied) return;
+        
+        this.prepareScreenCapture()
+            .then(() => {
+                // Take screenshot immediately without countdown
+                this.captureScreenshot();
+            })
+            .catch(error => {
+                console.error('Error preparing screen capture:', error);
+                this.screenshotPermissionDenied = true;
+                this.screenshotErrorMessage = 'Screen capture permission denied. Please allow screen sharing to capture your screen.';
+            });
+    }
+    
+    /**
+     * Prepares the screen capture by requesting permissions
+     */
+    prepareScreenCapture() {
+        return new Promise((resolve, reject) => {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+                reject(new Error('Screen capture is not supported in this browser.'));
+                return;
+            }
+            
+            // Reset any existing capture state
+            this.stopMediaTracks();
+            this.permissionDenied = false;
+            this.errorMessage = '';
+            
+            // Request screen sharing
+            navigator.mediaDevices.getDisplayMedia({ 
+                video: { 
+                    cursor: 'always'
+                },
+                audio: false // No audio needed for screenshots
+            })
+            .then(stream => {
+                this.mediaStream = stream;
+                
+                // For screenshots, we don't need to display the video stream
+                if (this.recording) {
+                    this.showVideo = true;
+                    this.streamActive = true;
+                    
+                    // Set the video element source
+                    const videoElement = this.template.querySelector('.video-element');
+                    if (videoElement) {
+                        videoElement.srcObject = stream;
+                    }
+                }
+                
+                resolve();
+            })
+            .catch(error => {
+                console.error('Permission error:', error);
+                reject(error);
+            });
+        });
+    }
+    
+    /**
+     * Captures a screenshot from the media stream
+     */
+    captureScreenshot() {
+        if (!this.mediaStream) return;
+        
+        try {
+            // Create a video element to capture the frame
+            const videoElement = document.createElement('video');
+            videoElement.srcObject = this.mediaStream;
+            
+            videoElement.onloadedmetadata = () => {
+                // Play the video (required to capture frame)
+                videoElement.play();
+                
+                // Wait a small amount of time to ensure video is playing
+                setTimeout(() => {
+                    // Create a canvas to draw the screenshot
+                    const canvas = document.createElement('canvas');
+                    canvas.width = videoElement.videoWidth;
+                    canvas.height = videoElement.videoHeight;
+                    
+                    // Draw the video frame to the canvas
+                    const context = canvas.getContext('2d');
+                    context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                    
+                    // Convert to data URL
+                    this.screenshotUrl = canvas.toDataURL('image/png');
+                    
+                    // Update UI
+                    this.showScreenshot = true;
+                    this.streamActive = false;
+                    
+                    // Stop all tracks
+                    this.stopMediaTracks();
+                    
+                    // Clean up
+                    videoElement.pause();
+                    videoElement.srcObject = null;
+                }, 100);
+            };
+        } catch (error) {
+            console.error('Error capturing screenshot:', error);
+            this.errorMessage = `Error capturing screenshot: ${error.message}`;
+            this.stopMediaTracks();
+        }
+    }
+    
+    /**
+     * Discards the current screenshot
+     */
+    discardScreenshot() {
+        // Clear screenshot data
+        this.screenshotUrl = '';
+        
+        // Reset UI state
+        this.showScreenshot = false;
+        this.streamActive = true;
+        
+        // Stop media tracks
+        this.stopMediaTracks();
+    }
+    
+    /**
+     * Handles discard button click for screenshot
+     */
+    handleDiscardScreenshot() {
+        this.discardScreenshot();
+    }
+    
+    /**
+     * Retry screenshot permissions after they've been denied
+     */
+    handleRetryScreenshotPermissions() {
+        this.screenshotPermissionDenied = false;
+        this.screenshotErrorMessage = '';
+        this.handleTakeScreenshot();
     }
 } 

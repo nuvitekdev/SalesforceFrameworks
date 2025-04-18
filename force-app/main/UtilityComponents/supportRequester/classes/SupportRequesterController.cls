@@ -1,7 +1,7 @@
 /**
  * @description Controller for the supportRequester LWC component
- * Handles saving video recordings to Salesforce Files (ContentDocument) and
- * retrieving available applications for context selection
+ * Handles saving video recordings to Salesforce Files (ContentDocument),
+ * and creating support cases
  */
 public with sharing class SupportRequesterController {
     
@@ -61,43 +61,48 @@ public with sharing class SupportRequesterController {
     }
     
     /**
-     * @description Retrieves a list of available applications for context selection
-     * This method can be customized to retrieve apps from any custom object or metadata
-     * @return List<ApplicationOption> List of application options with label and value
+     * @description Creates a new case using the Support Request record type
+     * @param subject The case subject
+     * @param description The case description
+     * @param priority The case priority
+     * @param applicationContext The application context
+     * @return String The ID of the created case
      */
-    @AuraEnabled(cacheable=true)
-    public static List<ApplicationOption> getAvailableApps() {
-        List<ApplicationOption> options = new List<ApplicationOption>();
-        
+    @AuraEnabled
+    public static String createSupportCase(
+        String subject,
+        String description,
+        String priority,
+        String applicationContext
+    ) {
         try {
-            // Get list of available apps from App Settings custom metadata
-            // This is a placeholder - implement with your own application data source
-            // Could be from custom settings, metadata, or by querying actual apps
+            // Validate inputs
+            if (String.isBlank(subject) || String.isBlank(description)) {
+                throw new AuraHandledException('Subject and description are required');
+            }
             
-            // Example implementation - this would be replaced with actual data source
-            options.add(new ApplicationOption('Sales App', 'sales'));
-            options.add(new ApplicationOption('Service App', 'service'));
-            options.add(new ApplicationOption('Marketing App', 'marketing'));
-            options.add(new ApplicationOption('Community Portal', 'community'));
-            options.add(new ApplicationOption('Other', 'other'));
+            // Create the case
+            Case newCase = new Case(
+                Subject = subject,
+                Description = description,
+                Priority = String.isNotBlank(priority) ? priority : 'Medium',
+                Origin = 'Web',
+                Status = 'New'
+            );
             
-            return options;
+            // Add application context if available
+            if (String.isNotBlank(applicationContext)) {
+                newCase.Application__c = applicationContext;
+            }
+            
+            // Insert the case
+            insert newCase;
+            
+            return newCase.Id;
+            
         } catch (Exception e) {
-            System.debug('Error in getAvailableApps: ' + e.getMessage() + ' - ' + e.getStackTraceString());
-            throw new AuraHandledException('Error retrieving available applications: ' + e.getMessage());
-        }
-    }
-    
-    /**
-     * @description Wrapper class for application options
-     */
-    public class ApplicationOption {
-        @AuraEnabled public String label { get; set; }
-        @AuraEnabled public String value { get; set; }
-        
-        public ApplicationOption(String label, String value) {
-            this.label = label;
-            this.value = value;
+            System.debug('Error in createSupportCase: ' + e.getMessage() + ' - ' + e.getStackTraceString());
+            throw new AuraHandledException('Error creating case: ' + e.getMessage());
         }
     }
 } 
