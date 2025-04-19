@@ -110,6 +110,8 @@
                      description="Name of the folder where recordings will be saved" default="Support Recordings"/>
             <property name="componentTitle" type="String" label="Component Title" 
                      description="Title displayed in the component header" default="Support Request"/>
+            <property name="caseSubjectPrefix" type="String" label="Case Subject Prefix"
+                     description="Prefix added to the case subject (app name will be appended if available)"/>
             
             <!-- Media Capture Settings -->
             <property name="enableScreenRecording" type="Boolean" label="Enable Screen Recording" 
@@ -127,21 +129,30 @@
                      description="Display the FAQ section alongside the support requester" default="false"/>
             <property name="showInstructions" type="Boolean" label="Show Instructions" 
                      description="Display instructions panel below the recorder" default="true"/>
+            <property name="instructionsText" type="String" label="Instructions Text" 
+                     description="Custom instructions text for the support form"/>
             <property name="faqHeaderTitle" type="String" label="FAQ Header Title" 
                      description="Title for the FAQ section" default="Frequently Asked Questions"/>
+            <property name="defaultFaqItems" type="String" label="Default FAQ Items" 
+                     description="JSON string containing default FAQ items" default='[{"question":"How do I submit a case?","answer":"Fill out the form, add a recording if needed, and click Submit."},{"question":"How long can my recording be?","answer":"Recordings can be up to 5 minutes long by default."}]'/>
             <property name="layoutOrientation" type="String" label="Layout Orientation" 
                      description="Controls whether FAQ section appears to the right (horizontal) or below (vertical) the support form" default="vertical" datasource="horizontal,vertical"/>
+            <property name="countdownDuration" type="Integer" label="Countdown Duration" 
+                     description="Number of seconds to count down before recording starts" default="3" min="1" max="5"/>
             <property name="requestCompleted" type="Boolean" label="Request Completed" 
                      description="Indicates if a support request has been successfully created"/>
         </targetConfig>
         
         <targetConfig targets="lightningCommunity__Default">
+            <!-- Support Case Settings -->
             <property name="maxDuration" type="Integer" label="Maximum Video Duration (seconds)" 
                      description="Maximum recording duration in seconds" default="300" min="30" max="600"/>
             <property name="folderName" type="String" label="Folder Name" 
                      description="Name of the folder where recordings will be saved" default="Support Recordings"/>
             <property name="componentTitle" type="String" label="Component Title" 
                      description="Title displayed in the component header" default="Support Request"/>
+            <property name="caseSubjectPrefix" type="String" label="Case Subject Prefix"
+                     description="Prefix added to the case subject (app name will be appended if available)"/>
             
             <!-- Media Capture Settings -->
             <property name="enableScreenRecording" type="Boolean" label="Enable Screen Recording" 
@@ -149,20 +160,29 @@
             <property name="enableScreenshot" type="Boolean" label="Enable Screenshot" 
                      description="Allow users to capture screenshots" default="false"/>
             
+            <!-- FAQ Settings -->
+            <property name="showFaqSection" type="Boolean" label="Show FAQ Section" 
+                     description="Display the FAQ section alongside the support requester" default="false"/>
+            <property name="faqHeaderTitle" type="String" label="FAQ Header Title" 
+                     description="Title for the FAQ section" default="Frequently Asked Questions"/>
+            <property name="defaultFaqItems" type="String" label="Default FAQ Items" 
+                     description="JSON string containing default FAQ items" default='[{"question":"How do I submit a case?","answer":"Fill out the form, add a recording if needed, and click Submit."},{"question":"How long can my recording be?","answer":"Recordings can be up to 5 minutes long by default."}]'/>
+            <property name="layoutOrientation" type="String" label="Layout Orientation" 
+                     description="Controls whether FAQ section appears to the right (horizontal) or below (vertical) the support form" default="vertical" datasource="horizontal,vertical"/>
+                     
+            <!-- Appearance Settings -->
             <property name="primaryColor" type="String" label="Primary Color" 
                      description="Primary color for component header and accents" default="#22BDC1"/>
             <property name="accentColor" type="String" label="Accent Color" 
                      description="Secondary color for progress bars and highlights" default="#D5DF23"/>
             <property name="useDarkTheme" type="Boolean" label="Use Dark Theme" 
                      description="Apply dark theme to the component" default="false"/>
-            <property name="showFaqSection" type="Boolean" label="Show FAQ Section" 
-                     description="Display the FAQ section alongside the support requester" default="false"/>
             <property name="showInstructions" type="Boolean" label="Show Instructions" 
                      description="Display instructions panel below the recorder" default="true"/>
-            <property name="faqHeaderTitle" type="String" label="FAQ Header Title" 
-                     description="Title for the FAQ section" default="Frequently Asked Questions"/>
-            <property name="layoutOrientation" type="String" label="Layout Orientation" 
-                     description="Controls whether FAQ section appears to the right (horizontal) or below (vertical) the support form" default="vertical" datasource="horizontal,vertical"/>
+            <property name="instructionsText" type="String" label="Instructions Text" 
+                     description="Custom instructions text for the support form"/>
+            <property name="countdownDuration" type="Integer" label="Countdown Duration" 
+                     description="Number of seconds to count down before recording starts" default="3" min="1" max="5"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle> 

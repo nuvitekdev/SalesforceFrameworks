@@ -188,8 +188,8 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
     }
     
     get showMediaSection() {
-        // Always show media section by default, to match previous behavior
-        return true;
+        // Only show media section if at least one media option is enabled
+        return this.enableScreenRecording || this.enableScreenshot;
     }
     
     // New getter to determine if download button should be shown
@@ -225,7 +225,6 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
         this.detectAppContext();
         this.loadFaqItemsFromConfig();
         this.loadUserInfo();
-        this.enableScreenRecording = true;
         this.showInstructions = true;
     }
     
