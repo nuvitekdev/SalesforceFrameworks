@@ -81,34 +81,6 @@
 }
 
 /* ============================================= */
-/* Breadcrumbs                                 */
-/* ============================================= */
-.breadcrumb-container {
-    margin-bottom: var(--dlv-spacing-sm); /* Space below breadcrumbs */
-    padding-bottom: var(--dlv-spacing-sm);
-    border-bottom: 1px solid var(--dlv-border-subtle);
-}
-
-/* Style the breadcrumb links */
-.breadcrumb-container lightning-breadcrumb a {
-    color: var(--dlv-text-secondary);
-    text-decoration: none;
-    font-size: var(--dlv-font-size-sm);
-    transition: color var(--dlv-transition-fast);
-}
-
-.breadcrumb-container lightning-breadcrumb a:hover {
-    color: var(--dlv-text-link-hover);
-    text-decoration: underline;
-}
-
-/* Style the current/last breadcrumb item (non-link) */
-.breadcrumb-container lightning-breadcrumb .slds-breadcrumb__item:last-child span {
-    color: var(--dlv-text-primary);
-    font-weight: var(--dlv-font-weight-medium);
-}
-
-/* ============================================= */
 /* Search Bar                                  */
 /* ============================================= */
 .search-container {
@@ -572,50 +544,6 @@ lightning-tabset .slds-tabs_scoped__item {
         /* flex-basis: 100%; */
         /* padding-bottom: 4px; */
      }
-}
-
-/* ============================================= */
-/* Specific styling for modal breadcrumbs */
-.modal-breadcrumb-container {
-    width: 100%;
-    margin-top: var(--dlv-spacing-sm);
-    padding-top: var(--dlv-spacing-sm);
-    border-top: 1px solid rgba(255, 255, 255, 0.3); /* More visible separator */
-    background-color: rgba(255, 255, 255, 0.1); /* Slight background */
-    padding: 8px 12px;
-    border-radius: 4px;
-}
-
-/* Make the container more noticeable */
-.modal-breadcrumb-container::before {
-    content: "Navigation: ";
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: var(--dlv-font-weight-semibold);
-    margin-right: 8px;
-}
-
-.modal-breadcrumb-container lightning-breadcrumb a {
-    color: white;
-    text-decoration: none;
-    font-size: var(--dlv-font-size-sm);
-    font-weight: var(--dlv-font-weight-medium);
-    text-decoration: underline; /* Make links more obvious */
-}
-
-.modal-breadcrumb-container lightning-breadcrumb a:hover {
-    color: white;
-    text-decoration: underline;
-    background-color: rgba(255, 255, 255, 0.1); /* Highlight on hover */
-    padding: 2px 4px;
-    border-radius: 2px;
-}
-
-.modal-breadcrumb-container lightning-breadcrumb .slds-breadcrumb__item:last-child span {
-    color: white;
-    font-weight: var(--dlv-font-weight-semibold);
-    background-color: rgba(0, 0, 0, 0.2); /* Highlight current item */
-    padding: 2px 6px;
-    border-radius: 4px;
 }
 
 /* ============================================= */

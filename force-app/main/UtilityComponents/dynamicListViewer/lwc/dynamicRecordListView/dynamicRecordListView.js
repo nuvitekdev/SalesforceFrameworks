@@ -115,9 +115,6 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     /** Stores the detailed field list (with type info) fetched by `getRecordAllFields` */
     detailedFieldsData = [];
 
-    // --- Component State Properties ---
-    @track navigationStack = []; // Array of pages in the navigation stack
-    
     // --- Lifecycle Hooks ---
 
     /**
@@ -343,97 +340,29 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
 
     /**
      * Fetches the list of related child *objects* (metadata like label, relationshipName) 
-     * for the given object API name. Uses the *optimized* Apex method which includes filtering
-     * and limits to prevent errors. Called after `fetchRecordDetails` succeeds.
+     * for the given object API name. This method can be simplified since we no longer use 
+     * dynamic tabs, but keeping the core functionality for future use.
      * 
-     * @param {string} objectApiName - The API name of the object to get related objects for (typically the type of `selectedRecord`).
+     * @param {string} objectApiName - The API name of the object to get related objects for.
      */
     loadRelatedObjects(objectApiName) {
-         // This usually happens quickly as part of the detail load, so no separate loading indicator unless needed.
-         this.error = null; // Clear related errors
+        // Clear any previous errors
+        this.error = null;
 
         getRelatedObjects({ objectApiName: objectApiName })
             .then(result => {
-                // Store the list of related objects (used to build the tabs)
+                // Store the list of related objects for potential future use
                 this.relatedObjects = result || [];
-                 
-                 // When the parent record changes (due to lookup/breadcrumb navigation), 
-                 // we need to clear the previously loaded related records list.
-                 this.relatedRecords = []; 
-
-                 // Also, if the previously selected tab was a relationship name, 
-                 // check if that relationship still exists for the *new* parent object.
-                 // If not, reset the active tab back to 'details'.
-                 if (this.selectedTab !== 'details' && !this.relatedObjects.some(rel => rel.relationshipName === this.selectedTab)) {
-                    this.selectedTab = 'details';
-                 }
+                
+                // When the parent record changes, clear the previously loaded related records
+                this.relatedRecords = []; 
             })
             .catch(error => {
                 // Handle errors fetching related object metadata
                 this.handleError(error, `Error loading related objects list for ${objectApiName}`);
-                this.relatedObjects = []; // Clear related objects list on error
+                this.relatedObjects = [];
             });
     }
-
-    /**
-     * Fetches the actual related child *records* based on the currently selected related object tab (`selectedTab`).
-     * Called when a related object tab is clicked in the modal (`handleTabChange`).
-     */
-    loadRelatedRecords() {
-        // Guard conditions: Ensure we have a selected record loaded and the active tab is actually a relationship name.
-        if (!this.selectedRecord || !this.selectedRecord.Id || this.selectedTab === 'details') {
-             this.relatedRecords = []; // Clear list if conditions aren't met
-             console.log('Cannot load related records: missing record data or "details" tab is selected');
-            return;
-        }
-
-        // Find the specific related object metadata for the selected tab
-        const selectedRelationship = this.relatedObjects.find(rel => rel.relationshipName === this.selectedTab);
-        if (!selectedRelationship) {
-            console.error(`No relationship metadata found for tab: ${this.selectedTab}`);
-            this.loadingRelatedRecords = false;
-            this.relatedRecords = [];
-            return;
-        }
-
-        console.log(`Loading related records for: ${selectedRelationship.label} (${this.selectedTab})`);
-        
-        this.loadingRelatedRecords = true; // Show loading indicator within the tab content
-        this.error = null; // Clear related errors
-
-        // Find the metadata for the selected relationship (needed for the parent objectApiName)
-        // The parent objectApiName is the type of the record currently in the modal (`selectedRecord`).
-        const parentObjectApiName = this.selectedRecord.attributes?.type; 
-        if (!parentObjectApiName) {
-            console.error('Cannot determine parent object API name for loading related records.');
-            this.handleError('Internal Error: Missing parent object type.', 'Related Records Load Error');
-            this.loadingRelatedRecords = false;
-            this.relatedRecords = [];
-            return;
-        }
-
-        // Call Apex to get the related records
-        getRelatedRecords({
-             objectApiName: parentObjectApiName, // API name of the *parent* record (the one in the modal)
-            parentId: this.selectedRecord.Id, // ID of the parent record
-            relationshipName: this.selectedTab // The relationshipName selected via the tab
-        })
-        .then(result => {
-            // Update state with the fetched related records (Apex currently returns Id, Name)
-            // Could enhance Apex to return more fields if needed for display.
-            this.relatedRecords = result || [];
-            console.log(`Successfully loaded ${this.relatedRecords.length} related records`);
-            this.loadingRelatedRecords = false; // Hide loading indicator
-        })
-        .catch(error => {
-            // Handle errors during related record fetch
-            console.error(`Error loading related records:`, error);
-            this.handleError(error, `Error loading related ${this.selectedTab} records`);
-            this.relatedRecords = []; // Clear list on error
-            this.loadingRelatedRecords = false; // Hide loading indicator
-        });
-    }
-
 
     // --- Event Handlers ---
 
@@ -501,335 +430,20 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     }
     
     /**
-     * Handles back navigation from a related record modal
+     * Handles back navigation from a page
      * 
-     * @param {string} modalId - The ID of the modal to navigate back from
+     * @param {Event} event - The back button click event
      */
-    handleBackNavigation(modalId) {
-        const modalElement = this.template.querySelector(`#${modalId}`);
-        if (modalElement) {
-            // Animation to slide out
-            modalElement.classList.remove('active');
-            
-            // Remove from DOM after animation completes
-            setTimeout(() => {
-                modalElement.remove();
-            }, 300);
-        }
+    handleBackNavigation(event) {
+        // For future implementation if needed
+        console.log('Back navigation clicked', event);
     }
-    
+
     /**
-     * Closes a related record modal
-     * 
-     * @param {string} modalId - The ID of the modal to close
-     */
-    closeRelatedModal(modalId) {
-        const modalElement = this.template.querySelector(`#${modalId}`);
-        if (modalElement) {
-            modalElement.remove();
-        }
-    }
-    
-    /**
-     * Closes the record detail modal and all related modals
+     * Closes the record detail modal
      */
     closeRecordDetail() {
         this.showRecordDetail = false;
-    }
-
-    /**
-     * Adds a new page to the navigation stack and loads its data
-     * 
-     * @param {string} recordId - The record ID to display in the new page
-     * @param {string} objectApiName - The API name of the object
-     * @param {number} parentIndex - The index of the parent page (for back navigation)
-     */
-    addPageToStack(recordId, objectApiName, parentIndex = -1) {
-        // Generate a unique ID for this page
-        const pageId = `page-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-        const headingId = `heading-${pageId}`;
-        const contentId = `content-${pageId}`;
-        
-        // Create the page object with initial state
-        const newPage = {
-            id: pageId,
-            headingId: headingId,
-            contentId: contentId,
-            recordId: recordId,
-            objectApiName: objectApiName,
-            title: `Loading ${objectApiName} record...`,
-            subtitle: '',
-            objectLabel: objectApiName,
-            iconName: this.getIconForObjectType(objectApiName),
-            isLoading: true,
-            selectedTab: 'details',
-            displayFields: [],
-            relatedObjectTabsData: [],
-            relatedRecords: [],
-            loadingRelatedRecords: false,
-            noFieldsToDisplay: false,
-            showBackButton: parentIndex >= 0,
-            previousPageIndex: parentIndex,
-            previousPageTitle: parentIndex >= 0 ? this.getPreviousPageTitle(parentIndex) : '',
-            pageClasses: `page-modal record-modal slds-modal slds-fade-in-open ${this.getPagePositionClass(this.navigationStack.length)}`
-        };
-        
-        // Add the new page to the navigation stack
-        this.navigationStack = [...this.navigationStack, newPage];
-        
-        // Update the position classes for all pages in the stack
-        this.updatePagePositionClasses();
-        
-        // Load the page data
-        this.fetchPageDetails(this.navigationStack.length - 1);
-    }
-
-    /**
-     * Updates the position classes for all pages in the navigation stack
-     */
-    updatePagePositionClasses() {
-        const stackLength = this.navigationStack.length;
-        
-        if (stackLength <= 0) return;
-        
-        // Create a new array to ensure reactivity
-        const updatedStack = this.navigationStack.map((page, index) => {
-            return {
-                ...page,
-                pageClasses: `page-modal record-modal slds-modal slds-fade-in-open ${this.getPagePositionClass(index, stackLength - 1)}`
-            };
-        });
-        
-        this.navigationStack = updatedStack;
-    }
-
-    /**
-     * Determines the position class for a page based on its index
-     * 
-     * @param {number} pageIndex - The index of the page in the stack
-     * @param {number} activeIndex - The index of the currently active page
-     * @returns {string} The CSS class for positioning
-     */
-    getPagePositionClass(pageIndex, activeIndex = null) {
-        if (activeIndex === null) {
-            // When adding a new page, it's active by default
-            return 'active';
-        } else if (pageIndex === activeIndex) {
-            return 'active';
-        } else if (pageIndex < activeIndex) {
-            return 'previous';
-        } else {
-            return 'next';
-        }
-    }
-
-    /**
-     * Gets the title of a previous page for back button labeling
-     * 
-     * @param {number} index - The index of the previous page
-     * @returns {string} The title of the previous page
-     */
-    getPreviousPageTitle(index) {
-        if (index >= 0 && index < this.navigationStack.length) {
-            return this.navigationStack[index].title || 'Previous Record';
-        }
-        return 'Previous Record';
-    }
-
-    /**
-     * Gets the appropriate icon name for an object type
-     * 
-     * @param {string} objectApiName - The API name of the object
-     * @returns {string} The icon name to use
-     */
-    getIconForObjectType(objectApiName) {
-        // Map common objects to their icons
-        const iconMap = {
-            'Account': 'standard:account',
-            'Contact': 'standard:contact',
-            'Opportunity': 'standard:opportunity',
-            'Case': 'standard:case',
-            'Lead': 'standard:lead',
-            'User': 'standard:user',
-            'Task': 'standard:task',
-            'Event': 'standard:event',
-            'Attachment': 'standard:file',
-            'ContentDocument': 'standard:document'
-        };
-        
-        // Try to get a specific icon, or fallback to default
-        return iconMap[objectApiName] || this.iconName || 'standard:default';
-    }
-
-    /**
-     * Fetches details for a specific page in the navigation stack
-     * 
-     * @param {number} pageIndex - The index of the page in the stack
-     */
-    fetchPageDetails(pageIndex) {
-        if (pageIndex < 0 || pageIndex >= this.navigationStack.length) {
-            console.error('Invalid page index for fetchPageDetails:', pageIndex);
-            return;
-        }
-        
-        const page = this.navigationStack[pageIndex];
-        const { recordId, objectApiName } = page;
-        
-        console.log(`Fetching details for page ${pageIndex}: ${objectApiName}/${recordId}`);
-        
-        // Call Apex to get record details - maintain original parameters order matching Apex
-        getRecordAllFields({ objectApiName: objectApiName, recordId: recordId })
-            .then(result => {
-                // Handle the result based on the actual Apex return format
-                if (result && Array.isArray(result)) {
-                    // Process the field data array
-                    const displayFields = this.processFieldsForDisplay(result);
-                    
-                    // Build a record object from the field data
-                    const recordData = result.reduce((acc, field) => {
-                        acc[field.apiName] = field.value;
-                        // Handle reference fields
-                        if (field.isReference && field.referenceId) {
-                            acc[field.apiName] = {
-                                Id: field.referenceId,
-                                Name: field.value,
-                                attributes: { type: field.referenceToObject }
-                            };
-                        }
-                        return acc;
-                    }, { Id: recordId, attributes: { type: objectApiName } });
-                    
-                    // Extract record name for title
-                    const nameField = result.find(f => f.apiName === this.titleField || f.apiName === 'Name');
-                    const title = nameField?.value || `${objectApiName} Record`;
-                    
-                    // Extract subtitle if configured
-                    let subtitle = '';
-                    if (this.subtitleField) {
-                        const subtitleField = result.find(f => f.apiName === this.subtitleField);
-                        subtitle = subtitleField?.value || '';
-                    }
-                    
-                    // Update the page in the navigation stack
-                    this.updatePageInStack(pageIndex, {
-                        isLoading: false,
-                        title: title,
-                        subtitle: subtitle,
-                        displayFields: displayFields,
-                        record: recordData,
-                        noFieldsToDisplay: displayFields.length === 0
-                    });
-                    
-                    // Load related objects for this page
-                    this.loadRelatedObjectsForPage(pageIndex, objectApiName);
-                } else {
-                    throw new Error('Invalid response format from server');
-                }
-            })
-            .catch(error => {
-                console.error('Error loading record details:', error);
-                this.handleError(error, `Error loading ${objectApiName} record`);
-                
-                // Update page with error state
-                this.updatePageInStack(pageIndex, {
-                    isLoading: false,
-                    title: `${objectApiName} (Error)`,
-                    noFieldsToDisplay: true
-                });
-            });
-    }
-
-    /**
-     * Processes field data into a format suitable for display
-     * 
-     * @param {Array} fieldsData - The array of field data objects from Apex
-     * @returns {Array} Processed fields ready for display
-     */
-    processFieldsForDisplay(fieldsData) {
-        if (!fieldsData || !Array.isArray(fieldsData)) return [];
-        
-        return fieldsData
-            .filter(field => field.label && field.apiName) // Ensure required properties
-            .map(field => ({
-                label: field.label,
-                value: field.value || '',
-                fieldName: field.apiName,
-                isReference: field.isReference || false,
-                referenceId: field.referenceId || null,
-                referenceToObject: field.referenceToObject || null
-            }));
-    }
-
-    /**
-     * Updates a specific page in the navigation stack
-     * 
-     * @param {number} pageIndex - The index of the page to update
-     * @param {Object} updates - The properties to update
-     */
-    updatePageInStack(pageIndex, updates) {
-        if (pageIndex < 0 || pageIndex >= this.navigationStack.length) {
-            console.error('Invalid page index for updatePageInStack:', pageIndex);
-            return;
-        }
-        
-        // Create a new array with the updated page
-        const updatedStack = [...this.navigationStack];
-        updatedStack[pageIndex] = {
-            ...updatedStack[pageIndex],
-            ...updates
-        };
-        
-        this.navigationStack = updatedStack;
-    }
-
-    /**
-     * Loads related objects for a specific page
-     * 
-     * @param {number} pageIndex - The index of the page
-     * @param {string} objectApiName - The API name of the object
-     */
-    loadRelatedObjectsForPage(pageIndex, objectApiName) {
-        getRelatedObjects({ objectApiName: objectApiName })
-            .then(result => {
-                // Process related objects for tabs
-                const relatedObjectTabsData = this.processRelatedObjectsForTabs(result);
-                
-                // Update the page
-                this.updatePageInStack(pageIndex, {
-                    relatedObjectTabsData: relatedObjectTabsData
-                });
-            })
-            .catch(error => {
-                console.error('Error loading related objects:', error);
-                this.handleError(error, `Error loading related objects for ${objectApiName}`);
-            });
-    }
-
-    /**
-     * Processes related objects data into a format suitable for tabs
-     * 
-     * @param {Array} relatedObjects - The array of related objects from Apex
-     * @returns {Array} Processed related objects ready for tabs
-     */
-    processRelatedObjectsForTabs(relatedObjects) {
-        if (!relatedObjects || !Array.isArray(relatedObjects)) return [];
-        
-        // Filter to only show the types requested by the user
-        const relevantRelationshipTypes = [
-            'Attachments', 'ContentDocumentLinks', 'Notes', 'Tasks', 'Cases', 
-            'Opportunities', 'Contacts', 'Accounts', 'FeedItems', 'ApprovalProcesses'
-        ];
-        
-        return relatedObjects
-            .filter(relObj => relevantRelationshipTypes.some(type => 
-                relObj.relationshipName.includes(type) || 
-                relObj.objectApiName.includes(type)))
-            .map(relObj => ({
-                label: relObj.label,
-                value: relObj.relationshipName,
-                relationshipName: relObj.relationshipName,
-                objectApiName: relObj.objectApiName
-            }));
     }
 
     /**
@@ -839,128 +453,130 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * @param {Event} event - The `select` event from `lightning-tabset`.
      */
     handleTabChange(event) {
-        // The `value` of the selected tab ('details', 'more', or relationshipName) is in event.target.value
+        // The `value` of the selected tab is in event.target.value
         const newTabValue = event.target.value;
         console.log(`Tab changed to: ${newTabValue}`);
         
         this.selectedTab = newTabValue; 
 
-        // If the newly selected tab is a related object tab (i.e., not 'details' or 'more'), load its records.
-        if (this.selectedTab !== 'details' && this.selectedTab !== 'more') {
-            console.log(`Loading related records for relationship: ${this.selectedTab}`);
-            this.loadRelatedRecords();
-        } else if (this.selectedTab === 'details') {
-            // If switching back to the 'details' tab, clear the related records list.
+        // Reset loading state when switching tabs
+        this.loadingRelatedRecords = false;
+
+        // Handle specific tabs
+        if (newTabValue === 'details') {
+            // When switching to details tab, clear related records
             this.relatedRecords = [];
-            this.loadingRelatedRecords = false; // Ensure loading indicator is off
+        } else if (newTabValue === 'relatedRecords') {
+            // Handle Related Records tab
+            this.handleRelatedRecordsClick();
+        } else if (newTabValue === 'filesAttachments') {
+            // Handle Files and Attachments tab
+            this.handleFilesAttachmentsClick();
+        } else if (newTabValue === 'chatterPosts') {
+            // Handle Chatter Posts tab
+            this.handleChatterPostsClick();
+        } else if (newTabValue === 'approvals') {
+            // Handle Approvals tab
+            this.handleApprovalsClick();
+        } else if (newTabValue === 'notes') {
+            // Handle Notes tab
+            this.handleNotesClick();
         }
     }
 
     /**
-     * Handles back navigation from a page
-     * 
-     * @param {Event} event - The back button click event
-     */
-    handleBackNavigation(event) {
-        const pageIndex = parseInt(event.currentTarget.dataset.index, 10) || 0;
-        
-        if (pageIndex < 0 || pageIndex >= this.navigationStack.length) {
-            console.error('Invalid page index for handleBackNavigation:', pageIndex);
-            return;
-        }
-        
-        const page = this.navigationStack[pageIndex];
-        
-        // Navigate back to the parent page
-        if (page.previousPageIndex >= 0) {
-            this.removePageFromStack(pageIndex);
-        }
-    }
-
-    /**
-     * Handles closing a page
-     * 
-     * @param {Event} event - The close button click event
-     */
-    handleClosePage(event) {
-        const pageIndex = parseInt(event.currentTarget.dataset.index, 10) || 0;
-        
-        if (pageIndex === 0) {
-            // If closing the first page, close the entire modal
-            this.closeAllPages();
-        } else {
-            // Otherwise just remove this page from the stack
-            this.removePageFromStack(pageIndex);
-        }
-    }
-
-    /**
-     * Removes a page from the navigation stack
-     * 
-     * @param {number} pageIndex - The index of the page to remove
-     */
-    removePageFromStack(pageIndex) {
-        if (pageIndex <= 0 || pageIndex >= this.navigationStack.length) {
-            console.error('Invalid page index for removePageFromStack:', pageIndex);
-            return;
-        }
-        
-        // Remove the page
-        const updatedStack = this.navigationStack.filter((_, index) => index !== pageIndex);
-        
-        // Update the stack
-        this.navigationStack = updatedStack;
-        
-        // Update position classes
-        this.updatePagePositionClasses();
-    }
-
-    /**
-     * Closes all pages and resets the navigation stack
-     */
-    closeAllPages() {
-        this.showRecordDetail = false;
-        this.navigationStack = [];
-    }
-
-    /**
-     * Handler for the Related Records click in More menu
+     * Handler for the Related Records tab and click in More menu
      */
     handleRelatedRecordsClick() {
-        console.log('Related Records clicked');
-        // Implementation for related records view
+        console.log('Related Records tab selected');
+        this.loadingRelatedRecords = true;
+        
+        // Show loading indicator for a brief moment
+        setTimeout(() => {
+            this.loadingRelatedRecords = false;
+            // Future implementation: Display a list of available related objects 
+            // or implement a different pattern to browse related records
+        }, 500);
     }
-    
+
     /**
-     * Handler for the Files and Attachments click in More menu
+     * Handler for the Files and Attachments tab and click in More menu
      */
     handleFilesAttachmentsClick() {
-        console.log('Files and Attachments clicked');
-        // Implementation for files and attachments view
+        console.log('Files and Attachments tab selected');
+        this.loadingRelatedRecords = true;
+        
+        if (!this.selectedRecord || !this.selectedRecord.Id) {
+            this.loadingRelatedRecords = false;
+            return;
+        }
+        
+        // Here we'd typically query ContentDocumentLink or Attachment records
+        // For now, simulate loading
+        setTimeout(() => {
+            this.loadingRelatedRecords = false;
+            // Future implementation: Display files and attachments
+        }, 500);
     }
-    
+
     /**
-     * Handler for the Chatter Posts click in More menu
+     * Handler for the Chatter Posts tab and click in More menu
      */
     handleChatterPostsClick() {
-        console.log('Chatter Posts clicked');
-        // Implementation for chatter posts view
+        console.log('Chatter Posts tab selected');
+        this.loadingRelatedRecords = true;
+        
+        if (!this.selectedRecord || !this.selectedRecord.Id) {
+            this.loadingRelatedRecords = false;
+            return;
+        }
+        
+        // Here we'd typically query FeedItem records
+        // For now, simulate loading
+        setTimeout(() => {
+            this.loadingRelatedRecords = false;
+            // Future implementation: Display chatter posts
+        }, 500);
     }
-    
+
     /**
-     * Handler for the Approvals click in More menu
+     * Handler for the Approvals tab and click in More menu
      */
     handleApprovalsClick() {
-        console.log('Approvals clicked');
-        // Implementation for approvals view
+        console.log('Approvals tab selected');
+        this.loadingRelatedRecords = true;
+        
+        if (!this.selectedRecord || !this.selectedRecord.Id) {
+            this.loadingRelatedRecords = false;
+            return;
+        }
+        
+        // Here we'd typically query ProcessInstance records
+        // For now, simulate loading
+        setTimeout(() => {
+            this.loadingRelatedRecords = false;
+            // Future implementation: Display approval processes
+        }, 500);
     }
-    
+
     /**
-     * Handler for the Notes click in More menu
+     * Handler for the Notes tab and click in More menu
      */
     handleNotesClick() {
-        console.log('Notes clicked');
-        // Implementation for notes view
+        console.log('Notes tab selected');
+        this.loadingRelatedRecords = true;
+        
+        if (!this.selectedRecord || !this.selectedRecord.Id) {
+            this.loadingRelatedRecords = false;
+            return;
+        }
+        
+        // Here we'd typically query Note records
+        // For now, simulate loading
+        setTimeout(() => {
+            this.loadingRelatedRecords = false;
+            // Future implementation: Display notes
+        }, 500);
     }
 
     // --- Utility Methods ---
@@ -1309,35 +925,5 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         }
         
         return hasNoFields;
-    }
-
-    /**
-     * Generates the tab data structure for related objects.
-     * 
-     * @returns {Array<object>} An array of tab configuration objects.
-     */
-    get filteredRelatedObjectTabsData() {
-        // If no related objects metadata loaded, return empty array
-        if (!this.relatedObjects || this.relatedObjects.length === 0) {
-            return [];
-        }
-        
-        // Filter related objects to show only relevant ones
-        const relevantRelationshipTypes = [
-            'Attachments', 'ContentDocumentLinks', 'Notes', 'Tasks', 'Cases', 
-            'Opportunities', 'Contacts', 'Accounts', 'FeedItems', 'ApprovalProcesses'
-        ];
-        
-        // Map the filtered related objects metadata to the structure needed for lightning-tab
-        return this.relatedObjects
-            .filter(relObj => relevantRelationshipTypes.some(type => 
-                relObj.relationshipName.includes(type) || 
-                relObj.objectApiName.includes(type)))
-            .map(relObj => ({
-                label: relObj.label,
-                value: relObj.relationshipName,
-                relationshipName: relObj.relationshipName,
-                objectApiName: relObj.objectApiName
-            }));
     }
 }

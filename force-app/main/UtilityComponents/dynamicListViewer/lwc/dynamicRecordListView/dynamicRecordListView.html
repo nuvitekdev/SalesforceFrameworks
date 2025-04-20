@@ -153,78 +153,98 @@
                                 </div>
                             </lightning-tab>
 
-                            <!-- Related Objects Tabs -->
-                            <template for:each={filteredRelatedObjectTabsData} for:item="tabData">
-                                <lightning-tab 
-                                    key={tabData.relationshipName} 
-                                    label={tabData.label} 
-                                    value={tabData.relationshipName}>
-                                    <!-- Content for related records list will go here -->
-                                    <div class="related-records-container slds-var-p-top_medium" role="tabpanel">
+                            <!-- Related Records Tab -->
+                            <lightning-tab label="Related Records" value="relatedRecords">
+                                <div class="tab-container slds-var-p-top_medium" role="tabpanel">
+                                    <div class="related-records-container">
                                         <template if:true={loadingRelatedRecords}>
                                             <div class="loading-state">
                                                 <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
-                                                <p>Loading {tabData.label}...</p>
+                                                <p>Loading related records...</p>
                                             </div>
                                         </template>
                                         <template if:false={loadingRelatedRecords}>
-                                            <template if:true={relatedRecords.length}>
-                                                <!-- Simple list for now, could be enhanced to a mini-table -->
-                                                <ul class="slds-list_dotted">
-                                                    <template for:each={relatedRecords} for:item="relRecord">
-                                                        <!-- Make related record name clickable to navigate -->
-                                                        <li key={relRecord.Id} class="slds-var-p-vertical_x-small">
-                                                            <a href="#" data-record-id={relRecord.Id} data-object-api-name={tabData.objectApiName} onclick={handleLookupNavigation}>{relRecord.Name}</a>
-                                                        </li>
-                                                    </template>
-                                                </ul>
-                                            </template>
-                                            <template if:false={relatedRecords.length}>
-                                                <div class="empty-state small slds-align_absolute-center">
-                                                    <p>No related {tabData.label} found.</p>
-                                                </div>
-                                            </template>
+                                            <div class="empty-state small">
+                                                <p>Select an object type to view related records.</p>
+                                            </div>
                                         </template>
                                     </div>
-                                </lightning-tab>
-                            </template>
+                                </div>
+                            </lightning-tab>
 
-                            <!-- More Tab - Moved to the end -->
-                            <lightning-tab label="More" value="more">
-                                <div class="more-menu-container slds-var-p-top_medium">
-                                    <ul class="more-menu-list">
-                                        <!-- Only include the specific requested options -->
-                                        <li class="more-menu-item" onclick={handleRelatedRecordsClick}>
-                                            <div class="more-menu-item-content">
-                                                <lightning-icon icon-name="standard:related_list" size="small"></lightning-icon>
-                                                <span>Related Records</span>
+                            <!-- Files and Attachments Tab -->
+                            <lightning-tab label="Files and Attachments" value="filesAttachments">
+                                <div class="tab-container slds-var-p-top_medium" role="tabpanel">
+                                    <div class="files-container">
+                                        <template if:true={loadingRelatedRecords}>
+                                            <div class="loading-state">
+                                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                                <p>Loading files and attachments...</p>
                                             </div>
-                                        </li>
-                                        <li class="more-menu-item" onclick={handleFilesAttachmentsClick}>
-                                            <div class="more-menu-item-content">
-                                                <lightning-icon icon-name="standard:file" size="small"></lightning-icon>
-                                                <span>Files and Attachments</span>
+                                        </template>
+                                        <template if:false={loadingRelatedRecords}>
+                                            <div class="empty-state small">
+                                                <p>No files or attachments found.</p>
                                             </div>
-                                        </li>
-                                        <li class="more-menu-item" onclick={handleChatterPostsClick}>
-                                            <div class="more-menu-item-content">
-                                                <lightning-icon icon-name="standard:post" size="small"></lightning-icon>
-                                                <span>Chatter Posts</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </lightning-tab>
+
+                            <!-- Chatter Posts Tab -->
+                            <lightning-tab label="Chatter Posts" value="chatterPosts">
+                                <div class="tab-container slds-var-p-top_medium" role="tabpanel">
+                                    <div class="chatter-container">
+                                        <template if:true={loadingRelatedRecords}>
+                                            <div class="loading-state">
+                                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                                <p>Loading chatter posts...</p>
                                             </div>
-                                        </li>
-                                        <li class="more-menu-item" onclick={handleApprovalsClick}>
-                                            <div class="more-menu-item-content">
-                                                <lightning-icon icon-name="standard:approval" size="small"></lightning-icon>
-                                                <span>Approvals</span>
+                                        </template>
+                                        <template if:false={loadingRelatedRecords}>
+                                            <div class="empty-state small">
+                                                <p>No chatter posts found.</p>
                                             </div>
-                                        </li>
-                                        <li class="more-menu-item" onclick={handleNotesClick}>
-                                            <div class="more-menu-item-content">
-                                                <lightning-icon icon-name="standard:note" size="small"></lightning-icon>
-                                                <span>Notes</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </lightning-tab>
+
+                            <!-- Approvals Tab -->
+                            <lightning-tab label="Approvals" value="approvals">
+                                <div class="tab-container slds-var-p-top_medium" role="tabpanel">
+                                    <div class="approvals-container">
+                                        <template if:true={loadingRelatedRecords}>
+                                            <div class="loading-state">
+                                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                                <p>Loading approvals...</p>
                                             </div>
-                                        </li>
-                                    </ul>
+                                        </template>
+                                        <template if:false={loadingRelatedRecords}>
+                                            <div class="empty-state small">
+                                                <p>No approvals found.</p>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </lightning-tab>
+
+                            <!-- Notes Tab -->
+                            <lightning-tab label="Notes" value="notes">
+                                <div class="tab-container slds-var-p-top_medium" role="tabpanel">
+                                    <div class="notes-container">
+                                        <template if:true={loadingRelatedRecords}>
+                                            <div class="loading-state">
+                                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                                <p>Loading notes...</p>
+                                            </div>
+                                        </template>
+                                        <template if:false={loadingRelatedRecords}>
+                                            <div class="empty-state small">
+                                                <p>No notes found.</p>
+                                            </div>
+                                        </template>
+                                    </div>
                                 </div>
                             </lightning-tab>
                         </lightning-tabset>
