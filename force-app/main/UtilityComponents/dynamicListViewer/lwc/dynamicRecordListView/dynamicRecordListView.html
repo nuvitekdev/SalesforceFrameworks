@@ -107,14 +107,26 @@
                             <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse" size="small"></lightning-icon>
                             <span class="slds-assistive-text">Close</span>
                         </button>
+                        
+                        <!-- Back button - only visible when there's a record to go back to -->
+                        <template if:true={hasBackRecord}>
+                            <button class="slds-button slds-button_neutral back-button slds-var-m-bottom_small" 
+                                    title="Go back to previous record" 
+                                    onclick={handleBackNavigation}>
+                                <lightning-icon icon-name="utility:chevronleft" size="x-small" class="slds-button__icon slds-button__icon_left"></lightning-icon>
+                                Back to previous record
+                            </button>
+                        </template>
+                        
+                        <!-- Object type indicator with icon -->
+                        <template if:true={selectedRecord}>
+                            <div class="object-type-badge slds-var-m-bottom_small">
+                                <span>{selectedRecord.attributes.type}</span>
+                            </div>
+                        </template>
+                        
                         <h2 id="modal-heading" class="slds-modal__title slds-hyphenate">{recordDetailTitle}</h2>
                         <p class="slds-text-heading_small">{recordDetailSubtitle}</p>
-                        
-                        <!-- Object type indicator -->
-                        <div class="object-type-badge">
-                            <lightning-icon icon-name={iconName} size="x-small"></lightning-icon>
-                            <span>{objectApiName}</span>
-                        </div>
                     </header>
 
                     <!-- Content -->

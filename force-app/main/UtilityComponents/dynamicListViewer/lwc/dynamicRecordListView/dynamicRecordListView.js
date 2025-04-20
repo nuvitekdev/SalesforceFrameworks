@@ -100,6 +100,9 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     /** @type {boolean} Indicates if the related records list (within a modal tab) is currently loading. */
     @track loadingRelatedRecords = false;
     
+    // Navigation history stack - stores previous records for back navigation
+    @track navigationStack = [];
+    
     // --- Additional properties for More menu and breadcrumbs ---
     // @track relatedBreadcrumbs = []; // Breadcrumbs for related records
     // @track showRelatedBreadcrumbs = false; // Control visibility of related breadcrumbs
@@ -291,6 +294,9 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         
         console.log(`Fetching details for ${objectApiName}/${recordId}`);
         
+        // Set the appropriate icon for the object
+        this.setIconForObject(objectApiName);
+        
         // Fetch the record data with all accessible fields - maintain original parameters order matching Apex
         getRecordAllFields({ objectApiName: objectApiName, recordId: recordId })
             .then(result => {
@@ -404,6 +410,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
 
     /**
      * Handles navigation to a lookup/reference record when clicked in the detail panel or related list.
+     * Adds the current record to the navigation stack before loading the new record.
      * 
      * @param {Event} event - The click event from the lookup link.
      */
@@ -421,6 +428,19 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         
         console.log(`Navigating to lookup: ${objectApiName}/${recordId}`);
         
+        // Save current record to navigation stack before loading new one
+        if (this.selectedRecord) {
+            // Push current record info to navigation stack
+            this.navigationStack.push({
+                recordId: this.selectedRecord.Id,
+                objectApiName: this.selectedRecord.attributes.type,
+                title: this.recordDetailTitle,
+                subtitle: this.recordDetailSubtitle
+            });
+            
+            console.log('Added to navigation stack:', JSON.stringify(this.navigationStack));
+        }
+        
         // Reset data
         this.selectedRecord = null;
         this.detailedFieldsData = [];
@@ -430,13 +450,33 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     }
     
     /**
-     * Handles back navigation from a page
+     * Handles back navigation from a record to the previous record
+     * Pops from navigation stack and navigates to previous record
      * 
      * @param {Event} event - The back button click event
      */
     handleBackNavigation(event) {
-        // For future implementation if needed
-        console.log('Back navigation clicked', event);
+        if (event) {
+            event.preventDefault();
+        }
+        
+        // Check if we have previous records to navigate back to
+        if (this.navigationStack.length === 0) {
+            console.log('No previous records to navigate back to');
+            return;
+        }
+        
+        // Get the most recent record from the stack
+        const previousRecord = this.navigationStack.pop();
+        console.log('Navigating back to:', JSON.stringify(previousRecord));
+        
+        // Reset current record data
+        this.selectedRecord = null;
+        this.detailedFieldsData = [];
+        this.selectedTab = 'details';
+        
+        // Fetch the previous record details
+        this.fetchRecordDetails(previousRecord.recordId, previousRecord.objectApiName);
     }
 
     /**
@@ -925,5 +965,62 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         }
         
         return hasNoFields;
+    }
+
+    /**
+     * Whether there's a record to go back to in the navigation stack
+     */
+    get hasBackRecord() {
+        return this.navigationStack && this.navigationStack.length > 0;
+    }
+
+    /**
+     * Sets the appropriate icon for the given object type
+     * 
+     * @param {string} objectApiName - The API name of the object
+     */
+    setIconForObject(objectApiName) {
+        if (!objectApiName) return;
+        
+        // Common standard objects use their own icons
+        const standardObjects = {
+            'Account': 'standard:account',
+            'Contact': 'standard:contact',
+            'Lead': 'standard:lead',
+            'Opportunity': 'standard:opportunity',
+            'Case': 'standard:case',
+            'Task': 'standard:task',
+            'User': 'standard:user',
+            'Campaign': 'standard:campaign',
+            'Contract': 'standard:contract',
+            'Order': 'standard:orders',
+            'Product2': 'standard:product',
+            'Pricebook2': 'standard:pricebook',
+            'Asset': 'standard:asset',
+            'Dashboard': 'standard:dashboard',
+            'Report': 'standard:report',
+            'Solution': 'standard:solution',
+            'Knowledge__kav': 'standard:knowledge'
+            // Add more as needed
+        };
+        
+        // If it's a standard object with a predefined icon, use it
+        if (standardObjects[objectApiName]) {
+            this.iconName = standardObjects[objectApiName];
+        } 
+        // For custom objects, use the custom icon with appropriate number
+        else if (objectApiName.endsWith('__c')) {
+            // Determine which custom icon to use (1-100) based on object name
+            // This is simplified - in a production environment you might want a more sophisticated approach
+            const hash = Array.from(objectApiName).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const iconNum = (hash % 100) + 1; // Get a number between 1 and 100
+            this.iconName = `standard:custom${iconNum}`;
+        } 
+        // Default to generic icon
+        else {
+            this.iconName = 'standard:default';
+        }
+        
+        console.log(`Set icon for ${objectApiName} to ${this.iconName}`);
     }
 }

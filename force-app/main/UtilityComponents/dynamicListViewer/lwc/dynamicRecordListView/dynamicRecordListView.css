@@ -381,6 +381,57 @@ tbody tr:first-child td {
     margin-top: 4px;
 }
 
+/* Back Button in Record Detail Modal */
+.back-button {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: var(--dlv-radius-sm) !important;
+    padding: 0.5rem 1rem !important;
+    margin-bottom: 0.75rem !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: background-color var(--dlv-transition-fast), transform var(--dlv-transition-fast) !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.back-button:hover, .back-button:focus {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: var(--dlv-shadow-sm) !important;
+}
+
+.back-button:active {
+    transform: translateY(0) !important;
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: none !important;
+}
+
+.back-button lightning-icon {
+    --sds-c-icon-color-foreground-default: white !important;
+    margin-right: 0.5rem !important;
+}
+
+/* Object Type Badge */
+.object-type-badge {
+    display: inline-block !important;
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    border-radius: var(--dlv-radius-sm) !important;
+    padding: 0.35rem 0.85rem !important;
+    margin-bottom: 0.75rem !important;
+    font-size: var(--dlv-font-size-sm) !important;
+    font-weight: var(--dlv-font-weight-semibold) !important;
+    letter-spacing: 0.25px !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    align-self: flex-start !important;
+    text-transform: capitalize !important;
+}
+
+.object-type-badge span {
+    text-transform: capitalize !important;
+}
+
 /* Modal Close Button - Stronger Styling */
 .slds-modal__close {
     position: absolute !important; /* Force position */
