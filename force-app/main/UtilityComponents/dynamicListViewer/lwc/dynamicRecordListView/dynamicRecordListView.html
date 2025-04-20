@@ -1,0 +1,236 @@
+<!-- Dynamic Record List View Component -->
+<template>
+    <div class="container">
+        <!-- Search bar -->
+        <div class="search-container">
+            <lightning-input 
+                type="search" 
+                label="Search Records" 
+                placeholder="Search..." 
+                value={searchTerm} 
+                onchange={handleSearch}
+                variant="label-hidden">
+            </lightning-input>
+        </div>
+
+        <!-- Error state -->
+        <template if:true={error}>
+            <div class="error-state">
+                <lightning-icon icon-name="utility:error" size="small"></lightning-icon>
+                <p>{error}</p>
+            </div>
+        </template>
+
+        <!-- Loading state -->
+        <template if:true={isLoading}>
+            <div class="loading-state">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                <p>Loading records...</p>
+            </div>
+        </template>
+
+        <!-- Empty state -->
+        <template if:false={hasRecords}>
+            <div class="empty-state" if:false={isLoading}>
+                <lightning-icon icon-name="utility:info" size="medium"></lightning-icon>
+                <h3>No records found</h3>
+                <p>Adjust your search to find records.</p>
+            </div>
+        </template>
+
+        <!-- Records list -->
+        <template if:true={hasRecords}>
+            <div class="records-list" if:false={isLoading}>
+                <table>
+                    <thead>
+                        <tr>
+                            <!-- Dynamic headers based on fields -->
+                            <template for:each={sortIconData} for:item="iconData">
+                                <th key={iconData.fieldName} onclick={handleSort} data-field={iconData.fieldName}>
+                                    {iconData.label}
+                                    <lightning-icon 
+                                        icon-name={iconData.iconName}
+                                        size="xx-small" 
+                                        class="sort-icon">
+                                    </lightning-icon>
+                                </th>
+                            </template>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Loop through records -->
+                        <template for:each={recordsWithData} for:item="recordData">
+                            <tr key={recordData.id} onclick={handleRecordClick} data-id={recordData.id} class="clickable-row">
+                                <!-- Dynamic cells based on fields -->
+                                <template for:each={recordData.cellsData} for:item="cell">
+                                    <td key={cell.key}>
+                                        {cell.value}
+                                    </td>
+                                </template>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" if:true={showPagination}>
+                <button 
+                    class="pagination-button" 
+                    onclick={handlePageChange} 
+                    data-page={previousPage} 
+                    disabled={isPreviousButtonDisabled}>
+                    <lightning-icon icon-name="utility:chevronleft" size="x-small"></lightning-icon>
+                </button>
+                <span>Page {currentPage} of {totalPages}</span>
+                <button 
+                    class="pagination-button" 
+                    onclick={handlePageChange} 
+                    data-page={nextPage} 
+                    disabled={isNextButtonDisabled}>
+                    <lightning-icon icon-name="utility:chevronright" size="x-small"></lightning-icon>
+                </button>
+            </div>
+        </template>
+
+        <!-- Navigation Stack (Multiple Record Detail Views) -->
+        <template if:true={showRecordDetail}>
+            <!-- Modal backdrop -->
+            <div class="slds-backdrop slds-backdrop_open"></div>
+            
+            <!-- Single Record Detail Modal - Simplified approach -->
+            <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="modal-heading" class="record-modal slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <!-- Header -->
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeRecordDetail}>
+                            <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse" size="small"></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading" class="slds-modal__title slds-hyphenate">{recordDetailTitle}</h2>
+                        <p class="slds-text-heading_small">{recordDetailSubtitle}</p>
+                        
+                        <!-- Object type indicator -->
+                        <div class="object-type-badge">
+                            <lightning-icon icon-name={iconName} size="x-small"></lightning-icon>
+                            <span>{objectApiName}</span>
+                        </div>
+                    </header>
+
+                    <!-- Content -->
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id">
+                        <lightning-tabset variant="scoped" active-tab-value={selectedTab} onselect={handleTabChange} class="full-width-tabs">
+                            <!-- Details Tab -->
+                            <lightning-tab label="Details" value="details">
+                                <div class="fields-container slds-var-p-top_medium" role="tabpanel">
+                                    <template if:true={isLoadingRecordDetail}>
+                                        <div class="loading-state">
+                                            <lightning-spinner alternative-text="Loading field data" size="small"></lightning-spinner>
+                                            <p>Loading record details...</p>
+                                        </div>
+                                    </template>
+                                    <template if:false={isLoadingRecordDetail}>
+                                        <template for:each={displayFields} for:item="field">
+                                            <div key={field.fieldName} class="field-item slds-grid slds-gutters slds-var-m-bottom_small">
+                                                <span class="field-label slds-col slds-size_1-of-3">{field.label}</span>
+                                                <!-- Render as link if it's a lookup and not the current record -->
+                                                <template if:true={field.isReference}>
+                                                     <span class="field-value slds-col slds-size_2-of-3">
+                                                        <a href="#" data-record-id={field.referenceId} data-object-api-name={field.referenceToObject} onclick={handleLookupNavigation}>{field.value}</a>
+                                                     </span>
+                                                </template>
+                                                <template if:false={field.isReference}>
+                                                    <span class="field-value slds-col slds-size_2-of-3">{field.value}</span>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template if:true={noFieldsToDisplay}>
+                                            <div class="empty-state small slds-align_absolute-center">
+                                                <p>No field data available for this record.</p>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </lightning-tab>
+
+                            <!-- Related Objects Tabs -->
+                            <template for:each={filteredRelatedObjectTabsData} for:item="tabData">
+                                <lightning-tab 
+                                    key={tabData.relationshipName} 
+                                    label={tabData.label} 
+                                    value={tabData.relationshipName}>
+                                    <!-- Content for related records list will go here -->
+                                    <div class="related-records-container slds-var-p-top_medium" role="tabpanel">
+                                        <template if:true={loadingRelatedRecords}>
+                                            <div class="loading-state">
+                                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                                <p>Loading {tabData.label}...</p>
+                                            </div>
+                                        </template>
+                                        <template if:false={loadingRelatedRecords}>
+                                            <template if:true={relatedRecords.length}>
+                                                <!-- Simple list for now, could be enhanced to a mini-table -->
+                                                <ul class="slds-list_dotted">
+                                                    <template for:each={relatedRecords} for:item="relRecord">
+                                                        <!-- Make related record name clickable to navigate -->
+                                                        <li key={relRecord.Id} class="slds-var-p-vertical_x-small">
+                                                            <a href="#" data-record-id={relRecord.Id} data-object-api-name={tabData.objectApiName} onclick={handleLookupNavigation}>{relRecord.Name}</a>
+                                                        </li>
+                                                    </template>
+                                                </ul>
+                                            </template>
+                                            <template if:false={relatedRecords.length}>
+                                                <div class="empty-state small slds-align_absolute-center">
+                                                    <p>No related {tabData.label} found.</p>
+                                                </div>
+                                            </template>
+                                        </template>
+                                    </div>
+                                </lightning-tab>
+                            </template>
+
+                            <!-- More Tab - Moved to the end -->
+                            <lightning-tab label="More" value="more">
+                                <div class="more-menu-container slds-var-p-top_medium">
+                                    <ul class="more-menu-list">
+                                        <!-- Only include the specific requested options -->
+                                        <li class="more-menu-item" onclick={handleRelatedRecordsClick}>
+                                            <div class="more-menu-item-content">
+                                                <lightning-icon icon-name="standard:related_list" size="small"></lightning-icon>
+                                                <span>Related Records</span>
+                                            </div>
+                                        </li>
+                                        <li class="more-menu-item" onclick={handleFilesAttachmentsClick}>
+                                            <div class="more-menu-item-content">
+                                                <lightning-icon icon-name="standard:file" size="small"></lightning-icon>
+                                                <span>Files and Attachments</span>
+                                            </div>
+                                        </li>
+                                        <li class="more-menu-item" onclick={handleChatterPostsClick}>
+                                            <div class="more-menu-item-content">
+                                                <lightning-icon icon-name="standard:post" size="small"></lightning-icon>
+                                                <span>Chatter Posts</span>
+                                            </div>
+                                        </li>
+                                        <li class="more-menu-item" onclick={handleApprovalsClick}>
+                                            <div class="more-menu-item-content">
+                                                <lightning-icon icon-name="standard:approval" size="small"></lightning-icon>
+                                                <span>Approvals</span>
+                                            </div>
+                                        </li>
+                                        <li class="more-menu-item" onclick={handleNotesClick}>
+                                            <div class="more-menu-item-content">
+                                                <lightning-icon icon-name="standard:note" size="small"></lightning-icon>
+                                                <span>Notes</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </lightning-tab>
+                        </lightning-tabset>
+                    </div>
+                </div>
+            </section>
+        </template>
+    </div>
+</template>

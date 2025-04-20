@@ -43,6 +43,10 @@
                     <name>defaultModelName</name>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
+                    <name>enableAnomalyDetection</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>hideModelSelector</name>
                     <value>false</value>
                 </componentInstanceProperties>
@@ -54,52 +58,6 @@
                 <identifier>c_llmAssistant</identifier>
             </componentInstance>
         </itemInstances>
-               <itemInstances>
-            <componentInstance>
-                <componentInstanceProperties>
-                    <name>accentColor</name>
-                    <value>#D5DF23</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>backgroundColor</name>
-                    <value>#FFFFFF</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>cardTitle</name>
-                    <value>Messaging</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>checkNotificationsInterval</name>
-                    <value>60</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>componentHeight</name>
-                    <value>400</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>defaultLLMName</name>
-                    <value>Gemini 2.5 Pro</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>fontFamily</name>
-                    <value>Arial, sans-serif</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>fontSize</name>
-                    <value>14px</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>primaryColor</name>
-                    <value>#22BDC1</value>
-                </componentInstanceProperties>
-                <componentInstanceProperties>
-                    <name>sidebarWidth</name>
-                    <value>30%</value>
-                </componentInstanceProperties>
-                <componentName>nuvitekMessaging</componentName>
-                <identifier>c_nuvitekMessaging</identifier>
-            </componentInstance>
-        </itemInstances>
         <name>region2</name>
         <type>Region</type>
     </flexiPageRegions>
@@ -109,6 +67,9 @@
                 <componentInstanceProperties>
                     <name>accentColor</name>
                     <value>#D5DF23</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>bgImages</name>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>colors</name>
@@ -128,15 +89,18 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>links</name>
-                    <value>/page1, /page2, /page3, /page1, /page2, /page3, /page1, /page2, /page3</value>
+                    <value>/one/one.app?source=aloha#/n/page1, /one/one.app?source=aloha#/n/page2, /one/one.app?source=aloha#/n/page3, /one/one.app?source=aloha#/n/Purchasing_and_Invoice_App_Page, /one/one.app?source=aloha#/n/page2, /one/one.app?source=aloha#/n/page3, /one/one.app?source=aloha#/n/page1, /one/one.app?source=aloha#/n/page2, /one/one.app?source=aloha#/n/page3</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>primaryColor</name>
                     <value>#22BDC1</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
+                    <name>textColor</name>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>tileStyle</name>
-                    <value>gradient</value>
+                    <value>modern</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>titles</name>

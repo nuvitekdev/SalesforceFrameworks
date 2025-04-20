@@ -1,0 +1,625 @@
+/* dynamicRecordListView.css */
+
+/* ============================================= */
+/* Component Theme Variables (from nuvitekTheme) */
+/* ============================================= */
+:host {
+    display: block; /* Ensure the component takes up block space */
+
+    /* Core Colors */
+    --dlv-primary-color: var(--nuvitek-primary, #22BDC1);         /* Primary brand color */
+    --dlv-primary-rgb: var(--nuvitek-primary-rgb, 34, 189, 193);  /* RGB for opacity */
+    --dlv-primary-dark: var(--nuvitek-primary-dark, #1a9599);   /* Darker primary for hover/active */
+    --dlv-accent-color: var(--nuvitek-accent, #D5DF23);         /* Accent color */
+    --dlv-accent-rgb: var(--nuvitek-accent-rgb, 213, 223, 35);   /* Accent RGB for opacity */
+    
+    /* Text Colors */
+    --dlv-text-primary: var(--nuvitek-text, #1d1d1f);            /* Main text */
+    --dlv-text-secondary: var(--nuvitek-text-secondary, #6e6e73);  /* Secondary text (placeholders, subtitles) */
+    --dlv-text-tertiary: var(--nuvitek-text-tertiary, #a1a1a6);   /* Tertiary text (disabled, hints) */
+    --dlv-text-link: var(--dlv-primary-color);                   /* Link color */
+    --dlv-text-link-hover: var(--dlv-primary-dark);              /* Link hover color */
+    --dlv-text-inverse: var(--nuvitek-background, #ffffff);      /* Text on dark/primary backgrounds */
+
+    /* Background Colors */
+    --dlv-background: var(--nuvitek-background, #ffffff);        /* Main component background */
+    --dlv-background-alt: var(--nuvitek-background-alt, #f5f5f7);  /* Alternate background (table header, hover) */
+    --dlv-background-elevated: var(--nuvitek-background-elevated, #fbfbfd); /* Slightly elevated surfaces */
+
+    /* Border Colors */
+    --dlv-border-color: var(--nuvitek-border, rgba(0, 0, 0, 0.1));       /* Standard border */
+    --dlv-border-subtle: var(--nuvitek-border-subtle, rgba(0, 0, 0, 0.05)); /* Subtle border/divider */
+
+    /* Status Colors */
+    --dlv-error-color: var(--nuvitek-error, #ff3b30);        /* Error red */
+    --dlv-warning-color: var(--nuvitek-warning, #ff9500);    /* Warning orange */
+    --dlv-success-color: var(--nuvitek-success, #34c759);    /* Success green */
+
+    /* Sizing & Spacing (using nuvitek theme values) */
+    --dlv-spacing-xs: var(--nuvitek-spacing-xs, 8px);
+    --dlv-spacing-sm: var(--nuvitek-spacing-sm, 16px);
+    --dlv-spacing-md: var(--nuvitek-spacing-md, 24px);
+    --dlv-spacing-lg: var(--nuvitek-spacing-lg, 48px);
+
+    /* Border Radius */
+    --dlv-radius-sm: var(--nuvitek-radius-sm, 8px);     /* Inputs, buttons */
+    --dlv-radius-md: var(--nuvitek-radius-md, 12px);    /* Container, modal */
+    --dlv-radius-lg: var(--nuvitek-radius-lg, 20px);    /* Larger elements */
+
+    /* Shadows */
+    --dlv-shadow-sm: var(--nuvitek-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.05));
+    --dlv-shadow-md: var(--nuvitek-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.08));
+    --dlv-shadow-lg: var(--nuvitek-shadow-lg, 0 8px 28px rgba(0, 0, 0, 0.12));
+
+    /* Transitions */
+    --dlv-transition-fast: var(--nuvitek-transition-fast, 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94));
+    --dlv-transition-medium: var(--nuvitek-transition-medium, 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94));
+    --dlv-transition-bounce: var(--nuvitek-transition-bounce, 0.5s cubic-bezier(0.28, 0.84, 0.42, 1));
+
+    /* Typography */
+    --dlv-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --dlv-font-size-sm: var(--nuvitek-font-size-sm, 14px);
+    --dlv-font-size-md: var(--nuvitek-font-size-md, 16px);
+    --dlv-font-weight-normal: var(--nuvitek-font-weight-normal, 400);
+    --dlv-font-weight-medium: var(--nuvitek-font-weight-medium, 500);
+    --dlv-font-weight-semibold: var(--nuvitek-font-weight-semibold, 600);
+    --dlv-line-height: var(--nuvitek-line-height-normal, 1.5);
+}
+
+/* ============================================= */
+/* Base Container & Layout                     */
+/* ============================================= */
+.container {
+    font-family: var(--dlv-font-family);
+    color: var(--dlv-text-primary);
+    background-color: var(--dlv-background);
+    border-radius: var(--dlv-radius-md); /* Consistent rounded corners */
+    box-shadow: var(--dlv-shadow-md);   /* Subtle shadow */
+    padding: var(--dlv-spacing-md);     /* Generous padding */
+    max-width: 100%;
+    overflow: hidden; /* Contain child elements */
+}
+
+/* ============================================= */
+/* Breadcrumbs                                 */
+/* ============================================= */
+.breadcrumb-container {
+    margin-bottom: var(--dlv-spacing-sm); /* Space below breadcrumbs */
+    padding-bottom: var(--dlv-spacing-sm);
+    border-bottom: 1px solid var(--dlv-border-subtle);
+}
+
+/* Style the breadcrumb links */
+.breadcrumb-container lightning-breadcrumb a {
+    color: var(--dlv-text-secondary);
+    text-decoration: none;
+    font-size: var(--dlv-font-size-sm);
+    transition: color var(--dlv-transition-fast);
+}
+
+.breadcrumb-container lightning-breadcrumb a:hover {
+    color: var(--dlv-text-link-hover);
+    text-decoration: underline;
+}
+
+/* Style the current/last breadcrumb item (non-link) */
+.breadcrumb-container lightning-breadcrumb .slds-breadcrumb__item:last-child span {
+    color: var(--dlv-text-primary);
+    font-weight: var(--dlv-font-weight-medium);
+}
+
+/* ============================================= */
+/* Search Bar                                  */
+/* ============================================= */
+.search-container {
+    margin-bottom: var(--dlv-spacing-md); /* Space below search */
+    position: relative;
+}
+
+/* Style the lightning-input for search */
+.search-container lightning-input {
+    --sds-c-input-radius-border: var(--dlv-radius-sm);
+    --sds-c-input-color-border: var(--dlv-border-color);
+    --sds-c-input-color-border-focus: var(--dlv-primary-color);
+    --sds-c-input-shadow-focus: 0 0 0 1px var(--dlv-primary-color);
+    --sds-c-input-font-size: var(--dlv-font-size-md);
+    --sds-c-input-text-color: var(--dlv-text-primary);
+    --sds-c-input-text-color-placeholder: var(--dlv-text-secondary);
+    padding: 0; /* Reset default padding if any */
+}
+
+/* Consider adding a search icon inside the input if possible */
+
+/* ============================================= */
+/* Loading, Error, Empty States              */
+/* ============================================= */
+.loading-state, 
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--dlv-spacing-lg) var(--dlv-spacing-md);
+    text-align: center;
+    color: var(--dlv-text-secondary);
+    min-height: 150px; /* Ensure states have some height */
+}
+
+.loading-state p, 
+.empty-state p,
+.error-state p {
+    margin-top: var(--dlv-spacing-xs);
+    font-size: var(--dlv-font-size-md);
+    line-height: var(--dlv-line-height);
+}
+
+.empty-state h3 {
+    margin: var(--dlv-spacing-sm) 0 var(--dlv-spacing-xs);
+    font-weight: var(--dlv-font-weight-semibold);
+    color: var(--dlv-text-primary);
+    font-size: 1.1em;
+}
+
+.empty-state lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--dlv-text-tertiary);
+    width: 48px;
+    height: 48px;
+}
+
+/* Specific styling for empty states inside modal tabs */
+.empty-state.small {
+    padding: var(--dlv-spacing-md);
+    min-height: 80px;
+    background-color: var(--dlv-background-alt);
+    border-radius: var(--dlv-radius-sm);
+}
+.empty-state.small p {
+     font-size: var(--dlv-font-size-sm);
+}
+
+.error-state {
+    display: flex;
+    align-items: center;
+    padding: var(--dlv-spacing-sm);
+    background-color: rgba(var(--nuvitek-error-rgb, 255, 59, 48), 0.08); /* Use RGB variable */
+    border: 1px solid rgba(var(--nuvitek-error-rgb, 255, 59, 48), 0.3);
+    border-left: 3px solid var(--dlv-error-color);
+    border-radius: var(--dlv-radius-sm);
+    margin-bottom: var(--dlv-spacing-md);
+    color: var(--dlv-text-primary);
+}
+
+.error-state lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--dlv-error-color);
+    margin-right: var(--dlv-spacing-sm);
+    flex-shrink: 0;
+}
+
+/* ============================================= */
+/* Records List Table                          */
+/* ============================================= */
+.records-list {
+    overflow-x: auto; /* Allow horizontal scroll on small screens */
+    border-radius: var(--dlv-radius-md); /* Match container radius */
+    border: 1px solid var(--dlv-border-color);
+    margin-bottom: var(--dlv-spacing-md);
+    box-shadow: var(--dlv-shadow-sm);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto; /* Let browser decide layout */
+    font-size: var(--dlv-font-size-sm); /* Slightly smaller font for table data */
+}
+
+/* Table Header */
+th {
+    background-color: var(--dlv-background-alt);
+    padding: var(--dlv-spacing-sm);
+    text-align: left;
+    font-weight: var(--dlv-font-weight-semibold);
+    color: var(--dlv-text-primary);
+    position: sticky; /* Make header sticky */
+    top: 0;
+    z-index: 10;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color var(--dlv-transition-fast);
+    white-space: nowrap; /* Prevent header text wrapping */
+    border-bottom: 2px solid var(--dlv-border-color);
+}
+
+th:hover {
+    background-color: var(--dlv-border-subtle); /* Subtle hover */
+    color: var(--dlv-primary-color);
+}
+
+th .sort-icon {
+    margin-left: var(--dlv-spacing-xs);
+    vertical-align: middle;
+    opacity: 0.6;
+    transition: opacity var(--dlv-transition-fast), color var(--dlv-transition-fast);
+    --sds-c-icon-color-foreground-default: var(--dlv-text-secondary);
+}
+
+th:hover .sort-icon,
+th .sort-icon[icon-name*="arrow"] /* Show active sort icon clearly */
+{
+    opacity: 1;
+    --sds-c-icon-color-foreground-default: var(--dlv-primary-color);
+}
+
+/* Table Body */
+td {
+    padding: var(--dlv-spacing-sm);
+    border-top: 1px solid var(--dlv-border-subtle); /* Subtle row dividers */
+    white-space: nowrap; /* Keep cell content on one line initially */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Use ellipsis for overflow */
+    /* max-width: 300px; */ /* Optional: Set max width per column if needed */
+    vertical-align: middle;
+}
+
+tbody tr {
+    transition: background-color var(--dlv-transition-fast);
+    cursor: pointer;
+}
+
+tbody tr:hover {
+    background-color: var(--dlv-background-alt);
+}
+
+/* Use subtle color flash on click/active */
+tbody tr:active {
+    background-color: rgba(var(--dlv-primary-rgb), 0.1);
+    transition-duration: 0s; /* Instant feedback on click */
+}
+
+/* Remove top border for the first row */
+tbody tr:first-child td {
+    border-top: none;
+}
+
+/* Style for clickable rows (already handled by tr styling) */
+/* .clickable-row {} */
+
+/* ============================================= */
+/* Pagination                                  */
+/* ============================================= */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: var(--dlv-spacing-md);
+    padding-top: var(--dlv-spacing-sm);
+    border-top: 1px solid var(--dlv-border-subtle);
+}
+
+.pagination-button {
+    background: var(--dlv-background-alt);
+    border: 1px solid var(--dlv-border-color);
+    border-radius: var(--dlv-radius-sm);
+    width: 36px; /* Slightly larger click target */
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--dlv-transition-fast);
+    color: var(--dlv-text-secondary);
+}
+
+.pagination-button lightning-icon {
+    --sds-c-icon-color-foreground-default: currentColor;
+}
+
+.pagination-button:hover:not([disabled]) {
+    background-color: var(--dlv-border-subtle);
+    border-color: var(--dlv-border-color);
+    color: var(--dlv-primary-color);
+    transform: translateY(-1px); /* Subtle lift */
+    box-shadow: var(--dlv-shadow-sm);
+}
+
+.pagination-button:active:not([disabled]) {
+    background-color: rgba(var(--dlv-primary-rgb), 0.1);
+    transform: translateY(0px);
+    box-shadow: none;
+}
+
+.pagination-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--dlv-background-alt);
+    border-color: var(--dlv-border-subtle);
+}
+
+.pagination span {
+    margin: 0 var(--dlv-spacing-sm);
+    font-size: var(--dlv-font-size-sm);
+    color: var(--dlv-text-secondary);
+    user-select: none;
+}
+
+/* ============================================= */
+/* Modal (Using SLDS Modal Structure)          */
+/* ============================================= */
+
+/* Ensure modal backdrop provides blur like Nuvitek theme if desired */
+.record-modal {
+    /* The slds-modal classes handle positioning and backdrop */
+    --slds-c-modal-radius-border: var(--dlv-radius-md);
+    --slds-c-modal-shadow: var(--dlv-shadow-lg);
+    --slds-c-modal-color-background: var(--dlv-background);
+}
+
+/* Ensure backdrop is properly rendered */
+.slds-backdrop {
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent backdrop */
+    z-index: 9000; /* High z-index to appear above other elements */
+}
+
+.slds-modal__container {
+   /* Control modal width and padding */
+   max-width: 70rem; /* Adjust max-width as needed */
+   width: 90%; /* Default width */
+   max-height: 90vh; /* Prevent modal from being taller than viewport */
+   display: flex;
+   flex-direction: column;
+   border-radius: var(--dlv-radius-md);
+   overflow: hidden; /* Ensure content respects border radius */
+}
+
+/* Fix for modal height issues */
+.slds-modal__content {
+    padding: var(--dlv-spacing-md); /* Adjust as needed */
+    /* Add overflow handling for vertical and horizontal */
+    overflow-y: auto; 
+    overflow-x: auto; /* Added to handle horizontal overflow like tabs */
+    max-height: calc(80vh - 120px); /* Account for header height */
+    flex: 1 1 auto; /* Allow content to flex and fill available space */
+}
+
+/* Modal Header */
+.slds-modal__header {
+    background-color: var(--dlv-primary-color);
+    color: var(--dlv-text-inverse);
+    padding: var(--dlv-spacing-sm) var(--dlv-spacing-md);
+    border-bottom: none; /* Remove default SLDS border */
+    border-top-left-radius: var(--dlv-radius-md);
+    border-top-right-radius: var(--dlv-radius-md);
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    align-items: flex-start; /* Left-align content */
+}
+
+.slds-modal__title {
+    font-size: var(--nuvitek-font-size-lg, 20px);
+    font-weight: var(--dlv-font-weight-semibold);
+    line-height: var(--nuvitek-line-height-tight, 1.2);
+    color: inherit; /* Inherit from header */
+    margin: 0;
+    flex-grow: 1;
+}
+
+.slds-modal__header p {
+    font-size: var(--dlv-font-size-sm);
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 4px;
+}
+
+/* Modal Close Button - Stronger Styling */
+.slds-modal__close {
+    position: absolute !important; /* Force position */
+    top: 0.75rem !important;      /* Position from top */
+    right: 0.75rem !important;    /* Position from right */
+    z-index: 100 !important;      /* Ensure it's above other elements */
+    background-color: rgba(0, 0, 0, 0.2) !important; /* Slightly visible background */
+    border-radius: 50% !important; /* Make it circular */
+    width: 2rem !important;       /* Fixed width */
+    height: 2rem !important;      /* Fixed height */
+    display: flex !important;     /* Center the icon */
+    align-items: center !important;
+    justify-content: center !important;
+    color: white !important;      /* White icon */
+}
+
+.slds-modal__close lightning-icon {
+    --sds-c-icon-color-foreground-default: white !important; /* Ensure icon is white */
+}
+
+.slds-modal__close:hover,
+.slds-modal__close:focus {
+    background-color: rgba(0, 0, 0, 0.4) !important; /* Darker on hover */
+    color: white !important;
+}
+
+/* Modal Tabs (Lightning Tabset) */
+lightning-tabset {
+    --sds-c-tabs-item-color-border-active: var(--dlv-primary-color);
+    --sds-c-tabs-item-text-color-active: var(--dlv-primary-color);
+    --sds-c-tabs-item-text-color-hover: var(--dlv-primary-dark);
+    --sds-c-tabs-item-font-size: var(--dlv-font-size-md);
+    margin-bottom: var(--dlv-spacing-md); /* Space below tabs */
+    width: 100%;
+}
+
+lightning-tabset .slds-tabs_scoped__item {
+    padding-bottom: var(--dlv-spacing-xs);
+    font-weight: var(--dlv-font-weight-medium);
+}
+
+/* Tab Content Containers */
+.fields-container,
+.related-records-container {
+    padding-top: var(--dlv-spacing-md); /* Space above content within tab */
+}
+
+/* ============================================= */
+/* Modal - Details Tab Content                 */
+/* ============================================= */
+.field-item {
+    display: flex; /* Use flex for label/value alignment */
+    margin-bottom: var(--dlv-spacing-sm);
+    font-size: var(--dlv-font-size-md);
+    line-height: var(--dlv-line-height);
+    /* SLDS grid classes are used in HTML, removing need for custom flex here */
+    /* align-items: baseline; */ 
+}
+
+.field-label {
+    font-weight: var(--dlv-font-weight-semibold);
+    color: var(--dlv-text-primary);
+    /* flex-basis: 30%; */ /* Adjust based on typical label width */
+    padding-right: var(--dlv-spacing-sm);
+    flex-shrink: 0;
+    /* Using slds-col slds-size_1-of-3 in HTML */
+}
+
+.field-value {
+    color: var(--dlv-text-secondary);
+    word-break: break-word; /* Allow long values to wrap */
+    /* flex-grow: 1; */
+     /* Using slds-col slds-size_2-of-3 in HTML */
+}
+
+/* Style for lookup links within the details */
+.field-value a {
+    color: var(--dlv-text-link);
+    text-decoration: none;
+    transition: color var(--dlv-transition-fast);
+}
+
+.field-value a:hover {
+    color: var(--dlv-text-link-hover);
+    text-decoration: underline;
+}
+
+/* ============================================= */
+/* Modal - Related Records Tab Content         */
+/* ============================================= */
+.related-records-container {
+    min-height: 100px;
+    position: relative;
+    width: 100%;
+    overflow-x: auto;
+}
+
+.related-records-container .slds-list_dotted {
+    padding-left: 0; /* Remove default list padding */
+    list-style: none; /* Remove bullets */
+    width: 100%;
+    margin-bottom: var(--dlv-spacing-sm);
+}
+
+.related-records-container .slds-list_dotted li {
+    padding: var(--dlv-spacing-xs) 0;
+    border-bottom: 1px solid var(--dlv-border-subtle);
+    width: 100%;
+}
+
+.related-records-container a {
+    color: var(--dlv-text-link);
+    text-decoration: none;
+    font-size: var(--dlv-font-size-md);
+    font-weight: var(--dlv-font-weight-medium);
+    transition: color var(--dlv-transition-fast);
+}
+
+.related-records-container a:hover {
+    color: var(--dlv-text-link-hover);
+    text-decoration: underline;
+}
+
+/* ============================================= */
+/* Focus States (Accessibility)                */
+/* ============================================= */
+*:focus-visible {
+    outline: 2px solid var(--dlv-primary-color);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(var(--dlv-primary-rgb), 0.3);
+}
+
+/* SLDS components often handle their own focus, but this is a good fallback */
+
+/* ============================================= */
+/* Responsive Adjustments                      */
+/* ============================================= */
+@media (max-width: 768px) {
+    .container {
+        padding: var(--dlv-spacing-sm);
+    }
+
+    .slds-modal__container {
+        width: 95%; /* Slightly wider on smaller screens */
+        margin: var(--dlv-spacing-sm) auto;
+    }
+
+    .slds-modal__content {
+        max-height: 75vh; /* Allow slightly more height on mobile */
+    }
+
+    .field-item {
+        /* Stack label and value on small screens if needed */
+        /* flex-direction: column; 
+           align-items: flex-start; */
+           /* Using SLDS grid, it should handle wrapping */
+    }
+
+     .field-label {
+        /* Adjust basis if stacking */
+        /* flex-basis: 100%; */
+        /* padding-bottom: 4px; */
+     }
+}
+
+/* ============================================= */
+/* Specific styling for modal breadcrumbs */
+.modal-breadcrumb-container {
+    width: 100%;
+    margin-top: var(--dlv-spacing-sm);
+    padding-top: var(--dlv-spacing-sm);
+    border-top: 1px solid rgba(255, 255, 255, 0.3); /* More visible separator */
+    background-color: rgba(255, 255, 255, 0.1); /* Slight background */
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+/* Make the container more noticeable */
+.modal-breadcrumb-container::before {
+    content: "Navigation: ";
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: var(--dlv-font-weight-semibold);
+    margin-right: 8px;
+}
+
+.modal-breadcrumb-container lightning-breadcrumb a {
+    color: white;
+    text-decoration: none;
+    font-size: var(--dlv-font-size-sm);
+    font-weight: var(--dlv-font-weight-medium);
+    text-decoration: underline; /* Make links more obvious */
+}
+
+.modal-breadcrumb-container lightning-breadcrumb a:hover {
+    color: white;
+    text-decoration: underline;
+    background-color: rgba(255, 255, 255, 0.1); /* Highlight on hover */
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+.modal-breadcrumb-container lightning-breadcrumb .slds-breadcrumb__item:last-child span {
+    color: white;
+    font-weight: var(--dlv-font-weight-semibold);
+    background-color: rgba(0, 0, 0, 0.2); /* Highlight current item */
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* ============================================= */
+/* Ensure tab content has proper spacing from tab headers */
+lightning-tab {
+    padding-top: var(--dlv-spacing-sm);
+}
