@@ -22,4 +22,4 @@
             <property name="textColor" type="String" label="Text Color" description="Main text color" default="#1d1d1f" />
         </targetConfig>
     </targetConfigs>
-</LightningComponentBundle> 
+</LightningComponentBundle>
