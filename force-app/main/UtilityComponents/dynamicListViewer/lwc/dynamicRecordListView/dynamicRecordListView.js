@@ -23,115 +23,61 @@ const REQUIRED_FIELDS = ['Id', 'Name']; // Fields always fetched for core functi
 export default class DynamicRecordListView extends NavigationMixin(LightningElement) {
     // --- Public API Properties (Configurable via App Builder or Parent Component) ---
 
-    /** 
-     * Required. The API name of the SObject to display in the list view (e.g., 'Account', 'MyCustomObject__c'). 
-     */
+    /** Required. The API name of the SObject to display in the list view */
     @api objectApiName;
-    /** 
-     * Required. A comma-separated string of field API names to display as columns in the list view (e.g., 'Name,BillingCity,Owner.Name'). 
-     * Relationship fields (like Owner.Name) might require specific handling in Apex or post-processing if not directly supported by the basic query.
-     */
+    /** Required. A comma-separated string of field API names to display as columns */
     @api listViewFields;
-    /** 
-     * Optional. The field API name to use for the main title in the record detail modal. Defaults to 'Name'.
-     */
+    /** Optional. The field API name to use for the main title in the record detail modal */
     @api titleField = 'Name'; 
-    /** 
-     * Optional. The field API name to use for the subtitle in the record detail modal. 
-     */
+    /** Optional. The field API name to use for the subtitle in the record detail modal */
     @api subtitleField;
-    /** 
-     * Optional. The SLDS icon name to display in the modal header (e.g., 'standard:account', 'custom:custom14'). Defaults to 'standard:default'.
-     */
+    /** Optional. The SLDS icon name to display in the modal header */
     @api iconName = 'standard:default'; 
-    /** 
-     * Optional. The number of records to display per page in the list view. Defaults to 10.
-     */
+    /** Optional. The number of records to display per page in the list view */
     @api recordsPerPage = 10; 
-    /** 
-     * Optional. Primary theme color (e.g., CSS color value like '#22BDC1' or 'rgb(34, 189, 193)'). 
-     * Used for styling elements like buttons or highlights via CSS variables.
-     */
+    /** Optional. Primary theme color */
     @api primaryColor = '#22BDC1';
-    /** 
-     * Optional. Accent theme color. 
-     */
+    /** Optional. Accent theme color */
     @api accentColor = '#D5DF23';
-    /** 
-     * Optional. Main text color. 
-     */
+    /** Optional. Main text color */
     @api textColor = '#1d1d1f';
     
-    // --- Internal Component State (Tracked Properties) ---
-
-    // List View State
-    /** @type {Array<object>} Columns configuration for the list view table. */
+    // --- Internal Component State ---
     @track columns = [];
-    /** @type {Array<object>} Records currently displayed in the list view page. */
     @track records = [];
-    /** @type {number} Total number of records matching the current filter/search criteria. */
     @track totalRecords = 0;
-    /** @type {number} The current page number being displayed in the list view. */
     @track currentPage = 1;
-    /** @type {string} The API name of the field the list view is currently sorted by. */
-    @track sortBy = 'Name'; // Default sort field
-    /** @type {'asc' | 'desc'} The current sort direction ('asc' or 'desc'). */
+    @track sortBy = 'Name';
     @track sortDirection = 'asc';
-    /** @type {string} The current search term entered by the user. */
     @track searchTerm = '';
-    /** @type {boolean} Indicates if the main list view is currently loading data. */
     @track isLoading = false;
-    /** @type {string | null} Holds the error message to be displayed, if any. */
     @track error = null;
-
-    // Modal State
-    /** @type {boolean} Controls the visibility of the record detail modal. */
     @track showRecordDetail = false; 
-    /** @type {object | null} Holds the *complete* data (all accessible fields) of the record currently being viewed *in the modal*. This object updates during lookup/breadcrumb navigation. */
     @track selectedRecord = null; 
-    /** @type {boolean} Indicates if the modal is currently loading data (e.g., fetching full details or related records). */
     @track isLoadingRecordDetail = false; 
-    /** @type {Array<object>} List of related child objects (metadata like label, relationshipName) for the `selectedRecord`. Fetched via `getRelatedObjects`. */
     @track relatedObjects = [];
-    /** @type {string} The currently active tab value in the modal ('details' or a relationshipName). */
     @track selectedTab = 'details';
-    /** @type {Array<object>} The list of actual related records for the currently selected related list tab. Fetched via `getRelatedRecords`. */
     @track relatedRecords = [];
-    /** @type {boolean} Indicates if the related records list (within a modal tab) is currently loading. */
     @track loadingRelatedRecords = false;
-    @track chatterPosts = [];  // Store Chatter posts
+    @track chatterPosts = [];
     @track loadingChatterPosts = false;
-    @track relatedRecordsData = []; // Grouped related records data
+    @track relatedRecordsData = [];
     @track loadingRelatedObjects = false;
     @track relatedObjectsLoaded = false;
-    @track files = []; // Store files
+    @track files = [];
     @track loadingFiles = false;
-    
-    // Navigation history stack - stores previous records for back navigation
     @track navigationStack = [];
-    
-    // --- Additional properties for More menu and breadcrumbs ---
-    // @track relatedBreadcrumbs = []; // Breadcrumbs for related records
-    // @track showRelatedBreadcrumbs = false; // Control visibility of related breadcrumbs
-
-    // --- Private Internal Properties (Not tracked, used for internal logic) ---
-
-    /** Timeout ID used for debouncing the search input handler. */
-    searchTimeout;
-    /** Flag to ensure initial configuration and data load happens only once. */
-    initialLoadComplete = false;
-    /** Stores the full SObject data fetched by `getRecordAllFields` for the record currently shown in the modal. Separate from `selectedRecord` which might initially hold partial list view data. */
-    allFieldsForSelectedRecord = {}; 
-    /** Stores the detailed field list (with type info) fetched by `getRecordAllFields` */
-    detailedFieldsData = [];
-
-    // Filter panel state properties
     @track showFilterPanel = false;
     @track selectedField = null;
     @track selectedOperator = null;
     @track fieldValue = '';
-    @track appliedFilters = null; // Track the currently applied filters
-    
+    @track appliedFilters = null;
+
+    searchTimeout;
+    initialLoadComplete = false;
+    allFieldsForSelectedRecord = {};
+    detailedFieldsData = [];
+
     // --- Lifecycle Hooks ---
 
     /**
@@ -209,7 +155,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
 
             // 4. Set default sort field - don't assume 'Name' exists
             // First try the provided sortBy, then titleField, then first field in list
-            if (!this.sortBy || !requiredForFetch.has(this.sortBy)) {
+             if (!this.sortBy || !requiredForFetch.has(this.sortBy)) {
                 // Don't assume Name exists - use the titleField (which defaults to 'Name' but can be configured)
                 // or the first field in the list if titleField is not available
                 if (requiredForFetch.has(this.titleField)) {
@@ -252,7 +198,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             console.warn('loadRecords called without objectApiName.');
             return; 
         }
-        
+
         this.isLoading = true; // Show loading spinner for list view
         this.error = null; // Clear previous errors before new load attempt
 
@@ -443,22 +389,13 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             return;
         }
         
-        console.log(`Record clicked: ${recordId}`);
-        
-        // Reset properties
         this.selectedRecord = null;
         this.detailedFieldsData = [];
         this.relatedObjects = [];
         this.relatedRecords = [];
         this.selectedTab = 'details';
-        
-        // Clear any existing errors
         this.error = null;
-        
-        // Show the modal - fetchRecordDetails will populate it
         this.showRecordDetail = true;
-        
-        // Fetch the record details
         this.fetchRecordDetails(recordId, this.objectApiName);
     }
 
@@ -582,18 +519,24 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     }
 
     /**
+     * Check if the selected record is valid for operations
+     * @returns {boolean} True if valid record with required properties
+     */
+    isValidRecord() {
+        return this.selectedRecord && this.selectedRecord.attributes && this.selectedRecord.Id;
+    }
+
+    /**
      * Handle related records tab click - automatically load and display related records
      */
     handleRelatedRecordsClick() {
-        if (!this.selectedRecord || !this.selectedRecord.attributes) {
-            console.log('No valid record selected');
+        if (!this.isValidRecord()) {
             this.loadingRelatedRecords = false;
             return;
         }
         
         // If we've already loaded related objects for this record, don't reload
         if (this.relatedObjectsLoaded) {
-            console.log('Related objects already loaded for this record');
             return;
         }
         
@@ -601,19 +544,15 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         this.loadingRelatedRecords = true;
         this.relatedRecordsData = [];
         
-        console.log('Loading related objects for', this.selectedRecord.Id);
-        
         // First load available related objects
         loadRelatedObjects({ objectApiName: this.selectedRecord.attributes.type })
             .then(result => {
                 this.relatedObjects = result || [];
-                console.log('Found', this.relatedObjects.length, 'related object types');
                 
                 // If we have related objects, load records for each
                 if (this.relatedObjects.length > 0) {
                     return this.loadAllRelatedRecords();
                 } else {
-                    console.log('No related objects found');
                     return Promise.resolve();
                 }
             })
@@ -623,7 +562,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             })
             .finally(() => {
                 this.loadingRelatedObjects = false;
-                this.loadingRelatedRecords = false;
+            this.loadingRelatedRecords = false;
                 this.relatedObjectsLoaded = true;
             });
     }
@@ -656,15 +595,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * Load records for a specific relationship
      */
     loadRecordsForRelationship(relatedObject) {
-        const params = {
-            objectApiName: this.selectedRecord.attributes.type,
-            parentId: this.selectedRecord.Id,
-            relationshipName: relatedObject.relationshipName
-        };
-        
-        console.log('Loading records for relationship:', relatedObject.relationshipName);
-        
-        return getRelatedRecords(params)
+        return this.fetchRelatedRecords(relatedObject.relationshipName)
             .then(records => {
                 if (records && records.length > 0) {
                     console.log('Found', records.length, 'records for', relatedObject.objectApiName);
@@ -689,10 +620,6 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 }
                 
                 // Return null if no records found
-                return null;
-            })
-            .catch(error => {
-                console.log('Error fetching records for', relatedObject.relationshipName, ':', error.message);
                 return null;
             });
     }
@@ -726,8 +653,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * Handle Files tab click - automatically load file attachments
      */
     handleFilesAttachmentsClick() {
-        if (!this.selectedRecord || !this.selectedRecord.attributes) {
-            console.log('No valid record selected');
+        if (!this.isValidRecord()) {
             this.loadingFiles = false;
             return;
         }
@@ -735,26 +661,16 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         this.loadingFiles = true;
         this.files = [];
         
-        console.log('Loading files for', this.selectedRecord.Id);
-        
-        const params = {
-            objectApiName: this.selectedRecord.attributes.type,
-            parentId: this.selectedRecord.Id,
-            relationshipName: 'ContentDocumentLinks'
-        };
-        
-        getRelatedRecords(params)
+        this.fetchRelatedRecords('ContentDocumentLinks')
             .then(result => {
                 if (result && result.length > 0) {
                     this.files = this.formatFiles(result);
-                    console.log('Found', this.files.length, 'files');
                 } else {
-                    console.log('No files found');
                     this.files = [];
                 }
             })
             .catch(error => {
-                console.log('Error fetching files:', error.message);
+                this.handleError(error, 'Error loading files');
                 this.files = [];
             })
             .finally(() => {
@@ -851,16 +767,13 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * Handle Chatter/Activity tab click
      */
     handleChatterPostsClick() {
-        if (!this.selectedRecord || !this.selectedRecord.attributes) {
-            console.log('No valid record selected');
+        if (!this.isValidRecord()) {
             this.loadingChatterPosts = false;
             return;
         }
         
         this.loadingChatterPosts = true;
         this.chatterPosts = [];
-        
-        console.log('Attempting to fetch Chatter posts for', this.selectedRecord.Id);
         
         // Try to load FeedItems first (this is the standard relationship name)
         this.tryLoadFeedItems()
@@ -877,44 +790,38 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     }
     
     /**
-     * Try to load FeedItems using the standard relationship
-     * @returns {Promise<boolean>} True if items were found
+     * Helper method to fetch related records for a given relationship
+     * @param {String} relationshipName - Name of the relationship to query
+     * @returns {Promise} Promise that resolves with related records or empty array
      */
-    tryLoadFeedItems() {
-        if (!this.selectedRecord || !this.selectedRecord.attributes) {
-            return Promise.resolve(false);
+    fetchRelatedRecords(relationshipName) {
+        if (!this.isValidRecord()) {
+            return Promise.resolve([]);
         }
         
         const params = {
             objectApiName: this.selectedRecord.attributes.type,
             parentId: this.selectedRecord.Id,
-            relationshipName: 'FeedItems'
+            relationshipName: relationshipName
         };
         
-        console.log('Trying FeedItems relationship for', this.selectedRecord.attributes.type);
-        
-        return getRelatedRecords(params)
+        return getRelatedRecords(params).catch(() => []);
+    }
+
+    /**
+     * Try to load FeedItems using the standard relationship
+     * @returns {Promise<boolean>} True if items were found
+     */
+    tryLoadFeedItems() {
+        return this.fetchRelatedRecords('FeedItems')
             .then(result => {
                 if (result && result.length > 0) {
-                    console.log('Found', result.length, 'FeedItems');
                     this.chatterPosts = this.formatChatterPosts(result);
                     return true;
                 } 
                 
-                console.log('No FeedItems found, trying ContentDocumentLinks');
-                
                 // If no results, try ContentDocumentLinks as additional content
-                return this.tryLoadContentDocuments()
-                    .then(docsFound => {
-                        if (docsFound) {
-                            return true;
-                        }
-                        return false;
-                    });
-            })
-            .catch(error => {
-                console.log('Error fetching FeedItems:', error.message);
-                return false;
+                return this.tryLoadContentDocuments();
             });
     }
     
@@ -923,21 +830,9 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * @returns {Promise<boolean>} True if items were found
      */
     tryLoadContentDocuments() {
-        if (!this.selectedRecord || !this.selectedRecord.attributes) {
-            return Promise.resolve(false);
-        }
-        
-        const params = {
-            objectApiName: this.selectedRecord.attributes.type,
-            parentId: this.selectedRecord.Id,
-            relationshipName: 'ContentDocumentLinks'
-        };
-        
-        return getRelatedRecords(params)
+        return this.fetchRelatedRecords('ContentDocumentLinks')
             .then(result => {
                 if (result && result.length > 0) {
-                    console.log('Found', result.length, 'ContentDocumentLinks');
-                    
                     // Add files as a special type of activity
                     const fileItems = result.map(link => {
                         return {
@@ -955,10 +850,6 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                     return true;
                 }
                 return false;
-            })
-            .catch(error => {
-                console.log('Error fetching ContentDocumentLinks:', error.message);
-                return false;
             });
     }
     
@@ -966,35 +857,14 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * Load activity history as fallback
      */
     loadActivityHistory() {
-        if (!this.selectedRecord || !this.selectedRecord.attributes) {
-            return Promise.resolve(false);
-        }
-        
-        const params = {
-            objectApiName: this.selectedRecord.attributes.type,
-            parentId: this.selectedRecord.Id,
-            relationshipName: 'ActivityHistories'
-        };
-        
-        console.log('Trying ActivityHistories relationship');
-        
-        return getRelatedRecords(params)
+        return this.fetchRelatedRecords('ActivityHistories')
             .then(result => {
                 if (result && result.length > 0) {
-                    console.log('Found', result.length, 'ActivityHistories');
                     this.chatterPosts = [...this.chatterPosts, ...this.formatActivityRecords(result)];
                     return true;
                 }
                 
-                console.log('No ActivityHistories found, trying Tasks');
-                
                 // If no ActivityHistories, try Tasks
-                return this.tryLoadTasks();
-            })
-            .catch(error => {
-                console.log('Error fetching ActivityHistories:', error.message);
-                
-                // If ActivityHistories fails, try Tasks
                 return this.tryLoadTasks();
             });
     }
@@ -1004,31 +874,13 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * @returns {Promise<boolean>} True if items were found
      */
     tryLoadTasks() {
-        if (!this.selectedRecord || !this.selectedRecord.attributes) {
-            return Promise.resolve(false);
-        }
-        
-        const params = {
-            objectApiName: this.selectedRecord.attributes.type,
-            parentId: this.selectedRecord.Id,
-            relationshipName: 'Tasks'
-        };
-        
-        console.log('Trying Tasks relationship');
-        
-        return getRelatedRecords(params)
+        return this.fetchRelatedRecords('Tasks')
             .then(result => {
                 if (result && result.length > 0) {
-                    console.log('Found', result.length, 'Tasks');
                     this.chatterPosts = [...this.chatterPosts, ...this.formatActivityRecords(result)];
                     return true;
                 }
                 
-                console.log('No Tasks found, trying Events');
-                return this.tryLoadEvents();
-            })
-            .catch(error => {
-                console.log('Error fetching Tasks:', error.message);
                 return this.tryLoadEvents();
             });
     }
@@ -1038,31 +890,13 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * @returns {Promise<boolean>} True if items were found
      */
     tryLoadEvents() {
-        if (!this.selectedRecord || !this.selectedRecord.attributes) {
-            return Promise.resolve(false);
-        }
-        
-        const params = {
-            objectApiName: this.selectedRecord.attributes.type,
-            parentId: this.selectedRecord.Id,
-            relationshipName: 'Events'
-        };
-        
-        console.log('Trying Events relationship');
-        
-        return getRelatedRecords(params)
+        return this.fetchRelatedRecords('Events')
             .then(result => {
                 if (result && result.length > 0) {
-                    console.log('Found', result.length, 'Events');
                     this.chatterPosts = [...this.chatterPosts, ...this.formatActivityRecords(result)];
                     return true;
                 }
                 
-                console.log('No activity found for', this.selectedRecord.Id);
-                return false;
-            })
-            .catch(error => {
-                console.log('Error fetching Events:', error.message);
                 return false;
             });
     }
@@ -1371,7 +1205,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             
             formattedRecord.cellsData = cellsData;
             return formattedRecord;
-        });
+         });
     }
 
 
@@ -1702,13 +1536,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             'Contract': 'standard:contract',
             'Order': 'standard:orders',
             'Product2': 'standard:product',
-            'Pricebook2': 'standard:pricebook',
-            'Asset': 'standard:asset',
-            'Dashboard': 'standard:dashboard',
-            'Report': 'standard:report',
-            'Solution': 'standard:solution',
-            'Knowledge__kav': 'standard:knowledge'
-            // Add more as needed
+            'Asset': 'standard:asset'
         };
         
         // If it's a standard object with a predefined icon, use it
@@ -1814,17 +1642,9 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
 
     // Human-readable sort field label for the header
     get sortByLabel() {
-        // Use the formatted label from the current sort field
         return this.formatFieldLabel(this.sortBy);
     }
 
-    // Filter panel state properties
-    @track showFilterPanel = false;
-    @track selectedField = null;
-    @track selectedOperator = null;
-    @track fieldValue = '';
-    @track appliedFilters = null; // Track the currently applied filters
-    
     // For template binding - filter panel classes
     get filterPanelClass() {
         return this.showFilterPanel 

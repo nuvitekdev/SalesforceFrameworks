@@ -661,7 +661,6 @@ td {
     background: rgba(255, 255, 255, 0.2);
     border: none;
     border-radius: var(--radius-sm);
-    padding: var(--spacing-xs) var(--spacing-sm);
     font-size: var(--font-size-sm);
     display: flex;
     align-items: center;

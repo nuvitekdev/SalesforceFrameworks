@@ -80,8 +80,6 @@ public with sharing class DynamicRecordListViewController {
             recordQuery += orderByClause;
             recordQuery += ' LIMIT ' + limitValue + ' OFFSET ' + offsetValue;
             
-            System.debug('Record Query: ' + recordQuery);
-            
             // Execute record query
             List<SObject> records = Database.query(recordQuery);
             
@@ -90,8 +88,6 @@ public with sharing class DynamicRecordListViewController {
             if (String.isNotBlank(whereClause)) {
                 countQuery += ' WHERE ' + whereClause;
             }
-            
-            System.debug('Count Query: ' + countQuery);
             
             // Execute count query
             Integer totalRecords = Database.countQuery(countQuery);
@@ -267,11 +263,9 @@ public with sharing class DynamicRecordListViewController {
 
         } catch (AuraHandledException e) {
             // Re-throw exceptions already formatted for the LWC.
-            System.debug(LoggingLevel.ERROR, 'AuraHandledException in getRelatedObjects for ' + objectApiName + ': ' + e.getMessage() + '\n' + e.getStackTraceString());
             throw e;
         } catch (Exception e) {
             // Catch any other unexpected exceptions and wrap them for the LWC.
-            System.debug(LoggingLevel.ERROR, 'Exception in getRelatedObjects for ' + objectApiName + ': ' + e.getMessage() + '\n' + e.getStackTraceString());
             throw new AuraHandledException('Error getting related objects: ' + e.getMessage());
         }
     }
@@ -371,8 +365,6 @@ public with sharing class DynamicRecordListViewController {
             query += ' WHERE ' + relationshipField + ' = :recordId';
             query += ' LIMIT ' + MAX_RELATED_RECORDS;
             
-            System.debug('Related records query: ' + query);
-            
             return Database.query(query);
         } catch (AuraHandledException e) {
             throw e;
@@ -452,7 +444,6 @@ public with sharing class DynamicRecordListViewController {
             
             // Handle specific ID prefixes directly to ensure accuracy
             String prefix = idValue.getSObjectType().getDescribe().getKeyPrefix();
-            System.debug('ID Prefix for ' + recordId + ' is: ' + prefix);
             
             // Special handling for User vs Group - both can be owners
             if (recordId.startsWith('005')) {
@@ -464,7 +455,6 @@ public with sharing class DynamicRecordListViewController {
             // Fall back to standard method for other object types
             return idValue.getSObjectType().getDescribe().getName();
         } catch (Exception e) {
-            System.debug(LoggingLevel.ERROR, 'Error determining object type from ID ' + recordId + ': ' + e.getMessage());
             return '';
         }
     }
@@ -678,7 +668,6 @@ public with sharing class DynamicRecordListViewController {
             throw e; // Re-throw known handled exceptions
         } catch (Exception e) {
             // Catch unexpected errors (QueryException, NullPointerException, etc.)
-            System.debug(LoggingLevel.ERROR, 'Error in getRecordAllFields for ' + objectApiName + '/' + recordId + ': ' + e.getMessage() + '\n' + e.getStackTraceString());
             throw new AuraHandledException('Failed to retrieve record details: ' + e.getMessage());
         }
     }
@@ -715,7 +704,6 @@ public with sharing class DynamicRecordListViewController {
                 }
             } catch (Exception e) {
                 // If there's an error parsing filters, just ignore and continue
-                System.debug('Error parsing filters: ' + e.getMessage());
             }
         }
         
@@ -774,7 +762,6 @@ public with sharing class DynamicRecordListViewController {
         
         String fieldName = String.escapeSingleQuotes(filter.field);
         String condition = '';
-        
         String operatorLower = filter.operator.toLowerCase();
         
         switch on operatorLower {
@@ -870,8 +857,6 @@ public with sharing class DynamicRecordListViewController {
                 }
             }
         } catch (Exception e) {
-            System.debug('Error validating fields: ' + e.getMessage());
-            validFields.clear();
         }
         
         return validFields;
@@ -898,7 +883,6 @@ public with sharing class DynamicRecordListViewController {
             return fieldMap.containsKey(fieldName.toLowerCase()) && 
                 fieldMap.get(fieldName.toLowerCase()).getDescribe().isAccessible();
         } catch (Exception e) {
-            System.debug('Error validating field name: ' + e.getMessage());
             return false;
         }
     }
@@ -937,7 +921,6 @@ public with sharing class DynamicRecordListViewController {
                 fieldType == Schema.DisplayType.EMAIL ||
                 fieldType == Schema.DisplayType.URL;
         } catch (Exception e) {
-            System.debug('Error checking if field is text field: ' + e.getMessage());
             return false;
         }
     }
