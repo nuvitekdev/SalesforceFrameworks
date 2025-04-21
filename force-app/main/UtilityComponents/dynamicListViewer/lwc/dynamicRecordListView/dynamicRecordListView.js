@@ -118,6 +118,13 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     /** Stores the detailed field list (with type info) fetched by `getRecordAllFields` */
     detailedFieldsData = [];
 
+    // Filter panel state properties
+    @track showFilterPanel = false;
+    @track selectedField = null;
+    @track selectedOperator = null;
+    @track fieldValue = '';
+    @track appliedFilters = null; // Track the currently applied filters
+    
     // --- Lifecycle Hooks ---
 
     /**
@@ -238,7 +245,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             console.warn('loadRecords called without objectApiName.');
             return; 
         }
-
+        
         this.isLoading = true; // Show loading spinner for list view
         this.error = null; // Clear previous errors before new load attempt
 
@@ -260,7 +267,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             fields: Array.from(fieldSet), // Pass the unique list of fields
             sortField: this.sortBy,
             sortDirection: this.sortDirection,
-            filters: '[]', // Filters not implemented in this version yet, pass empty JSON array
+            filters: this.appliedFilters || '[]', // Use the applied filters or empty array if null
             recordsPerPage: this.recordsPerPage,
             pageNumber: this.currentPage,
             searchTerm: this.searchTerm
@@ -270,6 +277,10 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             this.records = result.records || [];
             this.totalRecords = result.totalRecords || 0;
             this.isLoading = false; // Hide loading spinner
+            this.initialLoadComplete = true;
+            
+            // Update CSS custom properties
+            this.updateCustomProperties();
         })
         .catch(error => {
             // Handle errors during record fetching
@@ -1386,6 +1397,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     @track selectedField = null;
     @track selectedOperator = null;
     @track fieldValue = '';
+    @track appliedFilters = null; // Track the currently applied filters
     
     // For template binding - filter panel classes
     get filterPanelClass() {
@@ -1471,29 +1483,41 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     applyFilter() {
         if (!this.canApplyFilter) return;
         
-        const filters = [{
+        const filter = {
             field: this.selectedField,
             operator: this.selectedOperator,
             value: this.fieldValue
-        }];
+        };
         
-        // In a real implementation, you'd pass these filters to the backend
-        // For now, we'll just log them
-        console.log('Applying filters:', JSON.stringify(filters));
+        // Format the filter as JSON string for the backend
+        this.appliedFilters = JSON.stringify([filter]);
+        
+        console.log('Applying filter:', this.appliedFilters);
         
         // Hide the filter panel
         this.showFilterPanel = false;
         
-        // TODO: Implement actual filtering with the Apex controller
-        // This would require modifying loadRecords() to pass filters
+        // Reset to first page and reload records with the new filter
+        this.currentPage = 1;
+        this.loadRecords();
     }
     
     clearFilters() {
+        // Clear filter UI state
         this.selectedField = null;
         this.selectedOperator = null;
         this.fieldValue = '';
         
-        // TODO: Clear filters in the backend and reload records
+        // Clear applied filters
+        this.appliedFilters = null;
+        
         console.log('Clearing filters');
+        
+        // Reload records without filters
+        this.currentPage = 1;
+        this.loadRecords();
+        
+        // Close the filter panel
+        this.showFilterPanel = false;
     }
 }

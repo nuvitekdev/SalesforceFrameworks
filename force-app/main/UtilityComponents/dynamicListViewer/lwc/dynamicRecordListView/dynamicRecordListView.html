@@ -62,11 +62,13 @@
                         type="text"
                         label="Value"
                         placeholder="Enter value..."
+                        value={fieldValue}
+                        onchange={handleFieldValueChange}
                         disabled={isValueDisabled}>
                     </lightning-input>
                 </div>
                 <div class="filter-actions">
-                    <button class="apply-filter-button" disabled={isApplyDisabled}>Apply Filter</button>
+                    <button class="apply-filter-button" onclick={applyFilter} disabled={isApplyDisabled}>Apply Filter</button>
                     <button class="clear-filter-button" onclick={clearFilters}>Clear</button>
                 </div>
             </div>

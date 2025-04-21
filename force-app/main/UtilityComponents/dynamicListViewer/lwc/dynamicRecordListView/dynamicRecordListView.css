@@ -208,9 +208,11 @@
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     margin-bottom: var(--spacing-md);
-    overflow: hidden;
+    overflow: visible; /* Change from hidden to visible to allow dropdowns to extend outside */
     box-shadow: var(--shadow-sm);
     transition: max-height var(--transition-medium), opacity var(--transition-medium);
+    position: relative;
+    z-index: 10; /* Ensure filter panel is above other elements */
 }
 
 .filter-panel.collapsed {
@@ -260,6 +262,7 @@
 
 .filter-content {
     padding: var(--spacing-md);
+    position: relative;
 }
 
 .filter-row {
@@ -267,12 +270,40 @@
     grid-template-columns: 1fr 1fr 1fr;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-md);
+    position: relative;
+    z-index: 5; /* Add z-index to ensure row elements are stacked correctly */
+}
+
+/* Fix for dropdown menus in the filter panel */
+.filter-row lightning-combobox {
+    position: relative;
+    z-index: 20; /* Higher z-index for comboboxes */
+}
+
+/* Override SLDS dropdown styles to ensure visibility */
+.filter-panel .slds-dropdown {
+    position: absolute !important;
+    z-index: 9002 !important; /* Very high z-index to ensure visibility */
+    max-height: 300px !important;
+    overflow-y: auto !important;
+}
+
+/* Ensure dropdown triggers are clickable */
+.filter-row .slds-combobox__form-element {
+    position: relative;
+    z-index: 10;
+}
+
+.filter-row lightning-combobox:nth-child(2) {
+    z-index: 21; /* Higher z-index for the operator dropdown */
 }
 
 .filter-actions {
     display: flex;
     justify-content: flex-end;
     gap: var(--spacing-sm);
+    position: relative;
+    z-index: 1; /* Lower z-index for buttons */
 }
 
 .apply-filter-button, .clear-filter-button {
@@ -625,7 +656,7 @@ td {
 /* Back Button in Record Detail Modal - Positioned below object type badge */
 .back-button {
     position: absolute;
-    top: calc(var(--spacing-md) + 32px); /* Position below object type badge */
+    top: calc(var(--spacing-md) + 40px); /* Position below object type badge */
     left: var(--spacing-lg);
     color: var(--text-inverse);
     background: rgba(255, 255, 255, 0.2);
