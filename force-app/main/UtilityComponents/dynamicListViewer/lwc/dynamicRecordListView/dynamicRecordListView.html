@@ -1,16 +1,75 @@
 <!-- Dynamic Record List View Component -->
 <template>
     <div class="container">
-        <!-- Search bar -->
-        <div class="search-container">
-            <lightning-input 
-                type="search" 
-                label="Search Records" 
-                placeholder="Search..." 
-                value={searchTerm} 
-                onchange={handleSearch}
-                variant="label-hidden">
-            </lightning-input>
+        <!-- Enhanced header section with logo and metadata -->
+        <div class="list-header">
+            <div class="list-header-left">
+                <lightning-icon icon-name={objectIcon} size="medium" class="list-icon"></lightning-icon>
+                <div class="list-header-title">
+                    <h1>{objectLabel}</h1>
+                    <div class="list-meta">
+                        <span class="record-count">{totalRecords} items</span>
+                        <span class="separator">•</span>
+                        <span class="sort-info">Sorted by {sortByLabel}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="list-header-actions">
+                <div class="search-container">
+                    <lightning-input 
+                        type="search" 
+                        label="Search Records" 
+                        placeholder="Search records..." 
+                        value={searchTerm} 
+                        onchange={handleSearch}
+                        variant="label-hidden">
+                    </lightning-input>
+                </div>
+                <button class="filter-button" onclick={toggleFilterPanel} title="Filter">
+                    <lightning-icon icon-name="utility:filterList" size="small"></lightning-icon>
+                    <span>Filter</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter panel (collapsed by default) -->
+        <div class={filterPanelClass}>
+            <div class="filter-header">
+                <h2>Filters</h2>
+                <button class="close-filter-button" onclick={toggleFilterPanel}>
+                    <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                </button>
+            </div>
+            <div class="filter-content">
+                <!-- Will add actual filter controls in a future iteration -->
+                <div class="filter-row">
+                    <lightning-combobox
+                        name="fieldFilter"
+                        label="Field"
+                        placeholder="Select Field"
+                        options={fieldOptions}
+                        onchange={handleFieldSelection}>
+                    </lightning-combobox>
+                    <lightning-combobox
+                        name="operatorFilter"
+                        label="Operator"
+                        placeholder="Select Operator"
+                        options={operatorOptions}
+                        onchange={handleOperatorSelection}
+                        disabled={isOperatorDisabled}>
+                    </lightning-combobox>
+                    <lightning-input 
+                        type="text"
+                        label="Value"
+                        placeholder="Enter value..."
+                        disabled={isValueDisabled}>
+                    </lightning-input>
+                </div>
+                <div class="filter-actions">
+                    <button class="apply-filter-button" disabled={isApplyDisabled}>Apply Filter</button>
+                    <button class="clear-filter-button" onclick={clearFilters}>Clear</button>
+                </div>
+            </div>
         </div>
 
         <!-- Error state -->
@@ -24,7 +83,7 @@
         <!-- Loading state -->
         <template if:true={isLoading}>
             <div class="loading-state">
-                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                <lightning-spinner alternative-text="Loading" size="medium" variant="brand"></lightning-spinner>
                 <p>Loading records...</p>
             </div>
         </template>
@@ -34,7 +93,7 @@
             <div class="empty-state" if:false={isLoading}>
                 <lightning-icon icon-name="utility:info" size="medium"></lightning-icon>
                 <h3>No records found</h3>
-                <p>Adjust your search to find records.</p>
+                <p>Try adjusting your search or filters to find what you're looking for.</p>
             </div>
         </template>
 
@@ -47,12 +106,14 @@
                             <!-- Dynamic headers based on fields -->
                             <template for:each={sortIconData} for:item="iconData">
                                 <th key={iconData.fieldName} onclick={handleSort} data-field={iconData.fieldName}>
-                                    {iconData.label}
-                                    <lightning-icon 
-                                        icon-name={iconData.iconName}
-                                        size="xx-small" 
-                                        class="sort-icon">
-                                    </lightning-icon>
+                                    <div class="column-header">
+                                        <span class="column-label">{iconData.label}</span>
+                                        <lightning-icon 
+                                            icon-name={iconData.iconName}
+                                            size="xx-small" 
+                                            class="sort-icon">
+                                        </lightning-icon>
+                                    </div>
                                 </th>
                             </template>
                         </tr>
@@ -60,11 +121,11 @@
                     <tbody>
                         <!-- Loop through records -->
                         <template for:each={recordsWithData} for:item="recordData">
-                            <tr key={recordData.id} onclick={handleRecordClick} data-id={recordData.id} class="clickable-row">
+                            <tr key={recordData.id} class="data-row">
                                 <!-- Dynamic cells based on fields -->
                                 <template for:each={recordData.cellsData} for:item="cell">
-                                    <td key={cell.key}>
-                                        {cell.value}
+                                    <td key={cell.key} onclick={handleRecordClick} data-id={recordData.id} class="cell-value">
+                                        <span>{cell.value}</span>
                                     </td>
                                 </template>
                             </tr>
@@ -79,7 +140,8 @@
                     class="pagination-button" 
                     onclick={handlePageChange} 
                     data-page={previousPage} 
-                    disabled={isPreviousButtonDisabled}>
+                    disabled={isPreviousButtonDisabled}
+                    aria-label="Previous page">
                     <lightning-icon icon-name="utility:chevronleft" size="x-small"></lightning-icon>
                 </button>
                 <span>Page {currentPage} of {totalPages}</span>
@@ -87,7 +149,8 @@
                     class="pagination-button" 
                     onclick={handlePageChange} 
                     data-page={nextPage} 
-                    disabled={isNextButtonDisabled}>
+                    disabled={isNextButtonDisabled}
+                    aria-label="Next page">
                     <lightning-icon icon-name="utility:chevronright" size="x-small"></lightning-icon>
                 </button>
             </div>
@@ -103,26 +166,27 @@
                 <div class="slds-modal__container">
                     <!-- Header -->
                     <header class="slds-modal__header">
-                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeRecordDetail}>
+                        <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeRecordDetail} aria-label="Close modal">
                             <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse" size="small"></lightning-icon>
                             <span class="slds-assistive-text">Close</span>
                         </button>
                         
-                        <!-- Back button - only visible when there's a record to go back to -->
-                        <template if:true={hasBackRecord}>
-                            <button class="slds-button slds-button_neutral back-button slds-var-m-bottom_small" 
-                                    title="Go back to previous record" 
-                                    onclick={handleBackNavigation}>
-                                <lightning-icon icon-name="utility:chevronleft" size="x-small" class="slds-button__icon slds-button__icon_left"></lightning-icon>
-                                Back to previous record
-                            </button>
-                        </template>
-                        
                         <!-- Object type indicator -->
                         <template if:true={selectedRecord}>
-                            <div class="object-type-badge slds-var-m-bottom_small">
+                            <div class="object-type-badge">
                                 <span>{selectedRecord.attributes.type}</span>
                             </div>
+                            
+                            <!-- Back button moved below object type to prevent overlap -->
+                            <template if:true={hasBackRecord}>
+                                <button class="slds-button slds-button_neutral back-button" 
+                                        title="Go back to previous record" 
+                                        onclick={handleBackNavigation}
+                                        aria-label="Back to previous record">
+                                    <lightning-icon icon-name="utility:chevronleft" size="x-small" class="slds-button__icon slds-button__icon_left"></lightning-icon>
+                                    Back
+                                </button>
+                            </template>
                         </template>
                         
                         <h2 id="modal-heading" class="slds-modal__title slds-hyphenate">{recordDetailTitle}</h2>
@@ -133,11 +197,11 @@
                     <div class="slds-modal__content slds-p-around_medium" id="modal-content-id">
                         <lightning-tabset variant="scoped" active-tab-value={selectedTab} onselect={handleTabChange} class="full-width-tabs">
                             <!-- Details Tab -->
-                            <lightning-tab label="Details" value="details">
-                                <div class="fields-container slds-var-p-top_medium" role="tabpanel">
+                            <lightning-tab label="Details" value="details" icon-name="utility:info">
+                                <div class="fields-container" role="tabpanel">
                                     <template if:true={isLoadingRecordDetail}>
                                         <div class="loading-state">
-                                            <lightning-spinner alternative-text="Loading field data" size="small"></lightning-spinner>
+                                            <lightning-spinner alternative-text="Loading field data" size="small" variant="brand"></lightning-spinner>
                                             <p>Loading record details...</p>
                                         </div>
                                     </template>
@@ -186,12 +250,12 @@
                             </lightning-tab>
 
                             <!-- Related Records Tab -->
-                            <lightning-tab label="Related Records" value="relatedRecords">
-                                <div class="tab-container slds-var-p-top_medium" role="tabpanel">
+                            <lightning-tab label="Related Records" value="relatedRecords" icon-name="utility:connected_apps">
+                                <div class="tab-container" role="tabpanel">
                                     <div class="related-records-container">
                                         <template if:true={loadingRelatedRecords}>
                                             <div class="loading-state">
-                                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                                <lightning-spinner alternative-text="Loading" size="small" variant="brand"></lightning-spinner>
                                                 <p>Loading related records...</p>
                                             </div>
                                         </template>
@@ -205,13 +269,13 @@
                             </lightning-tab>
 
                             <!-- Files and Attachments Tab -->
-                            <lightning-tab label="Files and Attachments" value="filesAttachments">
-                                <div class="tab-container slds-var-p-top_medium" role="tabpanel">
+                            <lightning-tab label="Files" value="filesAttachments" icon-name="utility:file">
+                                <div class="tab-container" role="tabpanel">
                                     <div class="files-container">
                                         <template if:true={loadingRelatedRecords}>
                                             <div class="loading-state">
-                                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
-                                                <p>Loading files and attachments...</p>
+                                                <lightning-spinner alternative-text="Loading" size="small" variant="brand"></lightning-spinner>
+                                                <p>Loading files...</p>
                                             </div>
                                         </template>
                                         <template if:false={loadingRelatedRecords}>
@@ -223,57 +287,19 @@
                                 </div>
                             </lightning-tab>
 
-                            <!-- Chatter Posts Tab -->
-                            <lightning-tab label="Chatter Posts" value="chatterPosts">
-                                <div class="tab-container slds-var-p-top_medium" role="tabpanel">
-                                    <div class="chatter-container">
+                            <!-- Activity History Tab -->
+                            <lightning-tab label="Activity" value="activityHistory" icon-name="utility:activity">
+                                <div class="tab-container" role="tabpanel">
+                                    <div class="activity-container">
                                         <template if:true={loadingRelatedRecords}>
                                             <div class="loading-state">
-                                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
-                                                <p>Loading chatter posts...</p>
+                                                <lightning-spinner alternative-text="Loading" size="small" variant="brand"></lightning-spinner>
+                                                <p>Loading activity history...</p>
                                             </div>
                                         </template>
                                         <template if:false={loadingRelatedRecords}>
                                             <div class="empty-state small">
-                                                <p>No chatter posts found.</p>
-                                            </div>
-                                        </template>
-                                    </div>
-                                </div>
-                            </lightning-tab>
-
-                            <!-- Approvals Tab -->
-                            <lightning-tab label="Approvals" value="approvals">
-                                <div class="tab-container slds-var-p-top_medium" role="tabpanel">
-                                    <div class="approvals-container">
-                                        <template if:true={loadingRelatedRecords}>
-                                            <div class="loading-state">
-                                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
-                                                <p>Loading approvals...</p>
-                                            </div>
-                                        </template>
-                                        <template if:false={loadingRelatedRecords}>
-                                            <div class="empty-state small">
-                                                <p>No approvals found.</p>
-                                            </div>
-                                        </template>
-                                    </div>
-                                </div>
-                            </lightning-tab>
-
-                            <!-- Notes Tab -->
-                            <lightning-tab label="Notes" value="notes">
-                                <div class="tab-container slds-var-p-top_medium" role="tabpanel">
-                                    <div class="notes-container">
-                                        <template if:true={loadingRelatedRecords}>
-                                            <div class="loading-state">
-                                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
-                                                <p>Loading notes...</p>
-                                            </div>
-                                        </template>
-                                        <template if:false={loadingRelatedRecords}>
-                                            <div class="empty-state small">
-                                                <p>No notes found.</p>
+                                                <p>No activity history found.</p>
                                             </div>
                                         </template>
                                     </div>

@@ -1320,4 +1320,180 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     get showPagination() {
         return this.totalRecords > this.recordsPerPage;
     }
+
+    // Object icon for list header - automatically determined from objectApiName
+    get objectIcon() {
+        if (!this.objectApiName) return 'standard:default';
+        
+        // Handle standard objects with predefined icons
+        const standardObjects = {
+            'Account': 'standard:account',
+            'Contact': 'standard:contact',
+            'Lead': 'standard:lead',
+            'Opportunity': 'standard:opportunity',
+            'Case': 'standard:case',
+            'Task': 'standard:task',
+            'User': 'standard:user',
+            'Campaign': 'standard:campaign',
+            'Contract': 'standard:contract',
+            'Order': 'standard:orders',
+            'Product2': 'standard:product',
+            'Asset': 'standard:asset'
+        };
+        
+        // If it's a known standard object, use its icon
+        if (standardObjects[this.objectApiName]) {
+            return standardObjects[this.objectApiName];
+        } 
+        
+        // For custom objects, use the custom icon
+        if (this.objectApiName.endsWith('__c')) {
+            return 'standard:custom';
+        }
+        
+        // Default icon
+        return 'standard:default';
+    }
+
+    // Human-readable object label for the header
+    get objectLabel() {
+        if (!this.objectApiName) return 'Records';
+        
+        // Simple logic to format the API name for display
+        // In a real implementation, you might fetch labels via Schema
+        let label = this.objectApiName;
+        
+        // Remove __c for custom objects
+        if (label.endsWith('__c')) {
+            label = label.substring(0, label.length - 3);
+        }
+        
+        // Split by capital letters and join with spaces
+        label = label.replace(/([A-Z])/g, ' $1').trim();
+        
+        // Title case the label
+        return label.charAt(0).toUpperCase() + label.slice(1);
+    }
+
+    // Human-readable sort field label for the header
+    get sortByLabel() {
+        // Use the formatted label from the current sort field
+        return this.formatFieldLabel(this.sortBy);
+    }
+
+    // Filter panel state properties
+    @track showFilterPanel = false;
+    @track selectedField = null;
+    @track selectedOperator = null;
+    @track fieldValue = '';
+    
+    // For template binding - filter panel classes
+    get filterPanelClass() {
+        return this.showFilterPanel 
+            ? 'filter-panel expanded' 
+            : 'filter-panel collapsed';
+    }
+    
+    // Available fields for filtering
+    get fieldOptions() {
+        // Create options from columns
+        return this.columns.map(column => {
+            return {
+                label: column.label,
+                value: column.fieldName
+            };
+        });
+    }
+    
+    // Available operators for filtering
+    get operatorOptions() {
+        return [
+            { label: 'Equals', value: 'equals' },
+            { label: 'Not Equals', value: 'notEquals' },
+            { label: 'Contains', value: 'contains' },
+            { label: 'Starts With', value: 'startsWith' },
+            { label: 'Ends With', value: 'endsWith' },
+            { label: 'Less Than', value: 'lessThan' },
+            { label: 'Greater Than', value: 'greaterThan' },
+            { label: 'Is Null', value: 'isNull' },
+            { label: 'Is Not Null', value: 'isNotNull' }
+        ];
+    }
+    
+    // Whether the apply filter button should be enabled
+    get canApplyFilter() {
+        // Enable if we have field and operator selected
+        // For isNull/isNotNull, we don't need a value
+        if (!this.selectedField || !this.selectedOperator) return false;
+        
+        if (this.selectedOperator === 'isNull' || this.selectedOperator === 'isNotNull') {
+            return true;
+        }
+        
+        return this.fieldValue && this.fieldValue.trim() !== '';
+    }
+    
+    // For template binding - disabled states
+    get isOperatorDisabled() {
+        return !this.selectedField;
+    }
+    
+    get isValueDisabled() {
+        return !this.selectedOperator;
+    }
+    
+    get isApplyDisabled() {
+        return !this.canApplyFilter;
+    }
+
+    // Toggle filter panel visibility
+    toggleFilterPanel() {
+        this.showFilterPanel = !this.showFilterPanel;
+    }
+    
+    handleFieldSelection(event) {
+        this.selectedField = event.detail.value;
+        // Reset dependent values
+        this.selectedOperator = null;
+        this.fieldValue = '';
+    }
+    
+    handleOperatorSelection(event) {
+        this.selectedOperator = event.detail.value;
+        // Reset field value
+        this.fieldValue = '';
+    }
+    
+    handleFieldValueChange(event) {
+        this.fieldValue = event.detail.value;
+    }
+    
+    applyFilter() {
+        if (!this.canApplyFilter) return;
+        
+        const filters = [{
+            field: this.selectedField,
+            operator: this.selectedOperator,
+            value: this.fieldValue
+        }];
+        
+        // In a real implementation, you'd pass these filters to the backend
+        // For now, we'll just log them
+        console.log('Applying filters:', JSON.stringify(filters));
+        
+        // Hide the filter panel
+        this.showFilterPanel = false;
+        
+        // TODO: Implement actual filtering with the Apex controller
+        // This would require modifying loadRecords() to pass filters
+    }
+    
+    clearFilters() {
+        this.selectedField = null;
+        this.selectedOperator = null;
+        this.fieldValue = '';
+        
+        // TODO: Clear filters in the backend and reload records
+        console.log('Clearing filters');
+    }
 }

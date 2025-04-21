@@ -1,109 +1,336 @@
 /* dynamicRecordListView.css */
 
 /* ============================================= */
-/* Component Theme Variables (from nuvitekTheme) */
+/* Component Theme Variables                     */
 /* ============================================= */
 :host {
     display: block; /* Ensure the component takes up block space */
 
-    /* Core Colors */
-    --dlv-primary-color: var(--nuvitek-primary, #22BDC1);         /* Primary brand color */
-    --dlv-primary-rgb: var(--nuvitek-primary-rgb, 34, 189, 193);  /* RGB for opacity */
-    --dlv-primary-dark: var(--nuvitek-primary-dark, #1a9599);   /* Darker primary for hover/active */
-    --dlv-accent-color: var(--nuvitek-accent, #D5DF23);         /* Accent color */
-    --dlv-accent-rgb: var(--nuvitek-accent-rgb, 213, 223, 35);   /* Accent RGB for opacity */
+    /* Primary Colors */
+    --primary-color: #22BDC1;         /* Primary brand color */
+    --primary-color-rgb: 34, 189, 193; /* RGB for opacity */
+    --primary-dark: #1a9599;          /* Darker primary for hover/active */
+    --primary-light: #63d1d4;         /* Lighter primary for subtle elements */
+    --accent-color: #D5DF23;          /* Accent color */
+    --accent-color-rgb: 213, 223, 35; /* Accent RGB for opacity */
+    --accent-dark: #b8c11e;           /* Darker accent for hover/active */
+    --accent-light: #e1e95c;          /* Lighter accent for subtle elements */
     
     /* Text Colors */
-    --dlv-text-primary: var(--nuvitek-text, #1d1d1f);            /* Main text */
-    --dlv-text-secondary: var(--nuvitek-text-secondary, #6e6e73);  /* Secondary text (placeholders, subtitles) */
-    --dlv-text-tertiary: var(--nuvitek-text-tertiary, #a1a1a6);   /* Tertiary text (disabled, hints) */
-    --dlv-text-link: var(--dlv-primary-color);                   /* Link color */
-    --dlv-text-link-hover: var(--dlv-primary-dark);              /* Link hover color */
-    --dlv-text-inverse: var(--nuvitek-background, #ffffff);      /* Text on dark/primary backgrounds */
+    --text-color: #1d1d1f;            /* Main text */
+    --text-secondary: #6e6e73;        /* Secondary text */
+    --text-tertiary: #a1a1a6;         /* Tertiary text */
+    --text-link: var(--primary-color); /* Link color */
+    --text-link-hover: var(--primary-dark); /* Link hover color */
+    --text-inverse: #ffffff;          /* Text on dark/primary backgrounds */
 
     /* Background Colors */
-    --dlv-background: var(--nuvitek-background, #ffffff);        /* Main component background */
-    --dlv-background-alt: var(--nuvitek-background-alt, #f5f5f7);  /* Alternate background (table header, hover) */
-    --dlv-background-elevated: var(--nuvitek-background-elevated, #fbfbfd); /* Slightly elevated surfaces */
+    --background: #ffffff;            /* Main component background */
+    --background-alt: #f5f5f7;        /* Alternate background */
+    --background-elevated: #fbfbfd;   /* Elevated surfaces */
 
     /* Border Colors */
-    --dlv-border-color: var(--nuvitek-border, rgba(0, 0, 0, 0.1));       /* Standard border */
-    --dlv-border-subtle: var(--nuvitek-border-subtle, rgba(0, 0, 0, 0.05)); /* Subtle border/divider */
+    --border-color: rgba(0, 0, 0, 0.1);       /* Standard border */
+    --border-subtle: rgba(0, 0, 0, 0.05);     /* Subtle border/divider */
 
     /* Status Colors */
-    --dlv-error-color: var(--nuvitek-error, #ff3b30);        /* Error red */
-    --dlv-warning-color: var(--nuvitek-warning, #ff9500);    /* Warning orange */
-    --dlv-success-color: var(--nuvitek-success, #34c759);    /* Success green */
+    --error-color: #ff3b30;           /* Error red */
+    --warning-color: #ff9500;         /* Warning orange */
+    --success-color: #34c759;         /* Success green */
 
-    /* Sizing & Spacing (using nuvitek theme values) */
-    --dlv-spacing-xs: var(--nuvitek-spacing-xs, 8px);
-    --dlv-spacing-sm: var(--nuvitek-spacing-sm, 16px);
-    --dlv-spacing-md: var(--nuvitek-spacing-md, 24px);
-    --dlv-spacing-lg: var(--nuvitek-spacing-lg, 48px);
+    /* Spacing */
+    --spacing-xs: 8px;
+    --spacing-sm: 16px;
+    --spacing-md: 24px;
+    --spacing-lg: 48px;
+    --spacing-xl: 64px;
 
     /* Border Radius */
-    --dlv-radius-sm: var(--nuvitek-radius-sm, 8px);     /* Inputs, buttons */
-    --dlv-radius-md: var(--nuvitek-radius-md, 12px);    /* Container, modal */
-    --dlv-radius-lg: var(--nuvitek-radius-lg, 20px);    /* Larger elements */
+    --radius-sm: 8px;                 /* Inputs, buttons */
+    --radius-md: 12px;                /* Container, modal */
+    --radius-lg: 20px;                /* Larger elements */
+    --radius-xl: 28px;                /* Extra large elements */
 
     /* Shadows */
-    --dlv-shadow-sm: var(--nuvitek-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.05));
-    --dlv-shadow-md: var(--nuvitek-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.08));
-    --dlv-shadow-lg: var(--nuvitek-shadow-lg, 0 8px 28px rgba(0, 0, 0, 0.12));
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.15);
 
     /* Transitions */
-    --dlv-transition-fast: var(--nuvitek-transition-fast, 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94));
-    --dlv-transition-medium: var(--nuvitek-transition-medium, 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94));
-    --dlv-transition-bounce: var(--nuvitek-transition-bounce, 0.5s cubic-bezier(0.28, 0.84, 0.42, 1));
+    --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
 
     /* Typography */
-    --dlv-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    --dlv-font-size-sm: var(--nuvitek-font-size-sm, 14px);
-    --dlv-font-size-md: var(--nuvitek-font-size-md, 16px);
-    --dlv-font-weight-normal: var(--nuvitek-font-weight-normal, 400);
-    --dlv-font-weight-medium: var(--nuvitek-font-weight-medium, 500);
-    --dlv-font-weight-semibold: var(--nuvitek-font-weight-semibold, 600);
-    --dlv-line-height: var(--nuvitek-line-height-normal, 1.5);
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 20px;
+    --font-size-xl: 24px;
+    --font-size-xxl: 32px;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.5;
+    --line-height-loose: 1.8;
 }
 
 /* ============================================= */
-/* Base Container & Layout                     */
+/* Base Container & Layout                       */
 /* ============================================= */
 .container {
-    font-family: var(--dlv-font-family);
-    color: var(--dlv-text-primary);
-    background-color: var(--dlv-background);
-    border-radius: var(--dlv-radius-md); /* Consistent rounded corners */
-    box-shadow: var(--dlv-shadow-md);   /* Subtle shadow */
-    padding: var(--dlv-spacing-md);     /* Generous padding */
-    max-width: 100%;
-    overflow: hidden; /* Contain child elements */
+    font-family: var(--font-family);
+    color: var(--text-color);
+    background-color: var(--background);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-md);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: var(--line-height-normal);
+    transition: all var(--transition-medium);
+}
+
+/* Dark theme variant */
+.container[data-theme="dark"] {
+    --text-color: #f5f5f7;
+    --text-secondary: #a1a1a6;
+    --text-tertiary: #6e6e73;
+    --background: #1d1d1f;
+    --background-alt: #2d2d2f;
+    --background-elevated: #3d3d3f;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-subtle: rgba(255, 255, 255, 0.05);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.5);
 }
 
 /* ============================================= */
-/* Search Bar                                  */
+/* Enhanced List Header                          */
+/* ============================================= */
+.list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.list-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.list-icon {
+    --sds-c-icon-color-background: var(--primary-color);
+    --sds-c-icon-color-foreground-default: var(--text-inverse);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+}
+
+.list-header-title {
+    display: flex;
+    flex-direction: column;
+}
+
+.list-header-title h1 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    margin: 0;
+    color: var(--text-color);
+}
+
+.list-meta {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.separator {
+    margin: 0 var(--spacing-xs);
+    color: var(--text-tertiary);
+}
+
+.list-header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.filter-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: var(--background-alt);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-color);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.filter-button:hover {
+    background-color: var(--background);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.filter-button lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--text-secondary);
+}
+
+.filter-button:hover lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--primary-color);
+}
+
+/* ============================================= */
+/* Filter Panel                                  */
+/* ============================================= */
+.filter-panel {
+    background-color: var(--background-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: max-height var(--transition-medium), opacity var(--transition-medium);
+}
+
+.filter-panel.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    pointer-events: none;
+}
+
+.filter-panel.expanded {
+    max-height: 500px;
+    opacity: 1;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--background-alt);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.filter-header h2 {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    margin: 0;
+}
+
+.close-filter-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 50%;
+    transition: background-color var(--transition-fast);
+}
+
+.close-filter-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.filter-content {
+    padding: var(--spacing-md);
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+}
+
+.apply-filter-button, .clear-filter-button {
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.apply-filter-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+.apply-filter-button:hover:not(:disabled) {
+    background-color: var(--primary-dark);
+    box-shadow: var(--shadow-sm);
+}
+
+.apply-filter-button:disabled {
+    background-color: var(--text-tertiary);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.clear-filter-button {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.clear-filter-button:hover {
+    border-color: var(--text-secondary);
+    background-color: var(--background-alt);
+}
+
+/* ============================================= */
+/* Search Bar                                    */
 /* ============================================= */
 .search-container {
-    margin-bottom: var(--dlv-spacing-md); /* Space below search */
-    position: relative;
+    width: 280px;
 }
 
 /* Style the lightning-input for search */
 .search-container lightning-input {
-    --sds-c-input-radius-border: var(--dlv-radius-sm);
-    --sds-c-input-color-border: var(--dlv-border-color);
-    --sds-c-input-color-border-focus: var(--dlv-primary-color);
-    --sds-c-input-shadow-focus: 0 0 0 1px var(--dlv-primary-color);
-    --sds-c-input-font-size: var(--dlv-font-size-md);
-    --sds-c-input-text-color: var(--dlv-text-primary);
-    --sds-c-input-text-color-placeholder: var(--dlv-text-secondary);
-    padding: 0; /* Reset default padding if any */
+    --sds-c-input-radius-border: var(--radius-sm);
+    --sds-c-input-color-border: var(--border-color);
+    --sds-c-input-color-background: var(--background);
+    --sds-c-input-shadow-focus: 0 0 0 2px rgba(var(--primary-color-rgb), 0.25);
+    --sds-c-input-text-color: var(--text-color);
+    transition: all var(--transition-fast);
 }
 
-/* Consider adding a search icon inside the input if possible */
-
 /* ============================================= */
-/* Loading, Error, Empty States              */
+/* Loading, Error, Empty States                  */
 /* ============================================= */
 .loading-state, 
 .empty-state {
@@ -111,427 +338,428 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--dlv-spacing-lg) var(--dlv-spacing-md);
+    padding: var(--spacing-xl);
     text-align: center;
-    color: var(--dlv-text-secondary);
-    min-height: 150px; /* Ensure states have some height */
+    color: var(--text-secondary);
+    gap: var(--spacing-md);
 }
 
 .loading-state p, 
 .empty-state p,
 .error-state p {
-    margin-top: var(--dlv-spacing-xs);
-    font-size: var(--dlv-font-size-md);
-    line-height: var(--dlv-line-height);
+    margin-top: var(--spacing-sm);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-normal);
 }
 
 .empty-state h3 {
-    margin: var(--dlv-spacing-sm) 0 var(--dlv-spacing-xs);
-    font-weight: var(--dlv-font-weight-semibold);
-    color: var(--dlv-text-primary);
-    font-size: 1.1em;
+    margin: var(--spacing-sm) 0 var(--spacing-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-color);
+    font-size: var(--font-size-lg);
 }
 
 .empty-state lightning-icon {
-    --sds-c-icon-color-foreground-default: var(--dlv-text-tertiary);
+    --sds-c-icon-color-foreground-default: var(--text-tertiary);
     width: 48px;
     height: 48px;
 }
 
 /* Specific styling for empty states inside modal tabs */
 .empty-state.small {
-    padding: var(--dlv-spacing-md);
-    min-height: 80px;
-    background-color: var(--dlv-background-alt);
-    border-radius: var(--dlv-radius-sm);
+    padding: var(--spacing-md);
+    min-height: 100px;
+    background-color: var(--background-alt);
+    border-radius: var(--radius-md);
 }
+
 .empty-state.small p {
-     font-size: var(--dlv-font-size-sm);
+    font-size: var(--font-size-sm);
 }
 
 .error-state {
     display: flex;
     align-items: center;
-    padding: var(--dlv-spacing-sm);
-    background-color: rgba(var(--nuvitek-error-rgb, 255, 59, 48), 0.08); /* Use RGB variable */
-    border: 1px solid rgba(var(--nuvitek-error-rgb, 255, 59, 48), 0.3);
-    border-left: 3px solid var(--dlv-error-color);
-    border-radius: var(--dlv-radius-sm);
-    margin-bottom: var(--dlv-spacing-md);
-    color: var(--dlv-text-primary);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+    border-left: 3px solid var(--error-color);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+    color: var(--text-color);
+    animation: fadeIn var(--transition-medium) forwards;
 }
 
 .error-state lightning-icon {
-    --sds-c-icon-color-foreground-default: var(--dlv-error-color);
-    margin-right: var(--dlv-spacing-sm);
+    --sds-c-icon-color-foreground-default: var(--error-color);
+    margin-right: var(--spacing-sm);
     flex-shrink: 0;
 }
 
 /* ============================================= */
-/* Records List Table                          */
+/* Records List Table                            */
 /* ============================================= */
 .records-list {
-    overflow-x: auto; /* Allow horizontal scroll on small screens */
-    border-radius: var(--dlv-radius-md); /* Match container radius */
-    border: 1px solid var(--dlv-border-color);
-    margin-bottom: var(--dlv-spacing-md);
-    box-shadow: var(--dlv-shadow-sm);
+    overflow-x: auto;
+    flex: 1;
+    margin-bottom: var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background-color: var(--background);
+    transition: box-shadow var(--transition-fast);
+}
+
+.records-list:hover {
+    box-shadow: var(--shadow-md);
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: auto; /* Let browser decide layout */
-    font-size: var(--dlv-font-size-sm); /* Slightly smaller font for table data */
+    border-spacing: 0;
+    font-size: var(--font-size-sm);
 }
 
-/* Table Header */
-th {
-    background-color: var(--dlv-background-alt);
-    padding: var(--dlv-spacing-sm);
-    text-align: left;
-    font-weight: var(--dlv-font-weight-semibold);
-    color: var(--dlv-text-primary);
-    position: sticky; /* Make header sticky */
+thead {
+    background-color: var(--background-alt);
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-semibold);
+    position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 1;
+}
+
+th {
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: left;
+    white-space: nowrap;
+    position: relative;
+    transition: background-color var(--transition-fast);
+    font-size: var(--font-size-sm);
+    letter-spacing: 0.5px;
     cursor: pointer;
-    user-select: none;
-    transition: background-color var(--dlv-transition-fast);
-    white-space: nowrap; /* Prevent header text wrapping */
-    border-bottom: 2px solid var(--dlv-border-color);
+}
+
+.column-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.column-label {
+    text-transform: uppercase;
+    font-weight: var(--font-weight-semibold);
 }
 
 th:hover {
-    background-color: var(--dlv-border-subtle); /* Subtle hover */
-    color: var(--dlv-primary-color);
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+    color: var(--primary-color);
 }
 
-th .sort-icon {
-    margin-left: var(--dlv-spacing-xs);
+.sort-icon {
+    margin-left: var(--spacing-xs);
     vertical-align: middle;
-    opacity: 0.6;
-    transition: opacity var(--dlv-transition-fast), color var(--dlv-transition-fast);
-    --sds-c-icon-color-foreground-default: var(--dlv-text-secondary);
+    --sds-c-icon-color-foreground-default: var(--text-tertiary);
+    transition: transform var(--transition-fast);
 }
 
-th:hover .sort-icon,
-th .sort-icon[icon-name*="arrow"] /* Show active sort icon clearly */
-{
-    opacity: 1;
-    --sds-c-icon-color-foreground-default: var(--dlv-primary-color);
+th:hover .sort-icon {
+    --sds-c-icon-color-foreground-default: var(--primary-color);
 }
 
-/* Table Body */
+tr {
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background-color var(--transition-fast);
+}
+
+tr:last-child {
+    border-bottom: none;
+}
+
 td {
-    padding: var(--dlv-spacing-sm);
-    border-top: 1px solid var(--dlv-border-subtle); /* Subtle row dividers */
-    white-space: nowrap; /* Keep cell content on one line initially */
+    padding: var(--spacing-sm) var(--spacing-md);
+    white-space: nowrap;
+    text-overflow: ellipsis;
     overflow: hidden;
-    text-overflow: ellipsis; /* Use ellipsis for overflow */
-    /* max-width: 300px; */ /* Optional: Set max width per column if needed */
-    vertical-align: middle;
+    max-width: 250px;
+    font-size: var(--font-size-sm);
 }
 
-tbody tr {
-    transition: background-color var(--dlv-transition-fast);
+.data-row {
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.data-row:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+}
+
+.cell-value {
     cursor: pointer;
 }
 
-tbody tr:hover {
-    background-color: var(--dlv-background-alt);
+.cell-value:hover {
+    color: var(--primary-color);
 }
-
-/* Use subtle color flash on click/active */
-tbody tr:active {
-    background-color: rgba(var(--dlv-primary-rgb), 0.1);
-    transition-duration: 0s; /* Instant feedback on click */
-}
-
-/* Remove top border for the first row */
-tbody tr:first-child td {
-    border-top: none;
-}
-
-/* Style for clickable rows (already handled by tr styling) */
-/* .clickable-row {} */
 
 /* ============================================= */
-/* Pagination                                  */
+/* Pagination                                    */
 /* ============================================= */
 .pagination {
     display: flex;
-    align-items: center;
     justify-content: center;
-    margin-top: var(--dlv-spacing-md);
-    padding-top: var(--dlv-spacing-sm);
-    border-top: 1px solid var(--dlv-border-subtle);
+    align-items: center;
+    margin-top: var(--spacing-md);
+    gap: var(--spacing-md);
 }
 
 .pagination-button {
-    background: var(--dlv-background-alt);
-    border: 1px solid var(--dlv-border-color);
-    border-radius: var(--dlv-radius-sm);
-    width: 36px; /* Slightly larger click target */
-    height: 36px;
+    background-color: var(--background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    color: var(--text-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: all var(--dlv-transition-fast);
-    color: var(--dlv-text-secondary);
 }
 
-.pagination-button lightning-icon {
-    --sds-c-icon-color-foreground-default: currentColor;
+.pagination-button:hover:not(:disabled) {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
-.pagination-button:hover:not([disabled]) {
-    background-color: var(--dlv-border-subtle);
-    border-color: var(--dlv-border-color);
-    color: var(--dlv-primary-color);
-    transform: translateY(-1px); /* Subtle lift */
-    box-shadow: var(--dlv-shadow-sm);
-}
-
-.pagination-button:active:not([disabled]) {
-    background-color: rgba(var(--dlv-primary-rgb), 0.1);
-    transform: translateY(0px);
-    box-shadow: none;
+.pagination-button:hover:not(:disabled) lightning-icon {
+    --sds-c-icon-color-foreground-default: white;
 }
 
 .pagination-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    background-color: var(--dlv-background-alt);
-    border-color: var(--dlv-border-subtle);
 }
 
 .pagination span {
-    margin: 0 var(--dlv-spacing-sm);
-    font-size: var(--dlv-font-size-sm);
-    color: var(--dlv-text-secondary);
-    user-select: none;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-medium);
 }
 
 /* ============================================= */
-/* Modal (Using SLDS Modal Structure)          */
+/* Modal (Using SLDS Modal Structure)            */
 /* ============================================= */
-
-/* Ensure modal backdrop provides blur like Nuvitek theme if desired */
 .record-modal {
-    /* The slds-modal classes handle positioning and backdrop */
-    --slds-c-modal-radius-border: var(--dlv-radius-md);
-    --slds-c-modal-shadow: var(--dlv-shadow-lg);
-    --slds-c-modal-color-background: var(--dlv-background);
+    --slds-c-modal-color-background: var(--background);
+    --slds-c-modal-shadow: var(--shadow-lg);
+    --slds-c-modal-radius-border: var(--radius-lg);
+    animation: modalIn var(--transition-bounce) forwards;
 }
 
-/* Ensure backdrop is properly rendered */
 .slds-backdrop {
-    background: rgba(0, 0, 0, 0.5); /* Semi-transparent backdrop */
-    z-index: 9000; /* High z-index to appear above other elements */
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 9000;
 }
 
 .slds-modal__container {
-   /* Control modal width and padding */
-   max-width: 70rem; /* Adjust max-width as needed */
-   width: 90%; /* Default width */
-   max-height: 90vh; /* Prevent modal from being taller than viewport */
-   display: flex;
-   flex-direction: column;
-   border-radius: var(--dlv-radius-md);
-   overflow: hidden; /* Ensure content respects border radius */
+    max-width: 70rem;
+    width: 90%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    animation: modalIn var(--transition-bounce) forwards;
 }
 
-/* Fix for modal height issues */
 .slds-modal__content {
-    padding: var(--dlv-spacing-md); /* Adjust as needed */
-    /* Add overflow handling for vertical and horizontal */
-    overflow-y: auto; 
-    overflow-x: auto; /* Added to handle horizontal overflow like tabs */
-    max-height: calc(80vh - 120px); /* Account for header height */
-    flex: 1 1 auto; /* Allow content to flex and fill available space */
+    padding: var(--spacing-lg);
+    overflow-y: auto;
+    overflow-x: auto;
+    max-height: calc(80vh - 120px);
+    flex: 1 1 auto;
 }
 
 /* Modal Header */
 .slds-modal__header {
-    background-color: var(--dlv-primary-color);
-    color: var(--dlv-text-inverse);
-    padding: var(--dlv-spacing-sm) var(--dlv-spacing-md);
-    border-bottom: none; /* Remove default SLDS border */
-    border-top-left-radius: var(--dlv-radius-md);
-    border-top-right-radius: var(--dlv-radius-md);
-    display: flex;
-    flex-direction: column; /* Stack elements vertically */
-    align-items: flex-start; /* Left-align content */
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
+    padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
+    position: relative;
 }
 
 .slds-modal__title {
-    font-size: var(--nuvitek-font-size-lg, 20px);
-    font-weight: var(--dlv-font-weight-semibold);
-    line-height: var(--nuvitek-line-height-tight, 1.2);
-    color: inherit; /* Inherit from header */
-    margin: 0;
-    flex-grow: 1;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-inverse);
+    margin-top: var(--spacing-lg);
 }
 
 .slds-modal__header p {
-    font-size: var(--dlv-font-size-sm);
-    color: rgba(255, 255, 255, 0.8);
-    margin-top: 4px;
-}
-
-/* Back Button in Record Detail Modal */
-.back-button {
-    background-color: rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    border-radius: var(--dlv-radius-sm) !important;
-    padding: 0.5rem 1rem !important;
-    margin-bottom: 0.75rem !important;
-    display: flex !important;
-    align-items: center !important;
-    transition: background-color var(--dlv-transition-fast), transform var(--dlv-transition-fast) !important;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1) !important;
-}
-
-.back-button:hover, .back-button:focus {
-    background-color: rgba(255, 255, 255, 0.3) !important;
-    color: white !important;
-    transform: translateY(-1px) !important;
-    box-shadow: var(--dlv-shadow-sm) !important;
-}
-
-.back-button:active {
-    transform: translateY(0) !important;
-    background-color: rgba(255, 255, 255, 0.15) !important;
-    box-shadow: none !important;
-}
-
-.back-button lightning-icon {
-    --sds-c-icon-color-foreground-default: white !important;
-    margin-right: 0.5rem !important;
+    font-size: var(--font-size-md);
+    color: rgba(255, 255, 255, 0.9);
+    margin-top: var(--spacing-xs);
+    font-weight: var(--font-weight-normal);
 }
 
 /* Object Type Badge */
 .object-type-badge {
-    display: inline-block !important;
-    background-color: rgba(0, 0, 0, 0.2) !important;
-    border-radius: var(--dlv-radius-sm) !important;
-    padding: 0.35rem 0.85rem !important;
-    margin-bottom: 0.75rem !important;
-    font-size: var(--dlv-font-size-sm) !important;
-    font-weight: var(--dlv-font-weight-semibold) !important;
-    letter-spacing: 0.25px !important;
-    color: rgba(255, 255, 255, 0.95) !important;
-    align-self: flex-start !important;
-    text-transform: capitalize !important;
+    position: absolute;
+    top: var(--spacing-md);
+    left: var(--spacing-lg);
+    background-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-inverse);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
 }
 
-.object-type-badge span {
-    text-transform: capitalize !important;
+/* Back Button in Record Detail Modal - Positioned below object type badge */
+.back-button {
+    position: absolute;
+    top: calc(var(--spacing-md) + 32px); /* Position below object type badge */
+    left: var(--spacing-lg);
+    color: var(--text-inverse);
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+    transition: all var(--transition-fast);
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(-2px);
+}
+
+.back-button lightning-icon {
+    margin-right: var(--spacing-xs);
 }
 
 /* Modal Close Button - Stronger Styling */
 .slds-modal__close {
-    position: absolute !important; /* Force position */
-    top: 0.75rem !important;      /* Position from top */
-    right: 0.75rem !important;    /* Position from right */
-    z-index: 100 !important;      /* Ensure it's above other elements */
-    background-color: rgba(0, 0, 0, 0.2) !important; /* Slightly visible background */
-    border-radius: 50% !important; /* Make it circular */
-    width: 2rem !important;       /* Fixed width */
-    height: 2rem !important;      /* Fixed height */
-    display: flex !important;     /* Center the icon */
-    align-items: center !important;
-    justify-content: center !important;
-    color: white !important;      /* White icon */
+    position: absolute;
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    color: var(--text-inverse);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
 }
 
 .slds-modal__close lightning-icon {
-    --sds-c-icon-color-foreground-default: white !important; /* Ensure icon is white */
+    --sds-c-icon-color-foreground-default: white !important;
 }
 
 .slds-modal__close:hover,
 .slds-modal__close:focus {
-    background-color: rgba(0, 0, 0, 0.4) !important; /* Darker on hover */
-    color: white !important;
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    transform: rotate(90deg) !important;
 }
 
 /* Modal Tabs (Lightning Tabset) */
 lightning-tabset {
-    --sds-c-tabs-item-color-border-active: var(--dlv-primary-color);
-    --sds-c-tabs-item-text-color-active: var(--dlv-primary-color);
-    --sds-c-tabs-item-text-color-hover: var(--dlv-primary-dark);
-    --sds-c-tabs-item-font-size: var(--dlv-font-size-md);
-    margin-bottom: var(--dlv-spacing-md); /* Space below tabs */
+    --sds-c-tabs-item-color-border-active: var(--primary-color);
+    --sds-c-tabs-item-text-color-active: var(--primary-color);
+    --sds-c-tabs-item-text-color-hover: var(--primary-light);
+    --sds-c-tabs-item-font-size: var(--font-size-md);
+    margin-bottom: var(--spacing-md);
     width: 100%;
 }
 
 lightning-tabset .slds-tabs_scoped__item {
-    padding-bottom: var(--dlv-spacing-xs);
-    font-weight: var(--dlv-font-weight-medium);
+    padding-bottom: var(--spacing-xs);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-fast);
 }
 
 /* Tab Content Containers */
 .fields-container,
 .related-records-container {
-    padding-top: var(--dlv-spacing-md); /* Space above content within tab */
+    padding-top: var(--spacing-md);
 }
 
 /* ============================================= */
-/* Modal - Details Tab Content                 */
+/* Modal - Details Tab Content                   */
 /* ============================================= */
 .field-item {
-    display: flex; /* Use flex for label/value alignment */
-    margin-bottom: var(--dlv-spacing-sm);
-    font-size: var(--dlv-font-size-md);
-    line-height: var(--dlv-line-height);
-    position: relative; /* For positioning elements */
-    /* SLDS grid classes are used in HTML, removing need for custom flex here */
-    /* align-items: baseline; */ 
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-md);
+    background-color: var(--background-alt);
+    transition: all var(--transition-fast);
+    border: 1px solid transparent;
+}
+
+.field-item:hover {
+    box-shadow: var(--shadow-sm);
+    background-color: var(--background);
+    border-color: var(--border-color);
+    transform: translateY(-1px);
 }
 
 .field-label {
-    font-weight: var(--dlv-font-weight-semibold);
-    color: var(--dlv-text-primary);
-    /* flex-basis: 30%; */ /* Adjust based on typical label width */
-    padding-right: var(--dlv-spacing-sm);
-    flex-shrink: 0;
-    /* Using slds-col slds-size_1-of-3 in HTML */
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .field-value {
-    color: var(--dlv-text-secondary);
-    word-break: break-word; /* Allow long values to wrap */
-    overflow-wrap: break-word; /* Ensure long words break properly */
-    /* flex-grow: 1; */
-     /* Using slds-col slds-size_2-of-3 in HTML */
+    font-size: var(--font-size-sm);
+    word-break: break-word;
+    color: var(--text-color);
 }
 
 /* Style for lookup links within the details */
 .field-value a {
-    color: var(--dlv-text-link);
+    color: var(--primary-color);
     text-decoration: none;
-    transition: color var(--dlv-transition-fast);
-    display: inline-block; /* Better handling for long links */
-    max-width: 100%; /* Constrain to parent */
-    overflow-wrap: break-word; /* Break long words/URLs */
+    transition: all var(--transition-fast);
+    font-weight: var(--font-weight-medium);
+    position: relative;
 }
 
 .field-value a:hover {
-    color: var(--dlv-text-link-hover);
-    text-decoration: underline;
+    color: var(--primary-dark);
+    text-decoration: none;
 }
 
-/* Optimize field layout for better responsiveness */
-.fields-container {
+.field-value a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background-color: var(--primary-dark);
+    transition: width var(--transition-fast);
+}
+
+.field-value a:hover::after {
     width: 100%;
-    padding: 0 var(--dlv-spacing-xs); /* Add some padding on the sides */
 }
 
 /* ============================================= */
-/* Modal - Related Records Tab Content         */
+/* Modal - Related Records Tab Content           */
 /* ============================================= */
 .related-records-container {
     min-height: 100px;
@@ -540,114 +768,170 @@ lightning-tabset .slds-tabs_scoped__item {
     overflow-x: auto;
 }
 
-.related-records-container .slds-list_dotted {
-    padding-left: 0; /* Remove default list padding */
-    list-style: none; /* Remove bullets */
-    width: 100%;
-    margin-bottom: var(--dlv-spacing-sm);
-}
-
-.related-records-container .slds-list_dotted li {
-    padding: var(--dlv-spacing-xs) 0;
-    border-bottom: 1px solid var(--dlv-border-subtle);
-    width: 100%;
-}
-
-.related-records-container a {
-    color: var(--dlv-text-link);
-    text-decoration: none;
-    font-size: var(--dlv-font-size-md);
-    font-weight: var(--dlv-font-weight-medium);
-    transition: color var(--dlv-transition-fast);
-}
-
-.related-records-container a:hover {
-    color: var(--dlv-text-link-hover);
-    text-decoration: underline;
+.tab-container {
+    min-height: 200px;
+    background-color: var(--background-alt);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
 }
 
 /* ============================================= */
-/* Focus States (Accessibility)                */
+/* Focus States (Accessibility)                  */
 /* ============================================= */
 *:focus-visible {
-    outline: 2px solid var(--dlv-primary-color);
+    outline: 2px solid var(--primary-color);
     outline-offset: 2px;
-    box-shadow: 0 0 0 3px rgba(var(--dlv-primary-rgb), 0.3);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
 }
 
-/* SLDS components often handle their own focus, but this is a good fallback */
+/* ============================================= */
+/* Animations                                    */
+/* ============================================= */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modalIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    70% {
+        opacity: 1;
+        transform: scale(1.02) translateY(-2px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
 
 /* ============================================= */
-/* Responsive Adjustments                      */
+/* Responsive Adjustments                        */
 /* ============================================= */
+@media (max-width: 992px) {
+    .slds-modal__container {
+        width: 95%;
+        max-width: 95%;
+    }
+    
+    .slds-modal__header {
+        padding: var(--spacing-md);
+    }
+    
+    .slds-modal__content {
+        padding: var(--spacing-md);
+    }
+    
+    .filter-row {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+}
+
 @media (max-width: 768px) {
     .container {
-        padding: var(--dlv-spacing-sm);
+        padding: var(--spacing-sm);
+    }
+    
+    .list-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+    
+    .list-header-actions {
+        width: 100%;
+    }
+    
+    .search-container {
+        width: 100%;
+        flex: 1;
     }
 
     .slds-modal__container {
-        width: 95%; /* Slightly wider on smaller screens */
-        margin: var(--dlv-spacing-sm) auto;
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        max-height: 100vh;
+        height: 100vh;
+    }
+    
+    .slds-modal__header {
+        border-radius: 0;
     }
 
     .slds-modal__content {
-        max-height: 75vh; /* Allow slightly more height on mobile */
-        padding: var(--dlv-spacing-xs); /* Reduce padding on small screens */
+        max-height: calc(100vh - 120px);
     }
 
     /* Stack field label and value on small screens for better readability */
     .field-item {
-        flex-direction: column;
-        margin-bottom: var(--dlv-spacing-md); /* Increase margin between stacked fields */
+        margin-bottom: var(--spacing-sm);
     }
 
     .field-label, .field-value {
-        width: 100%; /* Use full width when stacked */
-        padding: 0; /* Remove padding when stacked */
+        width: 100%;
+        padding: 0;
     }
 
     .field-label {
-        margin-bottom: 4px; /* Space between label and value */
-        font-size: calc(var(--dlv-font-size-md) - 1px); /* Slightly smaller font */
+        margin-bottom: 4px;
+        font-size: var(--font-size-xs);
     }
     
     /* Make table cells more compact on mobile */
     td, th {
-        padding: calc(var(--dlv-spacing-sm) / 2);
-        font-size: var(--dlv-font-size-sm);
+        padding: var(--spacing-xs);
+        font-size: var(--font-size-xs);
+    }
+    
+    .pagination {
+        flex-wrap: wrap;
+    }
+    
+    /* Adjust back button position on small screens */
+    .back-button {
+        top: var(--spacing-md);
+        right: var(--spacing-lg);
+        left: auto;
+    }
+    
+    /* Adjust object type badge */
+    .object-type-badge {
+        top: calc(var(--spacing-md) + 40px);
+    }
+    
+    .slds-modal__title {
+        margin-top: calc(var(--spacing-lg) + 30px);
     }
 }
 
 /* For very small screens */
 @media (max-width: 480px) {
     .slds-modal__title {
-        font-size: 16px; /* Smaller title on very small screens */
+        font-size: var(--font-size-lg);
     }
     
     .slds-modal__header p {
-        font-size: 12px;
+        font-size: var(--font-size-sm);
     }
     
     /* Make back button smaller on mobile */
     .back-button {
-        padding: 0.25rem 0.5rem !important;
-        font-size: var(--dlv-font-size-sm) !important;
+        padding: 4px 8px !important;
+        font-size: var(--font-size-xs) !important;
     }
     
     /* Simplify pagination on small devices */
     .pagination span {
-        font-size: calc(var(--dlv-font-size-sm) - 2px);
+        font-size: var(--font-size-xs);
     }
     
     /* Ensure tab labels are readable on small screens */
     lightning-tabset .slds-tabs_scoped__item {
-        font-size: var(--dlv-font-size-sm);
-        padding: var(--dlv-spacing-xs);
+        font-size: var(--font-size-xs);
+        padding: 4px;
     }
-}
-
-/* ============================================= */
-/* Ensure tab content has proper spacing from tab headers */
-lightning-tab {
-    padding-top: var(--dlv-spacing-sm);
 }
