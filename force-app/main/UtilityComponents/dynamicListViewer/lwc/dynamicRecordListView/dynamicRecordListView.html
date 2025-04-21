@@ -255,16 +255,41 @@
                             <lightning-tab label="Related Records" value="relatedRecords" icon-name="utility:connected_apps">
                                 <div class="tab-container" role="tabpanel">
                                     <div class="related-records-container">
+                                        <!-- Loading state -->
                                         <template if:true={loadingRelatedRecords}>
                                             <div class="loading-state">
                                                 <lightning-spinner alternative-text="Loading" size="small" variant="brand"></lightning-spinner>
                                                 <p>Loading related records...</p>
                                             </div>
                                         </template>
+                                        
+                                        <!-- Empty state - only shown if loading is done and no records found -->
                                         <template if:false={loadingRelatedRecords}>
-                                            <div class="empty-state small">
-                                                <p>Select an object type to view related records.</p>
-                                            </div>
+                                            <template if:false={hasRelatedRecords}>
+                                                <div class="empty-state small">
+                                                    <p>No related records found for this record.</p>
+                                                </div>
+                                            </template>
+                                            
+                                            <!-- Grouped related records by object -->
+                                            <template if:true={hasRelatedRecords}>
+                                                <div class="related-groups">
+                                                    <template for:each={relatedRecordsData} for:item="relObj">
+                                                        <div key={relObj.objectApiName} class="related-group">
+                                                            <div class="related-group-header">
+                                                                <h3>{relObj.label} ({relObj.recordCount})</h3>
+                                                            </div>
+                                                            <ul class="related-records-list">
+                                                                <template for:each={relObj.records} for:item="record">
+                                                                    <li key={record.Id} class="related-record-item">
+                                                                        <div class="related-record-name">{record.displayName}</div>
+                                                                    </li>
+                                                                </template>
+                                                            </ul>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
                                         </template>
                                     </div>
                                 </div>
@@ -274,35 +299,94 @@
                             <lightning-tab label="Files" value="filesAttachments" icon-name="utility:file">
                                 <div class="tab-container" role="tabpanel">
                                     <div class="files-container">
-                                        <template if:true={loadingRelatedRecords}>
+                                        <!-- Loading state -->
+                                        <template if:true={loadingFiles}>
                                             <div class="loading-state">
                                                 <lightning-spinner alternative-text="Loading" size="small" variant="brand"></lightning-spinner>
                                                 <p>Loading files...</p>
                                             </div>
                                         </template>
-                                        <template if:false={loadingRelatedRecords}>
-                                            <div class="empty-state small">
-                                                <p>No files or attachments found.</p>
-                                            </div>
+                                        
+                                        <!-- Empty state - only shown if loading is done and no files found -->
+                                        <template if:false={loadingFiles}>
+                                            <template if:false={hasFiles}>
+                                                <div class="empty-state small">
+                                                    <p>No files or attachments found for this record.</p>
+                                                </div>
+                                            </template>
+                                            
+                                            <!-- Files list -->
+                                            <template if:true={hasFiles}>
+                                                <ul class="files-list">
+                                                    <template for:each={files} for:item="file">
+                                                        <li key={file.id} class="file-item">
+                                                            <div class="file-icon">
+                                                                <lightning-icon icon-name={file.iconName} size="small" if:true={file.iconName}></lightning-icon>
+                                                                <lightning-icon icon-name="doctype:unknown" size="small" if:false={file.iconName}></lightning-icon>
+                                                            </div>
+                                                            <div class="file-details">
+                                                                <div class="file-title">
+                                                                    <a href={file.downloadUrl} target="_blank" title="Download file">{file.title}</a>
+                                                                </div>
+                                                                <div class="file-meta">
+                                                                    <span class="file-type">{file.fileType}</span>
+                                                                    <span class="separator">•</span>
+                                                                    <span class="file-size">{file.fileSize}</span>
+                                                                    <span class="separator">•</span>
+                                                                    <span class="file-date">{file.createdDate}</span>
+                                                                </div>
+                                                                <div class="file-description" if:true={file.description}>
+                                                                    {file.description}
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    </template>
+                                                </ul>
+                                            </template>
                                         </template>
                                     </div>
                                 </div>
                             </lightning-tab>
 
                             <!-- Activity History Tab -->
-                            <lightning-tab label="Activity" value="activityHistory" icon-name="utility:activity">
+                            <lightning-tab label="Activity" value="activityHistory" icon-name="utility:feed">
                                 <div class="tab-container" role="tabpanel">
                                     <div class="activity-container">
-                                        <template if:true={loadingRelatedRecords}>
+                                        <template if:true={loadingChatterPosts}>
                                             <div class="loading-state">
                                                 <lightning-spinner alternative-text="Loading" size="small" variant="brand"></lightning-spinner>
                                                 <p>Loading activity history...</p>
                                             </div>
                                         </template>
-                                        <template if:false={loadingRelatedRecords}>
-                                            <div class="empty-state small">
-                                                <p>No activity history found.</p>
-                                            </div>
+                                        <template if:false={loadingChatterPosts}>
+                                            <template if:false={hasChatterPosts}>
+                                                <div class="empty-state small">
+                                                    <p>No activity history or chatter posts found.</p>
+                                                </div>
+                                            </template>
+                                            <template if:true={hasChatterPosts}>
+                                                <ul class="chatter-posts-list">
+                                                    <template for:each={chatterPosts} for:item="post">
+                                                        <li key={post.id} class="chatter-post">
+                                                            <div class="chatter-post-header">
+                                                                <div class="post-avatar">
+                                                                    <lightning-icon icon-name="standard:user" size="small"></lightning-icon>
+                                                                </div>
+                                                                <div class="post-meta">
+                                                                    <div class="post-author">{post.createdByName}</div>
+                                                                    <div class="post-type-date">
+                                                                        <span class="post-type">{post.type}</span>
+                                                                        <span class="post-separator">•</span>
+                                                                        <span class="post-date">{post.createdDate}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="chatter-post-title" if:true={post.title}>{post.title}</div>
+                                                            <div class="chatter-post-body">{post.body}</div>
+                                                        </li>
+                                                    </template>
+                                                </ul>
+                                            </template>
                                         </template>
                                     </div>
                                 </div>

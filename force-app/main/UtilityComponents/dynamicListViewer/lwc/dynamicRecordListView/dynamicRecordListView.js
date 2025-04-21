@@ -99,6 +99,13 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     @track relatedRecords = [];
     /** @type {boolean} Indicates if the related records list (within a modal tab) is currently loading. */
     @track loadingRelatedRecords = false;
+    @track chatterPosts = [];  // Store Chatter posts
+    @track loadingChatterPosts = false;
+    @track relatedRecordsData = []; // Grouped related records data
+    @track loadingRelatedObjects = false;
+    @track relatedObjectsLoaded = false;
+    @track files = []; // Store files
+    @track loadingFiles = false;
     
     // Navigation history stack - stores previous records for back navigation
     @track navigationStack = [];
@@ -562,130 +569,549 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * @param {Event} event - The `select` event from `lightning-tabset`.
      */
     handleTabChange(event) {
-        // The `value` of the selected tab is in event.target.value
-        const newTabValue = event.target.value;
-        console.log(`Tab changed to: ${newTabValue}`);
+        const selectedTabValue = event.detail.value;
+        this.selectedTab = selectedTabValue;
         
-        this.selectedTab = newTabValue; 
-
-        // Reset loading state when switching tabs
-        this.loadingRelatedRecords = false;
-
-        // Handle specific tabs
-        if (newTabValue === 'details') {
-            // When switching to details tab, clear related records
-            this.relatedRecords = [];
-        } else if (newTabValue === 'relatedRecords') {
-            // Handle Related Records tab
+        if (selectedTabValue === 'relatedRecords') {
             this.handleRelatedRecordsClick();
-        } else if (newTabValue === 'filesAttachments') {
-            // Handle Files and Attachments tab
+        } else if (selectedTabValue === 'filesAttachments') {
             this.handleFilesAttachmentsClick();
-        } else if (newTabValue === 'chatterPosts') {
-            // Handle Chatter Posts tab
+        } else if (selectedTabValue === 'activityHistory') {
             this.handleChatterPostsClick();
-        } else if (newTabValue === 'approvals') {
-            // Handle Approvals tab
-            this.handleApprovalsClick();
-        } else if (newTabValue === 'notes') {
-            // Handle Notes tab
-            this.handleNotesClick();
         }
     }
 
     /**
-     * Handler for the Related Records tab and click in More menu
+     * Handle related records tab click - automatically load and display related records
      */
     handleRelatedRecordsClick() {
-        console.log('Related Records tab selected');
-        this.loadingRelatedRecords = true;
-        
-        // Show loading indicator for a brief moment
-        setTimeout(() => {
+        if (!this.selectedRecord || !this.selectedRecord.attributes) {
+            console.log('No valid record selected');
             this.loadingRelatedRecords = false;
-            // Future implementation: Display a list of available related objects 
-            // or implement a different pattern to browse related records
-        }, 500);
+            return;
+        }
+        
+        // If we've already loaded related objects for this record, don't reload
+        if (this.relatedObjectsLoaded) {
+            console.log('Related objects already loaded for this record');
+            return;
+        }
+        
+        this.loadingRelatedObjects = true;
+        this.loadingRelatedRecords = true;
+        this.relatedRecordsData = [];
+        
+        console.log('Loading related objects for', this.selectedRecord.Id);
+        
+        // First load available related objects
+        loadRelatedObjects({ objectApiName: this.selectedRecord.attributes.type })
+            .then(result => {
+                this.relatedObjects = result || [];
+                console.log('Found', this.relatedObjects.length, 'related object types');
+                
+                // If we have related objects, load records for each
+                if (this.relatedObjects.length > 0) {
+                    return this.loadAllRelatedRecords();
+                } else {
+                    console.log('No related objects found');
+                    return Promise.resolve();
+                }
+            })
+            .catch(error => {
+                this.handleError(error, 'Error loading related objects');
+                return Promise.resolve();
+            })
+            .finally(() => {
+                this.loadingRelatedObjects = false;
+                this.loadingRelatedRecords = false;
+                this.relatedObjectsLoaded = true;
+            });
+    }
+    
+    /**
+     * Load records for all related objects
+     */
+    loadAllRelatedRecords() {
+        // Create an array of promises, one for each related object
+        const loadPromises = this.relatedObjects.map(relObj => {
+            return this.loadRecordsForRelationship(relObj);
+        });
+        
+        // Wait for all promises to resolve
+        return Promise.all(loadPromises)
+            .then(results => {
+                // Filter out empty results and sort by object label
+                this.relatedRecordsData = results
+                    .filter(item => item && item.records && item.records.length > 0)
+                    .sort((a, b) => a.label.localeCompare(b.label));
+                
+                console.log('Loaded records for', this.relatedRecordsData.length, 'related objects');
+            })
+            .catch(error => {
+                console.error('Error loading related records:', error);
+            });
+    }
+    
+    /**
+     * Load records for a specific relationship
+     */
+    loadRecordsForRelationship(relatedObject) {
+        const params = {
+            objectApiName: this.selectedRecord.attributes.type,
+            parentId: this.selectedRecord.Id,
+            relationshipName: relatedObject.relationshipName
+        };
+        
+        console.log('Loading records for relationship:', relatedObject.relationshipName);
+        
+        return getRelatedRecords(params)
+            .then(records => {
+                if (records && records.length > 0) {
+                    console.log('Found', records.length, 'records for', relatedObject.objectApiName);
+                    
+                    // Add displayName property to each record
+                    const processedRecords = records.map(record => {
+                        // Copy the record and add displayName
+                        return {
+                            ...record,
+                            displayName: this.formatRecordName(record)
+                        };
+                    });
+                    
+                    // Return structured data for this related object and its records
+                    return {
+                        objectApiName: relatedObject.objectApiName,
+                        relationshipName: relatedObject.relationshipName,
+                        label: relatedObject.label,
+                        records: processedRecords,
+                        recordCount: processedRecords.length
+                    };
+                }
+                
+                // Return null if no records found
+                return null;
+            })
+            .catch(error => {
+                console.log('Error fetching records for', relatedObject.relationshipName, ':', error.message);
+                return null;
+            });
+    }
+    
+    /**
+     * Check if there are related records to display
+     */
+    get hasRelatedRecords() {
+        return this.relatedRecordsData && this.relatedRecordsData.length > 0;
+    }
+    
+    /**
+     * Format a display name for a record
+     */
+    formatRecordName(record) {
+        // Try to use the Name field if available
+        if (record.Name) {
+            return record.Name;
+        }
+        
+        // For tasks, use Subject
+        if (record.Subject) {
+            return record.Subject;
+        }
+        
+        // Fallback to record ID
+        return record.Id;
     }
 
     /**
-     * Handler for the Files and Attachments tab and click in More menu
+     * Handle Files tab click - automatically load file attachments
      */
     handleFilesAttachmentsClick() {
-        console.log('Files and Attachments tab selected');
-        this.loadingRelatedRecords = true;
-        
-        if (!this.selectedRecord || !this.selectedRecord.Id) {
-            this.loadingRelatedRecords = false;
+        if (!this.selectedRecord || !this.selectedRecord.attributes) {
+            console.log('No valid record selected');
+            this.loadingFiles = false;
             return;
         }
         
-        // Here we'd typically query ContentDocumentLink or Attachment records
-        // For now, simulate loading
-        setTimeout(() => {
-            this.loadingRelatedRecords = false;
-            // Future implementation: Display files and attachments
-        }, 500);
+        this.loadingFiles = true;
+        this.files = [];
+        
+        console.log('Loading files for', this.selectedRecord.Id);
+        
+        const params = {
+            objectApiName: this.selectedRecord.attributes.type,
+            parentId: this.selectedRecord.Id,
+            relationshipName: 'ContentDocumentLinks'
+        };
+        
+        getRelatedRecords(params)
+            .then(result => {
+                if (result && result.length > 0) {
+                    this.files = this.formatFiles(result);
+                    console.log('Found', this.files.length, 'files');
+                } else {
+                    console.log('No files found');
+                    this.files = [];
+                }
+            })
+            .catch(error => {
+                console.log('Error fetching files:', error.message);
+                this.files = [];
+            })
+            .finally(() => {
+                this.loadingFiles = false;
+            });
+    }
+    
+    /**
+     * Format file records for display
+     */
+    formatFiles(fileLinks) {
+        return fileLinks.map(link => {
+            // Try to extract file information from ContentDocument relationship
+            const contentDoc = link.ContentDocument || {};
+            const fileType = contentDoc.FileType || '';
+            
+            return {
+                id: link.Id,
+                title: contentDoc.Title || 'Untitled',
+                fileType: fileType,
+                iconName: this.getFileIcon(fileType),
+                fileSize: this.formatFileSize(contentDoc.ContentSize || 0),
+                createdDate: contentDoc.CreatedDate ? this.formatDateTime(contentDoc.CreatedDate) : '',
+                createdBy: contentDoc.CreatedBy?.Name || 'Unknown',
+                description: contentDoc.Description || '',
+                downloadUrl: '/sfc/servlet.shepherd/document/download/' + (contentDoc.Id || '')
+            };
+        });
+    }
+    
+    /**
+     * Get the appropriate SLDS icon for a file type
+     */
+    getFileIcon(fileType) {
+        if (!fileType) return 'doctype:unknown';
+        
+        const fileTypeLower = fileType.toLowerCase();
+        
+        // Map common file types to SLDS doctype icons
+        const iconMap = {
+            'pdf': 'doctype:pdf',
+            'doc': 'doctype:word',
+            'docx': 'doctype:word',
+            'xls': 'doctype:excel',
+            'xlsx': 'doctype:excel',
+            'csv': 'doctype:csv',
+            'ppt': 'doctype:ppt',
+            'pptx': 'doctype:ppt',
+            'txt': 'doctype:txt',
+            'rtf': 'doctype:rtf',
+            'html': 'doctype:html',
+            'xml': 'doctype:xml',
+            'zip': 'doctype:zip',
+            'png': 'doctype:image',
+            'jpg': 'doctype:image',
+            'jpeg': 'doctype:image',
+            'gif': 'doctype:image',
+            'svg': 'doctype:image',
+            'mp4': 'doctype:video',
+            'mov': 'doctype:video',
+            'mp3': 'doctype:audio',
+            'wav': 'doctype:audio',
+            'js': 'doctype:code',
+            'css': 'doctype:code',
+            'java': 'doctype:code',
+            'py': 'doctype:code',
+            'json': 'doctype:json'
+        };
+        
+        return iconMap[fileTypeLower] || 'doctype:unknown';
+    }
+    
+    /**
+     * Format file size in human-readable format
+     */
+    formatFileSize(bytes) {
+        if (!bytes || bytes === 0) return '0 Bytes';
+        
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    /**
+     * Check if there are files to display
+     */
+    get hasFiles() {
+        return this.files && this.files.length > 0;
     }
 
     /**
-     * Handler for the Chatter Posts tab and click in More menu
+     * Handle Chatter/Activity tab click
      */
     handleChatterPostsClick() {
-        console.log('Chatter Posts tab selected');
-        this.loadingRelatedRecords = true;
-        
-        if (!this.selectedRecord || !this.selectedRecord.Id) {
-            this.loadingRelatedRecords = false;
+        if (!this.selectedRecord || !this.selectedRecord.attributes) {
+            console.log('No valid record selected');
+            this.loadingChatterPosts = false;
             return;
         }
         
-        // Here we'd typically query FeedItem records
-        // For now, simulate loading
-        setTimeout(() => {
-            this.loadingRelatedRecords = false;
-            // Future implementation: Display chatter posts
-        }, 500);
+        this.loadingChatterPosts = true;
+        this.chatterPosts = [];
+        
+        console.log('Attempting to fetch Chatter posts for', this.selectedRecord.Id);
+        
+        // Try to load FeedItems first (this is the standard relationship name)
+        this.tryLoadFeedItems()
+            .then(success => {
+                if (!success) {
+                    // If no FeedItems, try ActivityHistories
+                    return this.loadActivityHistory();
+                }
+                return true;
+            })
+            .finally(() => {
+                this.loadingChatterPosts = false;
+            });
     }
-
+    
     /**
-     * Handler for the Approvals tab and click in More menu
+     * Try to load FeedItems using the standard relationship
+     * @returns {Promise<boolean>} True if items were found
      */
-    handleApprovalsClick() {
-        console.log('Approvals tab selected');
-        this.loadingRelatedRecords = true;
-        
-        if (!this.selectedRecord || !this.selectedRecord.Id) {
-            this.loadingRelatedRecords = false;
-            return;
+    tryLoadFeedItems() {
+        if (!this.selectedRecord || !this.selectedRecord.attributes) {
+            return Promise.resolve(false);
         }
         
-        // Here we'd typically query ProcessInstance records
-        // For now, simulate loading
-        setTimeout(() => {
-            this.loadingRelatedRecords = false;
-            // Future implementation: Display approval processes
-        }, 500);
+        const params = {
+            objectApiName: this.selectedRecord.attributes.type,
+            parentId: this.selectedRecord.Id,
+            relationshipName: 'FeedItems'
+        };
+        
+        console.log('Trying FeedItems relationship for', this.selectedRecord.attributes.type);
+        
+        return getRelatedRecords(params)
+            .then(result => {
+                if (result && result.length > 0) {
+                    console.log('Found', result.length, 'FeedItems');
+                    this.chatterPosts = this.formatChatterPosts(result);
+                    return true;
+                } 
+                
+                console.log('No FeedItems found, trying ContentDocumentLinks');
+                
+                // If no results, try ContentDocumentLinks as additional content
+                return this.tryLoadContentDocuments()
+                    .then(docsFound => {
+                        if (docsFound) {
+                            return true;
+                        }
+                        return false;
+                    });
+            })
+            .catch(error => {
+                console.log('Error fetching FeedItems:', error.message);
+                return false;
+            });
     }
-
+    
     /**
-     * Handler for the Notes tab and click in More menu
+     * Try to load ContentDocumentLinks (Files)
+     * @returns {Promise<boolean>} True if items were found
      */
-    handleNotesClick() {
-        console.log('Notes tab selected');
-        this.loadingRelatedRecords = true;
-        
-        if (!this.selectedRecord || !this.selectedRecord.Id) {
-            this.loadingRelatedRecords = false;
-            return;
+    tryLoadContentDocuments() {
+        if (!this.selectedRecord || !this.selectedRecord.attributes) {
+            return Promise.resolve(false);
         }
         
-        // Here we'd typically query Note records
-        // For now, simulate loading
-        setTimeout(() => {
-            this.loadingRelatedRecords = false;
-            // Future implementation: Display notes
-        }, 500);
+        const params = {
+            objectApiName: this.selectedRecord.attributes.type,
+            parentId: this.selectedRecord.Id,
+            relationshipName: 'ContentDocumentLinks'
+        };
+        
+        return getRelatedRecords(params)
+            .then(result => {
+                if (result && result.length > 0) {
+                    console.log('Found', result.length, 'ContentDocumentLinks');
+                    
+                    // Add files as a special type of activity
+                    const fileItems = result.map(link => {
+                        return {
+                            id: link.Id,
+                            createdDate: link.SystemModstamp ? this.formatDateTime(link.SystemModstamp) : '',
+                            createdById: link.LastModifiedById,
+                            createdByName: 'File Attachment',
+                            body: link.ContentDocument?.Description || 'File: ' + (link.ContentDocument?.Title || 'Untitled'),
+                            type: 'File',
+                            title: link.ContentDocument?.Title || 'File Attachment'
+                        };
+                    });
+                    
+                    this.chatterPosts = [...this.chatterPosts, ...fileItems];
+                    return true;
+                }
+                return false;
+            })
+            .catch(error => {
+                console.log('Error fetching ContentDocumentLinks:', error.message);
+                return false;
+            });
+    }
+    
+    /**
+     * Load activity history as fallback
+     */
+    loadActivityHistory() {
+        if (!this.selectedRecord || !this.selectedRecord.attributes) {
+            return Promise.resolve(false);
+        }
+        
+        const params = {
+            objectApiName: this.selectedRecord.attributes.type,
+            parentId: this.selectedRecord.Id,
+            relationshipName: 'ActivityHistories'
+        };
+        
+        console.log('Trying ActivityHistories relationship');
+        
+        return getRelatedRecords(params)
+            .then(result => {
+                if (result && result.length > 0) {
+                    console.log('Found', result.length, 'ActivityHistories');
+                    this.chatterPosts = [...this.chatterPosts, ...this.formatActivityRecords(result)];
+                    return true;
+                }
+                
+                console.log('No ActivityHistories found, trying Tasks');
+                
+                // If no ActivityHistories, try Tasks
+                return this.tryLoadTasks();
+            })
+            .catch(error => {
+                console.log('Error fetching ActivityHistories:', error.message);
+                
+                // If ActivityHistories fails, try Tasks
+                return this.tryLoadTasks();
+            });
+    }
+    
+    /**
+     * Try to load Tasks as a fallback
+     * @returns {Promise<boolean>} True if items were found
+     */
+    tryLoadTasks() {
+        if (!this.selectedRecord || !this.selectedRecord.attributes) {
+            return Promise.resolve(false);
+        }
+        
+        const params = {
+            objectApiName: this.selectedRecord.attributes.type,
+            parentId: this.selectedRecord.Id,
+            relationshipName: 'Tasks'
+        };
+        
+        console.log('Trying Tasks relationship');
+        
+        return getRelatedRecords(params)
+            .then(result => {
+                if (result && result.length > 0) {
+                    console.log('Found', result.length, 'Tasks');
+                    this.chatterPosts = [...this.chatterPosts, ...this.formatActivityRecords(result)];
+                    return true;
+                }
+                
+                console.log('No Tasks found, trying Events');
+                return this.tryLoadEvents();
+            })
+            .catch(error => {
+                console.log('Error fetching Tasks:', error.message);
+                return this.tryLoadEvents();
+            });
+    }
+    
+    /**
+     * Try to load Events as a final fallback
+     * @returns {Promise<boolean>} True if items were found
+     */
+    tryLoadEvents() {
+        if (!this.selectedRecord || !this.selectedRecord.attributes) {
+            return Promise.resolve(false);
+        }
+        
+        const params = {
+            objectApiName: this.selectedRecord.attributes.type,
+            parentId: this.selectedRecord.Id,
+            relationshipName: 'Events'
+        };
+        
+        console.log('Trying Events relationship');
+        
+        return getRelatedRecords(params)
+            .then(result => {
+                if (result && result.length > 0) {
+                    console.log('Found', result.length, 'Events');
+                    this.chatterPosts = [...this.chatterPosts, ...this.formatActivityRecords(result)];
+                    return true;
+                }
+                
+                console.log('No activity found for', this.selectedRecord.Id);
+                return false;
+            })
+            .catch(error => {
+                console.log('Error fetching Events:', error.message);
+                return false;
+            });
+    }
+    
+    /**
+     * Format chatter posts for display
+     */
+    formatChatterPosts(posts) {
+        return posts.map(post => {
+            const createdDate = post.CreatedDate ? this.formatDateTime(post.CreatedDate) : '';
+            const body = post.Body || '';
+            
+            return {
+                id: post.Id,
+                createdDate: createdDate,
+                createdById: post.CreatedById,
+                createdByName: post.CreatedBy?.Name || 'User',
+                body: body,
+                type: 'Feed',
+                title: 'Post'
+            };
+        });
+    }
+    
+    /**
+     * Format activity records for display
+     */
+    formatActivityRecords(activities) {
+        return activities.map(activity => {
+            const activityDate = activity.ActivityDate ? this.formatDate(activity.ActivityDate) : '';
+            const subject = activity.Subject || '';
+            
+            return {
+                id: activity.Id,
+                createdDate: activityDate,
+                createdById: activity.OwnerId,
+                createdByName: activity.Owner?.Name || 'User',
+                body: activity.Description || '',
+                type: activity.attributes.type,
+                title: subject
+            };
+        });
+    }
+    
+    /**
+     * Check if there are Chatter posts to display
+     */
+    get hasChatterPosts() {
+        return this.chatterPosts && this.chatterPosts.length > 0;
     }
 
     /**
