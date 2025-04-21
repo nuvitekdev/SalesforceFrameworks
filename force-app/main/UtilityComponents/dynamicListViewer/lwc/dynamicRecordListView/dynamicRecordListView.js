@@ -41,8 +41,8 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     @api accentColor = '#D5DF23';
     /** Optional. Main text color */
     @api textColor = '#1d1d1f';
-    /** Maximum number of lookup navigations allowed (0 = unlimited) */
-    @api maxNavigationDepth = 0;
+    /** Maximum number of lookup navigations allowed (0 = disable all navigation) */
+    @api maxNavigationDepth = 1;
     
     // --- Internal Component State ---
     @track columns = [];
@@ -811,7 +811,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         
         return getRelatedRecords(params).catch(() => []);
     }
-    
+
     /**
      * Try to load FeedItems using the standard relationship
      * @returns {Promise<boolean>} True if items were found
@@ -1582,7 +1582,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         return Object.keys(obj).some(key => 
             addressComponents.some(component => key.toLowerCase().includes(component.toLowerCase()))
         );
-    }
+        }
     
     /**
      * Format an address field for display
@@ -1934,18 +1934,18 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * Determines if lookup navigation should be disabled based on navigation depth
      */
     get effectiveLookupNavigationDisabled() {
-        // If max navigation depth is 1, all lookups are disabled
-        if (this.maxNavigationDepth === 1) {
+        // If max navigation depth is 0, all lookups are disabled
+        if (this.maxNavigationDepth === 0) {
             return true;
         }
         
-        // If max navigation depth is greater than 1 and we've reached or exceeded the limit, disable lookups
-        if (this.maxNavigationDepth > 1 && this.navigationStack.length >= this.maxNavigationDepth) {
+        // If we've reached or exceeded the configured limit, disable lookups
+        if (this.navigationStack.length >= this.maxNavigationDepth) {
             console.log(`Maximum navigation depth (${this.maxNavigationDepth}) reached, disabling lookups`);
             return true;
         }
         
-        // Otherwise, lookups are enabled (maxNavigationDepth is 0 or we haven't reached the limit)
+        // Otherwise, lookups are enabled (we haven't reached the limit yet)
         return false;
     }
 

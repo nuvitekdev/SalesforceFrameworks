@@ -228,7 +228,7 @@
                                                                         <template if:true={field.referenceToObject}>
                                                                             <!-- Only show as a link if lookup navigation is not disabled -->
                                                                             <template if:false={effectiveLookupNavigationDisabled}>
-                                                                                <a href="#" data-record-id={field.referenceId} data-object-api-name={field.referenceToObject} onclick={handleLookupNavigation}>{field.value}</a>
+                                                                            <a href="#" data-record-id={field.referenceId} data-object-api-name={field.referenceToObject} onclick={handleLookupNavigation}>{field.value}</a>
                                                                             </template>
                                                                             <template if:true={effectiveLookupNavigationDisabled}>
                                                                                 <!-- Show as plain text when lookup navigation is disabled -->
@@ -265,7 +265,7 @@
                                                                         </template>
                                                                         <!-- Regular field display -->
                                                                         <template if:false={field.isMultiLine}>
-                                                                            {field.value}
+                                                                    {field.value}
                                                                         </template>
                                                                     </template>
                                                                 </template>
