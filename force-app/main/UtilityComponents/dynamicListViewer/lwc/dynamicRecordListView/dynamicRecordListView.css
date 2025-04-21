@@ -487,6 +487,7 @@ lightning-tabset .slds-tabs_scoped__item {
     margin-bottom: var(--dlv-spacing-sm);
     font-size: var(--dlv-font-size-md);
     line-height: var(--dlv-line-height);
+    position: relative; /* For positioning elements */
     /* SLDS grid classes are used in HTML, removing need for custom flex here */
     /* align-items: baseline; */ 
 }
@@ -503,6 +504,7 @@ lightning-tabset .slds-tabs_scoped__item {
 .field-value {
     color: var(--dlv-text-secondary);
     word-break: break-word; /* Allow long values to wrap */
+    overflow-wrap: break-word; /* Ensure long words break properly */
     /* flex-grow: 1; */
      /* Using slds-col slds-size_2-of-3 in HTML */
 }
@@ -512,11 +514,20 @@ lightning-tabset .slds-tabs_scoped__item {
     color: var(--dlv-text-link);
     text-decoration: none;
     transition: color var(--dlv-transition-fast);
+    display: inline-block; /* Better handling for long links */
+    max-width: 100%; /* Constrain to parent */
+    overflow-wrap: break-word; /* Break long words/URLs */
 }
 
 .field-value a:hover {
     color: var(--dlv-text-link-hover);
     text-decoration: underline;
+}
+
+/* Optimize field layout for better responsiveness */
+.fields-container {
+    width: 100%;
+    padding: 0 var(--dlv-spacing-xs); /* Add some padding on the sides */
 }
 
 /* ============================================= */
@@ -581,20 +592,58 @@ lightning-tabset .slds-tabs_scoped__item {
 
     .slds-modal__content {
         max-height: 75vh; /* Allow slightly more height on mobile */
+        padding: var(--dlv-spacing-xs); /* Reduce padding on small screens */
     }
 
+    /* Stack field label and value on small screens for better readability */
     .field-item {
-        /* Stack label and value on small screens if needed */
-        /* flex-direction: column; 
-           align-items: flex-start; */
-           /* Using SLDS grid, it should handle wrapping */
+        flex-direction: column;
+        margin-bottom: var(--dlv-spacing-md); /* Increase margin between stacked fields */
     }
 
-     .field-label {
-        /* Adjust basis if stacking */
-        /* flex-basis: 100%; */
-        /* padding-bottom: 4px; */
-     }
+    .field-label, .field-value {
+        width: 100%; /* Use full width when stacked */
+        padding: 0; /* Remove padding when stacked */
+    }
+
+    .field-label {
+        margin-bottom: 4px; /* Space between label and value */
+        font-size: calc(var(--dlv-font-size-md) - 1px); /* Slightly smaller font */
+    }
+    
+    /* Make table cells more compact on mobile */
+    td, th {
+        padding: calc(var(--dlv-spacing-sm) / 2);
+        font-size: var(--dlv-font-size-sm);
+    }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+    .slds-modal__title {
+        font-size: 16px; /* Smaller title on very small screens */
+    }
+    
+    .slds-modal__header p {
+        font-size: 12px;
+    }
+    
+    /* Make back button smaller on mobile */
+    .back-button {
+        padding: 0.25rem 0.5rem !important;
+        font-size: var(--dlv-font-size-sm) !important;
+    }
+    
+    /* Simplify pagination on small devices */
+    .pagination span {
+        font-size: calc(var(--dlv-font-size-sm) - 2px);
+    }
+    
+    /* Ensure tab labels are readable on small screens */
+    lightning-tabset .slds-tabs_scoped__item {
+        font-size: var(--dlv-font-size-sm);
+        padding: var(--dlv-spacing-xs);
+    }
 }
 
 /* ============================================= */

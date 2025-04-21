@@ -182,7 +182,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             const requiredForFetch = new Set(['Id']); // Always fetch Id
             if (this.titleField) requiredForFetch.add(this.titleField); // Needed for modal title
             if (this.subtitleField) requiredForFetch.add(this.subtitleField); // Needed for modal subtitle
-            fieldsList.forEach(f => requiredForFetch.add(f)); // Add all specified list view fields
+            fieldsList.forEach(f => requiredForFetch.add(f));
 
             // 3. Prepare `columns` array for the list view table (don't include 'Id' column visually)
             this.columns = fieldsList
@@ -193,11 +193,19 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                     sortable: true // Assume all specified fields are sortable initially
                 }));
 
-            // 4. Set default sort field ('Name' if available, otherwise first field in list)
-            // Ensure the default sortBy field is actually in our fetch list.
-             if (!this.sortBy || !requiredForFetch.has(this.sortBy)) {
-                this.sortBy = requiredForFetch.has('Name') ? 'Name' : (fieldsList[0] || 'Id'); // Fallback to Id if list is empty somehow
-             }
+            // 4. Set default sort field - don't assume 'Name' exists
+            // First try the provided sortBy, then titleField, then first field in list
+            if (!this.sortBy || !requiredForFetch.has(this.sortBy)) {
+                // Don't assume Name exists - use the titleField (which defaults to 'Name' but can be configured)
+                // or the first field in the list if titleField is not available
+                if (requiredForFetch.has(this.titleField)) {
+                    this.sortBy = this.titleField;
+                } else {
+                    // Use first field if title isn't available, or fallback to Id
+                    this.sortBy = fieldsList.length > 0 ? fieldsList[0] : 'Id'; 
+                }
+            }
+            
             // Add the final sortBy field to the fetch list if it wasn't already there
             requiredForFetch.add(this.sortBy); 
 
@@ -282,20 +290,28 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     fetchRecordDetails(recordId, objectApiName) {
         // Error handling
         if (!recordId || !objectApiName) {
-            console.error('Missing recordId or objectApiName in fetchRecordDetails');
-            this.handleError('Missing data for record lookup.');
+            this.handleError('Record ID or Object API Name missing for detail view');
+            this.isLoadingRecordDetail = false;
             return;
         }
         
-        // Set loading indicators
-        this.isLoadingRecordDetail = true;
-        this.showRecordDetail = true; // Show modal if not already visible
-        this.error = null; // Clear prior errors
+        // Special handling for User IDs to ensure proper object type
+        if (recordId.startsWith('005') && objectApiName !== 'User') {
+            console.log('Correcting object type from', objectApiName, 'to User for ID', recordId);
+            objectApiName = 'User';
+        }
         
-        console.log(`Fetching details for ${objectApiName}/${recordId}`);
+        this.isLoadingRecordDetail = true;
+        console.log(`Fetching details for ${objectApiName} record: ${recordId}`);
         
         // Set the appropriate icon for the object
         this.setIconForObject(objectApiName);
+        
+        // Show modal if not already visible
+        this.showRecordDetail = true;
+        
+        // Clear prior errors
+        this.error = null;
         
         // Fetch the record data with all accessible fields - maintain original parameters order matching Apex
         getRecordAllFields({ objectApiName: objectApiName, recordId: recordId })
@@ -312,10 +328,14 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                         acc[field.apiName] = field.value;
                         // Handle reference fields
                         if (field.isReference && field.referenceId) {
+                            // Don't assume field.value is a Name field value
+                            // Use the display value provided by the server (which has already been determined)
                             acc[field.apiName] = {
                                 Id: field.referenceId,
-                                Name: field.value,
-                                attributes: { type: field.referenceToObject }
+                                DisplayValue: field.value, // Store the display value
+                                attributes: { 
+                                    type: field.referenceToObject || 'Unknown' // Ensure we have the correct object type
+                                }
                             };
                         }
                         return acc;
@@ -338,8 +358,24 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 this.isLoadingRecordDetail = false;
             })
             .catch(error => {
-                console.error('Error loading record details:', error);
-                this.handleError(error, `Error loading ${objectApiName} record`);
+                console.error('Error details:', error);
+                
+                // Provide a more helpful error message for common issues
+                let errorMessage = `Error fetching details for ${objectApiName} record`;
+                
+                if (error.body && error.body.message) {
+                    // Extract the more detailed message from the error body
+                    errorMessage = error.body.message;
+                    
+                    // Check for specific error types and provide more helpful messages
+                    if (errorMessage.includes('entity type') && errorMessage.includes('does not support query')) {
+                        errorMessage = `Cannot view record details: The object type '${objectApiName}' could not be queried. This might be a system object with limited access.`;
+                    } else if (errorMessage.includes('invalid cross reference id')) {
+                        errorMessage = `The record could not be found or you don't have access to it.`;
+                    }
+                }
+                
+                this.handleError(errorMessage);
                 this.isLoadingRecordDetail = false;
             });
     }
@@ -409,43 +445,65 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     }
 
     /**
-     * Handles navigation to a lookup/reference record when clicked in the detail panel or related list.
-     * Adds the current record to the navigation stack before loading the new record.
+     * Handles navigation to related records by following lookup/reference fields.
+     * Updates navigation stack to support back navigation.
      * 
-     * @param {Event} event - The click event from the lookup link.
+     * @param {Event} event - The click event from the reference field link.
      */
     handleLookupNavigation(event) {
-        event.preventDefault(); // Prevent default link behavior
+        event.preventDefault();
         
-        // Get record ID and object API name from the clicked link's data attributes
+        // Get the record ID and object API name from the clicked link's data attributes
         const recordId = event.currentTarget.dataset.recordId;
-        const objectApiName = event.currentTarget.dataset.objectApiName;
+        let objectApiName = event.currentTarget.dataset.objectApiName;
         
-        if (!recordId || !objectApiName) {
-            console.error('Missing recordId or objectApiName for lookup navigation');
+        if (!recordId) {
+            this.handleError('Missing record ID for lookup navigation');
             return;
         }
         
-        console.log(`Navigating to lookup: ${objectApiName}/${recordId}`);
+        // Special handling for User IDs to ensure proper object type
+        if (recordId.startsWith('005')) {
+            console.log('Detected User ID, ensuring object type is User');
+            objectApiName = 'User';
+        }
         
-        // Save current record to navigation stack before loading new one
+        // Ensure we have a valid object API name
+        if (!objectApiName || objectApiName === 'Name') {
+            // Log error for debugging
+            console.error('Invalid object API name for lookup navigation:', objectApiName);
+            this.handleError('Cannot navigate to this record: Invalid or unsupported object type.');
+            return;
+        }
+        
+        console.log(`Navigating to related record: ${objectApiName}/${recordId}`);
+        
+        // First, save the current record to the navigation stack
+        // This is what enables the back button
         if (this.selectedRecord) {
-            // Push current record info to navigation stack
             this.navigationStack.push({
                 recordId: this.selectedRecord.Id,
                 objectApiName: this.selectedRecord.attributes.type,
+                iconName: this.iconName,
+                // Don't use fields that may not exist on all objects
                 title: this.recordDetailTitle,
                 subtitle: this.recordDetailSubtitle
             });
-            
-            console.log('Added to navigation stack:', JSON.stringify(this.navigationStack));
+            console.log('Added to navigation stack:', JSON.stringify(this.navigationStack[this.navigationStack.length - 1]));
         }
         
-        // Reset data
+        // Reset properties for the new record
         this.selectedRecord = null;
         this.detailedFieldsData = [];
+        this.relatedObjects = [];
+        this.relatedRecords = [];
+        this.selectedTab = 'details';
+        this.error = null;
         
-        // Fetch the record details for the looked-up record
+        // Show loading state
+        this.isLoadingRecordDetail = true;
+        
+        // Fetch the record details for the linked record
         this.fetchRecordDetails(recordId, objectApiName);
     }
     
@@ -619,6 +677,81 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         }, 500);
     }
 
+    /**
+     * Handles search input changes with debouncing to prevent excessive server calls.
+     * Updates searchTerm and triggers record reload after a short delay.
+     * 
+     * @param {Event} event - The input change event from the search field.
+     */
+    handleSearch(event) {
+        const searchValue = event.target.value;
+        
+        // Clear any existing timeout
+        if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+        }
+        
+        // Set a new timeout for debouncing
+        this.searchTimeout = setTimeout(() => {
+            // Update the searchTerm property
+            this.searchTerm = searchValue;
+            
+            // Reset to first page when searching
+            this.currentPage = 1;
+            
+            // Load records with the new search term
+            this.loadRecords();
+        }, 300); // 300ms debounce delay
+    }
+
+    /**
+     * Handles clicks on pagination buttons to navigate between pages of records.
+     * Updates currentPage and triggers a record reload.
+     * 
+     * @param {Event} event - The click event from a pagination button.
+     */
+    handlePageChange(event) {
+        // Get page number from button data attribute
+        const page = parseInt(event.currentTarget.dataset.page, 10);
+        
+        // Don't do anything if the page is invalid or the same as current
+        if (isNaN(page) || page === this.currentPage) {
+            return;
+        }
+        
+        // Update current page and reload records
+        this.currentPage = page;
+        this.loadRecords();
+    }
+
+    /**
+     * Handles clicks on column headers to sort the data.
+     * Updates sortBy and sortDirection properties, then triggers a record reload.
+     * 
+     * @param {Event} event - The click event from a column header.
+     */
+    handleSort(event) {
+        // Get field name from the clicked column's data attribute
+        const field = event.currentTarget.dataset.field;
+        
+        // Don't sort if no field is provided
+        if (!field) {
+            return;
+        }
+        
+        // If clicking the current sort field, toggle direction
+        // Otherwise, set the new field with ascending direction
+        if (this.sortBy === field) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.sortBy = field;
+            this.sortDirection = 'asc';
+        }
+        
+        // Reload records with new sort parameters
+        this.loadRecords();
+    }
+
     // --- Utility Methods ---
 
     /**
@@ -756,40 +889,52 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     // --- Getters for Template Logic ---
 
     /**
-     * Prepares the records data for display in the main list view table. 
-     * This getter maps the raw record data fetched from Apex into a structure
-     * suitable for the template's iteration, particularly if custom cell formatting or actions were needed.
-     * Currently, it creates a `cellsData` array for each record, mapping column definitions to record values.
+     * Processes records for display in the data table, ensuring consistent formatting.
      * 
-     * @returns {Array<object>} An array of record objects, each containing an `id`, the original `record` data, 
-     *                          and a `cellsData` array for table cell iteration. Returns empty array if no records.
+     * @returns {Array<object>} Records with formatted data ready for display.
      */
     get recordsWithData() {
-         if (!this.records || this.records.length === 0) return [];
-         // console.log(`[recordsWithData] Processing ${this.records.length} records.`); // Log: How many records are we starting with?
-
-         // Map each record to the structure expected by the template's table loop
-         return this.records.map((record, index) => {
-            // console.log(`[recordsWithData] Record ${index}:`, JSON.stringify(record)); // Log: What does the raw record look like?
-             // Create an array of cell data based on the defined columns
-             const cellsData = this.columns.map(col => {
-                 // Basic value retrieval. Add handling for relationship fields (e.g., record['Owner.Name']) if needed.
-                 // This assumes field names in `this.columns` directly match keys in the `record` object.
-                 const value = record[col.fieldName] ?? ''; // Use nullish coalescing for undefined/null fields
-                 // console.log(`[recordsWithData] Record ${index} - Column: ${col.fieldName}, Raw Value: ${record[col.fieldName]}, Display Value: ${value}`); // Log: Field name and value being processed
-                 return { 
-                     key: `${record.Id}-${col.fieldName}`, // Unique key for the cell in the loop
-                     value: value // The value to display
-                    };
-             });
-             const resultData = {
-                 id: record.Id, // Record Id for the row key and click handler
-                 record: record, // Keep the original record data accessible if needed
-                 cellsData: cellsData // Array of cell data for the template to iterate over
-             };
-             // console.log(`[recordsWithData] Record ${index} - Processed Data:`, JSON.stringify(resultData)); // Log: Final structure for this record
-             return resultData;
-         });
+        if (!this.records || !this.records.length) {
+            return [];
+        }
+        
+        return this.records.map(record => {
+            // Process each record into display format
+            const formattedRecord = { id: record.Id };
+            const cellsData = [];
+            
+            // Format each column's data
+            this.columns.forEach(column => {
+                const fieldName = column.fieldName;
+                let value = record[fieldName];
+                
+                // Handle relationship fields (they're objects with DisplayValue or other fields)
+                if (value && typeof value === 'object') {
+                    // If it has DisplayValue property from our server-side formatting
+                    if (value.DisplayValue) {
+                        value = value.DisplayValue;
+                    } 
+                    // Fallback to Id if nothing else available
+                    else {
+                        value = value.Id || '';
+                    }
+                }
+                
+                // Convert null/undefined to empty string for display
+                if (value === null || value === undefined) {
+                    value = '';
+                }
+                
+                // Add to cells for this record
+                cellsData.push({
+                    key: `${record.Id}-${fieldName}`,
+                    value: String(value)
+                });
+            });
+            
+            formattedRecord.cellsData = cellsData;
+            return formattedRecord;
+        });
     }
 
 
@@ -865,25 +1010,48 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * @returns {string} The calculated title for the modal.
      */
     get recordDetailTitle() {
-        // Show loading text if the selected record data isn't fully loaded yet
-        if (this.isLoadingRecordDetail || !this.selectedRecord) return 'Loading...'; 
+        if (!this.selectedRecord) {
+            return 'Record Details';
+        }
         
-        // Return the title field value, or name, or ID, or default
-        return this.selectedRecord[this.titleField] ||
-               this.selectedRecord.Name ||
-               this.selectedRecord.Id ||
-               'Record Detail';
+        // Use the configured titleField (which defaults to Name but can be changed)
+        const titleValue = this.selectedRecord[this.titleField];
+        
+        // Handle when the title field is not available or null
+        if (titleValue === undefined || titleValue === null) {
+            return `${this.selectedRecord.attributes.type} Record`;
+        }
+        
+        // Handle reference fields which are stored as objects with DisplayValue
+        if (titleValue && typeof titleValue === 'object' && titleValue.DisplayValue) {
+            return titleValue.DisplayValue;
+        }
+        
+        return String(titleValue);
     }
 
     /**
-     * Gets the subtitle for the record detail modal header.
-     * Uses the field specified by `subtitleField` from the detailed data.
-     * 
-     * @returns {string} The subtitle string, or empty string if not applicable.
+     * Get subtitle for record detail modal that doesn't rely on Name field
      */
     get recordDetailSubtitle() {
-        if (this.isLoadingRecordDetail || !this.subtitleField || !this.selectedRecord) return '';
-        return this.selectedRecord[this.subtitleField] || '';
+        if (!this.selectedRecord) {
+            return '';
+        }
+        
+        // If subtitleField is specified and available, use it
+        if (this.subtitleField && this.selectedRecord[this.subtitleField]) {
+            const subtitleValue = this.selectedRecord[this.subtitleField];
+            
+            // Handle reference fields
+            if (subtitleValue && typeof subtitleValue === 'object' && subtitleValue.DisplayValue) {
+                return subtitleValue.DisplayValue;
+            }
+            
+            return String(subtitleValue);
+        }
+        
+        // Fallback to showing record ID
+        return `Record ID: ${this.selectedRecord.Id}`;
     }
 
     /**
@@ -924,27 +1092,129 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 return;
             }
             
-            // Add field even if value is null/undefined, displaying blank instead
-            const displayValue = (field.value !== null && field.value !== undefined) ? field.value : '';
+            // Format the value based on field type
+            let displayValue = this.formatFieldValue(field);
+            
+            // Make sure reference fields have a valid object API name - never use "Name" as an object type
+            if (field.isReference && (!field.referenceToObject || field.referenceToObject === 'Name')) {
+                console.log(`Warning: Reference field ${field.apiName} has invalid object type: ${field.referenceToObject}`);
+                // Skip fields with invalid reference object types to prevent navigation errors
+                if (!field.referenceToObject) {
+                    field.isReference = false; // Don't treat as reference if no valid object type
+                }
+            }
             
             // Add the field to the display list
             fieldsToDisplay.push({
                 fieldName: field.apiName,
-                label: field.label,
+                label: this.formatFieldLabel(field.label), // Format label for display
                 value: displayValue,
                 isReference: field.isReference || false,
                 referenceId: field.referenceId || null,
                 referenceToObject: field.referenceToObject || null
             });
-            
-            console.log(`Added field: ${field.label} (${field.apiName}) = ${displayValue}`);
         });
 
-        // Sort fields by label
-        fieldsToDisplay.sort((a, b) => a.label.localeCompare(b.label));
+        // Group related fields together and sort
+        return this.sortFieldsForDisplay(fieldsToDisplay);
+    }
+
+    /**
+     * Sort fields to show standard fields first, then custom fields, with logical grouping.
+     */
+    sortFieldsForDisplay(fields) {
+        // Group fields by "related" concepts
+        const ownerFields = ['OwnerId', 'Owner', 'CreatedById', 'CreatedBy', 'LastModifiedById', 'LastModifiedBy'];
+        const dateFields = ['CreatedDate', 'LastModifiedDate', 'LastActivityDate'];
+        const nameFields = ['Name', 'FirstName', 'LastName', 'Title', 'Subject', 'CaseNumber'];
         
-        console.log(`Total fields to display: ${fieldsToDisplay.length}`);
-        return fieldsToDisplay;
+        // Assign grouping weights to determine display order
+        const getWeight = (fieldName) => {
+            const lowerName = fieldName.toLowerCase();
+            if (nameFields.some(f => lowerName.includes(f.toLowerCase()))) return 1;  // Name fields first
+            if (ownerFields.some(f => lowerName.includes(f.toLowerCase()))) return 50; // Owner fields at end
+            if (dateFields.some(f => lowerName.includes(f.toLowerCase()))) return 40;  // Date fields near end
+            if (lowerName.endsWith('__c')) return 30; // Custom fields in the middle
+            return 20; // Other standard fields
+        };
+        
+        // Sort by weight and then alphabetically within groups
+        return fields.sort((a, b) => {
+            const weightA = getWeight(a.fieldName);
+            const weightB = getWeight(b.fieldName);
+            if (weightA !== weightB) return weightA - weightB;
+            return a.label.localeCompare(b.label);
+        });
+    }
+
+    /**
+     * Format field values for display based on their type.
+     */
+    formatFieldValue(field) {
+        // Handle null/undefined
+        if (field.value === null || field.value === undefined) {
+            return '';
+        }
+        
+        // Format based on type
+        switch (field.type) {
+            case 'BOOLEAN':
+                return field.value ? 'Yes' : 'No';
+            case 'DATE':
+                return this.formatDate(field.value);
+            case 'DATETIME':
+                return this.formatDateTime(field.value);
+            case 'CURRENCY':
+                return this.formatCurrency(field.value);
+            case 'PERCENT':
+                return `${field.value}%`;
+            case 'PHONE':
+                return field.value; // Already formatted by Salesforce
+            case 'EMAIL':
+                return field.value; // Already formatted by Salesforce
+            case 'URL':
+                return field.value; // URLs will be handled as regular text unless special UI needed
+            default:
+                return field.value.toString();
+        }
+    }
+
+    /**
+     * Format date values for display.
+     */
+    formatDate(dateStr) {
+        try {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString();
+        } catch (e) {
+            return dateStr; // Return original if parsing fails
+        }
+    }
+
+    /**
+     * Format datetime values for display.
+     */
+    formatDateTime(dateTimeStr) {
+        try {
+            const date = new Date(dateTimeStr);
+            return date.toLocaleString();
+        } catch (e) {
+            return dateTimeStr; // Return original if parsing fails
+        }
+    }
+
+    /**
+     * Format currency values for display.
+     */
+    formatCurrency(value) {
+        try {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(value);
+        } catch (e) {
+            return value.toString(); // Return original if formatting fails
+        }
     }
 
     /**
@@ -1022,5 +1292,32 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         }
         
         console.log(`Set icon for ${objectApiName} to ${this.iconName}`);
+    }
+
+    /**
+     * Returns the previous page number, used by the pagination "previous" button.
+     * 
+     * @returns {number} The previous page number.
+     */
+    get previousPage() {
+        return this.currentPage - 1;
+    }
+
+    /**
+     * Returns the next page number, used by the pagination "next" button.
+     * 
+     * @returns {number} The next page number.
+     */
+    get nextPage() {
+        return this.currentPage + 1;
+    }
+
+    /**
+     * Determines whether to show pagination controls based on total records.
+     * 
+     * @returns {boolean} True if pagination should be displayed.
+     */
+    get showPagination() {
+        return this.totalRecords > this.recordsPerPage;
     }
 }

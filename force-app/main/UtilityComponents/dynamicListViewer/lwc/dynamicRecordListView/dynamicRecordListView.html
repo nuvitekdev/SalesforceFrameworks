@@ -93,12 +93,12 @@
             </div>
         </template>
 
-        <!-- Navigation Stack (Multiple Record Detail Views) -->
+        <!-- Record Detail Modal -->
         <template if:true={showRecordDetail}>
             <!-- Modal backdrop -->
             <div class="slds-backdrop slds-backdrop_open"></div>
             
-            <!-- Single Record Detail Modal - Simplified approach -->
+            <!-- Record Detail Modal -->
             <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="modal-heading" class="record-modal slds-modal slds-fade-in-open">
                 <div class="slds-modal__container">
                     <!-- Header -->
@@ -118,7 +118,7 @@
                             </button>
                         </template>
                         
-                        <!-- Object type indicator with icon -->
+                        <!-- Object type indicator -->
                         <template if:true={selectedRecord}>
                             <div class="object-type-badge slds-var-m-bottom_small">
                                 <span>{selectedRecord.attributes.type}</span>
@@ -142,23 +142,43 @@
                                         </div>
                                     </template>
                                     <template if:false={isLoadingRecordDetail}>
-                                        <template for:each={displayFields} for:item="field">
-                                            <div key={field.fieldName} class="field-item slds-grid slds-gutters slds-var-m-bottom_small">
-                                                <span class="field-label slds-col slds-size_1-of-3">{field.label}</span>
-                                                <!-- Render as link if it's a lookup and not the current record -->
-                                                <template if:true={field.isReference}>
-                                                     <span class="field-value slds-col slds-size_2-of-3">
-                                                        <a href="#" data-record-id={field.referenceId} data-object-api-name={field.referenceToObject} onclick={handleLookupNavigation}>{field.value}</a>
-                                                     </span>
-                                                </template>
-                                                <template if:false={field.isReference}>
-                                                    <span class="field-value slds-col slds-size_2-of-3">{field.value}</span>
-                                                </template>
-                                            </div>
-                                        </template>
                                         <template if:true={noFieldsToDisplay}>
                                             <div class="empty-state small slds-align_absolute-center">
                                                 <p>No field data available for this record.</p>
+                                            </div>
+                                        </template>
+                                        <template if:false={noFieldsToDisplay}>
+                                            <!-- Use a responsive grid layout instead of individual rows -->
+                                            <div class="slds-grid slds-wrap slds-gutters">
+                                                <template for:each={displayFields} for:item="field">
+                                                    <!-- Each field gets a full grid item -->
+                                                    <div key={field.fieldName} class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-2">
+                                                        <div class="field-item">
+                                                            <div class="field-label slds-truncate" title={field.label}>{field.label}</div>
+                                                            <!-- Only render as link if it's a valid reference field with both a valid object API name and ID -->
+                                                            <div class="field-value">
+                                                                <template if:true={field.isReference}>
+                                                                    <template if:true={field.referenceId}>
+                                                                        <template if:true={field.referenceToObject}>
+                                                                            <a href="#" data-record-id={field.referenceId} data-object-api-name={field.referenceToObject} onclick={handleLookupNavigation}>{field.value}</a>
+                                                                        </template>
+                                                                        <template if:false={field.referenceToObject}>
+                                                                            <!-- No valid object type, show as plain text -->
+                                                                            {field.value}
+                                                                        </template>
+                                                                    </template>
+                                                                    <template if:false={field.referenceId}>
+                                                                        <!-- No referenceId, show as plain text -->
+                                                                        {field.value}
+                                                                    </template>
+                                                                </template>
+                                                                <template if:false={field.isReference}>
+                                                                    {field.value}
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </template>
                                             </div>
                                         </template>
                                     </template>

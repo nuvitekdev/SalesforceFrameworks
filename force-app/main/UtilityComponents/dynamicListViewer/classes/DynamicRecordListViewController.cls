@@ -330,14 +330,27 @@ public with sharing class DynamicRecordListViewController {
                 throw new AuraHandledException('Relationship not found: ' + relationshipName);
             }
             
-            // Construct query for the related records
-            String query = 'SELECT Id, Name FROM ' + String.escapeSingleQuotes(relatedObjectName);
+            // Get the related object's schema to determine appropriate name fields
+            Schema.SObjectType relatedType = Schema.getGlobalDescribe().get(relatedObjectName);
+            Map<String, Schema.SObjectField> fieldMap = relatedType.getDescribe().fields.getMap();
+            
+            // Determine the most appropriate "name" field for display
+            String nameField = findAppropriateNameField(relatedObjectName, fieldMap);
+            
+            // Construct query for the related records 
+            // Always include Id and dynamically determined name field
+            String query = 'SELECT Id';
+            
+            if (!String.isBlank(nameField)) {
+                query += ', ' + nameField;
+            }
+            
+            query += ' FROM ' + String.escapeSingleQuotes(relatedObjectName);
             
             // Add relationship field
-            Schema.SObjectType relatedType = Schema.getGlobalDescribe().get(relatedObjectName);
             String relationshipField = '';
             
-            for (Schema.SObjectField field : relatedType.getDescribe().fields.getMap().values()) {
+            for (Schema.SObjectField field : fieldMap.values()) {
                 Schema.DescribeFieldResult describe = field.getDescribe();
                 if (describe.getType() == Schema.DisplayType.REFERENCE) {
                     List<Schema.SObjectType> referenceTo = describe.getReferenceTo();
@@ -369,35 +382,123 @@ public with sharing class DynamicRecordListViewController {
     }
     
     /**
-     * Retrieves detailed information for a single record, including all accessible fields 
-     * along with their labels, values, and data types. Optimized to handle relationship fields.
+     * Finds the most appropriate field to use as a "name" or title field for an object
      * 
-     * @param objectApiName The API name of the object (e.g., 'Account').
-     * @param recordId The ID of the record to retrieve.
-     * @return List<Map<String, Object>> A list where each map represents a field and contains:
-     *         - 'apiName': The field's API name.
-     *         - 'label': The field's UI label.
-     *         - 'type': The field's data type (String representation of Schema.DisplayType).
-     *         - 'value': The field's value. For relationship fields, this will be the related record's Name.
-     *         - 'isReference': Boolean, true if it's a reference/lookup field.
-     *         - 'referenceId': The ID of the related record (if isReference is true).
-     *         - 'referenceToObject': The API Name of the related object (if isReference is true).
+     * @param objectName The API name of the object
+     * @param fieldMap The map of fields for the object
+     * @return The API name of the field to use as name/title
      */
-    @AuraEnabled(cacheable=true) // Make cacheable if data doesn't change frequently per user
+    private static String findAppropriateNameField(String objectName, Map<String, Schema.SObjectField> fieldMap) {
+        // Check for common name fields in order of preference
+        List<String> potentialNameFields = new List<String>{
+            'Name',
+            'Subject',
+            'Title',
+            'CaseNumber',
+            'OrderNumber',
+            'ContractNumber',
+            'SolutionNumber',
+            'FirstName',
+            'LastName'
+        };
+        
+        // For custom objects, they typically have Name field
+        if (objectName.endsWith('__c') && fieldMap.containsKey('name')) {
+            return 'Name';
+        }
+        
+        // Check if any of the potential name fields exists and is accessible
+        for (String fieldName : potentialNameFields) {
+            String lowercaseFieldName = fieldName.toLowerCase();
+            if (fieldMap.containsKey(lowercaseFieldName) && fieldMap.get(lowercaseFieldName).getDescribe().isAccessible()) {
+                return fieldName;
+            }
+        }
+        
+        // Fallback: find any text field that might serve as a name/description
+        for (String fieldName : fieldMap.keySet()) {
+            Schema.DescribeFieldResult describe = fieldMap.get(fieldName).getDescribe();
+            if (describe.isAccessible() && 
+                (describe.getType() == Schema.DisplayType.STRING || 
+                 describe.getType() == Schema.DisplayType.TEXTAREA)) {
+                // Skip system fields and relationship fields
+                if (!fieldName.endsWith('Id') && 
+                    !fieldName.startsWith('system') && 
+                    !fieldName.startsWith('is') &&
+                    !fieldName.contains('__r')) {
+                    return describe.getName();
+                }
+            }
+        }
+        
+        // If no appropriate field is found, just return Id as we always query it
+        return '';
+    }
+    
+    /**
+     * Determine the proper object type from an ID with special handling for polymorphic relations
+     * 
+     * @param recordId The ID to analyze
+     * @return String The API name of the object
+     */
+    private static String getObjectTypeFromId(String recordId) {
+        if (String.isBlank(recordId)) {
+            return '';
+        }
+        
+        try {
+            // Convert to Id type for proper prefix analysis
+            Id idValue = Id.valueOf(recordId);
+            
+            // Handle specific ID prefixes directly to ensure accuracy
+            String prefix = idValue.getSObjectType().getDescribe().getKeyPrefix();
+            System.debug('ID Prefix for ' + recordId + ' is: ' + prefix);
+            
+            // Special handling for User vs Group - both can be owners
+            if (recordId.startsWith('005')) {
+                return 'User'; // 005 prefix is always User
+            } else if (recordId.startsWith('00G')) {
+                return 'Group'; // 00G prefix is always Group
+            }
+            
+            // Fall back to standard method for other object types
+            return idValue.getSObjectType().getDescribe().getName();
+        } catch (Exception e) {
+            System.debug(LoggingLevel.ERROR, 'Error determining object type from ID ' + recordId + ': ' + e.getMessage());
+            return '';
+        }
+    }
+
+    @AuraEnabled(cacheable=true)
     public static List<Map<String, Object>> getRecordAllFields(String objectApiName, String recordId) {
         // --- Input Validation & Security ---
-        if (String.isBlank(objectApiName) || !isValidObjectName(objectApiName)) {
-            throw new AuraHandledException('Invalid or inaccessible object: ' + objectApiName);
+        if (String.isBlank(objectApiName)) {
+            throw new AuraHandledException('Object API name is required');
         }
+        
+        // Special handling for User IDs that might be misidentified
+        if (recordId != null && recordId.startsWith('005') && objectApiName != 'User') {
+            System.debug('Correcting object type from ' + objectApiName + ' to User for ID ' + recordId);
+            objectApiName = 'User';
+        }
+        
+        // Verify the object name is valid and queryable 
+        if (!isQueryableObject(objectApiName)) {
+            throw new AuraHandledException('Invalid or unsupported object type: ' + objectApiName);
+        }
+        
         if (String.isBlank(recordId)) {
             throw new AuraHandledException('Record ID is required');
         }
+        
         // Validate Id format
         try {
             Id.valueOf(recordId); 
         } catch (Exception e) {
             throw new AuraHandledException('Invalid Record ID format: ' + recordId);
         }
+        
+        System.debug('Requesting details for ' + objectApiName + ' record: ' + recordId);
 
         // --- Prepare Field Information Collection ---
         List<Map<String, Object>> fieldDetailsList = new List<Map<String, Object>>();
@@ -407,6 +508,8 @@ public with sharing class DynamicRecordListViewController {
         queryFieldSet.add('id'); // Initialize with lowercase 'id'
 
         Map<String, String> relationshipNameMap = new Map<String, String>(); // Map field name to relationship name (e.g., accountid -> Account)
+        Map<String, String> relationshipNameFieldMap = new Map<String, String>(); // Map relationship name to appropriate display field
+        Map<String, String> relationshipToObjectMap = new Map<String, String>(); // Map relationship name to actual object API name
 
         try {
             // --- Get Schema Information ---
@@ -426,9 +529,41 @@ public with sharing class DynamicRecordListViewController {
                     fieldDescribeMap.put(fieldNameLower, fieldDescribe);
                     
                     if (fieldDescribe.getType() == Schema.DisplayType.REFERENCE && fieldDescribe.getRelationshipName() != null) {
-                        relationshipNameMap.put(fieldNameLower, fieldDescribe.getRelationshipName());
-                        queryFieldSet.add(fieldDescribe.getRelationshipName() + '.Name');
-                        queryFieldSet.add(fieldDescribe.getRelationshipName() + '.Id'); 
+                        // It's a relationship field
+                        String relationshipName = fieldDescribe.getRelationshipName();
+                        relationshipNameMap.put(fieldNameLower, relationshipName);
+                        
+                        // Get the related object type
+                        List<Schema.SObjectType> referenceTo = fieldDescribe.getReferenceTo();
+                        String relatedObjectName = '';
+                        
+                        if (referenceTo != null && !referenceTo.isEmpty()) {
+                            Schema.SObjectType relatedObjectType = referenceTo[0];
+                            relatedObjectName = relatedObjectType.getDescribe().getName();
+                            
+                            // Store the proper object API name for this relationship
+                            relationshipToObjectMap.put(relationshipName, relatedObjectName);
+                            
+                            // Find appropriate name field for related object
+                            String nameField = findAppropriateNameField(
+                                relatedObjectName, 
+                                relatedObjectType.getDescribe().fields.getMap()
+                            );
+                            
+                            // Store the right name field for this relationship
+                            relationshipNameFieldMap.put(relationshipName, nameField);
+                            
+                            // Always add Id for the relationship
+                            queryFieldSet.add(relationshipName + '.Id');
+                            
+                            // Add appropriate name field if found
+                            if (String.isNotBlank(nameField)) {
+                                queryFieldSet.add(relationshipName + '.' + nameField);
+                            }
+                        } else {
+                            // Just get Id if can't determine relationship fields
+                            queryFieldSet.add(relationshipName + '.Id');
+                        }
                     } else {
                         queryFieldSet.add(fieldNameLower);
                     }
@@ -472,26 +607,43 @@ public with sharing class DynamicRecordListViewController {
                      SObject relatedRecord = record.getSObject(relationshipName);
                      
                      if (relatedRecord != null) {
-                         fieldDetail.put('value', relatedRecord.get('Name')); // Get Name from related SObject
+                         // Get the appropriate name field for this relationship
+                         String nameField = relationshipNameFieldMap.get(relationshipName);
+                         
+                         if (String.isNotBlank(nameField) && relatedRecord.get(nameField) != null) {
+                             fieldDetail.put('value', relatedRecord.get(nameField)); // Get name field value from related SObject
+                         } else {
+                             // Fallback to Id if no name field available or value is null
+                             fieldDetail.put('value', 'Record: ' + relatedRecord.get('Id'));
+                         }
+                         
                          fieldDetail.put('isReference', true);
                          fieldDetail.put('referenceId', relatedRecord.get('Id')); // Get Id from related SObject
-                         // Attempt to get related object type
-                         try {
-                              fieldDetail.put('referenceToObject', relatedRecord.getSObjectType().getDescribe().getName());
-                         } catch (Exception e) {
-                              System.debug('Could not get reference object type for: ' + relationshipName + ' on record ' + recordId + '. Error: ' + e.getMessage());
-                              fieldDetail.put('referenceToObject', ''); // Fallback
+                         
+                         // Use the pre-determined object API name from our saved map
+                         if (relationshipToObjectMap.containsKey(relationshipName)) {
+                             fieldDetail.put('referenceToObject', relationshipToObjectMap.get(relationshipName));
+                         } else {
+                             // Fallback - determine object type from the ID
+                             String objectTypeFromId = getObjectTypeFromId(String.valueOf(relatedRecord.get('Id')));
+                             fieldDetail.put('referenceToObject', objectTypeFromId);
                          }
                      } else {
                          // Related record is null
                          fieldDetail.put('value', null);
                          fieldDetail.put('isReference', true); // Still a reference field, just no value
                          fieldDetail.put('referenceId', null);
-                         fieldDetail.put('referenceToObject', ''); // Unknown related object type
+                         
                          // Find the target object type from the original describe if possible
-                         List<Schema.SObjectType> targetTypes = fieldDescribe.getReferenceTo();
-                         if(targetTypes != null && !targetTypes.isEmpty()){                             
-                            fieldDetail.put('referenceToObject', targetTypes[0].getDescribe().getName());
+                         if (relationshipToObjectMap.containsKey(relationshipName)) {
+                             fieldDetail.put('referenceToObject', relationshipToObjectMap.get(relationshipName));
+                         } else {
+                             List<Schema.SObjectType> targetTypes = fieldDescribe.getReferenceTo();
+                             if(targetTypes != null && !targetTypes.isEmpty()){                             
+                                fieldDetail.put('referenceToObject', targetTypes[0].getDescribe().getName());
+                             } else {
+                                fieldDetail.put('referenceToObject', ''); // No object type available
+                             }
                          }
                      }
                  } else {
@@ -500,9 +652,19 @@ public with sharing class DynamicRecordListViewController {
                      fieldDetail.put('isReference', fieldDescribe.getType() == Schema.DisplayType.REFERENCE);
                      if((Boolean)fieldDetail.get('isReference')){
                         fieldDetail.put('referenceId', record.get(fieldApiName)); 
+                         
+                         // For these direct reference fields, determine the object type
                          List<Schema.SObjectType> targetTypes = fieldDescribe.getReferenceTo();
                          if(targetTypes != null && !targetTypes.isEmpty()){                             
                             fieldDetail.put('referenceToObject', targetTypes[0].getDescribe().getName());
+                         } else {
+                            // Try to determine object type from ID
+                            String objectTypeFromId = getObjectTypeFromId(String.valueOf(record.get(fieldApiName)));
+                            if (String.isNotBlank(objectTypeFromId)) {
+                                fieldDetail.put('referenceToObject', objectTypeFromId);
+                            } else {
+                                fieldDetail.put('referenceToObject', ''); // No object type available
+                            }
                          }
                      }
                  }
@@ -776,6 +938,37 @@ public with sharing class DynamicRecordListViewController {
                 fieldType == Schema.DisplayType.URL;
         } catch (Exception e) {
             System.debug('Error checking if field is text field: ' + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Helper method to validate if an object API name is a queryable Salesforce object
+     * 
+     * @param objectName The object API name to validate
+     * @return Boolean - true if the object exists and can be queried
+     */
+    private static Boolean isQueryableObject(String objectName) {
+        if (String.isBlank(objectName)) {
+            return false;
+        }
+        
+        // Never use 'Name' as an object - it's a field, not an object
+        if (objectName.equalsIgnoreCase('Name')) {
+            return false;
+        }
+        
+        try {
+            // Check if it's a valid SObject name
+            Schema.SObjectType sType = Schema.getGlobalDescribe().get(objectName);
+            if (sType == null) {
+                return false;
+            }
+            
+            // Check if it's queryable
+            Schema.DescribeSObjectResult describeResult = sType.getDescribe();
+            return describeResult.isQueryable() && describeResult.isAccessible();
+        } catch(Exception e) {
             return false;
         }
     }
