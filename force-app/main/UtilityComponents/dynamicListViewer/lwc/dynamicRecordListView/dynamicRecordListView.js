@@ -41,6 +41,8 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     @api accentColor = '#D5DF23';
     /** Optional. Main text color */
     @api textColor = '#1d1d1f';
+    /** Maximum number of lookup navigations allowed (0 = unlimited) */
+    @api maxNavigationDepth = 0;
     
     // --- Internal Component State ---
     @track columns = [];
@@ -408,6 +410,12 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     handleLookupNavigation(event) {
         event.preventDefault();
         
+        // If lookup navigation is disabled or max depth reached, don't proceed
+        if (this.effectiveLookupNavigationDisabled) {
+            console.log('Lookup navigation is disabled due to configuration or maximum depth reached');
+            return;
+        }
+        
         // Get the record ID and object API name from the clicked link's data attributes
         const recordId = event.currentTarget.dataset.recordId;
         let objectApiName = event.currentTarget.dataset.objectApiName;
@@ -454,11 +462,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         this.relatedRecords = [];
         this.selectedTab = 'details';
         this.error = null;
-        
-        // Show loading state
-        this.isLoadingRecordDetail = true;
-        
-        // Fetch the record details for the linked record
+        this.showRecordDetail = true;
         this.fetchRecordDetails(recordId, objectApiName);
     }
     
@@ -807,7 +811,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         
         return getRelatedRecords(params).catch(() => []);
     }
-
+    
     /**
      * Try to load FeedItems using the standard relationship
      * @returns {Promise<boolean>} True if items were found
@@ -1340,11 +1344,17 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
 
         const fieldsToDisplay = [];
         
-        // List of system fields to exclude
-        const systemFields = [
-            'id', 'isdeleted', 'createddate', 'createdbyid', 'lastmodifieddate', 
-            'lastmodifiedbyid', 'systemmodstamp', 'lastactivitydate', 'lastvieweddate', 
-            'lastreferenceddate'
+        // List of system fields to exclude - using a much more targeted approach now
+        const excludedFields = [
+            // System fields
+            'isdeleted', 'systemmodstamp'
+        ];
+        
+        // List of important fields that should always be included regardless of value
+        const importantFields = [
+            'id', 'name', 'firstname', 'lastname', 'user', 'owner', 'createdby', 'lastmodifiedby',
+            'email', 'phone', 'title', 'department', 'username', 'manager', 'contact', 'account',
+            'alias', 'active', 'profile', 'division'
         ];
         
         console.log(`Processing ${this.detailedFieldsData.length} fields for display`);
@@ -1357,14 +1367,40 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 return;
             }
             
-            // Skip system fields
-            if (systemFields.includes(field.apiName.toLowerCase())) {
-                console.log(`Skipping system field: ${field.apiName}`);
+            const fieldNameLower = field.apiName.toLowerCase();
+            
+            // Skip exact matches on excluded system fields
+            if (excludedFields.includes(fieldNameLower)) {
+                console.log(`Skipping excluded field: ${field.apiName}`);
                 return;
             }
             
             // Format the value based on field type
             let displayValue = this.formatFieldValue(field);
+            
+            // Skip fields with empty/null values UNLESS they are important fields
+            const isImportantField = importantFields.some(important => 
+                fieldNameLower.includes(important.toLowerCase()));
+                
+            // Also consider fields ending with "Id" as important (lookup fields)
+            const isLookupField = fieldNameLower.endsWith('id');
+            
+            if ((displayValue === '' || displayValue === null || displayValue === undefined) && 
+                !isImportantField && !isLookupField) {
+                console.log(`Skipping empty value field: ${field.apiName}`);
+                return;
+            }
+            
+            // Skip fields with "false" or "No" boolean values unless they're important
+            if ((displayValue === 'No' || displayValue === false) && 
+                !isImportantField &&
+                !fieldNameLower.includes('active') && 
+                !fieldNameLower.includes('primary') && 
+                !fieldNameLower.includes('main') &&
+                !fieldNameLower.includes('default')) {
+                console.log(`Skipping "No" value field: ${field.apiName}`);
+                return;
+            }
             
             // Make sure reference fields have a valid object API name - never use "Name" as an object type
             if (field.isReference && (!field.referenceToObject || field.referenceToObject === 'Name')) {
@@ -1375,6 +1411,42 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 }
             }
             
+            // Check if this is an address field
+            const isAddress = this.isAddressField(field.apiName) || 
+                (typeof field.value === 'object' && this.hasAddressComponents(field.value));
+            
+            // Check if this value has multiple lines for formatting
+            const isMultiLine = typeof displayValue === 'string' && 
+                (displayValue.includes('\n') || displayValue.length > 100);
+            
+            // Generate map URL and detect if we have geolocation
+            let hasGeolocation = false;
+            let mapUrl = '';
+            
+            if (isAddress) {
+                // Try to extract address components
+                const addressData = typeof field.value === 'object' ? field.value : {};
+                const street = addressData.street || addressData.Street || '';
+                const city = addressData.city || addressData.City || '';
+                const state = addressData.state || addressData.State || addressData.stateCode || addressData.StateCode || '';
+                const zip = addressData.postalCode || addressData.PostalCode || addressData.zip || addressData.Zip || '';
+                const country = addressData.country || addressData.Country || addressData.countryCode || addressData.CountryCode || '';
+                
+                // Create a map URL for Google Maps
+                if (street || city || state || zip || country) {
+                    const addressParts = [street, city, state, zip, country].filter(part => part).join(', ');
+                    mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addressParts)}`;
+                    hasGeolocation = true;
+                }
+                
+                // If we have direct lat/lng coordinates, use those
+                if (addressData.latitude !== undefined && addressData.longitude !== undefined &&
+                    addressData.latitude !== null && addressData.longitude !== null) {
+                    mapUrl = `https://www.google.com/maps/search/?api=1&query=${addressData.latitude},${addressData.longitude}`;
+                    hasGeolocation = true;
+                }
+            }
+            
             // Add the field to the display list
             fieldsToDisplay.push({
                 fieldName: field.apiName,
@@ -1382,7 +1454,11 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 value: displayValue,
                 isReference: field.isReference || false,
                 referenceId: field.referenceId || null,
-                referenceToObject: field.referenceToObject || null
+                referenceToObject: field.referenceToObject || null,
+                isAddress: isAddress,
+                isMultiLine: isMultiLine,
+                hasGeolocation: hasGeolocation,
+                mapUrl: mapUrl
             });
         });
 
@@ -1394,19 +1470,34 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * Sort fields to show standard fields first, then custom fields, with logical grouping.
      */
     sortFieldsForDisplay(fields) {
-        // Group fields by "related" concepts
-        const ownerFields = ['OwnerId', 'Owner', 'CreatedById', 'CreatedBy', 'LastModifiedById', 'LastModifiedBy'];
+        // Group fields by "related" concepts - modified to prioritize user fields
+        const nameFields = ['Name', 'FirstName', 'LastName', 'FullName', 'Username'];
+        const userFields = ['User', 'Owner', 'CreatedBy', 'LastModifiedBy', 'Manager', 'OwnerId', 
+                        'CreatedById', 'LastModifiedById', 'ManagerId', 'UserId'];
+        const contactFields = ['Phone', 'MobilePhone', 'Email', 'Department', 'Division', 'Title', 'Alias'];
+        const addressFields = ['Street', 'City', 'State', 'Country', 'PostalCode', 'Address', 'Billing', 'Shipping'];
         const dateFields = ['CreatedDate', 'LastModifiedDate', 'LastActivityDate'];
-        const nameFields = ['Name', 'FirstName', 'LastName', 'Title', 'Subject', 'CaseNumber'];
+        const statusFields = ['Status', 'Stage', 'Active', 'IsActive', 'Primary', 'Default'];
         
-        // Assign grouping weights to determine display order
+        // Assign grouping weights to determine display order - adjusted to give priority to Users
         const getWeight = (fieldName) => {
             const lowerName = fieldName.toLowerCase();
-            if (nameFields.some(f => lowerName.includes(f.toLowerCase()))) return 1;  // Name fields first
-            if (ownerFields.some(f => lowerName.includes(f.toLowerCase()))) return 50; // Owner fields at end
-            if (dateFields.some(f => lowerName.includes(f.toLowerCase()))) return 40;  // Date fields near end
-            if (lowerName.endsWith('__c')) return 30; // Custom fields in the middle
-            return 20; // Other standard fields
+            
+            // Most important fields first
+            if (nameFields.some(f => lowerName.includes(f.toLowerCase()))) return 1;
+            if (userFields.some(f => lowerName.includes(f.toLowerCase()))) return 5; // Higher priority for user fields
+            if (contactFields.some(f => lowerName.includes(f.toLowerCase()))) return 10;
+            if (addressFields.some(f => lowerName.includes(f.toLowerCase()))) return 15;
+            if (statusFields.some(f => lowerName.includes(f.toLowerCase()))) return 20;
+            
+            // Mid-priority fields
+            if (lowerName.endsWith('__c')) return 30; // Custom fields
+            
+            // Lower priority fields
+            if (dateFields.some(f => lowerName.includes(f.toLowerCase()))) return 80;
+            
+            // Default weight
+            return 50;
         };
         
         // Sort by weight and then alphabetically within groups
@@ -1425,6 +1516,21 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         // Handle null/undefined
         if (field.value === null || field.value === undefined) {
             return '';
+        }
+        
+        // Handle address and compound fields - when value is an object but not a lookup relation
+        if (typeof field.value === 'object' && !field.isReference) {
+            // Check if it's likely an address field based on field name or structure
+            if (this.isAddressField(field.apiName) || this.hasAddressComponents(field.value)) {
+                return this.formatAddressField(field.value);
+            }
+            
+            // Generic object handling (fallback)
+            try {
+                return JSON.stringify(field.value);
+            } catch (e) {
+                return '[Complex Value]';
+            }
         }
         
         // Format based on type
@@ -1446,8 +1552,65 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             case 'URL':
                 return field.value; // URLs will be handled as regular text unless special UI needed
             default:
-                return field.value.toString();
+                return String(field.value);
         }
+    }
+    
+    /**
+     * Checks if a field is likely an address field based on its name
+     */
+    isAddressField(fieldName) {
+        if (!fieldName) return false;
+        
+        const addressIndicators = ['address', 'billing', 'shipping', 'mailing', 'street', 'location'];
+        const lowerFieldName = fieldName.toLowerCase();
+        
+        return addressIndicators.some(indicator => lowerFieldName.includes(indicator));
+    }
+    
+    /**
+     * Checks if an object has address-like components
+     */
+    hasAddressComponents(obj) {
+        if (!obj || typeof obj !== 'object') return false;
+        
+        // Common address field components
+        const addressComponents = ['street', 'city', 'state', 'postalCode', 'country', 'countryCode', 
+                                 'stateCode', 'geocodeAccuracy', 'latitude', 'longitude'];
+        
+        // Check if the object has any address components
+        return Object.keys(obj).some(key => 
+            addressComponents.some(component => key.toLowerCase().includes(component.toLowerCase()))
+        );
+    }
+    
+    /**
+     * Format an address field for display
+     */
+    formatAddressField(addressObj) {
+        if (!addressObj || typeof addressObj !== 'object') {
+            return '';
+        }
+        
+        // Extract components with proper fallbacks
+        const street = addressObj.street || addressObj.Street || '';
+        const city = addressObj.city || addressObj.City || '';
+        const state = addressObj.state || addressObj.State || addressObj.stateCode || addressObj.StateCode || '';
+        const postalCode = addressObj.postalCode || addressObj.PostalCode || addressObj.zip || addressObj.Zip || '';
+        const country = addressObj.country || addressObj.Country || addressObj.countryCode || addressObj.CountryCode || '';
+        
+        // Build formatted address
+        const parts = [];
+        
+        if (street) parts.push(street);
+        
+        // Combine city, state, zip on one line (common format)
+        const cityStateZip = [city, state, postalCode].filter(part => part).join(', ');
+        if (cityStateZip) parts.push(cityStateZip);
+        
+        if (country) parts.push(country);
+        
+        return parts.join('\n');
     }
 
     /**
@@ -1765,5 +1928,42 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         
         // Close the filter panel
         this.showFilterPanel = false;
+    }
+
+    /**
+     * Determines if lookup navigation should be disabled based on navigation depth
+     */
+    get effectiveLookupNavigationDisabled() {
+        // If max navigation depth is 1, all lookups are disabled
+        if (this.maxNavigationDepth === 1) {
+            return true;
+        }
+        
+        // If max navigation depth is greater than 1 and we've reached or exceeded the limit, disable lookups
+        if (this.maxNavigationDepth > 1 && this.navigationStack.length >= this.maxNavigationDepth) {
+            console.log(`Maximum navigation depth (${this.maxNavigationDepth}) reached, disabling lookups`);
+            return true;
+        }
+        
+        // Otherwise, lookups are enabled (maxNavigationDepth is 0 or we haven't reached the limit)
+        return false;
+    }
+
+    /**
+     * Gets the current navigation depth (1-based, including current record)
+     */
+    get currentNavigationDepth() {
+        // Navigation depth is the stack length + 1 (current page)
+        return this.navigationStack.length + 1;
+    }
+    
+    /**
+     * Gets the CSS class for the navigation depth indicator
+     */
+    get navigationDepthClass() {
+        if (this.maxNavigationDepth > 0 && this.navigationStack.length >= this.maxNavigationDepth) {
+            return 'depth-limit-reached';
+        }
+        return '';
     }
 }

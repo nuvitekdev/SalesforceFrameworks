@@ -760,31 +760,79 @@ lightning-tabset .slds-tabs_scoped__item {
 
 /* Style for lookup links within the details */
 .field-value a {
-    color: var(--primary-color);
+    color: var(--primary-color, #22BDC1);
     text-decoration: none;
-    transition: all var(--transition-fast);
-    font-weight: var(--font-weight-medium);
     position: relative;
+    display: inline-block;
 }
 
 .field-value a:hover {
-    color: var(--primary-dark);
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 .field-value a::after {
     content: '';
+    background-color: var(--primary-color, #22BDC1);
+    height: 1.5px;
+    width: 0;
     position: absolute;
     bottom: -2px;
     left: 0;
-    width: 0;
-    height: 1px;
-    background-color: var(--primary-dark);
-    transition: width var(--transition-fast);
+    transition: width 0.2s ease-in-out;
 }
 
 .field-value a:hover::after {
     width: 100%;
+}
+
+/* Address field styling */
+.address-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.address-content {
+    font-family: inherit;
+    white-space: pre-line;
+    margin: 0;
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+    background: transparent;
+    border: none;
+    overflow: visible;
+    line-height: 1.4;
+}
+
+.map-link {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 6px;
+    color: var(--primary-color, #22BDC1);
+}
+
+.map-link lightning-icon {
+    margin-right: 4px;
+}
+
+.map-link:hover {
+    text-decoration: underline;
+}
+
+/* Multiline text field styling */
+.multiline-text {
+    font-family: inherit;
+    white-space: pre-line;
+    margin: 0;
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+    background: transparent;
+    border: none;
+    overflow: visible;
+    max-height: 80px;
+    overflow-y: auto;
+    line-height: 1.4;
 }
 
 /* ============================================= */
@@ -1184,4 +1232,33 @@ lightning-tabset .slds-tabs_scoped__item {
         font-size: var(--font-size-xs);
         padding: 4px;
     }
+}
+
+/* Disabled lookup styling */
+.disabled-lookup {
+    color: var(--textColor, #1d1d1f);
+    font-style: normal;
+    /* Subtle styling to indicate it's a reference field but not clickable */
+    position: relative;
+    display: inline-block;
+}
+
+/* Navigation depth indicator */
+.navigation-depth-indicator {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 12px;
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.05);
+    font-size: 0.75rem;
+}
+
+.navigation-depth-indicator lightning-icon {
+    margin-right: 4px;
+}
+
+.depth-limit-reached {
+    color: #c23934;
+    font-weight: 600;
 }

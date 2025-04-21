@@ -226,7 +226,14 @@
                                                                 <template if:true={field.isReference}>
                                                                     <template if:true={field.referenceId}>
                                                                         <template if:true={field.referenceToObject}>
-                                                                            <a href="#" data-record-id={field.referenceId} data-object-api-name={field.referenceToObject} onclick={handleLookupNavigation}>{field.value}</a>
+                                                                            <!-- Only show as a link if lookup navigation is not disabled -->
+                                                                            <template if:false={effectiveLookupNavigationDisabled}>
+                                                                                <a href="#" data-record-id={field.referenceId} data-object-api-name={field.referenceToObject} onclick={handleLookupNavigation}>{field.value}</a>
+                                                                            </template>
+                                                                            <template if:true={effectiveLookupNavigationDisabled}>
+                                                                                <!-- Show as plain text when lookup navigation is disabled -->
+                                                                                <span class="disabled-lookup">{field.value}</span>
+                                                                            </template>
                                                                         </template>
                                                                         <template if:false={field.referenceToObject}>
                                                                             <!-- No valid object type, show as plain text -->
@@ -239,7 +246,28 @@
                                                                     </template>
                                                                 </template>
                                                                 <template if:false={field.isReference}>
-                                                                    {field.value}
+                                                                    <!-- Handle addresses and multi-line values -->
+                                                                    <template if:true={field.isAddress}>
+                                                                        <div class="address-field">
+                                                                            <pre class="address-content">{field.value}</pre>
+                                                                            <template if:true={field.hasGeolocation}>
+                                                                                <a href={field.mapUrl} target="_blank" class="map-link">
+                                                                                    <lightning-icon icon-name="utility:location" size="x-small"></lightning-icon>
+                                                                                    <span>View on Map</span>
+                                                                                </a>
+                                                                            </template>
+                                                                        </div>
+                                                                    </template>
+                                                                    <template if:false={field.isAddress}>
+                                                                        <!-- Handle multi-line text with proper formatting -->
+                                                                        <template if:true={field.isMultiLine}>
+                                                                            <pre class="multiline-text">{field.value}</pre>
+                                                                        </template>
+                                                                        <!-- Regular field display -->
+                                                                        <template if:false={field.isMultiLine}>
+                                                                            {field.value}
+                                                                        </template>
+                                                                    </template>
                                                                 </template>
                                                             </div>
                                                         </div>

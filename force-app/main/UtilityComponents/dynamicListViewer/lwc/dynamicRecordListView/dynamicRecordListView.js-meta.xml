@@ -17,6 +17,7 @@
             <property name="listViewFields" type="String" label="List View Fields" description="Comma-separated list of field API names to display as columns (e.g., Phone,Industry,CreatedDate). Note: Id and Name fields are automatically included; you don't need to specify them." required="true" />
             <property name="titleField" type="String" label="Title Field" description="Field to use as the title in record detail view. Name is used by default if left blank. Do not specify if Name is already in List View Fields." />
             <property name="subtitleField" type="String" label="Subtitle Field" description="Field to use as the subtitle in record detail view. Use a field that is not already in List View Fields to avoid errors." />
+            <property name="maxNavigationDepth" type="Integer" label="Max Navigation Depth" description="Maximum number of lookup navigations allowed. Set to 0 for unlimited navigation. Set to 1 to disable all lookup navigation. Set to higher values to allow specific depth of related record navigation." default="0" min="0" max="10" />
             <property name="primaryColor" type="String" label="Primary Color" description="Primary theme color (headers, buttons)" default="#22BDC1" />
             <property name="accentColor" type="String" label="Accent Color" description="Accent color (highlights, secondary elements)" default="#D5DF23" />
             <property name="textColor" type="String" label="Text Color" description="Main text color" default="#1d1d1f" />

@@ -515,6 +515,11 @@ public with sharing class DynamicRecordListViewController {
                 String fieldNameLower = fieldName.toLowerCase();
                 Schema.DescribeFieldResult fieldDescribe = allFieldsMap.get(fieldName).getDescribe();
                 
+                // Skip system or unimportant fields right from the start to improve performance
+                if (isSystemOrUnimportantField(fieldNameLower, objectApiName)) {
+                    continue;
+                }
+                
                 if (fieldDescribe.isAccessible()) {
                     fieldDescribeMap.put(fieldNameLower, fieldDescribe);
                     
@@ -590,6 +595,8 @@ public with sharing class DynamicRecordListViewController {
                  fieldDetail.put('type', fieldDescribe.getType().name()); 
                  fieldDetail.put('isReference', false);
 
+                 Object fieldValue = null;
+
                  // --- Handle Field Value Extraction (including relationships) ---
                  if (relationshipNameMap.containsKey(fieldApiNameLower)) {
                      // It's a reference field we queried via relationship (e.g., accountid -> Account)
@@ -601,10 +608,10 @@ public with sharing class DynamicRecordListViewController {
                          String nameField = relationshipNameFieldMap.get(relationshipName);
                          
                          if (String.isNotBlank(nameField) && relatedRecord.get(nameField) != null) {
-                             fieldDetail.put('value', relatedRecord.get(nameField)); // Get name field value from related SObject
+                             fieldValue = relatedRecord.get(nameField); // Get name field value from related SObject
                          } else {
                              // Fallback to Id if no name field available or value is null
-                             fieldDetail.put('value', 'Record: ' + relatedRecord.get('Id'));
+                             fieldValue = 'Record: ' + relatedRecord.get('Id');
                          }
                          
                          fieldDetail.put('isReference', true);
@@ -620,7 +627,7 @@ public with sharing class DynamicRecordListViewController {
                          }
                      } else {
                          // Related record is null
-                         fieldDetail.put('value', null);
+                         fieldValue = null;
                          fieldDetail.put('isReference', true); // Still a reference field, just no value
                          fieldDetail.put('referenceId', null);
                          
@@ -638,7 +645,7 @@ public with sharing class DynamicRecordListViewController {
                      }
                  } else {
                      // It's a standard field on the main object
-                     fieldDetail.put('value', record.get(fieldApiName)); // Use original casing field name to get value from SObject
+                     fieldValue = record.get(fieldApiName); // Use original casing field name to get value from SObject
                      fieldDetail.put('isReference', fieldDescribe.getType() == Schema.DisplayType.REFERENCE);
                      if((Boolean)fieldDetail.get('isReference')){
                         fieldDetail.put('referenceId', record.get(fieldApiName)); 
@@ -659,6 +666,25 @@ public with sharing class DynamicRecordListViewController {
                      }
                  }
 
+                 // Skip null/empty values to reduce payload size unless they are important fields
+                 if (fieldValue == null && !isAlwaysIncludeField(fieldApiNameLower)) {
+                     continue;
+                 }
+                 
+                 // Skip default/empty string values
+                 if (fieldValue instanceof String && String.isBlank((String)fieldValue) && !isAlwaysIncludeField(fieldApiNameLower)) {
+                     continue;
+                 }
+                 
+                 // Skip unnecessary boolean fields set to false
+                 if (fieldValue instanceof Boolean && !(Boolean)fieldValue && !isImportantBooleanField(fieldApiNameLower)) {
+                     continue;
+                 }
+                 
+                 // Add the value to the field detail
+                 fieldDetail.put('value', fieldValue);
+                 
+                 // Add to the output list
                  fieldDetailsList.add(fieldDetail);
             }
 
@@ -670,6 +696,130 @@ public with sharing class DynamicRecordListViewController {
             // Catch unexpected errors (QueryException, NullPointerException, etc.)
             throw new AuraHandledException('Failed to retrieve record details: ' + e.getMessage());
         }
+    }
+    
+    /**
+     * Determines whether a field should be considered a system field or otherwise unimportant
+     * for display purposes. Used to filter out fields that generally aren't useful in the UI.
+     * 
+     * @param fieldName The lowercase API name of the field to check
+     * @param objectName The API name of the object the field belongs to
+     * @return Boolean Whether the field is a system field or unimportant
+     */
+    private static Boolean isSystemOrUnimportantField(String fieldName, String objectName) {
+        // Standard system fields to exclude for all objects
+        Set<String> systemFields = new Set<String>{
+            'isdeleted', 'systemmodstamp'
+        };
+        
+        // Common prefix/suffix patterns for system or unimportant fields
+        List<String> systemPrefixes = new List<String>{
+            '_hd', '_feed', 'jigsaw', 'jigsawcompanyid'
+        };
+        
+        // Extra patterns specific to User object to filter out the truly unimportant preference fields
+        Set<String> userSpecificPatterns = new Set<String>{
+            'wtshown', 'suppressreminder', 'stayintouch', 'disablenotification'
+        };
+        
+        // Important fields to preserve regardless of naming
+        Set<String> importantFields = new Set<String>{
+            'owner', 'createdby', 'lastmodifiedby', 'user', 'contact', 'account', 'manager',
+            'name', 'email', 'phone', 'address', 'title', 'department', 'alias'
+        };
+        
+        // Always preserve lookup fields
+        if (fieldName.endsWith('id') && fieldName.length() > 2) {
+            String possibleLookupField = fieldName.substring(0, fieldName.length() - 2);
+            for (String important : importantFields) {
+                if (possibleLookupField.contains(important)) {
+                    return false; // Don't filter out important lookup fields
+                }
+            }
+        }
+        
+        // Check if this is a field we explicitly want to keep
+        for (String important : importantFields) {
+            if (fieldName.contains(important)) {
+                return false; // Don't filter out important fields
+            }
+        }
+        
+        // Check standard system fields
+        for (String pattern : systemFields) {
+            if (fieldName.equals(pattern)) {
+                return true;
+            }
+        }
+        
+        // Check system prefixes/patterns
+        for (String prefix : systemPrefixes) {
+            if (fieldName.contains(prefix)) {
+                return true;
+            }
+        }
+        
+        // Apply User object specific filters - only for obvious user preferences
+        if (objectName == 'User') {
+            for (String pattern : userSpecificPatterns) {
+                if (fieldName.contains(pattern)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Determines whether a field should always be included even if it's null/empty
+     * Used for fields that are important to display even when they have no value
+     * 
+     * @param fieldName Lowercase API name of the field
+     * @return Boolean Whether to always include the field
+     */
+    private static Boolean isAlwaysIncludeField(String fieldName) {
+        // List of fields that should always be included regardless of value
+        Set<String> importantFields = new Set<String>{
+            'name', 'firstname', 'lastname', 'email', 'phone', 'title', 'department',
+            'division', 'status', 'stage', 'account', 'contact', 'owner', 'user',
+            'manager', 'createdby', 'lastmodifiedby', 'alias', 'active', 'username'
+        };
+        
+        for (String field : importantFields) {
+            if (fieldName.contains(field)) {
+                return true;
+            }
+        }
+        
+        // Always include ID fields (lookup relationships)
+        if (fieldName.endsWith('id') && fieldName.length() > 2) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Determines whether a boolean field is important enough to display even when false
+     * 
+     * @param fieldName Lowercase API name of the field
+     * @return Boolean Whether the boolean field is important
+     */
+    private static Boolean isImportantBooleanField(String fieldName) {
+        // List of boolean fields that should be included even when false
+        Set<String> importantBooleanFields = new Set<String>{
+            'active', 'isactive', 'primary', 'isprimary', 'default', 'isdefault', 
+            'main', 'ismain', 'closed', 'isclosed', 'partner', 'ispartner'
+        };
+        
+        for (String field : importantBooleanFields) {
+            if (fieldName.contains(field)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     // ------------------- Private Helper Methods -------------------
