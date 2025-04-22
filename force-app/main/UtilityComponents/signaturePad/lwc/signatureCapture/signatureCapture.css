@@ -18,10 +18,18 @@
     border: 1px solid #d8dde6;
 }
 
-/* Font for signature text */
+/* Great Vibes signature font */
+@font-face {
+    font-family: 'GreatVibes';
+    src: url('/resource/signature/GreatVibes-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* For backward compatibility */
 @font-face {
     font-family: 'SignatureFont';
-    src: url('/resource/signatureFont');
+    src: url('/resource/signature/GreatVibes-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
