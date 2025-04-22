@@ -11,9 +11,26 @@ import saveSignature from '@salesforce/apex/SignatureCaptureController.saveSigna
 
 export default class SignatureCapture extends LightningElement {
     @api recordId;
+    @api title = 'Signature Capture';
+    @api subtitle;
+    @api defaultMode = 'draw';
+    @api canvasHeight = 200;
+    @api signatureFont = 'SignatureFont';
+    @api primaryColor = '#22BDC1';
+    @api accentColor = '#D5DF23';
+    @api textColor = '#1d1d1f';
+    @api backgroundColor = '#ffffff';
+    @api borderRadius = '12px';
+    @api showPreview = false;
+    @api allowClear = false;
+
+    // Flow output attributes
+    @api savedSignatureUrl;
+    @api contentDocumentId;
+
     @track isLoading = false;
-    @track savedSignatureUrl = '';
-    @track signatureType = 'draw'; // Default to draw mode
+    @track _savedSignatureUrl = '';
+    @track signatureType = 'draw';
     @track signatureText = '';
     
     signaturePad;
@@ -72,8 +89,38 @@ export default class SignatureCapture extends LightningElement {
         return id;
     }
     
+    // Computed properties for styling
+    get canvasHeightStyle() {
+        return `height: ${this.canvasHeight}px;`;
+    }
+
+    get showPreviewSection() {
+        return this.showPreview && this._savedSignatureUrl;
+    }
+    
+    // Getter for saved signature URL to handle both Flow and non-Flow scenarios
+    get displaySignatureUrl() {
+        return this._savedSignatureUrl;
+    }
+
+    // Update saved signature URL and notify Flow if needed
+    updateSavedSignatureUrl(url) {
+        this._savedSignatureUrl = url;
+        // If in Flow, update the output variable
+        if (this.savedSignatureUrl !== undefined) {
+            this.savedSignatureUrl = url;
+        }
+    }
+    
     connectedCallback() {
         console.log('Component initialized');
+        // Set initial signature type from default mode
+        this.signatureType = this.defaultMode;
+        
+        // Apply custom properties to host element
+        this.updateCustomProperties();
+        
+        // Load signature pad library
         this.loadSignaturePadLibrary();
     }
     
@@ -122,9 +169,9 @@ export default class SignatureCapture extends LightningElement {
         // Get 2d context for drawing
         this.ctx = this.canvasElement.getContext('2d');
         
-        // Set canvas dimensions based on container size
+        // Set canvas dimensions based on container size and configured height
         this.canvasElement.width = this.canvasElement.offsetWidth;
-        this.canvasElement.height = this.canvasElement.offsetHeight;
+        this.canvasElement.height = this.canvasHeight;
         
         // Initialize SignaturePad if in draw mode
         if (this.isDrawMode && window.SignaturePad) {
@@ -160,7 +207,7 @@ export default class SignatureCapture extends LightningElement {
         // Reinitialize canvas for new mode
         if (this.isDrawMode && window.SignaturePad && this.canvasElement) {
             this.signaturePad = new window.SignaturePad(this.canvasElement, {
-                backgroundColor: 'white',
+                backgroundColor: 'white',  // Always use white background
                 penColor: 'black',
                 minWidth: 1,
                 maxWidth: 3
@@ -179,6 +226,32 @@ export default class SignatureCapture extends LightningElement {
         }
     }
     
+    // Helper function to detect background color and determine best contrast color
+    determineContrastColor(backgroundColor) {
+        // If background is transparent or not provided, default to black
+        if (!backgroundColor || backgroundColor === 'rgba(0,0,0,0)') {
+            return 'black';
+        }
+        
+        // Convert background color to RGB
+        let r, g, b;
+        if (backgroundColor.startsWith('#')) {
+            r = parseInt(backgroundColor.slice(1, 3), 16);
+            g = parseInt(backgroundColor.slice(3, 5), 16);
+            b = parseInt(backgroundColor.slice(5, 7), 16);
+        } else if (backgroundColor.startsWith('rgb')) {
+            [r, g, b] = backgroundColor.match(/\d+/g).map(Number);
+        } else {
+            return 'black'; // Default to black if color format is unknown
+        }
+        
+        // Calculate relative luminance
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        
+        // Return black for light backgrounds, white for dark backgrounds
+        return luminance > 0.5 ? 'black' : 'white';
+    }
+    
     renderTextSignature() {
         console.log('Rendering text signature');
         if (!this.ctx || !this.canvasElement) {
@@ -186,8 +259,9 @@ export default class SignatureCapture extends LightningElement {
             return;
         }
         
-        // Clear canvas
-        this.ctx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
+        // Clear canvas and fill with white background
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillRect(0, 0, this.canvasElement.width, this.canvasElement.height);
         
         if (!this.signatureText) {
             return; // Nothing to render
@@ -198,7 +272,7 @@ export default class SignatureCapture extends LightningElement {
                                this.canvasElement.width / (this.signatureText.length * 0.7));
         
         // Configure text style
-        this.ctx.font = `${fontSize}px SignatureFont, cursive`;
+        this.ctx.font = `${fontSize}px ${this.signatureFont}, cursive`;
         this.ctx.fillStyle = 'black';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
@@ -215,8 +289,13 @@ export default class SignatureCapture extends LightningElement {
         console.log('Clear button clicked');
         if (this.isDrawMode && this.signaturePad) {
             this.signaturePad.clear();
+            // Re-fill with white background after clearing
+            this.ctx.fillStyle = 'white';
+            this.ctx.fillRect(0, 0, this.canvasElement.width, this.canvasElement.height);
         } else if (this.isTextMode && this.ctx && this.canvasElement) {
-            this.ctx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
+            // Clear with white background
+            this.ctx.fillStyle = 'white';
+            this.ctx.fillRect(0, 0, this.canvasElement.width, this.canvasElement.height);
         }
     }
     
@@ -241,17 +320,32 @@ export default class SignatureCapture extends LightningElement {
         this.isLoading = true;
         
         try {
-            // Get signature as PNG data URL
+            // Get signature as PNG data URL with white background
             let signatureData;
             if (this.canvasElement) {
-                signatureData = this.canvasElement.toDataURL('image/png');
+                // Create a temporary canvas to handle background properly
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = this.canvasElement.width;
+                tempCanvas.height = this.canvasElement.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Fill with white background
+                tempCtx.fillStyle = 'white';
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // Draw the signature onto temp canvas
+                tempCtx.drawImage(this.canvasElement, 0, 0);
+                
+                signatureData = tempCanvas.toDataURL('image/png');
             } else {
                 throw new Error('Canvas element not available');
             }
             
             // Remove the data URL prefix to get just the base64 data
             const base64Data = signatureData.split(',')[1];
-            const recordId = this.effectiveRecordId;
+            
+            // Get record ID from property or auto-detection
+            const recordId = this.recordId || this.getRecordIdFromPageRef() || this.getRecordIdFromUrl();
             
             console.log('Calling Apex to save signature for record:', recordId);
             
@@ -263,7 +357,13 @@ export default class SignatureCapture extends LightningElement {
             })
             .then(result => {
                 this.isLoading = false;
-                this.savedSignatureUrl = signatureData;
+                this.updateSavedSignatureUrl(signatureData);
+                
+                // If in Flow, update the content document ID
+                if (this.contentDocumentId !== undefined) {
+                    this.contentDocumentId = result;
+                }
+                
                 console.log('Signature saved successfully');
                 this.showToast('Success', 'Signature saved successfully', 'success');
                 
@@ -271,7 +371,8 @@ export default class SignatureCapture extends LightningElement {
                 this.dispatchEvent(new CustomEvent('signaturesaved', {
                     detail: {
                         success: true,
-                        contentDocumentId: result
+                        contentDocumentId: result,
+                        signatureUrl: signatureData
                     }
                 }));
             })
@@ -362,5 +463,57 @@ export default class SignatureCapture extends LightningElement {
             this.ctx.drawImage(image, 0, 0, this.canvasElement.width, this.canvasElement.height);
         };
         image.src = dataUrl;
+    }
+
+    // Update CSS custom properties based on configuration
+    updateCustomProperties() {
+        const host = this.template.host;
+        host.style.setProperty('--primary-color-override', this.primaryColor);
+        host.style.setProperty('--accent-color-override', this.accentColor);
+        host.style.setProperty('--text-color-override', this.textColor);
+        host.style.setProperty('--background-color-override', this.backgroundColor);
+        host.style.setProperty('--border-radius-override', this.borderRadius);
+        
+        // Calculate and set derived colors
+        const primaryRgb = this.hexToRgb(this.primaryColor);
+        if (primaryRgb) {
+            host.style.setProperty('--primary-color-rgb', `${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}`);
+            host.style.setProperty('--primary-dark-override', this.adjustBrightness(this.primaryColor, -20));
+            host.style.setProperty('--primary-light-override', this.adjustBrightness(this.primaryColor, 20));
+        }
+        
+        const accentRgb = this.hexToRgb(this.accentColor);
+        if (accentRgb) {
+            host.style.setProperty('--accent-color-rgb', `${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}`);
+            host.style.setProperty('--accent-dark-override', this.adjustBrightness(this.accentColor, -20));
+            host.style.setProperty('--accent-light-override', this.adjustBrightness(this.accentColor, 20));
+        }
+    }
+
+    // Helper function to convert hex to RGB
+    hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+
+    // Helper function to adjust color brightness
+    adjustBrightness(hex, percent) {
+        const rgb = this.hexToRgb(hex);
+        if (!rgb) return hex;
+        
+        const adjust = (value) => {
+            value = Math.floor(value * (1 + percent / 100));
+            return Math.min(255, Math.max(0, value));
+        };
+        
+        const r = adjust(rgb.r);
+        const g = adjust(rgb.g);
+        const b = adjust(rgb.b);
+        
+        return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
     }
 }

@@ -2,19 +2,47 @@
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>58.0</apiVersion>
     <isExposed>true</isExposed>
-    <masterLabel>Signature Capture</masterLabel>
-    <description>Component for capturing handwritten or text signatures</description>
+    <masterLabel>Nuvitek Signature Capture</masterLabel>
+    <description>Advanced signature capture component with drawing and text modes, customizable styling, and responsive design.</description>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__RecordPage</target>
         <target>lightning__HomePage</target>
-        <target>lightning__FlowScreen</target>
         <target>lightningCommunity__Page</target>
         <target>lightningCommunity__Default</target>
+        <target>lightning__FlowScreen</target>
     </targets>
     <targetConfigs>
+        <targetConfig targets="lightning__AppPage,lightning__RecordPage,lightning__HomePage,lightningCommunity__Default">
+            <property name="title" type="String" label="Component Title" description="Title to display at the top of the component" default="Signature Capture" />
+            <property name="subtitle" type="String" label="Component Subtitle" description="Optional subtitle or description text" />
+            <property name="defaultMode" type="String" label="Default Signature Mode" description="The default signature input mode" default="draw" datasource="draw,text" />
+            <property name="canvasHeight" type="Integer" label="Canvas Height" description="Height of the signature canvas in pixels" default="200" min="100" max="500" />
+            <property name="signatureFont" type="String" label="Text Signature Font" description="Font family for text signatures" default="SignatureFont" />
+            <property name="primaryColor" type="String" label="Primary Color" description="Primary theme color (headers, buttons)" default="#22BDC1" />
+            <property name="accentColor" type="String" label="Accent Color" description="Accent color (highlights, secondary elements)" default="#D5DF23" />
+            <property name="textColor" type="String" label="Text Color" description="Main text color" default="#1d1d1f" />
+            <property name="backgroundColor" type="String" label="Background Color" description="Component background color" default="#ffffff" />
+            <property name="borderRadius" type="String" label="Border Radius" description="Border radius for the component (e.g., 8px, 12px)" default="12px" />
+            <property name="showPreview" type="Boolean" label="Show Preview" description="Show signature preview after saving" default="true" />
+            <property name="allowClear" type="Boolean" label="Allow Clear" description="Show the clear button" default="true" />
+        </targetConfig>
         <targetConfig targets="lightning__FlowScreen">
-            <property name="recordId" type="String" label="Record ID" description="ID of the record to associate the signature with (optional - can be auto-detected)"/>
+            <property name="recordId" type="String" label="Record ID" description="ID of the record to associate the signature with" />
+            <property name="title" type="String" label="Component Title" description="Title to display at the top of the component" default="Signature Capture" />
+            <property name="subtitle" type="String" label="Component Subtitle" description="Optional subtitle or description text" />
+            <property name="defaultMode" type="String" label="Default Signature Mode" description="The default signature input mode" default="draw" datasource="draw,text" />
+            <property name="canvasHeight" type="Integer" label="Canvas Height" description="Height of the signature canvas in pixels" default="200" min="100" max="500" />
+            <property name="signatureFont" type="String" label="Text Signature Font" description="Font family for text signatures" default="SignatureFont" />
+            <property name="primaryColor" type="String" label="Primary Color" description="Primary theme color (headers, buttons)" default="#22BDC1" />
+            <property name="accentColor" type="String" label="Accent Color" description="Accent color (highlights, secondary elements)" default="#D5DF23" />
+            <property name="textColor" type="String" label="Text Color" description="Main text color" default="#1d1d1f" />
+            <property name="backgroundColor" type="String" label="Background Color" description="Component background color" default="#ffffff" />
+            <property name="borderRadius" type="String" label="Border Radius" description="Border radius for the component (e.g., 8px, 12px)" default="12px" />
+            <property name="showPreview" type="Boolean" label="Show Preview" description="Show signature preview after saving" default="true" />
+            <property name="allowClear" type="Boolean" label="Allow Clear" description="Show the clear button" default="true" />
+            <property name="savedSignatureUrl" type="String" label="Saved Signature URL" description="URL of the saved signature (output)" />
+            <property name="contentDocumentId" type="String" label="Content Document ID" description="ID of the saved signature file (output)" />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

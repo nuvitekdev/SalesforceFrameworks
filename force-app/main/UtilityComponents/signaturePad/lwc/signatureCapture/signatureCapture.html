@@ -1,83 +1,94 @@
 <template>
-    <div class="slds-card">
-        <div class="slds-card__header">
-            <h2 class="slds-text-heading_medium">Signature Capture</h2>
+    <div class="signature-container">
+        <!-- Header -->
+        <div class="signature-header">
+            <div class="signature-header-title">
+                <h2>{title}</h2>
+                <template if:true={subtitle}>
+                    <p class="signature-header-subtitle">{subtitle}</p>
+                </template>
+            </div>
         </div>
-        <div class="slds-card__body slds-card__body_inner">
-            <!-- Signature Type Selection -->
-            <div class="slds-form-element slds-m-bottom_medium">
-                <fieldset class="slds-form-element">
-                    <legend class="slds-form-element__legend slds-form-element__label">Signature Method</legend>
-                    <div class="slds-form-element__control">
-                        <div class="slds-radio_button-group">
-                            <span class="slds-button slds-radio_button">
-                                <input type="radio" name="signType" id="draw" value="draw" checked 
-                                       onchange={handleSignatureTypeChange} />
-                                <label class="slds-radio_button__label" for="draw">
-                                    <span class="slds-radio_faux">Draw</span>
-                                </label>
-                            </span>
-                            <span class="slds-button slds-radio_button">
-                                <input type="radio" name="signType" id="text" value="text" 
-                                       onchange={handleSignatureTypeChange} />
-                                <label class="slds-radio_button__label" for="text">
-                                    <span class="slds-radio_faux">Text</span>
-                                </label>
-                            </span>
-                        </div>
+
+        <!-- Signature Type Selection -->
+        <div class="signature-type-selector">
+            <fieldset class="slds-form-element">
+                <div class="slds-form-element__control">
+                    <div class="slds-radio_button-group">
+                        <span class="slds-button slds-radio_button">
+                            <input type="radio" name="signType" id="draw" value="draw" checked 
+                                   onchange={handleSignatureTypeChange} />
+                            <label class="slds-radio_button__label" for="draw">
+                                <span class="slds-radio_faux">
+                                    <lightning-icon icon-name="utility:edit" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                    Draw
+                                </span>
+                            </label>
+                        </span>
+                        <span class="slds-button slds-radio_button">
+                            <input type="radio" name="signType" id="text" value="text" 
+                                   onchange={handleSignatureTypeChange} />
+                            <label class="slds-radio_button__label" for="text">
+                                <span class="slds-radio_faux">
+                                    <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                    Text
+                                </span>
+                            </label>
+                        </span>
                     </div>
-                </fieldset>
-            </div>
-            
-            <!-- Text to Signature Input (only shown when text mode is selected) -->
-            <div if:true={isTextMode} class="slds-m-bottom_medium">
-                <lightning-input 
-                    label="Enter text for signature" 
-                    type="text" 
-                    value={signatureText}
-                    onchange={handleTextChange}>
-                </lightning-input>
-            </div>
-            
-            <!-- Signature Canvas (always present in DOM but visible/hidden via CSS) -->
-            <div class="signature-container" style={canvasStyle}>
-                <canvas class="signature-pad" lwc:dom="manual"></canvas>
-            </div>
-            
-            <!-- Action Buttons -->
-            <div class="slds-grid slds-gutters slds-m-top_medium">
-                <div class="slds-col">
-                    <lightning-button 
-                        variant="neutral" 
-                        label="Clear" 
-                        onclick={handleClearClick}>
-                    </lightning-button>
                 </div>
-                <div class="slds-col">
-                    <lightning-button 
-                        variant="brand" 
-                        label="Save Signature" 
-                        onclick={handleSaveClick}>
-                    </lightning-button>
-                </div>
-            </div>
-            
-            <!-- Preview of saved signature -->
-            <template if:true={savedSignatureUrl}>
-                <div class="slds-m-top_medium">
-                    <div class="slds-text-heading_small slds-m-bottom_x-small">
-                        Saved Signature
-                    </div>
-                    <img src={savedSignatureUrl} alt="Saved signature" class="saved-signature" />
-                </div>
+            </fieldset>
+        </div>
+        
+        <!-- Text Input (only shown when text mode is selected) -->
+        <div if:true={isTextMode} class="text-input-container">
+            <lightning-input 
+                label="Enter your signature text"
+                placeholder="Type your signature here..."
+                type="text" 
+                value={signatureText}
+                onchange={handleTextChange}>
+            </lightning-input>
+        </div>
+        
+        <!-- Signature Canvas -->
+        <div class="signature-pad-container" style={canvasStyle}>
+            <canvas class="signature-pad" lwc:dom="manual" style={canvasHeightStyle}></canvas>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="signature-actions">
+            <template if:true={allowClear}>
+                <lightning-button 
+                    class="clear-button"
+                    variant="neutral" 
+                    label="Clear" 
+                    icon-name="utility:delete"
+                    onclick={handleClearClick}>
+                </lightning-button>
             </template>
+            <lightning-button 
+                class="save-button"
+                variant="brand" 
+                label="Save Signature" 
+                icon-name="utility:save"
+                onclick={handleSaveClick}>
+            </lightning-button>
         </div>
+        
+        <!-- Preview of saved signature -->
+        <template if:true={showPreviewSection}>
+            <div class="signature-preview">
+                <h3 class="preview-title">Saved Signature</h3>
+                <img src={displaySignatureUrl} alt="Saved signature" class="saved-signature" />
+            </div>
+        </template>
         
         <!-- Loading spinner -->
         <template if:true={isLoading}>
             <div class="slds-spinner_container">
                 <div class="slds-spinner slds-spinner_medium" role="status">
-                    <span class="slds-assistive-text">Loading signature component</span>
+                    <span class="slds-assistive-text">Loading</span>
                     <div class="slds-spinner__dot-a"></div>
                     <div class="slds-spinner__dot-b"></div>
                 </div>

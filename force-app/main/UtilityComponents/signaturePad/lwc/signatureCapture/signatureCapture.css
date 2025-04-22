@@ -1,21 +1,305 @@
+/* ============================================= */
+/* Component Theme Variables                     */
+/* ============================================= */
+:host {
+    display: block;
+
+    /* Primary Colors */
+    --primary-color: var(--primary-color-override, #22BDC1);
+    --primary-color-rgb: 34, 189, 193;
+    --primary-dark: var(--primary-dark-override, #1a9599);
+    --primary-light: var(--primary-light-override, #63d1d4);
+    --accent-color: var(--accent-color-override, #D5DF23);
+    --accent-color-rgb: 213, 223, 35;
+    --accent-dark: var(--accent-dark-override, #b8c11e);
+    --accent-light: var(--accent-light-override, #e1e95c);
+    
+    /* Text Colors */
+    --text-color: var(--text-color-override, #1d1d1f);
+    --text-secondary: #6e6e73;
+    --text-tertiary: #a1a1a6;
+    --text-link: var(--primary-color);
+    --text-link-hover: var(--primary-dark);
+    --text-inverse: #ffffff;
+
+    /* Background Colors */
+    --background: var(--background-color-override, #ffffff);
+    --background-alt: #f5f5f7;
+    --background-elevated: #fbfbfd;
+
+    /* Border Colors */
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-subtle: rgba(0, 0, 0, 0.05);
+
+    /* Status Colors */
+    --error-color: #ff3b30;
+    --warning-color: #ff9500;
+    --success-color: #34c759;
+
+    /* Spacing */
+    --spacing-xs: 8px;
+    --spacing-sm: 16px;
+    --spacing-md: 24px;
+    --spacing-lg: 48px;
+
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: var(--border-radius-override, 12px);
+    --radius-lg: 20px;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+
+    /* Typography */
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 20px;
+    --font-size-xl: 24px;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --line-height-normal: 1.5;
+}
+
+/* ============================================= */
+/* Container & Layout                            */
+/* ============================================= */
 .signature-container {
-    border: 1px solid #d8dde6;
-    background-color: #f3f3f3;
-    padding: 10px;
-    margin-bottom: 15px;
+    font-family: var(--font-family);
+    color: var(--text-color);
+    background-color: var(--background);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-md);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: all var(--transition-medium);
+}
+
+.signature-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.signature-header-title {
+    display: flex;
+    flex-direction: column;
+}
+
+.signature-header-title h2 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    margin: 0;
+    color: var(--text-color);
+}
+
+.signature-header-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-top: var(--spacing-xs);
+}
+
+/* ============================================= */
+/* Signature Type Selection                      */
+/* ============================================= */
+.signature-type-selector {
+    margin-bottom: var(--spacing-md);
+}
+
+.slds-radio_button-group {
+    border: none;
+    background: var(--background-alt);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+}
+
+.slds-radio_button {
+    background: transparent;
+    border: none;
+}
+
+.slds-radio_button__label {
+    background: transparent;
+    color: var(--text-color);
+    border: none;
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-fast);
+}
+
+.slds-radio_button [type="radio"]:checked + .slds-radio_button__label {
+    background: var(--primary-color);
+    color: var(--text-inverse);
+    border-radius: var(--radius-sm);
+}
+
+/* ============================================= */
+/* Signature Canvas                              */
+/* ============================================= */
+.signature-pad-container {
+    position: relative;
+    margin-bottom: var(--spacing-md);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--background);
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-fast);
+}
+
+.signature-pad-container:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .signature-pad {
     width: 100%;
-    height: 200px;
     background-color: white;
-    border: 1px solid #ccc;
+    touch-action: none;
+}
+
+/* Checkerboard pattern for transparency */
+.signature-pad-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(45deg, var(--background-alt) 25%, transparent 25%),
+                      linear-gradient(-45deg, var(--background-alt) 25%, transparent 25%),
+                      linear-gradient(45deg, transparent 75%, var(--background-alt) 75%),
+                      linear-gradient(-45deg, transparent 75%, var(--background-alt) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* ============================================= */
+/* Text Input                                    */
+/* ============================================= */
+.text-input-container {
+    margin-bottom: var(--spacing-md);
+}
+
+lightning-input {
+    --sds-c-input-radius-border: var(--radius-sm);
+    --sds-c-input-color-border: var(--border-color);
+    --sds-c-input-color-border-focus: var(--primary-color);
+    --sds-c-input-shadow-focus: 0 0 0 1px var(--primary-color);
+    --sds-c-input-text-color: var(--text-color);
+}
+
+/* ============================================= */
+/* Action Buttons                                */
+/* ============================================= */
+.signature-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+lightning-button.clear-button {
+    --sds-c-button-neutral-color-background: var(--background-alt);
+    --sds-c-button-neutral-color-border: var(--border-color);
+    --sds-c-button-neutral-color-foreground: var(--text-color);
+    --sds-c-button-radius-border: var(--radius-sm);
+}
+
+lightning-button.save-button {
+    --sds-c-button-brand-color-background: var(--primary-color);
+    --sds-c-button-brand-color-border: var(--primary-color);
+    --sds-c-button-brand-color-foreground: var(--text-inverse);
+    --sds-c-button-radius-border: var(--radius-sm);
+}
+
+/* ============================================= */
+/* Preview Section                               */
+/* ============================================= */
+.signature-preview {
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+}
+
+.preview-title {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-color);
+    margin-bottom: var(--spacing-sm);
 }
 
 .saved-signature {
     max-width: 100%;
     max-height: 150px;
-    border: 1px solid #d8dde6;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-xs);
+    background: var(--background);
+}
+
+/* ============================================= */
+/* Loading State                                 */
+/* ============================================= */
+.slds-spinner_container {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(4px);
+}
+
+/* ============================================= */
+/* Responsive Design                             */
+/* ============================================= */
+@media (max-width: 768px) {
+    .signature-container {
+        padding: var(--spacing-sm);
+    }
+
+    .signature-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-xs);
+    }
+
+    .signature-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    lightning-button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .slds-radio_button-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .slds-radio_button {
+        width: 100%;
+    }
+
+    .slds-radio_button__label {
+        width: 100%;
+        text-align: center;
+    }
 }
 
 /* Great Vibes signature font */
