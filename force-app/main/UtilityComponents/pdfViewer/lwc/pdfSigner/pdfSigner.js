@@ -145,81 +145,77 @@ export default class PdfSigner extends LightningElement {
     }
     
     loadPdf(base64) {
-        console.log('Starting to load PDF, base64 length:', base64.length);
+        console.log('==== START: loadPdf ====');
+        console.log('Base64 length received:', base64.length);
+    
         this.pdfBytes = base64;
         this.loadingPdf = true;
-        
-        // Convert base64 to array buffer for PDF.js
-        const binaryString = window.atob(base64);
-        console.log('Converted base64 to binary string, length:', binaryString.length);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-        }
-        
-        console.log('Created Uint8Array, length:', bytes.length);
-        console.log('PDF.js available:', typeof window.pdfjsLib !== 'undefined');
-        
-        // Load the PDF with PDF.js
-        if (!window.pdfjsLib) {
-            console.error('PDF.js library not available!');
-            this.loadingPdf = false;
-            this.errorMessage = 'PDF.js library not properly loaded. Please refresh the page.';
-            this.showToast('Error', 'PDF viewer not properly initialized.', 'error');
-            return;
-        }
-        
-        // Create a data URL from the bytes for direct rendering
-        const blob = new Blob([bytes], { type: 'application/pdf' });
-        const blobURL = URL.createObjectURL(blob);
-        
+    
         try {
-            // First make sure the DOM is ready and pdfLoaded is set to show the container
+            console.log('Decoding base64 to binary string');
+            const binaryString = window.atob(base64);
+            console.log('Binary string decoded, length:', binaryString.length);
+    
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            console.log('Uint8Array created from binary string, byte length:', bytes.byteLength);
+    
+            if (!window.pdfjsLib) {
+                console.error('PDF.js library is not available on window');
+                this.loadingPdf = false;
+                this.errorMessage = 'PDF.js library not loaded. Refresh the page and try again.';
+                this.showToast('Error', 'PDF.js not available', 'error');
+                return;
+            }
+    
+            console.log('Creating Blob from Uint8Array');
+            const blob = new Blob([bytes], { type: 'application/pdf' });
+            const blobURL = URL.createObjectURL(blob);
+            console.log('Blob URL created:', blobURL);
+    
+            this.pdfDoc = {
+                numPages: 1,
+                url: blobURL
+            };
+    
             this.pdfLoaded = true;
-            
-            // Use a simpler approach - let browser handle PDF rendering via embed/iframe
+    
             setTimeout(() => {
+                console.log('Attempting to find .pdf-viewer container in template');
                 const viewerContainer = this.template.querySelector('.pdf-viewer');
                 if (!viewerContainer) {
-                    console.error('Could not find PDF viewer container element!');
+                    console.error('No viewer container found with class .pdf-viewer');
                     this.loadingPdf = false;
-                    this.errorMessage = 'Could not initialize PDF viewer container.';
+                    this.errorMessage = 'Viewer container not found in the component template.';
                     return;
                 }
-                
-                // Clear any existing content
+    
+                console.log('Viewer container found, clearing its contents');
                 viewerContainer.innerHTML = '';
-                
-                // Create an iframe or embed element to display the PDF
-                const embedElement = document.createElement('embed');
-                embedElement.src = blobURL;
-                embedElement.type = 'application/pdf';
-                embedElement.style.width = '100%';
-                embedElement.style.height = '600px';
-                embedElement.style.border = 'none';
-                
-                // Add the embed element to the container
-                viewerContainer.appendChild(embedElement);
+    
+                console.log('Creating iframe element to load PDF.js viewer');
+                const iframe = document.createElement('iframe');
+                iframe.src = pdfJsResource + `/web/viewer.html?file=${encodeURIComponent(blobURL)}`;
+                iframe.style.width = '100%';
+                iframe.style.height = '600px';
+                iframe.style.border = 'none';
+    
+                console.log('Appending iframe to viewer container');
+                viewerContainer.appendChild(iframe);
+    
                 this.loadingPdf = false;
-                
-                // Store the PDF data for annotations
-                this.pdfDoc = {
-                    numPages: 1,  // We don't know exactly, but we're not using this for page-by-page rendering now
-                    url: blobURL
-                };
-                
-                // Add a click listener for annotations
-                viewerContainer.addEventListener('click', this.handleViewerClick.bind(this));
-                
-                console.log('PDF rendered successfully using embed element');
+                console.log('==== END: loadPdf - PDF rendered successfully in iframe ====');
             }, 100);
         } catch (error) {
-            console.error('Error rendering PDF:', error);
+            console.error('Exception occurred during loadPdf:', error);
             this.loadingPdf = false;
-            this.errorMessage = 'Failed to render PDF: ' + (error.message || JSON.stringify(error));
-            this.showToast('Error', 'Failed to render PDF.', 'error');
+            this.errorMessage = 'Error while loading PDF: ' + (error.message || JSON.stringify(error));
+            this.showToast('Error', 'Failed to load PDF.', 'error');
         }
     }
+    
     
     handleViewerClick(event) {
         if (this.signatureMode || this.textMode) {
