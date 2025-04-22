@@ -861,9 +861,124 @@ public with sharing class DynamicRecordListViewController {
         if (String.isNotBlank(searchTerm)) {
             List<String> searchConditions = new List<String>();
             
+            // Search through all fields that have been passed to the controller
+            // These are the fields displayed in the list view
             for (String field : fields) {
-                if (isTextField(objectApiName, field)) {
-                    searchConditions.add(field + ' LIKE \'%' + String.escapeSingleQuotes(searchTerm) + '%\'');
+                // Only include fields that can be searched with a LIKE operator
+                // Get the field type to determine how to build the search condition
+                if (isValidFieldName(objectApiName, field)) {
+                    try {
+                        Schema.SObjectType objectType = Schema.getGlobalDescribe().get(objectApiName);
+                        Map<String, Schema.SObjectField> fieldMap = objectType.getDescribe().fields.getMap();
+                        Schema.DescribeFieldResult fieldDescribe = fieldMap.get(field.toLowerCase()).getDescribe();
+                        Schema.DisplayType fieldType = fieldDescribe.getType();
+                        
+                        // Build appropriate search conditions based on field type
+                        if (fieldType == Schema.DisplayType.STRING ||
+                            fieldType == Schema.DisplayType.TEXTAREA ||
+                            fieldType == Schema.DisplayType.PICKLIST ||
+                            fieldType == Schema.DisplayType.MULTIPICKLIST ||
+                            fieldType == Schema.DisplayType.PHONE ||
+                            fieldType == Schema.DisplayType.EMAIL ||
+                            fieldType == Schema.DisplayType.URL) {
+                            // Text-based search with LIKE
+                            searchConditions.add(field + ' LIKE \'%' + String.escapeSingleQuotes(searchTerm) + '%\'');
+                        } else if (fieldType == Schema.DisplayType.INTEGER || 
+                                  fieldType == Schema.DisplayType.DOUBLE ||
+                                  fieldType == Schema.DisplayType.CURRENCY ||
+                                  fieldType == Schema.DisplayType.PERCENT) {
+                            // Try to convert search term to a number for number fields
+                            try {
+                                Decimal searchNumber = Decimal.valueOf(searchTerm.trim());
+                                searchConditions.add(field + ' = ' + searchNumber);
+                            } catch (Exception e) {
+                                // Ignore if the search term can't be converted to a number
+                            }
+                        } else if (fieldType == Schema.DisplayType.DATE || 
+                                  fieldType == Schema.DisplayType.DATETIME) {
+                            // Try to convert search term to a date
+                            try {
+                                // Check if the search term might be a year
+                                if (searchTerm.length() == 4 && searchTerm.isNumeric()) {
+                                    Integer year = Integer.valueOf(searchTerm);
+                                    // Search by year
+                                    searchConditions.add('CALENDAR_YEAR(' + field + ') = ' + year);
+                                }
+                                // Check if it might be a full or partial date
+                                else if (searchTerm.contains('/') || searchTerm.contains('-')) {
+                                    // Try different date patterns
+                                    String datePattern = searchTerm;
+                                    
+                                    // Option 1: Convert exact date match using date literals
+                                    // Force a string format that Salesforce date literals can understand
+                                    datePattern = datePattern.replace('/', '-');
+
+                                    // For dates like YYYY-MM-DD
+                                    if (datePattern.split('-').size() == 3) {
+                                        String[] parts = datePattern.split('-');
+                                        // Check if it looks like a valid date format
+                                        if ((parts[0].length() == 4 && parts[0].isNumeric()) || 
+                                            (parts[2].length() == 4 && parts[2].isNumeric())) {
+                                            // Create date literal in format YYYY-MM-DD
+                                            String formattedDate;
+                                            
+                                            // Handle YYYY-MM-DD format
+                                            if (parts[0].length() == 4 && parts[0].isNumeric()) {
+                                                formattedDate = datePattern;
+                                            } 
+                                            // Handle MM-DD-YYYY format
+                                            else if (parts[2].length() == 4 && parts[2].isNumeric()) {
+                                                formattedDate = parts[2] + '-' + parts[0] + '-' + parts[1];
+                                            }
+                                            
+                                            searchConditions.add(field + ' = ' + formattedDate);
+                                        }
+                                    }
+                                    
+                                    // Always add a LIKE search for flexible matching
+                                    searchConditions.add('STRING(' + field + ') LIKE \'%' + 
+                                                        String.escapeSingleQuotes(searchTerm) + '%\'');
+                                }
+                                // For month names or month numbers
+                                else if (searchTerm.isNumeric() && searchTerm.length() <= 2) {
+                                    Integer month = Integer.valueOf(searchTerm);
+                                    if (month >= 1 && month <= 12) {
+                                        searchConditions.add('CALENDAR_MONTH(' + field + ') = ' + month);
+                                    }
+                                }
+                                // For day numbers
+                                else if (searchTerm.isNumeric() && searchTerm.length() <= 2) {
+                                    Integer day = Integer.valueOf(searchTerm);
+                                    if (day >= 1 && day <= 31) {
+                                        searchConditions.add('DAY_IN_MONTH(' + field + ') = ' + day);
+                                    }
+                                }
+                                // Add a general string compare as a fallback
+                                else {
+                                    searchConditions.add('STRING(' + field + ') LIKE \'%' + 
+                                                    String.escapeSingleQuotes(searchTerm) + '%\'');
+                                }
+                            } catch (Exception e) {
+                                System.debug('Error processing date search term: ' + e.getMessage());
+                                // Add a basic string search as a fallback
+                                searchConditions.add('STRING(' + field + ') LIKE \'%' + 
+                                                String.escapeSingleQuotes(searchTerm) + '%\'');
+                            }
+                        } else if (fieldType == Schema.DisplayType.BOOLEAN) {
+                            // Try to match boolean values
+                            if (searchTerm.equalsIgnoreCase('true') || 
+                                searchTerm.equalsIgnoreCase('yes')) {
+                                searchConditions.add(field + ' = true');
+                            } else if (searchTerm.equalsIgnoreCase('false') || 
+                                      searchTerm.equalsIgnoreCase('no')) {
+                                searchConditions.add(field + ' = false');
+                            }
+                        }
+                        // Other field types are skipped for searching
+                    } catch (Exception e) {
+                        // If any error occurs while building a condition, just skip that field
+                        System.debug('Error building search condition for field ' + field + ': ' + e.getMessage());
+                    }
                 }
             }
             

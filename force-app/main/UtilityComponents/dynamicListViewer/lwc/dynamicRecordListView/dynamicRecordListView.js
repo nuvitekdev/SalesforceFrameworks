@@ -549,7 +549,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         this.relatedRecordsData = [];
         
         // First load available related objects
-        loadRelatedObjects({ objectApiName: this.selectedRecord.attributes.type })
+        this.loadRelatedObjects(this.selectedRecord.attributes.type)
             .then(result => {
                 this.relatedObjects = result || [];
                 
@@ -1200,6 +1200,30 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                     value = '';
                 }
                 
+                // Format date fields consistently with the modal view
+                // This ensures dates look the same in the list and detail views
+                if (value) {
+                    // Check if this is likely a date string in ISO format (YYYY-MM-DD)
+                    if (typeof value === 'string' && 
+                        (value.match(/^\d{4}-\d{2}-\d{2}$/) || // Date format: YYYY-MM-DD
+                         value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/) // DateTime format
+                        )) {
+                        try {
+                            // Use the same date formatter as in the modal view
+                            if (value.includes('T')) {
+                                // It's a datetime
+                                value = this.formatDateTime(value);
+                            } else {
+                                // It's a date only
+                                value = this.formatDate(value);
+                            }
+                        } catch (e) {
+                            // If formatting fails, keep the original value
+                            console.error('Error formatting date in list view:', e);
+                        }
+                    }
+                }
+                
                 // Add to cells for this record
                 cellsData.push({
                     key: `${record.Id}-${fieldName}`,
@@ -1347,14 +1371,14 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         // List of system fields to exclude - using a much more targeted approach now
         const excludedFields = [
             // System fields
-            'isdeleted', 'systemmodstamp'
+            'isdeleted', 'systemmodstamp', 'createddate', 'lastmodifieddate'
         ];
         
-        // List of important fields that should always be included regardless of value
+        // Fields that should be shown if they have a value, even if the value is false, etc.
         const importantFields = [
-            'id', 'name', 'firstname', 'lastname', 'user', 'owner', 'createdby', 'lastmodifiedby',
-            'email', 'phone', 'title', 'department', 'username', 'manager', 'contact', 'account',
-            'alias', 'active', 'profile', 'division'
+            'id', 'name', 'firstname', 'lastname', 'email', 'phone', 'title', 'department', 'username', 'user', 'owner', 'createdby', 
+            'lastmodifiedby', 'manager', 'contact', 'account', 'alias', 'active', 'profile', 
+            'division', 'address', 'status', 'stage'
         ];
         
         console.log(`Processing ${this.detailedFieldsData.length} fields for display`);
@@ -1378,20 +1402,27 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             // Format the value based on field type
             let displayValue = this.formatFieldValue(field);
             
-            // Skip fields with empty/null values UNLESS they are important fields
+            // Determine if this is an important field
             const isImportantField = importantFields.some(important => 
                 fieldNameLower.includes(important.toLowerCase()));
                 
-            // Also consider fields ending with "Id" as important (lookup fields)
-            const isLookupField = fieldNameLower.endsWith('id');
+            // Consider ID fields as important for lookups
+            const isLookupField = fieldNameLower.endsWith('id') && field.value;
             
-            if ((displayValue === '' || displayValue === null || displayValue === undefined) && 
-                !isImportantField && !isLookupField) {
+            // STRICT FILTER: Skip all fields with empty/null/undefined values
+            // Check for empty values
+            const isEmpty = 
+                displayValue === '' || 
+                displayValue === null || 
+                displayValue === undefined ||
+                (typeof displayValue === 'string' && displayValue.trim() === '');
+            
+            if (isEmpty) {
                 console.log(`Skipping empty value field: ${field.apiName}`);
                 return;
             }
             
-            // Skip fields with "false" or "No" boolean values unless they're important
+            // Skip false boolean values unless they're important fields
             if ((displayValue === 'No' || displayValue === false) && 
                 !isImportantField &&
                 !fieldNameLower.includes('active') && 
@@ -1511,6 +1542,10 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
 
     /**
      * Format field values for display based on their type.
+     * Adapts display format based on the field's data type with robust error handling.
+     * 
+     * @param {Object} field - Field object containing value, type, and metadata
+     * @returns {string} Formatted value ready for display
      */
     formatFieldValue(field) {
         // Handle null/undefined
@@ -1525,34 +1560,73 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 return this.formatAddressField(field.value);
             }
             
+            // Check if it might be a date object
+            if (field.value instanceof Date) {
+                return field.type === 'DATETIME' ? 
+                    this.formatDateTime(field.value.toISOString()) : 
+                    this.formatDate(field.value.toISOString());
+            }
+            
             // Generic object handling (fallback)
             try {
                 return JSON.stringify(field.value);
             } catch (e) {
+                console.error(`Error stringifying complex value: ${e.message}`);
                 return '[Complex Value]';
             }
         }
         
         // Format based on type
-        switch (field.type) {
-            case 'BOOLEAN':
-                return field.value ? 'Yes' : 'No';
-            case 'DATE':
-                return this.formatDate(field.value);
-            case 'DATETIME':
-                return this.formatDateTime(field.value);
-            case 'CURRENCY':
-                return this.formatCurrency(field.value);
-            case 'PERCENT':
-                return `${field.value}%`;
-            case 'PHONE':
-                return field.value; // Already formatted by Salesforce
-            case 'EMAIL':
-                return field.value; // Already formatted by Salesforce
-            case 'URL':
-                return field.value; // URLs will be handled as regular text unless special UI needed
-            default:
-                return String(field.value);
+        try {
+            switch (field.type) {
+                case 'BOOLEAN':
+                    return field.value === true || field.value === 'true' ? 'Yes' : 'No';
+                    
+                case 'DATE':
+                    // Handle string dates or actual Date objects
+                    return this.formatDate(String(field.value));
+                    
+                case 'DATETIME':
+                    // Handle string dates or actual Date objects
+                    return this.formatDateTime(String(field.value));
+                    
+                case 'CURRENCY':
+                    // Ensure we're formatting a number
+                    const numValue = typeof field.value === 'string' ? 
+                        parseFloat(field.value.replace(/[^0-9.-]+/g, '')) : 
+                        Number(field.value);
+                        
+                    return isNaN(numValue) ? field.value : this.formatCurrency(numValue);
+                    
+                case 'PERCENT':
+                    // Handle percentage formatting
+                    const pctValue = typeof field.value === 'string' ? 
+                        parseFloat(field.value.replace(/[^0-9.-]+/g, '')) : 
+                        Number(field.value);
+                        
+                    return isNaN(pctValue) ? field.value : `${pctValue}%`;
+                    
+                case 'PHONE':
+                    return field.value; // Already formatted by Salesforce
+                    
+                case 'EMAIL':
+                    return field.value; // Already formatted by Salesforce
+                    
+                case 'URL':
+                    return field.value; // URLs will be handled as regular text unless special UI needed
+                    
+                case 'REFERENCE':
+                    // For lookup fields, just return the value
+                    return String(field.value);
+                    
+                default:
+                    // If no specific type or handling, convert to string
+                    return String(field.value);
+            }
+        } catch (error) {
+            // Log error and return original value if formatting fails
+            console.error(`Error formatting ${field.type} field ${field.apiName}: ${error.message}`);
+            return String(field.value);
         }
     }
     
@@ -1614,25 +1688,69 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     }
 
     /**
-     * Format date values for display.
+     * Format date values for display with consistent formatting.
+     * Uses Intl.DateTimeFormat for locale-aware formatting with consistent options.
+     * 
+     * @param {string} dateStr - The date string to format
+     * @returns {string} Formatted date string
      */
     formatDate(dateStr) {
         try {
+            if (!dateStr) return '';
+            
             const date = new Date(dateStr);
-            return date.toLocaleDateString();
+            
+            // Check if date is valid
+            if (isNaN(date.getTime())) {
+                console.warn(`Invalid date format: ${dateStr}`);
+                return dateStr;
+            }
+            
+            // Format with Intl.DateTimeFormat for better localization
+            return new Intl.DateTimeFormat('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                timeZone: 'UTC' // Use UTC to avoid timezone shifts for date-only fields
+            }).format(date);
         } catch (e) {
+            console.error(`Error formatting date: ${e.message}`);
             return dateStr; // Return original if parsing fails
         }
     }
 
     /**
-     * Format datetime values for display.
+     * Format datetime values for display with consistent formatting.
+     * Handles timezone conversion and provides a consistent date/time format.
+     * 
+     * @param {string} dateTimeStr - The datetime string to format
+     * @returns {string} Formatted datetime string
      */
     formatDateTime(dateTimeStr) {
         try {
+            if (!dateTimeStr) return '';
+            
             const date = new Date(dateTimeStr);
-            return date.toLocaleString();
+            
+            // Check if date is valid
+            if (isNaN(date.getTime())) {
+                console.warn(`Invalid datetime format: ${dateTimeStr}`);
+                return dateTimeStr;
+            }
+            
+            // Format with Intl.DateTimeFormat for better localization
+            // Use specific format options for consistent display
+            return new Intl.DateTimeFormat('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            }).format(date);
         } catch (e) {
+            console.error(`Error formatting datetime: ${e.message}`);
             return dateTimeStr; // Return original if parsing fails
         }
     }
