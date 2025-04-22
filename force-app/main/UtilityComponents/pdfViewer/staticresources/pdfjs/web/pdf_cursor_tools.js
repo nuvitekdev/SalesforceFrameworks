@@ -15,7 +15,27 @@
 
 /** @typedef {import("./event_utils.js").EventBus} EventBus */
 
-import { AnnotationEditorType, shadow } from "pdfjs-lib";
+// Local implementations to replace imports from pdfjs-lib
+const AnnotationEditorType = Object.freeze({
+  NONE: 0,
+  FREETEXT: 1,
+  INK: 3,
+  STAMP: 4,
+  HIGHLIGHT: 5,
+  SIGNATURE: 6,
+});
+
+// Shadow DOM utility
+function shadow(obj, prop, value) {
+  Object.defineProperty(obj, prop, {
+    value,
+    enumerable: true,
+    configurable: true,
+    writable: false,
+  });
+  return value;
+}
+
 import { CursorTool, PresentationModeState } from "./ui_utils.js";
 import { GrabToPan } from "./grab_to_pan.js";
 

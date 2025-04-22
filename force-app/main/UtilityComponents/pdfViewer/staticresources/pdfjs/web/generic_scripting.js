@@ -13,7 +13,30 @@
  * limitations under the License.
  */
 
-import { getPdfFilenameFromUrl } from "pdfjs-lib";
+// Implementation of the missing function
+function getPdfFilenameFromUrl(url) {
+  if (!url) {
+    return "document.pdf";
+  }
+  // Remove query string and hash parameters.
+  const urlWithoutHash = url.split("#")[0];
+  const urlWithoutQuery = urlWithoutHash.split("?")[0];
+  
+  // Decode URI-encoded characters.
+  let path = decodeURIComponent(urlWithoutQuery);
+  
+  // Remove protocol and domain if present.
+  const protocolIndex = path.search(/^[a-z]+:\/\//i);
+  if (protocolIndex !== -1) {
+    path = path.substring(path.search(/\//, protocolIndex + 3) + 1);
+  }
+
+  // Get the filename.
+  const parts = path.split(/\/|\\/);
+  const filename = parts.pop() || "document.pdf";
+  
+  return filename;
+}
 
 async function docProperties(pdfDocument) {
   const url = "",

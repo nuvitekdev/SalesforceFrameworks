@@ -13,7 +13,12 @@
  * limitations under the License.
  */
 
-import { DOMSVGFactory } from "pdfjs-lib";
+// Local implementation of DOMSVGFactory
+class DOMSVGFactory {
+  createElement(type) {
+    return document.createElementNS("http://www.w3.org/2000/svg", type);
+  }
+}
 
 class AltTextManager {
   #clickAC = null;

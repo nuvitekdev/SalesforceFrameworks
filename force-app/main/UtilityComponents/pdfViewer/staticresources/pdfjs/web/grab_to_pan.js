@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { stopEvent } from "pdfjs-lib";
+// Local implementation of stopEvent function
+function stopEvent(evt) {
+  evt.preventDefault();
+  evt.stopPropagation();
+}
 
 // Class name of element which can be grabbed.
 const CSS_CLASS_GRAB = "grab-to-pan-grab";

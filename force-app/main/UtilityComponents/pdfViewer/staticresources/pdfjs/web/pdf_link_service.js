@@ -16,7 +16,32 @@
 /** @typedef {import("./event_utils").EventBus} EventBus */
 /** @typedef {import("./interfaces").IPDFLinkService} IPDFLinkService */
 
-import { isValidExplicitDest } from "pdfjs-lib";
+// Implementation of the missing function
+function isValidExplicitDest(dest) {
+  if (!Array.isArray(dest)) {
+    return false;
+  }
+  const destLength = dest.length;
+  if (destLength < 2) {
+    return false;
+  }
+  const page = dest[0];
+  if (
+    !(
+      typeof page === "object" ||
+      (typeof page === "number" && Number.isInteger(page)) ||
+      (typeof page === "string")
+    )
+  ) {
+    return false;
+  }
+  const zoom = dest[1];
+  if (!(typeof zoom === "object" || typeof zoom === "string")) {
+    return false;
+  }
+  return true;
+}
+
 import { parseQueryString } from "./ui_utils.js";
 
 const DEFAULT_LINK_REL = "noopener noreferrer nofollow";

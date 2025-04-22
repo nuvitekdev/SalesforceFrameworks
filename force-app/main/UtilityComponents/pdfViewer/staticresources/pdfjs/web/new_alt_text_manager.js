@@ -13,7 +13,10 @@
  * limitations under the License.
  */
 
-import { noContextMenu } from "pdfjs-lib";
+// Local implementation of noContextMenu function
+function noContextMenu(event) {
+  event.preventDefault();
+}
 
 class NewAltTextManager {
   #boundCancel = this.#cancel.bind(this);

@@ -15,7 +15,19 @@
 
 /** @typedef {import("./event_utils.js").EventBus} EventBus */
 
-import { AnnotationEditorParamsType } from "pdfjs-lib";
+// Local implementation of AnnotationEditorParamsType enum
+const AnnotationEditorParamsType = Object.freeze({
+  FREETEXT_SIZE: 1,
+  FREETEXT_COLOR: 2,
+  INK_COLOR: 3,
+  INK_THICKNESS: 4,
+  INK_OPACITY: 5,
+  CREATE: 6,
+  HIGHLIGHT_THICKNESS: 7,
+  HIGHLIGHT_FREE: 8,
+  HIGHLIGHT_SHOW_ALL: 9,
+  HIGHLIGHT_DEFAULT_COLOR: 10
+});
 
 /**
  * @typedef {Object} AnnotationEditorParamsOptions

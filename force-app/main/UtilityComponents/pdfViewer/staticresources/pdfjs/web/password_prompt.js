@@ -15,7 +15,11 @@
 
 /** @typedef {import("./overlay_manager.js").OverlayManager} OverlayManager */
 
-import { PasswordResponses } from "pdfjs-lib";
+// Local implementation of PasswordResponses enum
+const PasswordResponses = Object.freeze({
+  NEED_PASSWORD: 1,
+  INCORRECT_PASSWORD: 2
+});
 
 /**
  * @typedef {Object} PasswordPromptOptions

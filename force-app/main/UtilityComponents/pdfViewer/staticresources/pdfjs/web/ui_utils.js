@@ -13,7 +13,10 @@
  * limitations under the License.
  */
 
-import { MathClamp } from "pdfjs-lib";
+// Function implementation instead of import
+function MathClamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
 
 const DEFAULT_SCALE_VALUE = "auto";
 const DEFAULT_SCALE = 1.0;

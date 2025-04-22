@@ -15,7 +15,26 @@
 
 /** @typedef {import("./interfaces").IDownloadManager} IDownloadManager */
 
-import { createValidAbsoluteUrl, isPdfFile } from "pdfjs-lib";
+// Local implementations to replace imports from pdfjs-lib
+function createValidAbsoluteUrl(url, baseUrl) {
+  if (!url) {
+    return null;
+  }
+  try {
+    const absoluteUrl = baseUrl ? new URL(url, baseUrl) : new URL(url);
+    if (absoluteUrl.protocol === "http:" || absoluteUrl.protocol === "https:" || 
+        absoluteUrl.protocol === "file:" || absoluteUrl.protocol === "blob:") {
+      return absoluteUrl.href;
+    }
+  } catch (ex) {
+    // Invalid URL
+  }
+  return null;
+}
+
+function isPdfFile(filename) {
+  return /\.pdf$/i.test(filename);
+}
 
 if (typeof PDFJSDev !== "undefined" && !PDFJSDev.test("CHROME || GENERIC")) {
   throw new Error(
