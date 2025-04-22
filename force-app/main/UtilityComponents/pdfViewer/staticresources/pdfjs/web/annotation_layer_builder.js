@@ -32,7 +32,7 @@ import {
   AnnotationType,
   setLayerDimensions,
   Util,
-} from "pdfjs-lib";
+} from "./pdfjs_components.js";
 import { PresentationModeState } from "./ui_utils.js";
 
 /**

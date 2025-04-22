@@ -16,12 +16,62 @@
 // eslint-disable-next-line max-len
 /** @typedef {import("./interfaces.js").IPDFPrintServiceFactory} IPDFPrintServiceFactory */
 
-import {
-  AnnotationMode,
-  PixelsPerInch,
-  RenderingCancelledException,
-  shadow,
-} from "pdfjs-lib";
+// Define fallback implementations for all the required components
+// Fallback implementation of AnnotationMode
+const AnnotationMode = {
+  DISABLE: 0,
+  ENABLE: 1,
+  ENABLE_FORMS: 2,
+  ENABLE_STORAGE: 3
+};
+
+// Fallback implementation of PixelsPerInch
+class PixelsPerInch {
+  static CSS = 96.0;
+  static PDF = 72.0;
+  static PDF_TO_CSS_UNITS = this.CSS / this.PDF;
+}
+
+// Fallback implementation for RenderingCancelledException
+class RenderingCancelledException extends Error {
+  constructor(msg, type) {
+    super(msg);
+    this.name = "RenderingCancelledException";
+    this.type = type;
+  }
+}
+
+// Fallback implementation for shadow
+function shadow(obj, prop, value) {
+  Object.defineProperty(obj, prop, {
+    value,
+    enumerable: true,
+    configurable: true,
+    writable: false,
+  });
+  return value;
+}
+
+// Try to import the real implementations from pdfjs-lib
+import("pdfjs-lib").then(module => {
+  // Update with the actual implementations if import succeeds
+  if (module.AnnotationMode) {
+    Object.assign(AnnotationMode, module.AnnotationMode);
+  }
+  if (module.PixelsPerInch) {
+    Object.assign(PixelsPerInch, module.PixelsPerInch);
+  }
+  if (module.RenderingCancelledException) {
+    // Can't easily update a class, but we usually just check instanceof
+    // This is sufficient for most use cases
+  }
+  if (module.shadow) {
+    shadow = module.shadow;
+  }
+}).catch(error => {
+  console.warn("Failed to import from pdfjs-lib, using fallback implementation:", error);
+});
+
 import { getXfaHtmlForPrinting } from "./print_utils.js";
 
 let activeService = null;

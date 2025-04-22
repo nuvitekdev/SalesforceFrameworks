@@ -20,7 +20,7 @@
 /** @typedef {import("../src/display/api.js").PDFDocumentProxy} PDFDocumentProxy */
 
 import { getPageSizeInches, isPortraitOrientation } from "./ui_utils.js";
-import { PDFDateString } from "pdfjs-lib";
+import { PDFDateString } from "pdfjs/display/display_utils.js";
 
 // See https://en.wikibooks.org/wiki/Lentis/Conversion_to_the_Metric_Standard_in_the_United_States
 const NON_METRIC_LOCALES = ["en-us", "en-lr", "my"];
