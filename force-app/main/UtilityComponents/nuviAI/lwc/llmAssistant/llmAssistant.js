@@ -18,6 +18,7 @@ export default class LLMAssistant extends LightningElement {
     @api cardTitle = 'AI Assistant'; // Configurable title
     @api contextPrompt = '';       // Custom context to provide to the LLM about its purpose/placement
     @api enableAnomalyDetection = false; // Whether to enable anomaly detection
+    @api enableImageValidation = false; // Placeholder property to maintain backward compatibility
     @api relatedObjects = '';      // Comma-separated list of object API names to search across for related data
     
     @track llmOptions = [];
