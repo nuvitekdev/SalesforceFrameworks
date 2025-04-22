@@ -71,33 +71,27 @@ export default class PdfSigner extends LightningElement {
     
     connectedCallback() {
         console.log('PdfSigner initialized. Loading libraries...');
-        console.log('PDF-lib resource URL:', pdfLibResource);
-        console.log('PDF.js resource URL:', pdfJsResource);
-        
-        // Load required libraries
         Promise.all([
             loadScript(this, pdfLibResource),
-            loadScript(this, pdfJsResource + '/pdf.js'),
-            loadStyle(this, pdfJsResource + '/pdf_viewer.css')
+            loadScript(this, pdfJsResource + '/build/pdf.js'),
+            loadScript(this, pdfJsResource + '/build/pdf.worker.js'),
+            loadStyle(this, pdfJsResource + '/web/pdf_viewer.css')
         ]).then(() => {
-            console.log('Libraries loaded successfully.');
-            
-            // Initialize PDF.js - Disable worker to avoid structuredClone issues
             if (window.pdfjsLib) {
-                console.log('PDF.js library found in window object');
-                // Disable workers to avoid issues in Salesforce
-                window.pdfjsLib.disableWorker = true;
-                console.log('PDF.js worker disabled to avoid structuredClone errors');
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = pdfJsResource + '/build/pdf.worker.js';
+                window.pdfjsLib.disableWorker = false;
+                console.log('PDF.js initialized with worker support');
             } else {
-                console.error('PDF.js library not found in window object after loading!');
-                this.errorMessage = 'PDF.js library not properly loaded. Please refresh the page and try again.';
+                console.error('PDF.js not found on window');
+                this.errorMessage = 'PDF.js failed to initialize.';
             }
         }).catch(error => {
-            console.error('Error loading libraries', error);
-            this.errorMessage = 'Failed to load required libraries: ' + (error.message || JSON.stringify(error));
-            this.showToast('Error', 'Failed to load required libraries.', 'error');
+            const message = error.message || JSON.stringify(error);
+            console.error('Failed to load PDF libraries:', message);
+            this.errorMessage = 'Failed to load libraries: ' + message;
+            this.showToast('Error', this.errorMessage, 'error');
         });
-    }
+    }    
     
     handleFileUpload(event) {
         const file = event.target.files[0];
