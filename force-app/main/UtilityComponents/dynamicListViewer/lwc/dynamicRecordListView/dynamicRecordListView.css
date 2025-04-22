@@ -77,9 +77,6 @@
     --line-height-tight: 1.2;
     --line-height-normal: 1.5;
     --line-height-loose: 1.8;
-
-    /* Icon Color */
-    --icon-color: var(--accent-color);
 }
 
 /* ============================================= */
@@ -200,7 +197,7 @@
 }
 
 .filter-button:hover lightning-icon {
-    --sds-c-icon-color-foreground-default: var(--accent-color);
+    --sds-c-icon-color-foreground-default: var(--primary-color);
 }
 
 /* ============================================= */
@@ -394,7 +391,7 @@
 }
 
 .empty-state lightning-icon {
-    --sds-c-icon-color-foreground-default: var(--accent-color);
+    --sds-c-icon-color-foreground-default: var(--text-tertiary);
     width: 48px;
     height: 48px;
 }
@@ -498,7 +495,7 @@ th:hover {
 }
 
 th:hover .sort-icon {
-    --sds-c-icon-color-foreground-default: var(--accent-color);
+    --sds-c-icon-color-foreground-default: var(--primary-color);
 }
 
 tr {
@@ -677,7 +674,6 @@ td {
 
 .back-button lightning-icon {
     margin-right: var(--spacing-xs);
-    --sds-c-icon-color-foreground-default: var(--accent-color);
 }
 
 /* Modal Close Button - Stronger Styling */
@@ -714,6 +710,11 @@ lightning-tabset {
     --sds-c-tabs-item-font-size: var(--font-size-md);
     margin-bottom: var(--spacing-md);
     width: 100%;
+}
+
+/* Style for tab icons - make them gray */
+lightning-tab lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--text-secondary);
 }
 
 lightning-tabset .slds-tabs_scoped__item {
@@ -817,7 +818,6 @@ lightning-tabset .slds-tabs_scoped__item {
 
 .map-link lightning-icon {
     margin-right: 4px;
-    --sds-c-icon-color-foreground-default: var(--accent-color);
 }
 
 .map-link:hover {
@@ -1028,7 +1028,7 @@ lightning-tabset .slds-tabs_scoped__item {
 
 .post-avatar lightning-icon {
     --sds-c-icon-color-background: var(--primary-color);
-    --sds-c-icon-color-foreground-default: var(--accent-color);
+    --sds-c-icon-color-foreground-default: white;
     border-radius: 50%;
     padding: 4px;
 }
@@ -1082,9 +1082,9 @@ lightning-tabset .slds-tabs_scoped__item {
 /* Focus States (Accessibility)                  */
 /* ============================================= */
 *:focus-visible {
-    outline: 2px solid var(--accent-color);
+    outline: 2px solid var(--primary-color);
     outline-offset: 2px;
-    box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.3);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
 }
 
 /* ============================================= */
@@ -1261,31 +1261,9 @@ lightning-tabset .slds-tabs_scoped__item {
 
 .navigation-depth-indicator lightning-icon {
     margin-right: 4px;
-    --sds-c-icon-color-foreground-default: var(--accent-color);
 }
 
 .depth-limit-reached {
     color: #c23934;
     font-weight: 600;
-}
-
-/* Add global default styling for all lightning-icon components */
-:host lightning-icon {
-    --sds-c-icon-color-foreground-default: var(--accent-color);
-}
-
-/* Keep specific overrides for certain icons */
-/* Update the file icon styling to use accent color */
-.file-icon lightning-icon {
-    --sds-c-icon-color-foreground-default: var(--accent-color);
-}
-
-/* Any close buttons should keep white text on dark backgrounds */
-.slds-modal__close lightning-icon {
-    --sds-c-icon-color-foreground-default: white !important;
-}
-
-/* Error state icon - keep error color for better UX */
-.error-state lightning-icon {
-    --sds-c-icon-color-foreground-default: var(--error-color);
 }
