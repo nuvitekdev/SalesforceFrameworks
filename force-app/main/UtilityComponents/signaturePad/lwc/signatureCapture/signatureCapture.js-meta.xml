@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>58.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Signature Capture</masterLabel>
+    <description>Component for capturing handwritten or text signatures</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__RecordPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightning__FlowScreen</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__FlowScreen">
+            <property name="recordId" type="String" label="Record ID" description="ID of the record to associate the signature with (optional - can be auto-detected)"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>
