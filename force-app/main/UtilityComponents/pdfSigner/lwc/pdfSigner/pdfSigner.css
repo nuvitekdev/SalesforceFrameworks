@@ -4,13 +4,24 @@
     src: url('/resource/signature/GreatVibes-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
+    font-display: block; /* Ensures text is visible only when font is loaded */
+}
+
+/* Fallback signature font */
+@font-face {
+    font-family: 'SignatureFallback';
+    src: local('Brush Script MT'), local('Comic Sans MS'), local('cursive');
+    font-weight: normal;
+    font-style: italic;
 }
 
 /* General container styling */
 .pdf-signer-container {
     max-width: 100%;
     margin: 0 auto;
-    font-family: 'Salesforce Sans', Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Salesforce Sans', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Step navigation */
@@ -72,67 +83,237 @@
     pointer-events: none;
     /* Optional grid lines */
     background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-                     linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+                      linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
     background-size: 50px 50px;
     opacity: 0.3;
 }
 
-/* Signature drawing area */
-.draw-area, .type-area {
-    border: 1px solid #d8dde6;
-    background-color: white;
-    border-radius: 4px;
+/* ============================================= */
+/* Signature Type Selection                      */
+/* ============================================= */
+.signature-type-selector {
+    margin-bottom: 24px;
 }
 
-.sig-pad, .sig-type {
+.slds-radio_button-group {
+    border: none;
+    background: #f5f5f7;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.slds-radio_button {
+    background: transparent;
+    border: none;
+}
+
+.slds-radio_button__label {
+    background: transparent;
+    color: #1d1d1f;
+    border: none;
+    padding: 8px 16px;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.slds-radio_button [type="radio"]:checked + .slds-radio_button__label {
+    background: #22BDC1;
+    color: #ffffff;
+    border-radius: 8px;
+}
+
+/* ============================================= */
+/* Text Input                                    */
+/* ============================================= */
+.text-input-container {
+    margin-bottom: 24px;
+}
+
+lightning-input.signature-text-input {
+    --sds-c-input-radius-border: 8px;
+    --sds-c-input-color-border: rgba(0, 0, 0, 0.1);
+    --sds-c-input-color-border-focus: #22BDC1;
+    --sds-c-input-shadow-focus: 0 0 0 1px #22BDC1;
+    --sds-c-input-text-color: #1d1d1f;
+    margin-bottom: 10px;
+}
+
+/* ============================================= */
+/* Signature Canvas                              */
+/* ============================================= */
+.signature-pad-container {
+    position: relative;
+    margin-bottom: 24px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.signature-pad-container:hover {
+    border-color: #22BDC1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.signature-pad {
     width: 100%;
     height: 150px;
     background-color: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    touch-action: none; /* Prevents scrolling while drawing on touch screens */
+    touch-action: none;
+    cursor: crosshair;
+}
+
+/* Checkerboard pattern for transparency */
+.signature-pad-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(45deg, #f5f5f7 25%, transparent 25%),
+                      linear-gradient(-45deg, #f5f5f7 25%, transparent 25%),
+                      linear-gradient(45deg, transparent 75%, #f5f5f7 75%),
+                      linear-gradient(-45deg, transparent 75%, #f5f5f7 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* ============================================= */
+/* Action Buttons                                */
+/* ============================================= */
+.signature-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+lightning-button.clear-button {
+    --sds-c-button-neutral-color-background: #f5f5f7;
+    --sds-c-button-neutral-color-border: rgba(0, 0, 0, 0.1);
+    --sds-c-button-neutral-color-foreground: #1d1d1f;
+    --sds-c-button-radius-border: 8px;
+}
+
+lightning-button.save-button {
+    --sds-c-button-brand-color-background: #22BDC1;
+    --sds-c-button-brand-color-border: #22BDC1;
+    --sds-c-button-brand-color-foreground: #ffffff;
+    --sds-c-button-radius-border: 8px;
 }
 
 /* Signature positioning UI */
 .signature-palette {
     background-color: #f7f7f7;
-    border-radius: 8px;
+    border-radius: 12px;
     margin-bottom: 1rem;
     text-align: center;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .signature-thumbnail {
     max-width: 200px;
     max-height: 100px;
     background-color: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
     cursor: grab;
     padding: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.signature-thumbnail:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 .signature-thumbnail:active {
     cursor: grabbing;
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .hint {
     font-size: 0.8rem;
-    color: #706e6b;
+    color: #6e6e73;
+    margin-top: 8px;
 }
 
 /* Placed signature styles */
 .signature-placement {
     position: absolute;
     cursor: move;
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: transparent;
     padding: 5px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    border: 1px dashed rgba(34, 189, 193, 0.3);
+}
+
+.signature-placement:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: scale(1.01);
+    border: 1px dashed rgba(34, 189, 193, 0.8);
 }
 
 .remove-sig {
     cursor: pointer;
     z-index: 10;
+    opacity: 0.8;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.remove-sig:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Resize handles */
+.resize-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: #22BDC1;
+    border-radius: 50%;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    opacity: 0.7;
+}
+
+.resize-handle:hover {
+    transform: scale(1.2);
+    opacity: 1;
+    background-color: #D5DF23;
+}
+
+.resize-nw {
+    top: -5px;
+    left: -5px;
+    cursor: nw-resize;
+}
+
+.resize-ne {
+    top: -5px;
+    right: -5px;
+    cursor: ne-resize;
+}
+
+.resize-se {
+    bottom: -5px;
+    right: -5px;
+    cursor: se-resize;
+}
+
+.resize-sw {
+    bottom: -5px;
+    left: -5px;
+    cursor: sw-resize;
 }
 
 /* Success illustration styling */
@@ -151,6 +332,31 @@
         max-width: 150px;
         max-height: 75px;
     }
+    
+    .signature-pad {
+        height: 120px;
+    }
+    
+    .signature-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .slds-radio_button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .slds-radio_button {
+        width: 100%;
+    }
+    
+    .slds-radio_button__label {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* Animation */
@@ -161,19 +367,4 @@
 
 .step-section {
     animation: fadeIn 0.3s ease-in-out;
-}
-
-/* Canvas styling */
-canvas.sig-pad, canvas.sig-type {
-    touch-action: none; /* Prevents scrolling on touch devices when drawing */
-}
-
-/* Success step */
-.success-icon {
-    color: #04844b;
-}
-
-.success-message {
-    color: #04844b;
-    font-weight: bold;
 }

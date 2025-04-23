@@ -77,40 +77,74 @@
             <div class="step-section slds-p-around_medium">
                 <div class="slds-text-heading_medium slds-m-bottom_small">Capture Signature</div>
 
-                <div class="slds-form-element slds-m-bottom_medium">
-                    <lightning-radio-group name="sigMode" label="Signature Method" options={modeOptions}
-                        value={signatureMode} onchange={switchSigMode} type="radio"></lightning-radio-group>
+                <!-- Signature Type Selection -->
+                <div class="signature-type-selector">
+                    <fieldset class="slds-form-element">
+                        <div class="slds-form-element__control">
+                            <div class="slds-radio_button-group">
+                                <span class="slds-button slds-radio_button">
+                                    <input type="radio" name="signType" id="draw" value="draw" 
+                                        checked={isDrawChecked} onchange={switchSigMode} />
+                                    <label class="slds-radio_button__label" for="draw">
+                                        <span class="slds-radio_faux">
+                                            <lightning-icon icon-name="utility:edit" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                            Draw
+                                        </span>
+                                    </label>
+                                </span>
+                                <span class="slds-button slds-radio_button">
+                                    <input type="radio" name="signType" id="text" value="type" 
+                                        checked={isTypeChecked} onchange={switchSigMode} />
+                                    <label class="slds-radio_button__label" for="text">
+                                        <span class="slds-radio_faux">
+                                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                            Text
+                                        </span>
+                                    </label>
+                                </span>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+                
+                <!-- Text Input (only shown when text mode is selected) -->
+                <div if:true={isType} class="text-input-container">
+                    <lightning-input 
+                        label="Enter your signature text"
+                        placeholder="Type your signature here..."
+                        type="text" 
+                        data-id="typedInput"
+                        class="signature-text-input"
+                        value={signatureText}
+                        onchange={handleTypeInput}>
+                    </lightning-input>
+                </div>
+                
+                <!-- Signature Canvas Container - Same for both modes -->
+                <div class="signature-pad-container">
+                    <canvas class="signature-pad" width="400" height="150"></canvas>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="signature-actions">
+                    <lightning-button 
+                        class="clear-button"
+                        variant="neutral" 
+                        label="Clear" 
+                        icon-name="utility:delete"
+                        onclick={handleClearSignature}>
+                    </lightning-button>
+                    <lightning-button 
+                        class="save-button slds-m-left_x-small"
+                        variant="brand" 
+                        label="Next: Place Signature" 
+                        icon-name="utility:forward"
+                        onclick={handleSignatureSubmit}>
+                    </lightning-button>
                 </div>
 
-                <template if:true={isDraw}>
-                    <div class="draw-area slds-p-around_medium slds-m-bottom_medium slds-box">
-                        <div class="slds-text-body_regular slds-m-bottom_small">
-                            Draw your signature below:
-                        </div>
-                        <canvas class="sig-pad" width="400" height="150"></canvas>
-                        <div class="slds-m-top_small">
-                            <lightning-button label="Clear" variant="neutral"
-                                onclick={handleClearSignature}></lightning-button>
-                        </div>
-                    </div>
-                </template>
-
-                <template if:true={isType}>
-                    <div class="type-area slds-p-around_medium slds-m-bottom_medium slds-box">
-                        <lightning-input type="text" label="Type your name" data-id="typedInput"
-                            placeholder="Type your signature" oninput={handleTypeInput}></lightning-input>
-                        <div class="slds-m-vertical_medium">
-                            <canvas class="sig-type" width="400" height="150"></canvas>
-                        </div>
-                        <lightning-button label="Clear" variant="neutral"
-                            onclick={handleClearSignature}></lightning-button>
-                    </div>
-                </template>
-
-                <div class="slds-grid slds-grid_align-spread">
+                <div class="slds-m-top_medium">
                     <lightning-button label="Back" onclick={goToStep} data-step="1"></lightning-button>
-                    <lightning-button variant="brand" label="Next: Place Signature"
-                        onclick={handleSignatureSubmit}></lightning-button>
                 </div>
             </div>
         </template>
@@ -136,7 +170,7 @@
                 <div class="iframe-container">
                     <iframe src={pdfPreviewUrl} class="pdf-iframe"></iframe>
                     <div class="pdf-overlay" ondragover={handleDragOver} ondrop={handleDrop}
-                        onclick={handleOverlayClick}>
+                        ondblclick={handleOverlayDoubleClick}>
                         <!-- Placed signatures will appear here dynamically -->
                         <div class="grid-guide"></div>
                     </div>
