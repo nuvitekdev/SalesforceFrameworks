@@ -102,10 +102,10 @@
                                         </span>
                                     </label>
                                 </span>
-                            </div>
+                </div>
                         </div>
                     </fieldset>
-                </div>
+                        </div>
                 
                 <!-- Text Input (only shown when text mode is selected) -->
                 <div if:true={isType} class="text-input-container">
@@ -118,12 +118,12 @@
                         value={signatureText}
                         onchange={handleTypeInput}>
                     </lightning-input>
-                </div>
+                    </div>
                 
                 <!-- Signature Canvas Container - Same for both modes -->
                 <div class="signature-pad-container">
                     <canvas class="signature-pad" width="400" height="150"></canvas>
-                </div>
+                        </div>
                 
                 <!-- Action Buttons -->
                 <div class="signature-actions">
@@ -141,7 +141,7 @@
                         icon-name="utility:forward"
                         onclick={handleSignatureSubmit}>
                     </lightning-button>
-                </div>
+                    </div>
 
                 <div class="slds-m-top_medium">
                     <lightning-button label="Back" onclick={goToStep} data-step="1"></lightning-button>

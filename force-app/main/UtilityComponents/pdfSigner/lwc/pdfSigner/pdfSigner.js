@@ -457,8 +457,8 @@ export default class PdfSigner extends LightningElement {
         // Generate unique ID for this signature placement
         const placementId = 'sig-' + Date.now() + '-' + Math.round(Math.random() * 1000);
         
-        // Initial size (scaled from original)
-        const initialWidth = Math.min(200, this.signatureImage.width);
+        // Initial size (scaled from original) - LARGER size
+        const initialWidth = Math.min(300, this.signatureImage.width * 1.5); // Make initial size larger
         const aspectRatio = this.signatureImage.height / this.signatureImage.width;
         const initialHeight = initialWidth * aspectRatio;
         
@@ -481,13 +481,14 @@ export default class PdfSigner extends LightningElement {
         sigImg.style.height = '100%';
         sigImg.style.pointerEvents = 'none'; // Prevent image from capturing events
         
-        // Create remove button
+        // Create remove button - now at the top-center
         const removeBtn = document.createElement('div');
         removeBtn.innerHTML = '✖';
         removeBtn.className = 'remove-sig';
         removeBtn.style.position = 'absolute';
-        removeBtn.style.top = '-10px';
-        removeBtn.style.right = '-10px';
+        removeBtn.style.top = '-10px'; // Position at top
+        removeBtn.style.left = '50%'; // Center horizontally
+        removeBtn.style.transform = 'translateX(-50%)'; // Center perfectly
         removeBtn.style.backgroundColor = '#f44336';
         removeBtn.style.color = 'white';
         removeBtn.style.borderRadius = '50%';
