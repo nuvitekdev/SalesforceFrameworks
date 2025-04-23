@@ -1,5 +1,5 @@
 <template>
-    <div class="pdf-signer-container">
+    <div class="pdf-signer-container" class:class={currentStepClass}>
         <div class="slds-path">
             <div class="slds-grid slds-path__track">
                 <div class="slds-grid slds-path__scroller-container">
@@ -154,8 +154,8 @@
             <div class="step-section slds-p-around_medium">
                 <div class="slds-text-heading_medium slds-m-bottom_small">Position Signature</div>
                 <p class="slds-m-bottom_medium">
-                    Drag your signature onto the document or click to place it.
-                    You can place multiple signatures. Click the ✖ to remove a signature.
+                    Drag your signature onto the document or double-click to place it.
+                    You can place multiple signatures and resize them as needed. Click the ✖ to remove a signature.
                 </p>
 
                 <!-- Signature draggable palette -->
@@ -163,17 +163,60 @@
                     <div class="slds-text-heading_small slds-m-bottom_small">Your Signature</div>
                     <img src={signatureImage.dataUrl} class="signature-thumbnail" draggable="true"
                         ondragstart={handleDragStart} alt="Signature" />
-                    <p class="hint slds-m-top_small">Drag onto the document or click to place</p>
+                    <p class="hint slds-m-top_small">Drag onto the document or double-click to place</p>
                 </div>
 
-                <!-- PDF with interactive overlay -->
-                <div class="iframe-container">
+                <!-- PDF Viewer Options -->
+                <div class="pdf-viewer-controls">
+                    <div class="controls-left">
+                        <lightning-button-group>
+                            <lightning-button 
+                                label="Previous" 
+                                icon-name="utility:chevronleft" 
+                                onclick={handlePrevPage}
+                                disabled={isFirstPage}>
+                            </lightning-button>
+                            <lightning-button 
+                                label="Fit Width" 
+                                icon-name="utility:expand_alt" 
+                                onclick={handleFitWidth}>
+                            </lightning-button>
+                            <lightning-button 
+                                label="Zoom In" 
+                                icon-name="utility:add" 
+                                onclick={handleZoomIn}>
+                            </lightning-button>
+                            <lightning-button 
+                                label="Zoom Out" 
+                                icon-name="utility:dash" 
+                                onclick={handleZoomOut}>
+                            </lightning-button>
+                            <lightning-button 
+                                label="Next" 
+                                icon-name="utility:chevronright" 
+                                icon-position="right"
+                                onclick={handleNextPage}
+                                disabled={isLastPage}>
+                            </lightning-button>
+                        </lightning-button-group>
+                    </div>
+                    <div class="controls-right">
+                        <span class="page-indicator">Page {currentPageNum} of {totalPages}</span>
+                    </div>
+                </div>
+
+                <!-- Single Page View with iframe -->
+                <div if:false={useMultiPageView} class="iframe-container" class:class={pdfContainerClass}>
                     <iframe src={pdfPreviewUrl} class="pdf-iframe"></iframe>
                     <div class="pdf-overlay" ondragover={handleDragOver} ondrop={handleDrop}
                         ondblclick={handleOverlayDoubleClick}>
                         <!-- Placed signatures will appear here dynamically -->
-                        <div class="grid-guide"></div>
                     </div>
+                </div>
+
+                <!-- Multi-Page View -->
+                <div if:true={useMultiPageView} class="pdf-pages-container">
+                    <!-- Individual pages will be rendered here by JavaScript -->
                 </div>
 
                 <div class="slds-m-top_medium slds-text-align_right">
