@@ -1,0 +1,188 @@
+<template>
+    <div class="pdf-signer-container">
+        <div class="slds-path">
+            <div class="slds-grid slds-path__track">
+                <div class="slds-grid slds-path__scroller-container">
+                    <div class="slds-path__scroller">
+                        <div class="slds-path__scroller_inner">
+                            <ul class="slds-path__nav" role="listbox">
+                                <li class="slds-path__item slds-is-current" role="presentation">
+                                    <a aria-selected={isStep0} class="slds-path__link" role="option" tabindex="0">
+                                        <span class="slds-path__stage">
+                                            <span class="slds-assistive-text">Current Stage:</span>
+                                        </span>
+                                        <span class="slds-path__title">Upload PDF</span>
+                                    </a>
+                                </li>
+                                <li class="slds-path__item" role="presentation">
+                                    <a aria-selected={isStep1} class="slds-path__link" role="option" tabindex="-1">
+                                        <span class="slds-path__stage">
+                                            <span class="slds-assistive-text">Stage:</span>
+                                        </span>
+                                        <span class="slds-path__title">Preview</span>
+                                    </a>
+                                </li>
+                                <li class="slds-path__item" role="presentation">
+                                    <a aria-selected={isStep2} class="slds-path__link" role="option" tabindex="-1">
+                                        <span class="slds-path__stage">
+                                            <span class="slds-assistive-text">Stage:</span>
+                                        </span>
+                                        <span class="slds-path__title">Sign</span>
+                                    </a>
+                                </li>
+                                <li class="slds-path__item" role="presentation">
+                                    <a aria-selected={isStep3} class="slds-path__link" role="option" tabindex="-1">
+                                        <span class="slds-path__stage">
+                                            <span class="slds-assistive-text">Stage:</span>
+                                        </span>
+                                        <span class="slds-path__title">Place & Save</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 0: File Upload -->
+        <template if:true={isStep0}>
+            <div class="step-section slds-p-around_medium">
+                <div class="slds-text-heading_medium slds-m-bottom_small">Upload PDF to Sign</div>
+                <lightning-input type="file" label="Select a PDF file" accept=".pdf"
+                                onchange={handleFileChange}></lightning-input>
+            </div>
+        </template>
+
+        <!-- Step 1: PDF Page Previews -->
+        <template if:true={isStep1}>
+            <div class="step-section slds-p-around_medium">
+                <div class="slds-text-heading_medium slds-m-bottom_small">PDF Preview</div>
+                <p class="slds-m-bottom_medium">Uploaded: <b>{pdfFilename}</b></p>
+                
+                <div class="page-previews-container">
+                    <template for:each={pagePreviews} for:item="pg">
+                        <div key={pg.pageNumber} class="page-container" data-page={pg.pageNumber}>
+                            <div class="page-number">Page {pg.pageNumber}</div>
+                            <img src={pg.url} alt="Page {pg.pageNumber}" class="pdf-page-image"/>
+                        </div>
+                    </template>
+                </div>
+                
+                <div class="slds-m-top_medium slds-text-align_right">
+                    <lightning-button label="Next: Sign Document" variant="brand" 
+                                     onclick={goToStep} data-step="2"
+                                     class="next-btn"></lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Step 2: Signature Capture -->
+        <template if:true={isStep2}>
+            <div class="step-section slds-p-around_medium">
+                <div class="slds-text-heading_medium slds-m-bottom_small">Capture Signature</div>
+                
+                <div class="slds-form-element slds-m-bottom_medium">
+                    <lightning-radio-group name="sigMode" 
+                                          label="Signature Method" 
+                                          options={modeOptions} 
+                                          value={signatureMode}
+                                          onchange={switchSigMode}
+                                          type="radio"></lightning-radio-group>
+                </div>
+                
+                <template if:true={isDraw}>
+                    <div class="draw-area slds-p-around_medium slds-m-bottom_medium slds-box">
+                        <div class="slds-text-body_regular slds-m-bottom_small">
+                            Draw your signature below:
+                        </div>
+                        <canvas class="sig-pad" width="400" height="150"></canvas>
+                        <div class="slds-m-top_small">
+                            <lightning-button label="Clear" variant="neutral" 
+                                             onclick={handleClearSignature}></lightning-button>
+                        </div>
+                    </div>
+                </template>
+                
+                <template if:true={isType}>
+                    <div class="type-area slds-p-around_medium slds-m-bottom_medium slds-box">
+                        <lightning-input type="text" 
+                                        label="Type your name" 
+                                        data-id="typedInput"
+                                        placeholder="Type your signature"
+                                        oninput={handleTypeInput}></lightning-input>
+                        <div class="slds-m-vertical_medium">
+                            <canvas class="sig-type" width="400" height="150"></canvas>
+                        </div>
+                        <lightning-button label="Clear" variant="neutral" 
+                                         onclick={handleClearSignature}></lightning-button>
+                    </div>
+                </template>
+                
+                <div class="slds-grid slds-grid_align-spread">
+                    <lightning-button label="Back" onclick={goToStep} data-step="1"></lightning-button>
+                    <lightning-button variant="brand" label="Next: Place Signature" 
+                                     onclick={handleSignatureSubmit}></lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Step 3: Place Signature on Pages -->
+        <template if:true={isStep3}>
+            <div class="step-section slds-p-around_medium">
+                <div class="slds-text-heading_medium slds-m-bottom_small">Position Signature</div>
+                <p class="slds-m-bottom_medium">
+                    Drag your signature onto any page or click a page to place it. 
+                    You can place multiple signatures. Click the ✖ to remove a signature.
+                </p>
+                
+                <!-- Signature draggable palette -->
+                <div class="signature-palette slds-box slds-p-around_medium slds-m-bottom_medium">
+                    <div class="slds-text-heading_small slds-m-bottom_small">Your Signature</div>
+                    <img src={signatureImage.dataUrl} class="signature-thumbnail" draggable="true"
+                         ondragstart={handleDragStart} alt="Signature" />
+                    <p class="hint slds-m-top_small">Drag onto a page or click a page to place</p>
+                </div>
+                
+                <!-- Pages with drop zones -->
+                <div class="page-previews-container">
+                    <template for:each={pagePreviews} for:item="pg">
+                        <div key={pg.pageNumber} class="page-container">
+                            <div class="page-number">Page {pg.pageNumber}</div>
+                            <img src={pg.url} alt="Page {pg.pageNumber}" class="pdf-page-image"/>
+                            <div class="page-drop-layer" data-page-index={pg.pageNumber}
+                                 ondragover={handleDragOver} ondrop={handleDrop} onclick={handlePageClick}>
+                                <!-- Placed signatures will appear here -->
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                
+                <div class="slds-grid slds-grid_align-spread slds-m-top_medium">
+                    <lightning-button label="Back" onclick={goToStep} data-step="2"></lightning-button>
+                    <lightning-button variant="brand" label="Finish & Save PDF" 
+                                     onclick={handleSavePdf}></lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Step 4: Success -->
+        <template if:true={isStep4}>
+            <div class="step-section slds-p-around_medium">
+                <div class="slds-illustration slds-illustration_small">
+                    <div class="slds-text-heading_medium slds-text-color_success slds-m-bottom_small">
+                        <lightning-icon icon-name="utility:success" alternative-text="Success" size="small" 
+                                       class="slds-m-right_small"></lightning-icon>
+                        PDF Signed Successfully!
+                    </div>
+                    <p class="slds-text-body_regular slds-m-vertical_medium">
+                        Your signed PDF has been saved to Salesforce and downloaded to your device.
+                    </p>
+                    <div class="slds-m-top_medium">
+                        <lightning-button label="Sign Another PDF" variant="neutral" onclick={goToStep} data-step="0"></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

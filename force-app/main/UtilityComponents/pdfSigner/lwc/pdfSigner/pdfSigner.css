@@ -1,0 +1,218 @@
+/* Font for typed signatures - updated to use the static resource directly */
+@font-face {
+    font-family: 'SignatureFont';
+    src: url('/resource/signature/GreatVibes-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* General container styling */
+.pdf-signer-container {
+    max-width: 100%;
+    margin: 0 auto;
+    font-family: 'Salesforce Sans', Arial, sans-serif;
+}
+
+/* Step navigation */
+.slds-path__nav {
+    background-color: #f3f3f3;
+    border-radius: 8px;
+}
+
+.slds-path__item.slds-is-active .slds-path__link {
+    background-color: #0070d2;
+    color: white;
+}
+
+.slds-path__item.slds-is-complete .slds-path__link {
+    background-color: #4bca81;
+    color: white;
+}
+
+/* PDF preview container */
+.page-previews-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin: 1rem 0;
+    gap: 1rem;
+}
+
+.page-container {
+    position: relative;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    margin-bottom: 1rem;
+    width: 280px;
+    height: 400px; /* Fixed height for consistency */
+}
+
+.page-number {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    z-index: 2;
+}
+
+.pdf-page-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    background-color: white;
+}
+
+/* Signature drawing area */
+.draw-area, .type-area {
+    border: 1px solid #d8dde6;
+    background-color: white;
+    border-radius: 4px;
+}
+
+.sig-pad, .sig-type {
+    width: 100%;
+    height: 150px;
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    touch-action: none; /* Prevents scrolling while drawing on touch screens */
+}
+
+/* Signature positioning UI */
+.signature-palette {
+    background-color: #f7f7f7;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.signature-thumbnail {
+    max-width: 200px;
+    max-height: 100px;
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    cursor: grab;
+}
+
+.signature-thumbnail:active {
+    cursor: grabbing;
+}
+
+.hint {
+    font-size: 0.8rem;
+    color: #706e6b;
+}
+
+/* Page drop layer for signature placement */
+.page-drop-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5; /* Make sure it's above the PDF object */
+    cursor: pointer;
+    background-color: transparent;
+}
+
+/* Placed signature styles */
+.placed-signature {
+    position: absolute;
+    z-index: 4;
+    cursor: move;
+    transform-origin: center;
+}
+
+.placed-signature img {
+    pointer-events: none;
+}
+
+.remove-signature {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    width: 24px;
+    height: 24px;
+    background-color: #c23934;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Success illustration styling */
+.slds-illustration_small {
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .page-container {
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto 1rem;
+    }
+    
+    .signature-thumbnail {
+        max-width: 150px;
+        max-height: 75px;
+    }
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* SLDS Path override */
+.slds-path__nav {
+    margin-bottom: 1rem;
+}
+
+.slds-path__item {
+    position: relative;
+}
+
+.slds-path__item.slds-is-current {
+    background-color: #0070d2;
+}
+
+.slds-path__item.slds-is-current .slds-path__title {
+    color: white;
+}
+
+/* Canvas styling */
+canvas.sig-pad, canvas.sig-type {
+    touch-action: none; /* Prevents scrolling on touch devices when drawing */
+}
+
+/* Success step */
+.success-icon {
+    color: #04844b;
+}
+
+.success-message {
+    color: #04844b;
+    font-weight: bold;
+}
+
+.pdf-page-object {
+    width: 100%;
+    height: 400px;
+    border: none;
+    background-color: white;
+    display: block;
+}
