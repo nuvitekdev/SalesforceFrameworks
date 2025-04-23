@@ -1,9 +1,10 @@
 public with sharing class PdfSignController {
     @AuraEnabled(cacheable=false)
-    public static Id saveSignedPdf(String base64Data, String fileName, Id recordId) {
+    public static Id saveSignedPdf(String base64Data, String fileName, Id recordId, Boolean isTemporary) {
         if (base64Data == null) {
             throw new AuraHandledException('No PDF data received');
         }
+        
         // Decode Base64 to Blob
         Blob pdfBlob;
         try {
@@ -11,52 +12,54 @@ public with sharing class PdfSignController {
         } catch (Exception e) {
             throw new AuraHandledException('Invalid PDF data: ' + e.getMessage());
         }
+        
         if (fileName == null || fileName.trim().length() == 0) {
             fileName = 'SignedDocument.pdf';
         }
+        
         if (!fileName.toLowerCase().endsWith('.pdf')) {
             fileName += '.pdf';
         }
         
-        // Create ContentVersion record
         ContentVersion cv = new ContentVersion();
         cv.Title = fileName;
         cv.PathOnClient = fileName;
         cv.VersionData = pdfBlob;
-        cv.FirstPublishLocationId = recordId; // This will auto-create the ContentDocumentLink
+        
+        if (isTemporary != null && isTemporary) {
+            cv.Description = 'Temporary PDF for preview - will be deleted';
+        }
+        
+        insert cv;
+        
+        // We need to query back to get ContentDocumentId
+        cv = [SELECT Id, ContentDocumentId FROM ContentVersion WHERE Id = :cv.Id LIMIT 1];
+        
+        if (recordId != null) {
+            ContentDocumentLink link = new ContentDocumentLink();
+            link.ContentDocumentId = cv.ContentDocumentId;
+            link.LinkedEntityId = recordId;
+            link.ShareType = 'V';
+            link.Visibility = 'AllUsers';
+            insert link;
+        }
+        
+        return cv.Id;
+    }
+    
+    @AuraEnabled(cacheable=false)
+    public static String getDocumentUrl(Id contentVersionId) {
+        if (contentVersionId == null) {
+            throw new AuraHandledException('No Content Version Id provided');
+        }
         
         try {
-            insert cv;
+            ContentVersion cv = [SELECT Id, ContentDocumentId FROM ContentVersion 
+                                WHERE Id = :contentVersionId LIMIT 1];
             
-            // If FirstPublishLocationId didn't work or we need specific sharing settings
-            if (recordId != null) {
-                // Query to get the ContentDocumentId created
-                cv = [SELECT Id, ContentDocumentId FROM ContentVersion WHERE Id = :cv.Id LIMIT 1];
-                
-                // Check if ContentDocumentLink already exists
-                List<ContentDocumentLink> existingLinks = [
-                    SELECT Id FROM ContentDocumentLink 
-                    WHERE ContentDocumentId = :cv.ContentDocumentId 
-                    AND LinkedEntityId = :recordId
-                    LIMIT 1
-                ];
-                
-                // Create link only if it doesn't exist
-                if (existingLinks.isEmpty()) {
-                    ContentDocumentLink link = new ContentDocumentLink();
-                    link.ContentDocumentId = cv.ContentDocumentId;
-                    link.LinkedEntityId = recordId;
-                    link.ShareType = 'V'; // Viewer permission
-                    link.Visibility = 'AllUsers'; // All users with record access can see
-                    insert link;
-                }
-            }
-            
-            return cv.Id;
-            
+            return '/sfc/servlet.shepherd/document/download/' + cv.ContentDocumentId;
         } catch (Exception e) {
-            System.debug('Error saving PDF: ' + e.getMessage() + ' Stack: ' + e.getStackTraceString());
-            throw new AuraHandledException('Error saving PDF: ' + e.getMessage());
+            throw new AuraHandledException('Error retrieving document URL: ' + e.getMessage());
         }
     }
 }

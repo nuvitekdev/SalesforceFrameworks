@@ -54,19 +54,15 @@
             </div>
         </template>
 
-        <!-- Step 1: PDF Page Previews -->
+        <!-- Step 1: PDF Page Preview with iframe -->
         <template if:true={isStep1}>
             <div class="step-section slds-p-around_medium">
                 <div class="slds-text-heading_medium slds-m-bottom_small">PDF Preview</div>
                 <p class="slds-m-bottom_medium">Uploaded: <b>{pdfFilename}</b></p>
                 
-                <div class="page-previews-container">
-                    <template for:each={pagePreviews} for:item="pg">
-                        <div key={pg.pageNumber} class="page-container" data-page={pg.pageNumber}>
-                            <div class="page-number">Page {pg.pageNumber}</div>
-                            <img src={pg.url} alt="Page {pg.pageNumber}" class="pdf-page-image"/>
-                        </div>
-                    </template>
+                <div class="iframe-container">
+                    <!-- PDF iframe for actual rendering -->
+                    <iframe src={pdfPreviewUrl} class="pdf-iframe"></iframe>
                 </div>
                 
                 <div class="slds-m-top_medium slds-text-align_right">
@@ -122,67 +118,62 @@
                 <div class="slds-grid slds-grid_align-spread">
                     <lightning-button label="Back" onclick={goToStep} data-step="1"></lightning-button>
                     <lightning-button variant="brand" label="Next: Place Signature" 
-                                     onclick={handleSignatureSubmit}></lightning-button>
-                </div>
-            </div>
-        </template>
+                    onclick={handleSignatureSubmit}></lightning-button>
+</div>
+</div>
+</template>
 
-        <!-- Step 3: Place Signature on Pages -->
-        <template if:true={isStep3}>
-            <div class="step-section slds-p-around_medium">
-                <div class="slds-text-heading_medium slds-m-bottom_small">Position Signature</div>
-                <p class="slds-m-bottom_medium">
-                    Drag your signature onto any page or click a page to place it. 
-                    You can place multiple signatures. Click the ✖ to remove a signature.
-                </p>
-                
-                <!-- Signature draggable palette -->
-                <div class="signature-palette slds-box slds-p-around_medium slds-m-bottom_medium">
-                    <div class="slds-text-heading_small slds-m-bottom_small">Your Signature</div>
-                    <img src={signatureImage.dataUrl} class="signature-thumbnail" draggable="true"
-                         ondragstart={handleDragStart} alt="Signature" />
-                    <p class="hint slds-m-top_small">Drag onto a page or click a page to place</p>
-                </div>
-                
-                <!-- Pages with drop zones -->
-                <div class="page-previews-container">
-                    <template for:each={pagePreviews} for:item="pg">
-                        <div key={pg.pageNumber} class="page-container">
-                            <div class="page-number">Page {pg.pageNumber}</div>
-                            <img src={pg.url} alt="Page {pg.pageNumber}" class="pdf-page-image"/>
-                            <div class="page-drop-layer" data-page-index={pg.pageNumber}
-                                 ondragover={handleDragOver} ondrop={handleDrop} onclick={handlePageClick}>
-                                <!-- Placed signatures will appear here -->
-                            </div>
-                        </div>
-                    </template>
-                </div>
-                
-                <div class="slds-grid slds-grid_align-spread slds-m-top_medium">
-                    <lightning-button label="Back" onclick={goToStep} data-step="2"></lightning-button>
-                    <lightning-button variant="brand" label="Finish & Save PDF" 
-                                     onclick={handleSavePdf}></lightning-button>
-                </div>
-            </div>
-        </template>
+<!-- Step 3: Place Signature on Pages with overlay -->
+<template if:true={isStep3}>
+<div class="step-section slds-p-around_medium">
+<div class="slds-text-heading_medium slds-m-bottom_small">Position Signature</div>
+<p class="slds-m-bottom_medium">
+   Drag your signature onto the document or click to place it.
+   You can place multiple signatures. Click the ✖ to remove a signature.
+</p>
 
-        <!-- Step 4: Success -->
-        <template if:true={isStep4}>
-            <div class="step-section slds-p-around_medium">
-                <div class="slds-illustration slds-illustration_small">
-                    <div class="slds-text-heading_medium slds-text-color_success slds-m-bottom_small">
-                        <lightning-icon icon-name="utility:success" alternative-text="Success" size="small" 
-                                       class="slds-m-right_small"></lightning-icon>
-                        PDF Signed Successfully!
-                    </div>
-                    <p class="slds-text-body_regular slds-m-vertical_medium">
-                        Your signed PDF has been saved to Salesforce and downloaded to your device.
-                    </p>
-                    <div class="slds-m-top_medium">
-                        <lightning-button label="Sign Another PDF" variant="neutral" onclick={goToStep} data-step="0"></lightning-button>
-                    </div>
-                </div>
-            </div>
-        </template>
-    </div>
+<!-- Signature draggable palette -->
+<div class="signature-palette slds-box slds-p-around_medium slds-m-bottom_medium">
+   <div class="slds-text-heading_small slds-m-bottom_small">Your Signature</div>
+   <img src={signatureImage.dataUrl} class="signature-thumbnail" draggable="true"
+        ondragstart={handleDragStart} alt="Signature" />
+   <p class="hint slds-m-top_small">Drag onto the document or click to place</p>
+</div>
+
+<!-- PDF with interactive overlay -->
+<div class="iframe-container">
+   <iframe src={pdfPreviewUrl} class="pdf-iframe"></iframe>
+   <div class="pdf-overlay" ondragover={handleDragOver} ondrop={handleDrop} onclick={handleOverlayClick}>
+       <!-- Placed signatures will appear here dynamically -->
+       <div class="grid-guide"></div>
+   </div>
+</div>
+
+<div class="slds-m-top_medium slds-text-align_right">
+   <lightning-button label="Back" onclick={goToStep} data-step="2"></lightning-button>
+   <lightning-button variant="brand" label="Finish & Save PDF" 
+                    onclick={handleSavePdf} class="slds-m-left_x-small"></lightning-button>
+</div>
+</div>
+</template>
+
+<!-- Step 4: Success -->
+<template if:true={isStep4}>
+<div class="step-section slds-p-around_medium">
+<div class="slds-illustration slds-illustration_small">
+   <div class="slds-text-heading_medium slds-text-color_success slds-m-bottom_small">
+       <lightning-icon icon-name="utility:success" alternative-text="Success" size="small" 
+                      class="slds-m-right_small"></lightning-icon>
+       PDF Signed Successfully!
+   </div>
+   <p class="slds-text-body_regular slds-m-vertical_medium">
+       Your signed PDF has been saved to Salesforce and downloaded to your device.
+   </p>
+   <div class="slds-m-top_medium">
+       <lightning-button label="Sign Another PDF" variant="neutral" onclick={goToStep} data-step="0"></lightning-button>
+   </div>
+</div>
+</div>
+</template>
+</div>
 </template>
