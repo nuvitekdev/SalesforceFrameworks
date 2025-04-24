@@ -4,28 +4,28 @@
         <div class="custom-path-container">
             <ul class="custom-path">
                 <li class="custom-path-item" data-step="0">
-                    <div class="custom-path-indicator" data-step="0" onclick={goToStep}>
+                    <div class="custom-path-indicator" data-step="0">
                         <span class="custom-path-number">1</span>
                     </div>
                     <div class="custom-path-label">Upload PDF</div>
                 </li>
                 <li class="custom-path-item" data-step="1">
                     <div class="custom-path-line"></div>
-                    <div class="custom-path-indicator" data-step="1" onclick={goToStep}>
+                    <div class="custom-path-indicator" data-step="1">
                         <span class="custom-path-number">2</span>
                     </div>
                     <div class="custom-path-label">Preview</div>
                 </li>
                 <li class="custom-path-item" data-step="2">
                     <div class="custom-path-line"></div>
-                    <div class="custom-path-indicator" data-step="2" onclick={goToStep}>
+                    <div class="custom-path-indicator" data-step="2">
                         <span class="custom-path-number">3</span>
                     </div>
                     <div class="custom-path-label">Sign</div>
                 </li>
                 <li class="custom-path-item" data-step="3">
                     <div class="custom-path-line"></div>
-                    <div class="custom-path-indicator" data-step="3" onclick={goToStep}>
+                    <div class="custom-path-indicator" data-step="3">
                         <span class="custom-path-number">4</span>
                     </div>
                     <div class="custom-path-label">Place & Save</div>
@@ -151,25 +151,31 @@
                         </div>
                 
                 <!-- Action Buttons -->
-                <div class="signature-actions">
-                    <lightning-button 
-                        class="clear-button"
-                        variant="neutral" 
-                        label="Clear" 
-                        icon-name="utility:delete"
-                        onclick={handleClearSignature}>
-                    </lightning-button>
-                    <lightning-button 
-                        class="save-button slds-m-left_x-small"
-                        variant="brand" 
-                        label="Next: Place Signature" 
-                        icon-name="utility:forward"
-                        onclick={handleSignatureSubmit}>
-                    </lightning-button>
+                <div class="signature-actions slds-grid slds-grid_align-spread slds-m-top_medium">
+                    <div class="slds-col">
+                        <lightning-button 
+                            label="Back" 
+                            onclick={goToStep} 
+                            data-step="1"
+                            class="back-button">
+                        </lightning-button>
                     </div>
-
-                <div class="slds-m-top_medium">
-                    <lightning-button label="Back" onclick={goToStep} data-step="1"></lightning-button>
+                    <div class="slds-col slds-text-align_right">
+                        <lightning-button 
+                            class="clear-button"
+                            variant="neutral" 
+                            label="Clear" 
+                            icon-name="utility:delete"
+                            onclick={handleClearSignature}>
+                        </lightning-button>
+                        <lightning-button 
+                            class="save-button slds-m-left_x-small"
+                            variant="brand" 
+                            label="Next: Place Signature" 
+                            icon-name="utility:forward"
+                            onclick={handleSignatureSubmit}>
+                        </lightning-button>
+                    </div>
                 </div>
             </div>
         </template>

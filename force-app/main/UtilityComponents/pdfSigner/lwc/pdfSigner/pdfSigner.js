@@ -8,6 +8,11 @@ import { loadScript, loadStyle } from 'lightning/platformResourceLoader';
 import saveSignedPdf from '@salesforce/apex/PdfSignController.saveSignedPdf';
 import getDocumentUrl from '@salesforce/apex/PdfSignController.getDocumentUrl';
 import deleteTemporaryPdf from '@salesforce/apex/PdfSignController.deleteTemporaryPdf';
+import Id from '@salesforce/user/Id';
+import { getRecord } from 'lightning/uiRecordApi';
+import USER_FEDERATION_ID from '@salesforce/schema/User.FederationIdentifier';
+
+const USER_FIELDS = [USER_FEDERATION_ID];
 
 export default class PdfSigner extends LightningElement {
     // Configurable properties
@@ -16,6 +21,21 @@ export default class PdfSigner extends LightningElement {
     @api accentColor = '#D5DF23';
     @api primaryColorRgb = '34, 189, 193';
     @api accentColorRgb = '213, 223, 35';
+
+    // User information
+    userId = Id;
+    federationId;
+
+    @wire(getRecord, { recordId: '$userId', fields: USER_FIELDS })
+    wiredUser({ error, data }) {
+        if (data) {
+            this.federationId = data.fields.FederationIdentifier?.value || null;
+            console.log('Current user ID: ' + this.userId);
+            console.log('Federation ID: ' + this.federationId);
+        } else if (error) {
+            console.error('Error loading user data', error);
+        }
+    }
 
     // Internal state
     @track currentStep = 0;     // 0 = upload, 1 = preview, 2 = sign, 3 = place
@@ -485,38 +505,26 @@ export default class PdfSigner extends LightningElement {
         }
     }
 
-    // Modified to only allow going backwards in the path
+    // Handle path navigation click
     goToStep(event) {
-        // Get the target step from the data-step attribute
-        const targetStep = parseInt(event.currentTarget.dataset.step, 10);
+        const step = parseInt(event.currentTarget.dataset.step, 10);
+        this.currentStep = step;
+        this.updatePathClasses(); // Update path visuals
         
-        // Only allow navigation to previous steps via the path indicators
-        // If coming from a button click (currentTarget is a button), allow normal navigation
-        if (event.currentTarget.tagName === 'BUTTON' || targetStep < this.currentStep) {
-            // Only set valid steps (0-4)
-            if (targetStep >= 0 && targetStep <= 4) {
-                this.currentStep = targetStep;
-                this.updatePathClasses(); // Update path visuals
-                
-                // Initialize canvas when entering signature step
-                if (this.currentStep === 2) {
-                    // We'll let renderedCallback handle the initialization
-                    // This ensures the DOM is ready
-                }
-                
-                // Reset to page 1 when entering placement step
-                if (this.currentStep === 3) {
-                    this.currentPageNum = 1;
-                    
-                    // Wait for DOM update before configuring
-                    setTimeout(() => {
-                        this.configureIframeView();
-                    }, 100);
-                }
-            }
-        } else {
-            // Show a message that forward navigation via path isn't allowed
-            this.showToast('Info', 'Please complete the current step first', 'info');
+        // Initialize canvas when entering signature step
+        if (this.currentStep === 2) {
+            // We'll let renderedCallback handle the initialization
+            // This ensures the DOM is ready
+        }
+        
+        // Reset to page 1 when entering placement step
+        if (this.currentStep === 3) {
+            this.currentPageNum = 1;
+            
+            // Wait for DOM update before configuring
+            setTimeout(() => {
+                this.configureIframeView();
+            }, 100);
         }
     }
     
@@ -648,6 +656,69 @@ export default class PdfSigner extends LightningElement {
         }
     }
 
+    // Get formatted date and time with identity information
+    getFormattedDateTimeWithIdentity() {
+        const now = new Date();
+        // Format with emphasis on time: MM/DD/YYYY, HH:MM:SS AM/PM
+        const dateOptions = { 
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        };
+        const dateTimeStr = now.toLocaleString(undefined, dateOptions);
+        
+        // Use Federation ID if available, otherwise use Salesforce ID
+        const userIdentifier = this.federationId || this.userId || 'Unknown';
+        
+        // Format the identity information
+        const identity = {
+            dateTime: dateTimeStr,
+            userId: userIdentifier,
+            browser: navigator.userAgent,
+            ipInfo: window.location.hostname
+        };
+        
+        return identity;
+    }
+
+    // Create date text element with enhanced information
+    createDateElement(identity) {
+        const dateDiv = document.createElement('div');
+        dateDiv.className = 'signature-date';
+        
+        // Add date and time with HTML structure
+        const dateTimeSpan = document.createElement('div');
+        dateTimeSpan.className = 'date-time';
+        dateTimeSpan.textContent = identity.dateTime;
+        dateDiv.appendChild(dateTimeSpan);
+        
+        // Add user ID information
+        const userIdSpan = document.createElement('div');
+        userIdSpan.className = 'user-id';
+        userIdSpan.textContent = 'User ID: ' + this.userId;
+        dateDiv.appendChild(userIdSpan);
+        
+        // Add federation ID if it exists
+        if (this.federationId) {
+            const fedIdSpan = document.createElement('div');
+            fedIdSpan.className = 'user-id';
+            fedIdSpan.textContent = 'Fed ID: ' + this.federationId;
+            dateDiv.appendChild(fedIdSpan);
+        }
+        
+        dateDiv.style.position = 'absolute';
+        dateDiv.style.bottom = '-55px'; // More space for two lines of IDs
+        dateDiv.style.left = '0';
+        dateDiv.style.width = '100%';
+        dateDiv.style.pointerEvents = 'none';
+        
+        return dateDiv;
+    }
+
     // Modified placeSignatureOverlay to consider orientation and current page
     placeSignatureOverlay(offsetX, offsetY) {
         if (!this.signatureImage) {
@@ -690,22 +761,11 @@ export default class PdfSigner extends LightningElement {
         sigImg.style.height = '100%';
         sigImg.style.pointerEvents = 'none'; // Prevent image from capturing events
         
-        // Create date text element
-        const currentDate = new Date();
-        const dateStr = currentDate.toLocaleDateString();
-        const dateDiv = document.createElement('div');
-        dateDiv.className = 'signature-date';
-        dateDiv.textContent = dateStr;
-        dateDiv.style.textAlign = 'center';
-        dateDiv.style.fontFamily = 'Arial, sans-serif';
-        dateDiv.style.fontSize = '12px';
-        dateDiv.style.color = '#333';
-        dateDiv.style.paddingTop = '5px';
-        dateDiv.style.position = 'absolute';
-        dateDiv.style.bottom = '-20px';
-        dateDiv.style.left = '0';
-        dateDiv.style.width = '100%';
-        dateDiv.style.pointerEvents = 'none';
+        // Get identity information
+        const identity = this.getFormattedDateTimeWithIdentity();
+        
+        // Create date element with identity info
+        const dateDiv = this.createDateElement(identity);
         
         // Create remove button - now at the top-center
         const removeBtn = document.createElement('div');
@@ -725,45 +785,7 @@ export default class PdfSigner extends LightningElement {
         removeBtn.style.cursor = 'pointer';
         removeBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
         removeBtn.dataset.id = placementId;
-        
-        // Create resize handles
-        const positions = ['nw', 'ne', 'se', 'sw']; // northwest, northeast, southeast, southwest
-        const resizeHandles = {};
-        
-        positions.forEach(pos => {
-            const handle = document.createElement('div');
-            handle.className = `resize-handle resize-${pos}`;
-            handle.style.position = 'absolute';
-            handle.style.width = '10px';
-            handle.style.height = '10px';
-            handle.style.backgroundColor = '#22BDC1';
-            handle.style.borderRadius = '50%';
-            handle.style.cursor = pos + '-resize';
-            handle.style.zIndex = '11';
-            
-            // Position the handle
-            if (pos.includes('n')) { // North
-                handle.style.top = '-5px';
-            } else { // South
-                handle.style.bottom = '-5px';
-            }
-            
-            if (pos.includes('w')) { // West
-                handle.style.left = '-5px';
-            } else { // East
-                handle.style.right = '-5px';
-            }
-            
-            resizeHandles[pos] = handle;
-            sigWrapper.appendChild(handle);
-            
-            // Add resize event listener
-            handle.addEventListener('mousedown', (event) => {
-                event.stopPropagation();
-                this.startResizeSignature(event, sigWrapper, pos);
-            });
-        });
-        
+
         // Add event listener to remove button
         removeBtn.addEventListener('click', (event) => {
             event.stopPropagation();
@@ -830,11 +852,10 @@ export default class PdfSigner extends LightningElement {
                 height: relativeHeight * pdfHeight,
                 element: sigWrapper,
                 isLandscape: isPageLandscape,
-                dateStr: dateStr // Store the date string
+                identity: identity // Store the identity information
             });
             
             console.log(`Placed signature on page ${pageIndex + 1} at PDF coordinates:`, pdfX, pdfY);
-            console.log(`Page dimensions: ${pdfWidth} x ${pdfHeight}, Is landscape: ${isPageLandscape}`);
         }
     }
     
@@ -900,118 +921,6 @@ export default class PdfSigner extends LightningElement {
         document.addEventListener('mouseup', handleMouseUp);
     }
 
-    // New method to handle signature resizing
-    startResizeSignature(event, sigElement, resizeHandle) {
-        event.preventDefault();
-        
-        // Initial position and size
-        const startX = event.clientX;
-        const startY = event.clientY;
-        const initialLeft = parseInt(sigElement.style.left) || 0;
-        const initialTop = parseInt(sigElement.style.top) || 0;
-        const initialWidth = parseInt(sigElement.style.width) || 200;
-        const initialHeight = parseInt(sigElement.style.height) || 100;
-        
-        // Track original aspect ratio
-        const aspectRatio = initialHeight / initialWidth;
-        
-        // Track current signature ID
-        const placementId = sigElement.dataset.id;
-        
-        const handleMouseMove = (moveEvent) => {
-            moveEvent.preventDefault();
-            
-            // Calculate deltas
-            const deltaX = moveEvent.clientX - startX;
-            const deltaY = moveEvent.clientY - startY;
-            
-            // Calculate new dimensions based on resize handle
-            let newWidth = initialWidth;
-            let newHeight = initialHeight;
-            let newLeft = initialLeft;
-            let newTop = initialTop;
-            
-            if (resizeHandle.includes('e')) {
-                // East - resizing right edge
-                newWidth = initialWidth + deltaX;
-                newHeight = newWidth * aspectRatio; // Maintain aspect ratio
-            } else if (resizeHandle.includes('w')) {
-                // West - resizing left edge
-                newWidth = initialWidth - deltaX;
-                newLeft = initialLeft + deltaX;
-                newHeight = newWidth * aspectRatio; // Maintain aspect ratio
-            }
-            
-            if (resizeHandle.includes('s')) {
-                // South - resizing bottom edge
-                newHeight = initialHeight + deltaY;
-                newWidth = newHeight / aspectRatio; // Maintain aspect ratio
-                
-                // If also resizing west edge, adjust left position
-                if (resizeHandle.includes('w')) {
-                    newLeft = initialLeft - (newWidth - initialWidth) / 2;
-                }
-            } else if (resizeHandle.includes('n')) {
-                // North - resizing top edge
-                newHeight = initialHeight - deltaY;
-                newTop = initialTop + deltaY;
-                newWidth = newHeight / aspectRatio; // Maintain aspect ratio
-                
-                // If also resizing west edge, adjust left position
-                if (resizeHandle.includes('w')) {
-                    newLeft = initialLeft - (newWidth - initialWidth) / 2;
-                }
-            }
-            
-            // Apply minimum size constraints
-            newWidth = Math.max(50, newWidth);
-            newHeight = Math.max(25, newHeight);
-            
-            // Update element style
-            sigElement.style.width = newWidth + 'px';
-            sigElement.style.height = newHeight + 'px';
-            sigElement.style.left = newLeft + 'px';
-            sigElement.style.top = newTop + 'px';
-            
-            // Get dimensions for scaling to PDF
-            const iframe = this.template.querySelector('.pdf-iframe');
-            const iframeWidth = iframe ? iframe.clientWidth : 100;
-            const iframeHeight = iframe ? iframe.clientHeight : 100;
-            
-            // Update coordinates in our tracking array
-            if (this.pdfDoc) {
-                const pdfWidth = this.pdfDoc.getPage(0).getWidth();
-                const pdfHeight = this.pdfDoc.getPage(0).getHeight();
-                
-                // Find placement in array
-                const index = this.placedSignatures.findIndex(p => p.id === placementId);
-                if (index >= 0) {
-                    // Calculate new relative positions
-                    const relX = newLeft / iframeWidth;
-                    const relY = newTop / iframeHeight;
-                    const relWidth = newWidth / iframeWidth;
-                    const relHeight = newHeight / iframeHeight;
-                    
-                    // Update placement data with new coordinates and size
-                    this.placedSignatures[index].x = relX * pdfWidth;
-                    this.placedSignatures[index].y = pdfHeight - (relY * pdfHeight);
-                    this.placedSignatures[index].width = relWidth * pdfWidth;
-                    this.placedSignatures[index].height = relHeight * pdfHeight;
-                }
-            }
-        };
-        
-        const handleMouseUp = () => {
-            // Remove event listeners when done resizing
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-        
-        // Add event listeners for resize
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-    }
-
     // Final save: combine PDF and upload
     async handleSavePdf() {
         if (!this.pdfDoc) {
@@ -1073,13 +982,34 @@ export default class PdfSigner extends LightningElement {
                                 height: placement.height
                             });
                             
-                            // Draw date text under signature
-                            page.drawText(placement.dateStr, {
-                                x: placement.x + (placement.width / 2) - 30, // Center approximately
-                                y: placement.y - placement.height - 20, // Position below signature
-                                size: 10,
-                                color: this.PDFLib.rgb(0, 0, 0)
-                            });
+                            // Draw identity information under signature
+                            if (placement.identity) {
+                                // Draw date/time with emphasis on time
+                                page.drawText(placement.identity.dateTime, {
+                                    x: placement.x + (placement.width / 2) - 50, // Center approximately
+                                    y: placement.y - placement.height - 15, // Position below signature
+                                    size: 8,
+                                    color: this.PDFLib.rgb(0, 0, 0)
+                                });
+                                
+                                // Draw user ID information
+                                page.drawText('User ID: ' + this.userId, {
+                                    x: placement.x + (placement.width / 2) - 40, // Center approximately
+                                    y: placement.y - placement.height - 25, // Position further below
+                                    size: 6,
+                                    color: this.PDFLib.rgb(0.4, 0.4, 0.4)
+                                });
+                                
+                                // Draw federation ID if it exists
+                                if (this.federationId) {
+                                    page.drawText('Fed ID: ' + this.federationId, {
+                                        x: placement.x + (placement.width / 2) - 40, // Center approximately
+                                        y: placement.y - placement.height - 35, // Position even further below
+                                        size: 6,
+                                        color: this.PDFLib.rgb(0.4, 0.4, 0.4)
+                                    });
+                                }
+                            }
                         } catch (err) {
                             console.error(`Error placing signature on page ${pageIdx}:`, err);
                         }
@@ -1407,22 +1337,11 @@ export default class PdfSigner extends LightningElement {
         sigImg.style.height = '100%';
         sigImg.style.pointerEvents = 'none'; // Prevent image from capturing events
         
-        // Create date text element
-        const currentDate = new Date();
-        const dateStr = currentDate.toLocaleDateString();
-        const dateDiv = document.createElement('div');
-        dateDiv.className = 'signature-date';
-        dateDiv.textContent = dateStr;
-        dateDiv.style.textAlign = 'center';
-        dateDiv.style.fontFamily = 'Arial, sans-serif';
-        dateDiv.style.fontSize = '12px';
-        dateDiv.style.color = '#333';
-        dateDiv.style.paddingTop = '5px';
-        dateDiv.style.position = 'absolute';
-        dateDiv.style.bottom = '-20px';
-        dateDiv.style.left = '0';
-        dateDiv.style.width = '100%';
-        dateDiv.style.pointerEvents = 'none';
+        // Get identity information
+        const identity = this.getFormattedDateTimeWithIdentity();
+        
+        // Create date element with identity info
+        const dateDiv = this.createDateElement(identity);
         
         // Create remove button - now at the top-center
         const removeBtn = document.createElement('div');
@@ -1442,45 +1361,7 @@ export default class PdfSigner extends LightningElement {
         removeBtn.style.cursor = 'pointer';
         removeBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
         removeBtn.dataset.id = placementId;
-        
-        // Create resize handles
-        const positions = ['nw', 'ne', 'se', 'sw']; // northwest, northeast, southeast, southwest
-        const resizeHandles = {};
-        
-        positions.forEach(pos => {
-            const handle = document.createElement('div');
-            handle.className = `resize-handle resize-${pos}`;
-            handle.style.position = 'absolute';
-            handle.style.width = '10px';
-            handle.style.height = '10px';
-            handle.style.backgroundColor = '#22BDC1';
-            handle.style.borderRadius = '50%';
-            handle.style.cursor = pos + '-resize';
-            handle.style.zIndex = '11';
-            
-            // Position the handle
-            if (pos.includes('n')) { // North
-                handle.style.top = '-5px';
-            } else { // South
-                handle.style.bottom = '-5px';
-            }
-            
-            if (pos.includes('w')) { // West
-                handle.style.left = '-5px';
-            } else { // East
-                handle.style.right = '-5px';
-            }
-            
-            resizeHandles[pos] = handle;
-            sigWrapper.appendChild(handle);
-            
-            // Add resize event listener
-            handle.addEventListener('mousedown', (event) => {
-                event.stopPropagation();
-                this.startResizeSignature(event, sigWrapper, pos);
-            });
-        });
-        
+
         // Add event listener to remove button
         removeBtn.addEventListener('click', (event) => {
             event.stopPropagation();
@@ -1539,7 +1420,7 @@ export default class PdfSigner extends LightningElement {
             height: relativeHeight * pdfHeight,
             element: sigWrapper,
             isLandscape: pageInfo.isLandscape,
-            dateStr: dateStr // Store the date string
+            identity: identity // Store the identity information
         });
         
         console.log(`Placed signature on page ${pageIndex + 1} at PDF coordinates:`, pdfX, pdfY);

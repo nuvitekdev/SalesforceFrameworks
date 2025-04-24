@@ -163,12 +163,12 @@
     font-size: var(--font-size-md);
     transition: all var(--transition-fast);
     box-shadow: var(--shadow-sm);
-    cursor: pointer;
+    cursor: default; /* Change to default instead of pointer */
 }
 
 .custom-path-indicator:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    transform: none; /* Remove hover transform effect */
+    box-shadow: var(--shadow-sm); /* Keep same shadow */
 }
 
 .custom-path-number {
@@ -884,8 +884,22 @@ lightning-button.clear-button button {
 
 .signature-date {
     font-family: Arial, sans-serif;
-    font-size: 12px;
+    font-size: 11px;
     color: #333;
     text-align: center;
     margin-top: 5px;
+    line-height: 1.3;
+    padding: 8px 4px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.signature-date .date-time {
+    font-weight: bold;
+}
+
+.signature-date .user-id {
+    font-size: 9px;
+    color: #666;
 }
