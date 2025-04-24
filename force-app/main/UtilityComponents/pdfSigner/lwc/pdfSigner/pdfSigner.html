@@ -49,25 +49,58 @@
         <template if:true={isStep0}>
             <div class="step-section slds-p-around_medium">
                 <div class="slds-text-heading_medium slds-m-bottom_small">Upload PDF to Sign</div>
-                <lightning-input type="file" label="Select a PDF file" accept=".pdf"
-                    onchange={handleFileChange}></lightning-input>
+                
+                <div class="file-upload-container" 
+                    onclick={triggerFileInput}
+                    ondragover={handleDragOver}
+                    ondragleave={handleDragLeave}
+                    ondrop={handleFileDrop}>
+                    <!-- Visual elements (icon and text) -->
+                    <div class="file-upload-icon">
+                        <lightning-icon icon-name="doctype:pdf" size="large" alternative-text="Upload PDF"></lightning-icon>
+                    </div>
+                    <div class="file-upload-text">
+                        <h3 class="slds-text-heading_small slds-m-bottom_x-small">Drag your PDF here or click to browse</h3>
+                        <p class="slds-text-body_small">Supported format: PDF</p>
+                    </div>
+                    <!-- Hidden file input - Use native input for reliability -->
+                    <input 
+                        type="file" 
+                        accept=".pdf"
+                        onchange={handleFileChange}
+                        class="file-input-hidden"
+                        id="nativeFileInput" />
+                </div>
             </div>
         </template>
 
         <!-- Step 1: PDF Page Preview with iframe -->
         <template if:true={isStep1}>
             <div class="step-section slds-p-around_medium">
-                <div class="slds-text-heading_medium slds-m-bottom_small">PDF Preview</div>
-                <p class="slds-m-bottom_medium">Uploaded: <b>{pdfFilename}</b></p>
+                <div class="slds-grid slds-gutters slds-m-bottom_small slds-wrap">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_8-of-12">
+                        <h2 class="slds-text-heading_medium">PDF Preview</h2>
+                        <p class="slds-text-body_small slds-text-color_weak slds-truncate" title={pdfFilename}>Uploaded: <b>{pdfFilename}</b></p>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_4-of-12 slds-text-align_right">
+                        <lightning-button 
+                            label="Clear" 
+                            icon-name="utility:delete" 
+                            variant="neutral" 
+                            onclick={handleClearPdf}
+                            class="clear-pdf-button">
+                        </lightning-button>
+                    </div>
+                </div>
 
-                <div class="iframe-container">
+                <div class="iframe-container" class:class={pdfContainerClass}>
                     <!-- PDF iframe for actual rendering -->
                     <iframe src={pdfPreviewUrl} class="pdf-iframe"></iframe>
                 </div>
 
                 <div class="slds-m-top_medium slds-text-align_right">
                     <lightning-button label="Next: Sign Document" variant="brand" onclick={goToStep} data-step="2"
-                        class="next-btn"></lightning-button>
+                        class="next-btn save-button"></lightning-button>
                 </div>
             </div>
         </template>
@@ -230,18 +263,22 @@
         <!-- Step 4: Success -->
         <template if:true={isStep4}>
             <div class="step-section slds-p-around_medium">
-                <div class="slds-illustration slds-illustration_small">
-                    <div class="slds-text-heading_medium slds-text-color_success slds-m-bottom_small">
-                        <lightning-icon icon-name="utility:success" alternative-text="Success" size="small"
-                            class="slds-m-right_small"></lightning-icon>
-                        PDF Signed Successfully!
+                <div class="success-container">
+                    <div class="success-icon">
+                        <lightning-icon icon-name="utility:success" alternative-text="Success" size="large" variant="success"></lightning-icon>
                     </div>
-                    <p class="slds-text-body_regular slds-m-vertical_medium">
+                    <h2 class="success-title">PDF Signed Successfully!</h2>
+                    <p class="success-message">
                         Your signed PDF has been saved to Salesforce and downloaded to your device.
                     </p>
-                    <div class="slds-m-top_medium">
-                        <lightning-button label="Sign Another PDF" variant="neutral" onclick={goToStep}
-                            data-step="0"></lightning-button>
+                    <div class="success-actions">
+                        <lightning-button 
+                            label="Sign Another PDF" 
+                            variant="brand" 
+                            onclick={goToStep}
+                            data-step="0"
+                            class="sign-another-button">
+                        </lightning-button>
                     </div>
                 </div>
             </div>

@@ -462,52 +462,6 @@ export default class PdfSigner extends LightningElement {
         }
     }
 
-    async handleFileChange(event) {
-        const file = event.target.files[0];
-        if (file && file.type === 'application/pdf') {
-            this.pdfFilename = file.name;
-            const reader = new FileReader();
-            reader.onload = async () => {
-                try {
-                    // Get file as ArrayBuffer
-                    const pdfBytes = reader.result;
-                    
-                    // Convert to base64 for Apex
-                    const base64Data = this.arrayBufferToBase64(pdfBytes);
-                    
-                    // Save temporarily to Salesforce for preview
-                    this.contentVersionId = await saveSignedPdf({ 
-                        base64Data: base64Data, 
-                        fileName: 'temp_' + file.name, 
-                        recordId: this.effectiveRecordId,
-                        isTemporary: true
-                    });
-                    
-                    console.log('Saved temporary file with ID:', this.contentVersionId);
-                    
-                    // Get URL for preview
-                    const docUrl = await getDocumentUrl({ contentVersionId: this.contentVersionId });
-                    this.pdfPreviewUrl = docUrl;
-                    
-                    // Also load with pdf-lib for later processing
-                    const uint8Array = new Uint8Array(pdfBytes);
-                    this.pdfDoc = await this.PDFLib.PDFDocument.load(uint8Array);
-                    
-                    // Analyze PDF orientation
-                    await this.analyzePdfOrientation();
-                    
-                    this.currentStep = 1;
-                } catch (e) {
-                    console.error('PDF load error', e);
-                    alert('Failed to load PDF. Please try another file.');
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        } else {
-            alert('Please upload a PDF file.');
-        }
-    }
-
     // Step navigation
     goToStep(event) {
         const step = parseInt(event.target.dataset.step, 10);
@@ -623,7 +577,12 @@ export default class PdfSigner extends LightningElement {
     }
     
     handleDragOver(event) {
-        event.preventDefault(); // allow drop
+        event.preventDefault();
+        event.stopPropagation();
+        const uploadContainer = this.template.querySelector('.file-upload-container');
+        if (uploadContainer && !uploadContainer.classList.contains('dragover')) {
+            uploadContainer.classList.add('dragover');
+        }
     }
     
     handleDrop(event) {
@@ -638,11 +597,6 @@ export default class PdfSigner extends LightningElement {
         
         // Place signature at these coordinates
         this.placeSignatureOverlay(offsetX, offsetY);
-    }
-    
-    handleOverlayClick(event) {
-        // Renamed but kept for compatibility - Now doesn't do anything on single click
-        // Signature is only placed on double-click
     }
 
     // New method for handling double-click
@@ -1609,5 +1563,139 @@ export default class PdfSigner extends LightningElement {
         } catch (err) {
             console.error('Error updating container for current page:', err);
         }
+    }
+
+    // Handle file drag over
+    handleDragOver(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        const uploadContainer = this.template.querySelector('.file-upload-container');
+        if (uploadContainer && !uploadContainer.classList.contains('dragover')) {
+            uploadContainer.classList.add('dragover');
+        }
+    }
+    
+    // Handle file drag leave
+    handleDragLeave(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        const uploadContainer = this.template.querySelector('.file-upload-container');
+        if (uploadContainer) {
+            uploadContainer.classList.remove('dragover');
+        }
+    }
+    
+    // Handle file drop
+    handleFileDrop(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        const uploadContainer = this.template.querySelector('.file-upload-container');
+        if (uploadContainer) {
+            uploadContainer.classList.remove('dragover');
+        }
+        const files = event.dataTransfer.files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            if (file.type === 'application/pdf') {
+                this.processFile(file);
+            } else {
+                alert('Please upload a PDF file.');
+            }
+        }
+    }
+    
+    // Process file - common function for both drag-drop and file input
+    processFile(file) {
+        if (file && file.type === 'application/pdf') {
+            this.pdfFilename = file.name;
+            const reader = new FileReader();
+            reader.onload = async () => {
+                try {
+                    const pdfBytes = reader.result;
+                    const base64Data = this.arrayBufferToBase64(pdfBytes);
+                    this.contentVersionId = await saveSignedPdf({ 
+                        base64Data: base64Data, 
+                        fileName: 'temp_' + file.name, 
+                        recordId: this.effectiveRecordId,
+                        isTemporary: true
+                    });
+                    const docUrl = await getDocumentUrl({ contentVersionId: this.contentVersionId });
+                    this.pdfPreviewUrl = docUrl;
+                    const uint8Array = new Uint8Array(pdfBytes);
+                    this.pdfDoc = await this.PDFLib.PDFDocument.load(uint8Array);
+                    await this.analyzePdfOrientation();
+                    this.currentStep = 1;
+                } catch (e) {
+                    console.error('processFile: PDF load error', e);
+                    alert('Failed to load PDF. Please try another file.');
+                }
+            };
+            reader.onerror = (error) => {
+                console.error('processFile: FileReader error:', error);
+                alert('Error reading the file.');
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            alert('Please upload a PDF file.');
+        }
+    }
+    
+    // Handle file input change (works for native input too)
+    handleFileChange(event) {
+        const file = event.target.files[0];
+        if (file) {
+            this.processFile(file);
+        }
+    }
+
+    // Re-implement triggerFileInput to click the hidden native input
+    triggerFileInput() {
+        const nativeFileInput = this.template.querySelector('input[type="file"].file-input-hidden'); 
+        if (nativeFileInput) {
+            try {
+                nativeFileInput.click();
+            } catch (e) {
+                console.error('Error clicking hidden native input:', e);
+            }
+        } else {
+            console.error('Could not find native input element with selector: input[type="file"].file-input-hidden');
+        }
+    }
+
+    // Handle clearing the current PDF and returning to upload step
+    handleClearPdf() {
+        console.log('handleClearPdf: Clearing current PDF.');
+
+        // Reset component state
+        this.pdfFilename = '';
+        this.pdfPreviewUrl = '';
+        this.pdfDoc = null;
+        this.pdfWidth = 0;
+        this.pdfHeight = 0;
+        this.isPdfLandscape = false;
+        this.totalPages = 1;
+        this.currentPageNum = 1;
+        this.signatureImage = null;
+        this.placedSignatures = [];
+        this.signatureText = '';
+        this.signatureMode = 'draw';
+
+        // Optional: Delete temporary ContentVersion - requires Apex method
+        if (this.contentVersionId) {
+            console.log('handleClearPdf: Requesting deletion of temporary ContentVersion:', this.contentVersionId);
+            // Call an Apex method here to delete the temporary file
+            // deleteTemporaryPdf({ contentVersionId: this.contentVersionId })
+            //     .then(() => {
+            //         console.log('handleClearPdf: Temporary PDF deleted successfully.');
+            //     })
+            //     .catch(error => {
+            //         console.error('handleClearPdf: Error deleting temporary PDF:', error);
+            //     });
+            this.contentVersionId = null; // Clear ID regardless of delete success
+        }
+
+        // Reset to step 0
+        this.currentStep = 0;
+        console.log('handleClearPdf: Resetting to Step 0.');
     }
 }

@@ -1,57 +1,158 @@
-/* Font for typed signatures */
-@font-face {
-    font-family: 'SignatureFont';
-    src: url('/resource/signature/GreatVibes-Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: block; /* Ensures text is visible only when font is loaded */
+/* PDF Signer Component - Modern Nuvitek Style */
+:host {
+    display: block;
+    /* Theme variables */
+    --primary-color: #22BDC1;
+    --primary-color-rgb: 34, 189, 193;
+    --primary-dark: #1a9599;
+    --primary-light: #63d1d4;
+    --accent-color: #D5DF23;
+    --accent-color-rgb: 213, 223, 35;
+    --accent-dark: #b8c11e;
+    --accent-light: #e1e95c;
+    --text-color: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #a1a1a6;
+    --background: #ffffff;
+    --background-alt: #f5f5f7;
+    --background-elevated: #fbfbfd;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-subtle: rgba(0, 0, 0, 0.05);
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.15);
+
+    /* Border radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-slow: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+    
+    /* Typography */
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 20px;
+    --font-size-xl: 24px;
+    --font-size-xxl: 32px;
+    
+    /* Spacing */
+    --spacing-xs: 8px;
+    --spacing-sm: 16px;
+    --spacing-md: 24px;
+    --spacing-lg: 48px;
+    --spacing-xl: 64px;
 }
 
-/* Fallback signature font */
-@font-face {
-    font-family: 'SignatureFallback';
-    src: local('Brush Script MT'), local('Comic Sans MS'), local('cursive');
-    font-weight: normal;
-    font-style: italic;
-}
-
-/* General container styling */
 .pdf-signer-container {
-    position: relative;
-    max-width: 100%;
-    margin: 0 auto;
-    font-family: 'Salesforce Sans', Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Salesforce Sans', Arial, sans-serif;
+    color: var(--text-color);
+    background-color: transparent;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    line-height: 1.5;
+    animation: fadeIn var(--transition-medium);
 }
 
-/* Step navigation */
+/* Step styling */
+.step-section {
+    background: var(--background-elevated);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    animation: fadeIn var(--transition-medium);
+    padding: var(--spacing-md);
+    transition: all var(--transition-medium);
+    margin-bottom: var(--spacing-md);
+}
+
+.step-section:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+/* Path styling */
 .slds-path__nav {
-    background-color: #f3f3f3;
-    border-radius: 8px;
+    background-color: var(--background-alt);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
 }
 
-.slds-path__item.slds-is-active .slds-path__link {
-    background-color: #0070d2;
+.slds-path__item.slds-is-current .slds-path__link,
+.slds-path__item .slds-path__link[aria-selected="true"] {
+    background-color: var(--primary-color);
     color: white;
 }
 
 .slds-path__item.slds-is-complete .slds-path__link {
-    background-color: #4bca81;
+    background-color: var(--primary-light);
     color: white;
+}
+
+.slds-path__item .slds-path__link {
+    background-color: var(--background-alt);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.slds-path__title {
+    font-weight: 500;
+}
+
+/* PDF viewer controls container */
+.pdf-viewer-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs);
+    background-color: var(--background-alt);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.pdf-viewer-controls lightning-button-group {
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+/* Page indicator */
+.page-indicator {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background-color: var(--background-elevated);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-color);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
 }
 
 /* PDF preview container for iframe */
 .iframe-container {
     width: 100%;
     position: relative;
-    margin: 1rem 0;
-    border: 1px solid #d8dde6;
-    border-radius: 4px;
+    margin: var(--spacing-md) 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
     overflow: hidden;
-    /* Default aspect ratio for A4 portrait, but will be overridden in JS */
+    /* Default aspect ratio for A4 portrait, will be overridden in JS */
     padding-bottom: 141.42%; 
-    transition: padding-bottom 0.3s ease;
+    transition: padding-bottom var(--transition-medium);
+    box-shadow: var(--shadow-md);
 }
 
 /* When PDF is landscape, adjust aspect ratio (fallback, will be overridden in JS) */
@@ -84,30 +185,6 @@
     display: none;
 }
 
-/* Ensure iframe container properly scales for each page's aspect ratio */
-.step-3-mode .iframe-container {
-    box-sizing: border-box;
-    transition: padding-bottom 0.3s ease;
-}
-
-/* Responsive adjustments for step 3 - ensure we fit entire page */
-@media (max-width: 768px) {
-    .step-3-mode .iframe-container {
-        /* Override fixed height, use padding instead */
-        height: auto !important;
-        min-height: unset !important;
-    }
-}
-
-/* Hide toolbar in PDF viewer */
-.pdf-iframe {
-    /* Hide built-in browser PDF controls */
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
 /* PDF Overlay for signature placement */
 .pdf-overlay {
     position: absolute;
@@ -120,33 +197,26 @@
     background-color: transparent;
 }
 
-.grid-guide {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 3;
-    pointer-events: none;
-    /* Optional grid lines */
-    background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-    background-size: 50px 50px;
-    opacity: 0.3;
+/* Font for signature text */
+@font-face {
+    font-family: 'SignatureFont';
+    src: url('/resource/signature/GreatVibes-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
 }
 
-/* ============================================= */
-/* Signature Type Selection                      */
-/* ============================================= */
+/* Signature Type Selection */
 .signature-type-selector {
-    margin-bottom: 1rem;
+    margin-bottom: var(--spacing-md);
 }
 
 .slds-radio_button-group {
     border: none;
-    background: #f5f5f7;
-    border-radius: 8px;
+    background: var(--background-alt);
+    border-radius: var(--radius-md);
     padding: 4px;
+    box-shadow: var(--shadow-sm);
 }
 
 .slds-radio_button {
@@ -156,99 +226,109 @@
 
 .slds-radio_button__label {
     background: transparent;
-    color: #1d1d1f;
+    color: var(--text-color);
     border: none;
     padding: 8px 16px;
     font-weight: 500;
-    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: all var(--transition-fast);
+    border-radius: var(--radius-sm);
 }
 
 .slds-radio_button [type="radio"]:checked + .slds-radio_button__label {
-    background: #22BDC1;
-    color: #ffffff;
-    border-radius: 8px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
 }
 
-/* ============================================= */
-/* Text Input                                    */
-/* ============================================= */
+/* Text Input */
 .text-input-container {
-    margin-bottom: 1rem;
+    margin-bottom: var(--spacing-md);
 }
 
 lightning-input.signature-text-input {
-    --sds-c-input-radius-border: 8px;
-    --sds-c-input-color-border: rgba(0, 0, 0, 0.1);
-    --sds-c-input-color-border-focus: #22BDC1;
-    --sds-c-input-shadow-focus: 0 0 0 1px #22BDC1;
-    --sds-c-input-text-color: #1d1d1f;
-    margin-bottom: 10px;
+    --sds-c-input-radius-border: var(--radius-sm);
+    --sds-c-input-color-border: var(--border-color);
+    --sds-c-input-color-border-focus: var(--primary-color);
+    --sds-c-input-shadow-focus: 0 0 0 1px var(--primary-color);
+    --sds-c-input-text-color: var(--text-color);
+    margin-bottom: var(--spacing-xs);
 }
 
-/* ============================================= */
-/* Signature Canvas                              */
-/* ============================================= */
+/* Signature Canvas */
 .signature-pad-container {
-    margin: 1rem 0;
-    border: 1px solid #d8dde6;
-    border-radius: 4px;
+    margin: var(--spacing-md) 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
     background-color: white;
     position: relative;
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.signature-pad-container:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
 }
 
 .signature-pad {
     width: 100%;
+    min-height: 180px; /* Increased height for better drawing */
     background-color: white;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     cursor: crosshair;
 }
 
-/* Checkerboard pattern for transparency */
-.signature-pad-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: linear-gradient(45deg, #f5f5f7 25%, transparent 25%),
-                      linear-gradient(-45deg, #f5f5f7 25%, transparent 25%),
-                      linear-gradient(45deg, transparent 75%, #f5f5f7 75%),
-                      linear-gradient(-45deg, transparent 75%, #f5f5f7 75%);
-    background-size: 20px 20px;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-    pointer-events: none;
-    z-index: -1;
-}
-
-/* ============================================= */
-/* Action Buttons                                */
-/* ============================================= */
+/* Action Buttons */
 .signature-actions {
     display: flex;
     justify-content: flex-end;
-    margin-top: 1rem;
+    margin-top: var(--spacing-md);
+    gap: var(--spacing-sm);
 }
 
-lightning-button.clear-button {
-    --sds-c-button-neutral-color-background: #f5f5f7;
-    --sds-c-button-neutral-color-border: rgba(0, 0, 0, 0.1);
-    --sds-c-button-neutral-color-foreground: #1d1d1f;
-    --sds-c-button-radius-border: 8px;
+lightning-button.clear-button button {
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
 }
 
-lightning-button.save-button {
-    --sds-c-button-brand-color-background: #22BDC1;
-    --sds-c-button-brand-color-border: #22BDC1;
-    --sds-c-button-brand-color-foreground: #ffffff;
-    --sds-c-button-radius-border: 8px;
+lightning-button.clear-button button:hover {
+    background-color: var(--background-alt);
+    border-color: var(--text-tertiary);
+    color: var(--text-color);
+    transform: translateY(-1px);
 }
 
-/* Signature positioning UI */
+lightning-button.save-button button {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+lightning-button.save-button button:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Signature Palette */
 .signature-palette {
     text-align: center;
-    background-color: #f3f3f3;
+    background-color: var(--background-alt);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.signature-palette:hover {
+    box-shadow: var(--shadow-md);
 }
 
 .signature-thumbnail {
@@ -256,15 +336,28 @@ lightning-button.save-button {
     max-height: 80px;
     cursor: grab;
     background-color: white;
-    padding: 5px;
-    border: 1px solid #d8dde6;
-    border-radius: 4px;
+    padding: var(--spacing-xs);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.signature-thumbnail:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-md);
+}
+
+.signature-thumbnail:active {
+    cursor: grabbing;
+    transform: scale(0.98);
 }
 
 .hint {
-    font-size: 0.8rem;
-    color: #706e6b;
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
     font-style: italic;
+    margin-top: var(--spacing-xs);
 }
 
 /* Placed signature styles */
@@ -273,16 +366,17 @@ lightning-button.save-button {
     cursor: move;
     background-color: transparent;
     padding: 5px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
-    border: 1px dashed rgba(34, 189, 193, 0.3);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+    border: 1px dashed rgba(var(--primary-color-rgb), 0.3);
 }
 
 .signature-placement:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-md);
     transform: scale(1.01);
-    border: 1px dashed rgba(34, 189, 193, 0.8);
+    border: 1px dashed rgba(var(--primary-color-rgb), 0.8);
+    z-index: 15;
 }
 
 /* Remove signature button */
@@ -290,7 +384,7 @@ lightning-button.save-button {
     position: absolute;
     top: -10px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) scale(0.9);
     background-color: #f44336;
     color: white;
     border-radius: 50%;
@@ -299,9 +393,17 @@ lightning-button.save-button {
     text-align: center;
     line-height: 20px;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    box-shadow: var(--shadow-sm);
     font-size: 10px;
     z-index: 12;
+    opacity: 0.8;
+    transition: all var(--transition-fast);
+}
+
+.remove-sig:hover {
+    transform: translateX(-50%) scale(1.1);
+    opacity: 1;
+    box-shadow: var(--shadow-md);
 }
 
 /* Resize handles */
@@ -309,9 +411,17 @@ lightning-button.save-button {
     position: absolute;
     width: 10px;
     height: 10px;
-    background-color: #22BDC1;
+    background-color: var(--primary-color);
     border-radius: 50%;
     z-index: 11;
+    transition: transform var(--transition-fast), background-color var(--transition-fast);
+    opacity: 0.7;
+}
+
+.resize-handle:hover {
+    transform: scale(1.2);
+    opacity: 1;
+    background-color: var(--accent-color);
 }
 
 .resize-nw {
@@ -338,69 +448,27 @@ lightning-button.save-button {
     cursor: se-resize;
 }
 
-/* Success illustration styling */
-.slds-illustration_small {
-    text-align: center;
-    padding: 2rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .iframe-container {
-        height: 500px;
-        padding-bottom: 0; /* Override aspect ratio on mobile */
-    }
-    
-    .signature-thumbnail {
-        max-width: 150px;
-    }
-}
-
-@media (max-width: 480px) {
-    .slds-radio_button-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .slds-radio_button {
-        width: 100%;
-    }
-    
-    .slds-radio_button__label {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-/* Animation */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.step-section {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    animation: fadeIn 0.3s ease-in-out;
-}
-
 /* Multi-page view styling */
 .pdf-pages-container {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    margin: 1rem 0;
+    gap: var(--spacing-md);
+    margin: var(--spacing-md) 0;
 }
 
 .pdf-page-card {
     position: relative;
     margin: 0 auto;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    border-radius: 5px;
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-md);
     overflow: hidden;
     max-width: 100%;
+    transition: all var(--transition-fast);
+}
+
+.pdf-page-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
 }
 
 .page-overlay {
@@ -417,51 +485,214 @@ lightning-button.save-button {
     position: absolute;
     bottom: 10px;
     right: 10px;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
     color: white;
     padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 12px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
     z-index: 6;
+    transition: all var(--transition-fast);
 }
 
-/* Page navigation styling */
-.page-indicator {
-    display: inline-block;
-    padding: 0.5rem 0.75rem;
-    background-color: #f3f3f3;
-    border-radius: 12px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #1d1d1f;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+.pdf-page-card:hover .page-number {
+    background: var(--primary-color);
 }
 
-/* PDF viewer controls container */
-.pdf-viewer-controls {
+/* Step 1: File Upload styling */
+.file-upload-container {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    justify-content: center;
+    padding: var(--spacing-lg);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--background-alt);
+    transition: all var(--transition-fast);
+    position: relative;
+    min-height: 250px;
+    cursor: pointer;
 }
 
-/* Ensure button group is styled nicely */
-.pdf-viewer-controls lightning-button-group {
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-    border-radius: 8px;
+.file-upload-container:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+}
+
+.file-upload-container.dragover {
+    border-color: var(--primary-color);
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+    transform: scale(1.01);
+    box-shadow: var(--shadow-md);
+}
+
+/* Properly hide the file input */
+.file-input-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
     overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
+/* Visual elements are now clickable */
+.file-upload-icon,
+.file-upload-text {
+    z-index: 1; 
+}
+
+.file-upload-icon {
+    font-size: 48px;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-sm);
+}
+
+.file-upload-text {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+}
+
+/* Success page styling */
+.success-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--spacing-lg) var(--spacing-md);
+    animation: fadeIn var(--transition-medium), slideIn var(--transition-medium);
+}
+
+.success-icon {
+    color: #4bca81;
+    background-color: rgba(75, 202, 129, 0.1);
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-md);
+    animation: pulse 2s infinite;
+}
+
+.success-title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: var(--spacing-sm);
+}
+
+.success-message {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+    max-width: 480px;
+}
+
+.success-actions {
+    margin-top: var(--spacing-sm);
+}
+
+.sign-another-button button {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    padding: 0 var(--spacing-md);
+    height: 44px;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.sign-another-button button:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
+    .iframe-container {
+        height: auto;
+        padding-bottom: 0;
+    }
+    
+    .step-3-mode .iframe-container {
+        height: auto !important;
+        min-height: unset !important;
+    }
+    
     .pdf-viewer-controls {
         flex-direction: column;
         align-items: flex-start;
     }
     
-    .page-indicator {
-        margin-top: 0.5rem;
-        align-self: center;
+    .controls-left, .controls-right {
+        width: 100%;
+        margin-bottom: var(--spacing-xs);
     }
+    
+    .controls-right {
+        display: flex;
+        justify-content: center;
+    }
+    
+    .signature-actions {
+        flex-direction: column;
+    }
+    
+    .signature-actions lightning-button {
+        width: 100%;
+    }
+    
+    .signature-palette {
+        padding: var(--spacing-sm);
+    }
+    
+    .signature-thumbnail {
+        max-width: 150px;
+    }
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(var(--primary-color-rgb), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0); }
+}
+
+/* Button styling */
+.clear-pdf-button button {
+    --sds-c-button-neutral-color-background: transparent;
+    --sds-c-button-neutral-color-border: transparent;
+    --sds-c-button-text-color: var(--text-secondary);
+    --sds-c-button-shadow: none;
+    transition: all var(--transition-fast);
+}
+
+.clear-pdf-button button:hover {
+    --sds-c-button-color-background-hover: rgba(var(--primary-color-rgb), 0.05);
+    --sds-c-button-text-color-hover: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+lightning-button.clear-button button {
+    /* Styles for the clear signature button */
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
 }
