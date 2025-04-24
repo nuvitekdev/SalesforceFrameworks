@@ -143,7 +143,11 @@
 }
 
 /* Card styling */
-lightning-card {
+:host lightning-card {
+    position: relative; /* Needed for absolute positioning of modal */
+    overflow: visible; /* Allow modal to overflow card boundaries if needed */
+    /* -- Ensure card establishes stacking context -- */
+    z-index: 1; /* Give the card a base z-index */
     --sds-c-card-color-background: var(--background) !important;
     --sds-c-card-shadow: var(--shadow-md) !important;
     --sds-c-card-radius-border: var(--radius-md) !important;
@@ -593,6 +597,38 @@ lightning-button-icon .slds-button {
     color: var(--text-color);
 }
 
+.summary-preview {
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+    border-color: var(--primary-color) !important;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    line-height: 1.6;
+    color: var(--text-color);
+    padding: 1rem;
+    border-left-width: 4px !important;
+    box-shadow: inset 0 0 10px rgba(var(--primary-color-rgb), 0.05);
+}
+
+.summary-preview::-webkit-scrollbar {
+    width: 6px;
+}
+
+.summary-preview::-webkit-scrollbar-thumb {
+    background-color: var(--primary-color);
+    border-radius: 3px;
+}
+
+.summary-preview::-webkit-scrollbar-track {
+    background-color: var(--border-subtle);
+    border-radius: 3px;
+}
+
+.summary-preview lightning-formatted-rich-text {
+    font-family: 'Salesforce Sans', Arial, sans-serif;
+}
+
 /* Animation definitions */
 @keyframes fadeInUp {
     from {
@@ -632,4 +668,84 @@ lightning-button-icon .slds-button {
         transform: scale(4);
         opacity: 0;
     }
+}
+
+.character-count {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-medium);
+    align-self: center;
+}
+
+.character-count-warning {
+    color: #e07c24;
+    font-weight: var(--font-weight-semibold);
+}
+
+.character-count-error {
+    color: #ea001e;
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Restyle modal to be contained within the component */
+.modal-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Use a high z-index, but ensure it's relative to the card */
+    z-index: 9001;
+    display: flex; /* Use flexbox for centering */
+    align-items: center;
+    justify-content: center;
+    pointer-events: none; /* Allow clicks to pass through wrapper unless on modal/backdrop */
+}
+
+.component-modal {
+    position: relative; /* Positioned by flexbox */
+    display: block;
+    width: 90%; /* Strictly 90% width */
+    /* max-width: 600px; <-- Removed as requested */
+    margin: auto; /* Centered by flexbox */
+    z-index: 9003; /* Highest */
+    transform: none;
+    will-change: transform, opacity;
+    top: auto;
+    left: auto;
+    bottom: auto;
+    right: auto;
+    pointer-events: auto; /* Modal should capture clicks */
+    /* Add some padding/margin if needed to prevent touching edges */
+    /* Example: margin: 2rem; width: calc(90% - 4rem); */
+}
+
+/* Restyle backdrop to cover only the component */
+.component-backdrop {
+    position: absolute; /* Cover the wrapper */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Standard backdrop darkness */
+    z-index: 9002; /* Below modal, above wrapper content */
+    border-radius: var(--radius-md); /* Match card radius */
+    pointer-events: auto; /* Backdrop should capture clicks */
+}
+
+/* Ensure modal container within SLDS structure is layered correctly */
+.component-modal .slds-modal__container {
+    position: relative;
+    /* Reset SLDS default sizing/margins that might conflict */
+    width: 100%; /* Take full width of the parent (.component-modal) */
+    max-width: none; /* Remove SLDS max-width */
+    min-width: 0; /* Remove SLDS min-width */
+    margin: 0 auto; /* Ensure centering within parent */
+    
+    /* z-index: 9003; <-- Not needed here if .component-modal has highest */
+    max-height: 80vh; /* Prevent modal from being too tall */
+    overflow-y: auto; /* Allow scrolling if content exceeds height */
+    border-radius: var(--radius-md); /* Apply radius to container too */
 }

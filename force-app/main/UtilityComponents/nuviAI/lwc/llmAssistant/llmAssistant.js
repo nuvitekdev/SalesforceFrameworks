@@ -1,8 +1,14 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { getRecordNotifyChange } from 'lightning/uiRecordApi';
 import getLLMConfigurations from '@salesforce/apex/LLMController.getLLMConfigurations';
 import handleRequest from '@salesforce/apex/LLMController.handleRequest';
 import checkRecordForAnomalies from '@salesforce/apex/LLMController.checkRecordForAnomalies';
+import saveAnalysisToField from '@salesforce/apex/LLMController.saveAnalysisToField';
+import { getRecord } from 'lightning/uiRecordApi';
+import { getObjectInfo } from 'lightning/uiObjectInfoApi';
+import { getObjectInfos } from 'lightning/uiObjectInfoApi';
+import ID_FIELD from '@salesforce/schema/Account.Id';
 
 // Constants
 const MAX_HISTORY_MESSAGES = 50; // Maximum number of messages to keep in history
@@ -20,6 +26,7 @@ export default class LLMAssistant extends LightningElement {
     @api enableAnomalyDetection = false; // Whether to enable anomaly detection
     @api enableImageValidation = false; // Placeholder property to maintain backward compatibility
     @api relatedObjects = '';      // Comma-separated list of object API names to search across for related data
+    @api analysisFieldApiName = ''; // API name of field to save analysis summary
     
     @track llmOptions = [];
     @track selectedLLM;
@@ -38,6 +45,14 @@ export default class LLMAssistant extends LightningElement {
     @track messagesTotalCount = 0; // Total message count including those pruned due to limits
     @track isTyping = false;
     @track partialResponse = '';
+    
+    // New properties for analysis field functionality
+    @track objectApiName;
+    @track fieldLabel;
+    @track showSaveAnalysisModal = false;
+    @track currentAnalysis = '';
+    @track analysisSummary = '';
+    @track analysisSummaryCharCount = 0;
     
     // --- New properties for Anomaly Check ---
     @track anomalyCheckResult = ''; // Store the full result text from the AI
@@ -380,6 +395,14 @@ SUMMARY:`;
         this.debouncedPromptChange = this.debounce((event) => {
             this.userPrompt = event.detail.value;
         }, 300); // 300ms debounce
+
+        // If the component is on a record page and has a recordId, get the object API name
+        if (this.recordId) {
+            // The first 3 characters of a Salesforce ID represent the object's key prefix
+            this.objectApiName = this.recordId.substring(0, 3);
+            console.log('Record ID detected:', this.recordId);
+            console.log('Object API Name key prefix:', this.objectApiName);
+        }
     }
     
     renderedCallback() {
@@ -709,6 +732,15 @@ SUMMARY:`;
             );
         }
 
+        // Variable to control when to show results
+        let shouldShowResultsImmediately = true;
+        let analysisResult = '';
+
+        // If this is analyze operation and we have a field to save to, we'll need to prepare modal first
+        if (operation === 'summarize' && this.recordId && this.analysisFieldApiName && this.analysisFieldApiName.trim() !== '') {
+            shouldShowResultsImmediately = false;
+        }
+
         handleRequest({
             recordId: this.recordId || null, // Pass null if no record ID
             configName: this.selectedLLM,
@@ -717,15 +749,26 @@ SUMMARY:`;
             relatedObjects: this.relatedObjects
         })
         .then(result => {
+            // Store the result but don't show it immediately if we need to prepare the modal
+            analysisResult = result;
             
-            // Show full response immediately instead of typing animation
-            this.response = result;
+            // If this is a summarize operation and we have a field to save to, prepare the modal
+            if (operation === 'summarize' && this.recordId && this.analysisFieldApiName && this.analysisFieldApiName.trim() !== '') {
+                this.currentAnalysis = result;
+                return this.prepareSynopsisModal(result);
+            } else {
+                return Promise.resolve();
+            }
+        })
+        .then(() => {
+            // Now that modal is prepared (if needed), show the results
+            this.response = analysisResult;
             
             // Add AI response to conversation history
             const aiMessageObj = {
                 id: Date.now(),
-                content: result,
-                formattedContent: result.replace(/\n/g, '<br />'),
+                content: analysisResult,
+                formattedContent: analysisResult.replace(/\n/g, '<br />'),
                 sender: 'AI Assistant',
                 timestamp: this.getFormattedTimestamp(),
                 isUser: false,
@@ -1103,5 +1146,268 @@ SUMMARY:`;
             message = error.message;
         }
         return message;
+    }
+
+    // Wire to get the record data first to determine object API name properly
+    @wire(getRecord, { recordId: '$recordId', fields: [ID_FIELD] })
+    wiredRecord({ error, data }) {
+        if (data) {
+            // Extract the object API name from the record data
+            this.objectApiName = data.apiName;
+            console.log('Record loaded. Object API Name:', this.objectApiName);
+        } else if (error) {
+            console.error('Error loading record:', error);
+        }
+    }
+
+    // Wire to get object info once we have the object API name
+    @wire(getObjectInfo, { objectApiName: '$objectApiName' })
+    wiredObjectInfo({ error, data }) {
+        if (data) {
+            console.log('Object info loaded:', data.apiName);
+            console.log('Field exists check will run when analyzing record');
+            
+            // If the field was configured, check if it exists
+            if (this.analysisFieldApiName) {
+                const fieldExists = Object.keys(data.fields).includes(this.analysisFieldApiName);
+                console.log(`Field ${this.analysisFieldApiName} exists:`, fieldExists);
+                
+                if (!fieldExists) {
+                    console.warn(`WARNING: Field '${this.analysisFieldApiName}' does not exist on ${data.apiName}`);
+                }
+            }
+        } else if (error) {
+            console.error('Error loading object info:', error);
+        }
+    }
+
+    // New method to prepare synopsis modal that returns a Promise
+    prepareSynopsisModal(analysis) {
+        return new Promise((resolve, reject) => {
+            console.log('Preparing synopsis modal for field:', this.analysisFieldApiName);
+            
+            // Make sure we have a recordId and analysis field name
+            if (!this.recordId || !this.analysisFieldApiName) {
+                console.error('Missing recordId or analysisFieldApiName');
+                resolve(); // Resolve anyway to continue the flow
+                return;
+            }
+            
+            // Get the current object info from our wired property
+            const objectInfo = this.template.querySelector('lightning-record-edit-form')?.getObjectInfo() || 
+                             (this.wiredObjectInfo && this.wiredObjectInfo.data);
+            
+            // If we don't have object info yet, try to get it through the wire service
+            if (!objectInfo) {
+                console.log('Object info not available yet - checking directly with apex');
+                
+                // Use apex to check field existence
+                saveAnalysisToField({
+                    recordId: this.recordId,
+                    fieldApiName: this.analysisFieldApiName,
+                    analysisText: 'FIELD_CHECK_ONLY'
+                })
+                .then(() => {
+                    console.log('Field exists check passed via Apex');
+                    // Set a default field label if we couldn't get it from object info
+                    this.fieldLabel = this.analysisFieldApiName;
+                    console.log('Setting default field label:', this.fieldLabel);
+                    this.prepareSynopsisSummary(analysis)
+                        .then(() => resolve())
+                        .catch(error => reject(error));
+                })
+                .catch(error => {
+                    console.error('Field check failed:', error);
+                    this.showError(`Field '${this.analysisFieldApiName}' does not exist or is not accessible. Please check the component configuration.`);
+                    resolve(); // Resolve anyway to continue the flow
+                });
+                return;
+            }
+            
+            // Check if the field exists on the object
+            console.log('Checking if field exists in object info');
+            const fieldExists = objectInfo.fields && Object.keys(objectInfo.fields).includes(this.analysisFieldApiName);
+            console.log(`Field ${this.analysisFieldApiName} exists:`, fieldExists);
+            
+            if (fieldExists) {
+                // Get the field label for display in the modal
+                this.fieldLabel = objectInfo.fields[this.analysisFieldApiName].label || this.analysisFieldApiName;
+                console.log('Field label:', this.fieldLabel);
+                this.prepareSynopsisSummary(analysis)
+                    .then(() => resolve())
+                    .catch(error => reject(error));
+            } else {
+                this.showError(`Field '${this.analysisFieldApiName}' does not exist on this object. Please check the component configuration.`);
+                resolve(); // Resolve anyway to continue the flow
+            }
+        });
+    }
+
+    // Helper method to prepare synopsis summary that returns a Promise
+    prepareSynopsisSummary(analysis) {
+        return new Promise((resolve, reject) => {
+            // Create a summarized version for the field
+            // Strict character limit of 500-600 characters (about 90 words)
+            const promptForSummary = 
+            `Create a professional Synopsis of the following record analysis in a single concise paragraph (STRICT LIMIT: 500-600 characters maximum, about 90 words).
+            
+            IMPORTANT: The character limit is STRICT and the synopsis MUST be under 600 characters total.
+            
+            The synopsis should:
+            - Begin with "The record" or a more specific descriptor based on the record type
+            - Focus only on the most critical information
+            - Use extremely concise language with no unnecessary words
+            - Be immediately useful for someone reviewing this record
+            
+            Here is the analysis to summarize:
+            
+            ${analysis}`;
+            
+            console.log('Getting full record context...');
+            // First get full record context to have the most complete information
+            handleRequest({
+                recordId: this.recordId,
+                configName: this.selectedLLM,
+                prompt: 'Provide a detailed analysis of this record including all important fields and relationships.',
+                operation: 'summarize',
+                relatedObjects: this.relatedObjects
+            })
+            .then(recordContext => {
+                console.log('Record context received, generating summary...');
+                // Now generate the summary with both the original analysis and record context
+                const enhancedPrompt = 
+                `${promptForSummary}
+                
+                Additionally, here is the complete record information to ensure accuracy:
+                
+                ${recordContext}
+                
+                FINAL REMINDER: The output MUST be under 600 characters total.`;
+                
+                return handleRequest({
+                    recordId: this.recordId,
+                    configName: this.selectedLLM,
+                    prompt: enhancedPrompt,
+                    operation: 'ask',
+                    relatedObjects: ''
+                });
+            })
+            .then(summary => {
+                console.log('Summary generated, length:', summary.length, 'characters');
+                // Enforce the character limit
+                if (summary.length > 600) {
+                    this.analysisSummary = summary.substring(0, 597) + '...';
+                    console.log('Summary truncated to 600 characters');
+                } else {
+                    this.analysisSummary = summary;
+                }
+                // Set character count for display
+                this.analysisSummaryCharCount = this.analysisSummary.length;
+                console.log('Showing save modal with character count:', this.analysisSummaryCharCount);
+                this.showSaveAnalysisModal = true;
+                resolve();
+            })
+            .catch(error => {
+                console.error('Error generating summary:', error);
+                // If summary generation fails, use a simplified approach
+                handleRequest({
+                    recordId: this.recordId,
+                    configName: this.selectedLLM,
+                    prompt: `${promptForSummary} REMEMBER: Output MUST be 600 characters or less.`,
+                    operation: 'ask',
+                    relatedObjects: ''
+                })
+                .then(fallbackSummary => {
+                    console.log('Fallback summary generated, length:', fallbackSummary.length);
+                    // Enforce the character limit on fallback too
+                    if (fallbackSummary.length > 600) {
+                        this.analysisSummary = fallbackSummary.substring(0, 597) + '...';
+                    } else {
+                        this.analysisSummary = fallbackSummary;
+                    }
+                    // Set character count for display
+                    this.analysisSummaryCharCount = this.analysisSummary.length;
+                    console.log('Showing save modal with fallback summary');
+                    this.showSaveAnalysisModal = true;
+                    resolve();
+                })
+                .catch(fallbackError => {
+                    console.error('Fallback summary generation failed:', fallbackError);
+                    // If all else fails, use a truncated version of the analysis
+                    const truncatedAnalysis = analysis.substring(0, 597);
+                    this.analysisSummary = truncatedAnalysis + (analysis.length > 597 ? '...' : '');
+                    this.analysisSummaryCharCount = this.analysisSummary.length;
+                    console.log('Using truncated analysis as last resort');
+                    this.showSaveAnalysisModal = true;
+                    resolve();
+                });
+            });
+        });
+    }
+
+    // Handle modal confirmation to save analysis to field
+    handleSaveAnalysisConfirm() {
+        console.log('Saving analysis to field:', this.analysisFieldApiName);
+        console.log('Field label for toast:', this.fieldLabel);
+        
+        // Ensure we have a field label, use API name as fallback
+        if (!this.fieldLabel) {
+            this.fieldLabel = this.analysisFieldApiName;
+            console.log('Using API name as field label fallback:', this.fieldLabel);
+        }
+        
+        this.showSaveAnalysisModal = false;
+        
+        // Show spinner while saving
+        this.isLoading = true;
+        
+        saveAnalysisToField({
+            recordId: this.recordId,
+            fieldApiName: this.analysisFieldApiName,
+            analysisText: this.analysisSummary
+        })
+        .then(() => {
+            console.log('Analysis saved successfully');
+            
+            // Refresh the record data
+            getRecordNotifyChange([{recordId: this.recordId}]);
+            
+            // Show success toast with field label or API name
+            const fieldDisplayName = this.fieldLabel || this.analysisFieldApiName || 'specified';
+            
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Success',
+                message: `Analysis saved to ${fieldDisplayName} field`,
+                variant: 'success'
+            }));
+            
+            // Update if we're in a record form context
+            const recordEditForm = this.template.querySelector('lightning-record-edit-form');
+            if (recordEditForm) {
+                recordEditForm.submit();
+            }
+        })
+        .catch(error => {
+            console.error('Error saving analysis:', error);
+            this.showError(`Error saving analysis to field: ${this.getErrorMessage(error)}`);
+        })
+        .finally(() => {
+            this.isLoading = false;
+        });
+    }
+    
+    // Handle modal cancellation
+    handleSaveAnalysisCancel() {
+        this.showSaveAnalysisModal = false;
+    }
+
+    // Get class for character count based on length
+    get characterCountClass() {
+        if (this.analysisSummaryCharCount > 580) {
+            return 'character-count-error';
+        } else if (this.analysisSummaryCharCount > 500) {
+            return 'character-count-warning';
+        }
+        return '';
     }
 }

@@ -118,6 +118,41 @@
                     </button>
                 </div>
 
+                <!-- Modal Container - Wrap modal and backdrop -->
+                <div class="modal-wrapper" if:true={showSaveAnalysisModal}>
+                    <!-- Save Analysis Modal -->
+                    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open component-modal">
+                        <div class="slds-modal__container">
+                            <header class="slds-modal__header">
+                                <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Save Record Synopsis</h2>
+                            </header>
+                            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                <p>Would you like to save this synopsis to the <strong>{fieldLabel}</strong> field?</p>
+                                <div class="slds-m-top_medium">
+                                    <div class="slds-grid slds-grid_align-spread slds-m-bottom_x-small">
+                                        <h3 class="slds-text-heading_small">Synopsis Preview:</h3>
+                                        <div class="character-count">
+                                            <span class={characterCountClass}>{analysisSummaryCharCount}</span>/600 characters
+                                        </div>
+                                    </div>
+                                    <div class="slds-p-around_medium slds-border_left slds-border_green summary-preview">
+                                        <lightning-formatted-rich-text value={analysisSummary}></lightning-formatted-rich-text>
+                                    </div>
+                                </div>
+                                <div class="slds-m-top_medium slds-text-body_small slds-text-color_weak">
+                                    <p>This synopsis will be visible to anyone with access to this record, helping them quickly understand key information.</p>
+                                    <p class="slds-m-top_x-small">Character limit: 600 (enforced by system)</p>
+                                </div>
+                            </div>
+                            <footer class="slds-modal__footer">
+                                <button class="slds-button slds-button_neutral" onclick={handleSaveAnalysisCancel}>Cancel</button>
+                                <button class="slds-button slds-button_brand" onclick={handleSaveAnalysisConfirm}>Save Synopsis</button>
+                            </footer>
+                        </div>
+                    </section>
+                    <div class="slds-backdrop slds-backdrop_open component-backdrop"></div>
+                </div>
+                <!-- End Modal Container -->
 
                 <div if:true={isLoading} class="loading-container">
                     <lightning-spinner alternative-text="Processing" size="medium"></lightning-spinner>

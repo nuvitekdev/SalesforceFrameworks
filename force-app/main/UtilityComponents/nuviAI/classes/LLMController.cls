@@ -1741,4 +1741,96 @@ public with sharing class LLMController {
         
         return displayValue;
     }
+
+    /**
+     * @description Saves an analysis summary to a specified field on a record
+     * @param recordId The Id of the Salesforce record to update
+     * @param fieldApiName The API name of the field to update
+     * @param analysisText The analysis text to save to the field
+     * @return void
+     * @throws AuraHandledException if an error occurs during processing
+     */
+    @AuraEnabled
+    public static void saveAnalysisToField(String recordId, String fieldApiName, String analysisText) {
+        System.debug('Saving analysis to field. RecordId: ' + recordId + ', Field: ' + fieldApiName);
+        
+        try {
+            // Validate inputs
+            if (String.isBlank(recordId) || String.isBlank(fieldApiName)) {
+                throw new AuraHandledException('Missing required parameters: recordId and fieldApiName are required');
+            }
+            
+            // Identify object type from record ID
+            Schema.SObjectType objectType = Id.valueOf(recordId).getSObjectType();
+            String objectName = objectType.getDescribe().getName();
+            System.debug('Object type for record: ' + objectName);
+            
+            // Verify the field exists on this object
+            Map<String, Schema.SObjectField> fieldMap = objectType.getDescribe().fields.getMap();
+            if (!fieldMap.containsKey(fieldApiName)) {
+                throw new AuraHandledException('Field ' + fieldApiName + ' does not exist on object ' + objectName);
+            }
+            
+            // Verify the field is updateable
+            Schema.DescribeFieldResult fieldDescribe = fieldMap.get(fieldApiName).getDescribe();
+            if (!fieldDescribe.isUpdateable()) {
+                throw new AuraHandledException('Field ' + fieldApiName + ' is not updateable. Check your permissions.');
+            }
+            
+            // Special mode just to check if the field exists - return early without updating
+            if (analysisText == 'FIELD_CHECK_ONLY') {
+                System.debug('Field check only mode - field exists and is valid. No update performed.');
+                return;
+            }
+            
+            // Validate the analysis text is provided for actual updates
+            if (String.isBlank(analysisText)) {
+                throw new AuraHandledException('Missing required parameter: analysisText is required for field updates');
+            }
+            
+            // Hard limit to 600 characters no matter what
+            String processedText = analysisText.length() > 600 ? analysisText.substring(0, 597) + '...' : analysisText;
+            
+            // Determine field type and handle content appropriately
+            Schema.DisplayType fieldType = fieldDescribe.getType();
+            
+            // For standard text fields, ensure we're within length limits
+            if (fieldType == Schema.DisplayType.STRING) {
+                Integer maxLength = fieldDescribe.getLength();
+                if (processedText.length() > maxLength) {
+                    processedText = processedText.substring(0, maxLength);
+                    System.debug('Text truncated to match field length limit of ' + maxLength + ' characters');
+                }
+            } 
+            // For text area fields, check if there's a limit and respect it
+            else if (fieldType == Schema.DisplayType.TEXTAREA) {
+                Integer maxLength = fieldDescribe.getLength();
+                if (maxLength > 0 && processedText.length() > maxLength) {
+                    processedText = processedText.substring(0, maxLength);
+                    System.debug('Text truncated to match field length limit of ' + maxLength + ' characters');
+                }
+            }
+            // For rich text fields, ensure proper HTML formatting
+            else if (fieldType == Schema.DisplayType.TEXTAREA && fieldDescribe.isHtmlFormatted()) {
+                // Replace newlines with HTML breaks if not already HTML
+                if (!processedText.contains('<p>') && !processedText.contains('<br')) {
+                    processedText = processedText.replace('\n', '<br/>');
+                }
+            }
+            
+            // Create a generic SObject for the update
+            SObject record = objectType.newSObject();
+            record.put('Id', recordId);
+            record.put(fieldApiName, processedText);
+            
+            // Update the record
+            update record;
+            
+            System.debug('Analysis saved successfully to field ' + fieldApiName + ' (Character count: ' + processedText.length() + ')');
+        } catch (Exception e) {
+            System.debug('ERROR in saveAnalysisToField: ' + e.getMessage());
+            System.debug('Stack trace: ' + e.getStackTraceString());
+            throw new AuraHandledException('Error saving analysis: ' + e.getMessage());
+        }
+    }
 }
