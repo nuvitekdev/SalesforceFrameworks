@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>SLA Tracker</masterLabel>
+    <description>Dynamic SLA tracking component that monitors record response times against configured targets</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+        <target>lightning__FlowScreen</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage,lightning__AppPage">
+            <!-- SLA Configuration -->
+            <property name="slaDurationHours" type="Integer" label="SLA Duration (Hours)" 
+                     description="Number of hours for the SLA target" default="24" min="1"/>
+            
+            <!-- Field Configuration -->
+            <property name="startTimeFieldName" type="String" label="Start Time Field" 
+                     description="API name of the field that marks the start of SLA time tracking (e.g. CreatedDate)" 
+                     default="CreatedDate"/>
+            <property name="endTimeFieldName" type="String" label="Resolution Time Field" 
+                     description="API name of the field that marks when the SLA was met (e.g. LastModifiedDate)" 
+                     default="LastModifiedDate"/>
+            <property name="statusFieldName" type="String" label="Status Field" 
+                     description="API name of the field that indicates the current status (e.g. Status__c)" 
+                     default="Status__c"/>
+            
+            <!-- Status Configuration -->
+            <property name="closedStatusValues" type="String" label="Closed Status Values" 
+                     description="Comma-separated list of status values that indicate the record is closed (e.g. 'Closed,Completed,Resolved')" 
+                     default="Closed,Completed,Resolved"/>
+            <property name="pendingStatusValues" type="String" label="Paused/Pending Status Values" 
+                     description="Comma-separated list of status values that pause SLA time tracking (e.g. 'Pending,On Hold,Waiting')" 
+                     default="Pending,On Hold,Waiting"/>
+            
+            <!-- Component Appearance -->
+            <property name="componentTitle" type="String" label="Component Title" 
+                     description="Title displayed in the component header" default="Response Time Tracker"/>
+            <property name="colorScheme" type="String" label="Color Scheme" 
+                     description="Color theme for the component" default="standard" 
+                     datasource="standard,slds-theme_info,slds-theme_success,slds-theme_warning,slds-theme_error,slds-theme_inverse"/>
+            <property name="showPastSLA" type="Boolean" label="Show Past SLA" 
+                     description="When true, displays the component even after SLA has been met or breached" default="true"/>
+            <property name="showProgressBar" type="Boolean" label="Show Progress Bar" 
+                     description="Display a visual progress bar for SLA tracking" default="true"/>
+            
+            <!-- Advanced Options -->
+            <property name="businessHoursOnly" type="Boolean" label="Business Hours Only" 
+                     description="Calculate SLA time based on business hours only" default="false"/>
+            <property name="businessHoursId" type="String" label="Business Hours ID" 
+                     description="ID of the Business Hours record to use (leave blank for default business hours)"/>
+            
+            <supportedFormFactors>
+                <supportedFormFactor type="Large" />
+                <supportedFormFactor type="Small" />
+            </supportedFormFactors>
+        </targetConfig>
+        
+        <targetConfig targets="lightning__FlowScreen">
+            <!-- SLA Configuration -->
+            <property name="recordId" type="String" label="Record ID" 
+                     description="ID of the record to track SLA for"/>
+            <property name="slaDurationHours" type="Integer" label="SLA Duration (Hours)" 
+                     description="Number of hours for the SLA target" default="24" min="1"/>
+            
+            <!-- Field Configuration -->
+            <property name="startTimeFieldName" type="String" label="Start Time Field" 
+                     description="API name of the field that marks the start of SLA time tracking (e.g. CreatedDate)" 
+                     default="CreatedDate"/>
+            <property name="endTimeFieldName" type="String" label="Resolution Time Field" 
+                     description="API name of the field that marks when the SLA was met (e.g. LastModifiedDate)" 
+                     default="LastModifiedDate"/>
+            <property name="statusFieldName" type="String" label="Status Field" 
+                     description="API name of the field that indicates the current status (e.g. Status__c)" 
+                     default="Status__c"/>
+            
+            <!-- Status Configuration -->
+            <property name="closedStatusValues" type="String" label="Closed Status Values" 
+                     description="Comma-separated list of status values that indicate the record is closed (e.g. 'Closed,Completed,Resolved')" 
+                     default="Closed,Completed,Resolved"/>
+            <property name="pendingStatusValues" type="String" label="Paused/Pending Status Values" 
+                     description="Comma-separated list of status values that pause SLA time tracking (e.g. 'Pending,On Hold,Waiting')" 
+                     default="Pending,On Hold,Waiting"/>
+            
+            <!-- Component Appearance -->
+            <property name="componentTitle" type="String" label="Component Title" 
+                     description="Title displayed in the component header" default="SLA Time Tracker"/>
+            <property name="colorScheme" type="String" label="Color Scheme" 
+                     description="Color theme for the component" default="standard" 
+                     datasource="standard,slds-theme_info,slds-theme_success,slds-theme_warning,slds-theme_error,slds-theme_inverse"/>
+            <property name="showPastSLA" type="Boolean" label="Show Past SLA" 
+                     description="When true, displays the component even after SLA has been met or breached" default="true"/>
+            <property name="showProgressBar" type="Boolean" label="Show Progress Bar" 
+                     description="Display a visual progress bar for SLA tracking" default="true"/>
+            
+            <!-- SLA Status Output -->
+            <property name="slaStatus" type="String" label="SLA Status" 
+                     description="Current SLA status (Active, Met, Breached, Paused)"/>
+            <property name="timeRemaining" type="String" label="Time Remaining" 
+                     description="Time remaining until SLA breach"/>
+        </targetConfig>
+        
+        <targetConfig targets="lightningCommunity__Default">
+            <!-- SLA Configuration -->
+            <property name="slaDurationHours" type="Integer" label="SLA Duration (Hours)" 
+                     description="Number of hours for the SLA target" default="24" min="1"/>
+            
+            <!-- Field Configuration -->
+            <property name="startTimeFieldName" type="String" label="Start Time Field" 
+                     description="API name of the field that marks the start of SLA time tracking (e.g. CreatedDate)" 
+                     default="CreatedDate"/>
+            <property name="endTimeFieldName" type="String" label="Resolution Time Field" 
+                     description="API name of the field that marks when the SLA was met (e.g. LastModifiedDate)" 
+                     default="LastModifiedDate"/>
+            <property name="statusFieldName" type="String" label="Status Field" 
+                     description="API name of the field that indicates the current status (e.g. Status__c)" 
+                     default="Status__c"/>
+            
+            <!-- Status Configuration -->
+            <property name="closedStatusValues" type="String" label="Closed Status Values" 
+                     description="Comma-separated list of status values that indicate the record is closed (e.g. 'Closed,Completed,Resolved')" 
+                     default="Closed,Completed,Resolved"/>
+            <property name="pendingStatusValues" type="String" label="Paused/Pending Status Values" 
+                     description="Comma-separated list of status values that pause SLA time tracking (e.g. 'Pending,On Hold,Waiting')" 
+                     default="Pending,On Hold,Waiting"/>
+            
+            <!-- Component Appearance -->
+            <property name="componentTitle" type="String" label="Component Title" 
+                     description="Title displayed in the component header" default="SLA Time Tracker"/>
+            <property name="colorScheme" type="String" label="Color Scheme" 
+                     description="Color theme for the component" default="standard" 
+                     datasource="standard,slds-theme_info,slds-theme_success,slds-theme_warning,slds-theme_error,slds-theme_inverse"/>
+            <property name="showPastSLA" type="Boolean" label="Show Past SLA" 
+                     description="When true, displays the component even after SLA has been met or breached" default="true"/>
+            <property name="showProgressBar" type="Boolean" label="Show Progress Bar" 
+                     description="Display a visual progress bar for SLA tracking" default="true"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle> 

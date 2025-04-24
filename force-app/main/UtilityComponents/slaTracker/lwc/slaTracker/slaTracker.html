@@ -1,0 +1,76 @@
+<template>
+    <div class="sla-tracker-container">
+        <lightning-card title={componentTitle} icon-name="utility:timer">
+            <div class="sla-content">
+                <!-- Loading State -->
+                <template if:true={isLoading}>
+                    <div class="loading-container">
+                        <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                        <p class="loading-text">Calculating SLA...</p>
+                    </div>
+                </template>
+                
+                <!-- Error State -->
+                <template if:true={hasError}>
+                    <div class="error-container">
+                        <lightning-icon icon-name="utility:error" class="error-icon" size="small"></lightning-icon>
+                        <p class="error-message">{errorMessage}</p>
+                    </div>
+                </template>
+                
+                <!-- Main Content when record is loaded -->
+                <template if:true={hasRecord}>
+                    <!-- SLA Status Card -->
+                    <div class={statusCardClass}>
+                        <div class="status-header">
+                            <span class="label">SLA Status</span>
+                            <div class={statusBadgeClass}>{slaStatus}</div>
+                        </div>
+                        
+                        <!-- SLA Countdown -->
+                        <div class="countdown-section">
+                            <div class="countdown-header">
+                                <span class="countdown-label">{countdownLabel}</span>
+                            </div>
+                            <div class="countdown-timer">
+                                <template if:true={showProgressBar}>
+                                    <div class="progress-container">
+                                        <div class="progress-bar" data-percent={_percentComplete}></div>
+                                        <span class="progress-percentage">{_percentComplete}%</span>
+                                    </div>
+                                </template>
+                                <div class="time-display">{timeUntilSLABreach}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- SLA Details -->
+                        <div class="sla-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Started</span>
+                                <span class="detail-value">{startTimeFormatted}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Target</span>
+                                <span class="detail-value">{slaDeadlineFormatted}</span>
+                            </div>
+                            <template if:true={showCompletionTime}>
+                                <div class="detail-row">
+                                    <span class="detail-label">Completed</span>
+                                    <span class="detail-value">{completionTimeFormatted}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+                
+                <!-- No Record Selected -->
+                <template if:false={hasRecordId}>
+                    <div class="no-record-container">
+                        <lightning-icon icon-name="utility:info" size="small"></lightning-icon>
+                        <p>Select a record to view its SLA status.</p>
+                    </div>
+                </template>
+            </div>
+        </lightning-card>
+    </div>
+</template> 

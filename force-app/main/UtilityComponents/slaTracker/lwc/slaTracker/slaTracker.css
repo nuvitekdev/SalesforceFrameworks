@@ -1,0 +1,345 @@
+.sla-tracker-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    --primary-color: #22BDC1;
+    --primary-color-rgb: 34, 189, 193;
+    --primary-dark: #1a9599;
+    --primary-light: #63d1d4;
+    --accent-color: #D5DF23;
+    --accent-color-rgb: 213, 223, 35;
+    --accent-dark: #b8c11e;
+    --accent-light: #e1e95c;
+    --text-color: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #a1a1a6;
+    --background: #ffffff;
+    --background-alt: #f5f5f7;
+    --background-elevated: #fbfbfd;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-subtle: rgba(0, 0, 0, 0.05);
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+    
+    /* Border radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+}
+
+.sla-content {
+    padding: 0.5rem 1rem;
+}
+
+/* Status Card Styles */
+.status-card {
+    background-color: var(--background-elevated);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-medium);
+    overflow: hidden;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-subtle);
+}
+
+.status-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Status Header */
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* Status Badge Styles */
+.status-badge {
+    display: inline-flex;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+    background-color: rgba(var(--primary-color-rgb), 0.15);
+    color: var(--primary-dark);
+}
+
+.status-badge.met {
+    background-color: #EDF7ED;
+    color: #2E7D32;
+}
+
+.status-badge.breached {
+    background-color: #FEECEB;
+    color: #D32F2F;
+}
+
+.status-badge.paused {
+    background-color: #FFF8E1;
+    color: #F57C00;
+}
+
+.status-badge.error {
+    background-color: #F5F5F5;
+    color: #757575;
+}
+
+/* Countdown Section */
+.countdown-section {
+    margin-bottom: 1.5rem;
+}
+
+.countdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.countdown-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.countdown-timer {
+    text-align: center;
+}
+
+/* Progress Bar */
+.progress-container {
+    height: 10px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 5px;
+    transition: width var(--transition-medium);
+}
+
+.progress-percentage {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.progress-bar.active-early {
+    background-color: var(--primary-color);
+}
+
+.progress-bar.active-midway {
+    background-color: var(--accent-color);
+}
+
+.progress-bar.active-late {
+    background-color: #D32F2F;
+}
+
+.progress-bar.met {
+    background-color: #2E7D32;
+}
+
+.progress-bar.breached {
+    background-color: #D32F2F;
+}
+
+.progress-bar.paused {
+    background-color: #F57C00;
+}
+
+.progress-bar.error {
+    background-color: #757575;
+}
+
+.time-display {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    color: var(--text-color);
+    margin-top: 0.75rem;
+}
+
+/* SLA Details */
+.sla-details {
+    background-color: var(--background-alt);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    margin-top: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.detail-value {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--text-color);
+}
+
+/* Loading State */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+}
+
+.loading-text {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* Error State */
+.error-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background-color: #FEECEB;
+    border-radius: var(--radius-sm);
+    margin: 0.5rem 0;
+}
+
+.error-icon {
+    --sds-c-icon-color-foreground-default: #D32F2F;
+}
+
+.error-message {
+    font-size: 0.875rem;
+    color: #D32F2F;
+    margin: 0;
+}
+
+/* No Record State */
+.no-record-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+    background-color: var(--background-alt);
+    border-radius: var(--radius-sm);
+}
+
+.no-record-container > lightning-icon {
+    margin-bottom: 0.75rem;
+}
+
+.no-record-container > p {
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* Status Card Theme Colors */
+.status-card.theme-info {
+    background-color: #E1F5FE;
+    border-color: #81D4FA;
+}
+
+.status-card.theme-success {
+    background-color: #E8F5E9;
+    border-color: #A5D6A7;
+}
+
+.status-card.theme-warning {
+    background-color: #FFF8E1;
+    border-color: #FFE082;
+}
+
+.status-card.theme-error {
+    background-color: #FFEBEE;
+    border-color: #EF9A9A;
+}
+
+.status-card.theme-inverse {
+    background-color: #263238;
+    border-color: #455A64;
+    color: #ECEFF1;
+}
+
+.status-card.theme-inverse .label,
+.status-card.theme-inverse .detail-label {
+    color: #B0BEC5;
+}
+
+.status-card.theme-inverse .time-display,
+.status-card.theme-inverse .detail-value {
+    color: #ECEFF1;
+}
+
+/* Animation for active SLA */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.status-badge.active {
+    animation: pulse 2s infinite;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+    .status-header, .countdown-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .time-display {
+        font-size: 1.25rem;
+    }
+} 
