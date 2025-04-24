@@ -785,6 +785,44 @@ export default class PdfSigner extends LightningElement {
         removeBtn.style.cursor = 'pointer';
         removeBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
         removeBtn.dataset.id = placementId;
+        
+        // Create resize handles
+        const positions = ['nw', 'ne', 'se', 'sw']; // northwest, northeast, southeast, southwest
+        const resizeHandles = {};
+        
+        positions.forEach(pos => {
+            const handle = document.createElement('div');
+            handle.className = `resize-handle resize-${pos}`;
+            handle.style.position = 'absolute';
+            handle.style.width = '10px';
+            handle.style.height = '10px';
+            handle.style.backgroundColor = '#22BDC1';
+            handle.style.borderRadius = '50%';
+            handle.style.cursor = pos + '-resize';
+            handle.style.zIndex = '11';
+            
+            // Position the handle
+            if (pos.includes('n')) { // North
+                handle.style.top = '-5px';
+            } else { // South
+                handle.style.bottom = '-5px';
+            }
+            
+            if (pos.includes('w')) { // West
+                handle.style.left = '-5px';
+            } else { // East
+                handle.style.right = '-5px';
+            }
+            
+            resizeHandles[pos] = handle;
+            sigWrapper.appendChild(handle);
+            
+            // Add resize event listener
+            handle.addEventListener('mousedown', (event) => {
+                event.stopPropagation();
+                this.startResizeSignature(event, sigWrapper, pos);
+            });
+        });
 
         // Add event listener to remove button
         removeBtn.addEventListener('click', (event) => {
@@ -854,11 +892,123 @@ export default class PdfSigner extends LightningElement {
                 isLandscape: isPageLandscape,
                 identity: identity // Store the identity information
             });
-            
-            console.log(`Placed signature on page ${pageIndex + 1} at PDF coordinates:`, pdfX, pdfY);
         }
     }
     
+    // New method to handle signature resizing
+    startResizeSignature(event, sigElement, resizeHandle) {
+        event.preventDefault();
+        
+        // Initial position and size
+        const startX = event.clientX;
+        const startY = event.clientY;
+        const initialLeft = parseInt(sigElement.style.left) || 0;
+        const initialTop = parseInt(sigElement.style.top) || 0;
+        const initialWidth = parseInt(sigElement.style.width) || 200;
+        const initialHeight = parseInt(sigElement.style.height) || 100;
+        
+        // Track original aspect ratio
+        const aspectRatio = initialHeight / initialWidth;
+        
+        // Track current signature ID
+        const placementId = sigElement.dataset.id;
+        
+        const handleMouseMove = (moveEvent) => {
+            moveEvent.preventDefault();
+            
+            // Calculate deltas
+            const deltaX = moveEvent.clientX - startX;
+            const deltaY = moveEvent.clientY - startY;
+            
+            // Calculate new dimensions based on resize handle
+            let newWidth = initialWidth;
+            let newHeight = initialHeight;
+            let newLeft = initialLeft;
+            let newTop = initialTop;
+            
+            if (resizeHandle.includes('e')) {
+                // East - resizing right edge
+                newWidth = initialWidth + deltaX;
+                newHeight = newWidth * aspectRatio; // Maintain aspect ratio
+            } else if (resizeHandle.includes('w')) {
+                // West - resizing left edge
+                newWidth = initialWidth - deltaX;
+                newLeft = initialLeft + deltaX;
+                newHeight = newWidth * aspectRatio; // Maintain aspect ratio
+            }
+            
+            if (resizeHandle.includes('s')) {
+                // South - resizing bottom edge
+                newHeight = initialHeight + deltaY;
+                newWidth = newHeight / aspectRatio; // Maintain aspect ratio
+                
+                // If also resizing west edge, adjust left position
+                if (resizeHandle.includes('w')) {
+                    newLeft = initialLeft - (newWidth - initialWidth) / 2;
+                }
+            } else if (resizeHandle.includes('n')) {
+                // North - resizing top edge
+                newHeight = initialHeight - deltaY;
+                newTop = initialTop + deltaY;
+                newWidth = newHeight / aspectRatio; // Maintain aspect ratio
+                
+                // If also resizing west edge, adjust left position
+                if (resizeHandle.includes('w')) {
+                    newLeft = initialLeft - (newWidth - initialWidth) / 2;
+                }
+            }
+            
+            // Apply minimum size constraints
+            newWidth = Math.max(50, newWidth);
+            newHeight = Math.max(25, newHeight);
+            
+            // Update element style
+            sigElement.style.width = newWidth + 'px';
+            sigElement.style.height = newHeight + 'px';
+            sigElement.style.left = newLeft + 'px';
+            sigElement.style.top = newTop + 'px';
+            
+            // Get dimensions for scaling to PDF
+            const iframe = this.template.querySelector('.pdf-iframe');
+            const iframeWidth = iframe ? iframe.clientWidth : 100;
+            const iframeHeight = iframe ? iframe.clientHeight : 100;
+            
+            // Update coordinates in our tracking array
+            if (this.pdfDoc) {
+                const pageIndex = parseInt(sigElement.dataset.pageIndex, 10) || 0;
+                const page = this.pdfDoc.getPage(pageIndex);
+                const pdfWidth = page.getWidth();
+                const pdfHeight = page.getHeight();
+                
+                // Find placement in array
+                const index = this.placedSignatures.findIndex(p => p.id === placementId);
+                if (index >= 0) {
+                    // Calculate new relative positions
+                    const relX = newLeft / iframeWidth;
+                    const relY = newTop / iframeHeight;
+                    const relWidth = newWidth / iframeWidth;
+                    const relHeight = newHeight / iframeHeight;
+                    
+                    // Update placement data with new coordinates and size
+                    this.placedSignatures[index].x = relX * pdfWidth;
+                    this.placedSignatures[index].y = pdfHeight - (relY * pdfHeight);
+                    this.placedSignatures[index].width = relWidth * pdfWidth;
+                    this.placedSignatures[index].height = relHeight * pdfHeight;
+                }
+            }
+        };
+        
+        const handleMouseUp = () => {
+            // Remove event listeners when done resizing
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+        
+        // Add event listeners for resize
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    }
+
     // Make signatures draggable
     startDragSignature(event) {
         event.preventDefault();
