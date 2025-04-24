@@ -130,4 +130,4 @@
                      description="Display a visual progress bar for SLA tracking" default="true"/>
         </targetConfig>
     </targetConfigs>
-</LightningComponentBundle> 
+</LightningComponentBundle>

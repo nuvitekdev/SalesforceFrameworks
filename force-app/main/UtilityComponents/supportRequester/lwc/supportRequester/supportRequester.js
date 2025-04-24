@@ -1223,4 +1223,4 @@ export default class SupportRequester extends NavigationMixin(LightningElement) 
             this.showToastMessage('Error', 'Failed to download video', 'error');
         }
     }
-} 
+}

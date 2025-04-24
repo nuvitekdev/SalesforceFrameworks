@@ -1128,4 +1128,4 @@ public with sharing class NuvitekMessagingController {
             throw new AuraHandledException('Error deleting conversations: ' + e.getMessage());
         }
     }
-} 
+}

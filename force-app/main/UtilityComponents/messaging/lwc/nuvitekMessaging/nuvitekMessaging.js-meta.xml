@@ -71,4 +71,4 @@
                 description="Background color for message bubbles received from other users (appears on the left side). Text color will automatically adjust to be black or white based on this color's brightness." default="#D5DF23" />
         </targetConfig>
     </targetConfigs>
-</LightningComponentBundle> 
+</LightningComponentBundle>

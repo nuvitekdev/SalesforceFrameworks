@@ -5,4 +5,4 @@
     <label>Nuvitek Message</label>
     <pluralLabel>Nuvitek Messages</pluralLabel>
     <publishBehavior>PublishAfterCommit</publishBehavior>
-</CustomObject> 
+</CustomObject>

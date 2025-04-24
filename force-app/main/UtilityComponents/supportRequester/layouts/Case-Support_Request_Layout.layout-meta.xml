@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Layout xmlns="http://soap.sforce.com/2006/04/metadata">
     <excludeButtons>OpenSlackRecordChannel</excludeButtons>
-    <excludeButtons>Submit</excludeButtons>
     <layoutSections>
         <customLabel>false</customLabel>
         <detailHeading>false</detailHeading>
@@ -166,6 +165,14 @@
     <relatedLists>
         <relatedList>RelatedEntityHistoryList</relatedList>
     </relatedLists>
+    <relatedLists>
+        <fields>CreatedDate</fields>
+        <fields>StepStatus</fields>
+        <fields>OriginalActor</fields>
+        <fields>Actor</fields>
+        <fields>Comments</fields>
+        <relatedList>RelatedProcessHistoryList</relatedList>
+    </relatedLists>
     <relatedObjects>ContactId</relatedObjects>
     <showEmailCheckbox>false</showEmailCheckbox>
     <showHighlightsPanel>false</showHighlightsPanel>
@@ -173,4 +180,10 @@
     <showKnowledgeComponent>false</showKnowledgeComponent>
     <showRunAssignmentRulesCheckbox>false</showRunAssignmentRulesCheckbox>
     <showSubmitAndAttachButton>false</showSubmitAndAttachButton>
+    <summaryLayout>
+        <masterLabel>00hE100000ARquP</masterLabel>
+        <sizeX>4</sizeX>
+        <sizeY>0</sizeY>
+        <summaryLayoutStyle>Default</summaryLayoutStyle>
+    </summaryLayout>
 </Layout>

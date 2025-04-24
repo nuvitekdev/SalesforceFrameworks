@@ -383,4 +383,4 @@ export default class SlaTracker extends LightningElement {
         }
         return error.body?.message || error.message || JSON.stringify(error);
     }
-} 
+}

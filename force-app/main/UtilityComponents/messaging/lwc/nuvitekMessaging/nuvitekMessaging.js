@@ -1536,4 +1536,4 @@ export default class NuvitekMessaging extends LightningElement {
             this.isLoading = false;
         }
     }
-} 
+}

@@ -120,4 +120,4 @@ public with sharing class SlaTrackerController {
             throw new AuraHandledException('Error checking business hours: ' + e.getMessage());
         }
     }
-} 
+}

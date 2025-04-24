@@ -630,4 +630,4 @@ export default class InterviewRecorder extends LightningElement {
             this.showToast('Error', 'Failed to download video', 'error');
         }
     }
-} 
+}

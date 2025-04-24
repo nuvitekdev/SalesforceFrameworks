@@ -27,4 +27,4 @@
             <property name="acceptedFormats" type="String" label="Accepted File Formats" description="Comma-separated list of accepted file formats (e.g., .jpg, .pdf, .png)" default=".pdf, .png, .jpg, .jpeg, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .csv, .txt"/>
         </targetConfig>
     </targetConfigs>
-</LightningComponentBundle> 
+</LightningComponentBundle>

@@ -179,4 +179,4 @@ public with sharing class SupportRequesterController {
             throw new AuraHandledException('Error getting user info: ' + e.getMessage());
         }
     }
-} 
+}

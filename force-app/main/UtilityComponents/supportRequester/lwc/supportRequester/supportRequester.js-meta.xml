@@ -185,4 +185,4 @@
                      description="Number of seconds to count down before recording starts" default="3" min="1" max="5"/>
         </targetConfig>
     </targetConfigs>
-</LightningComponentBundle> 
+</LightningComponentBundle>

@@ -2,10 +2,10 @@
 <RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Support_Request</fullName>
     <active>true</active>
-    <description>Record type for support requests submitted through the Support Requester component</description>
-    <label>Support Request</label>
     <businessProcess>Support Process</businessProcess>
     <compactLayoutAssignment>Support_Request_Compact</compactLayoutAssignment>
+    <description>Record type for support requests submitted through the Support Requester component</description>
+    <label>Support Request</label>
     <picklistValues>
         <picklist>Origin</picklist>
         <values>
@@ -37,22 +37,41 @@
         </values>
     </picklistValues>
     <picklistValues>
-        <picklist>Status</picklist>
+        <picklist>Reason</picklist>
         <values>
-            <fullName>Closed</fullName>
+            <fullName>Complex functionality</fullName>
             <default>false</default>
         </values>
         <values>
-            <fullName>Escalated</fullName>
+            <fullName>Existing problem</fullName>
             <default>false</default>
         </values>
         <values>
-            <fullName>New</fullName>
-            <default>true</default>
+            <fullName>Instructions not clear</fullName>
+            <default>false</default>
         </values>
         <values>
-            <fullName>On Hold</fullName>
+            <fullName>New problem</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>User didn%27t attend training</fullName>
             <default>false</default>
         </values>
     </picklistValues>
-</RecordType> 
+    <picklistValues>
+        <picklist>Type</picklist>
+        <values>
+            <fullName>Feature Request</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Problem</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Question</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>

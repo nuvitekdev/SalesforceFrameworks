@@ -59,4 +59,4 @@ public with sharing class InterviewRecorderController {
             throw new AuraHandledException('Error saving recording: ' + e.getMessage());
         }
     }
-} 
+}
