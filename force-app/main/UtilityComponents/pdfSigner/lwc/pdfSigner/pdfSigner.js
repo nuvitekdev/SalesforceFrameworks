@@ -571,42 +571,326 @@ export default class PdfSigner extends LightningElement {
         }
     }
 
-    // Finish signature capture, move to placement
-    handleSignatureSubmit() {
-        try {
-            if (this.isDraw) {
-                if (!this.signaturePad || this.signaturePad.isEmpty()) {
-                    alert('Please draw your signature or switch to type mode.');
-                    return;
-                }
-                const dataUrl = this.signaturePad.toDataURL('image/png');
-                // Use canvas dimensions for width/height
-                this.signatureImage = { 
-                    dataUrl, 
-                    width: this.canvasElement.width, 
-                    height: this.canvasElement.height 
-                };
-            } else {
-                if (!this.signatureText) {
-                    alert('Please type your signature before continuing.');
-                    return;
-                }
-                if (!this.canvasElement) {
-                    alert('Signature canvas not found.');
-                    return;
-                }
-                const dataUrl = this.canvasElement.toDataURL('image/png');
-                this.signatureImage = { 
-                    dataUrl, 
-                    width: this.canvasElement.width, 
-                    height: this.canvasElement.height 
-                };
+    // Modified placeSignatureOverlay to consider orientation and current page
+    placeSignatureOverlay(offsetX, offsetY) {
+        if (!this.signatureImage) {
+            this.showToast('Error', 'No signature image available', 'error');
+            return;
+        }
+        
+        // Get the overlay div to place signatures
+        const overlay = this.template.querySelector('.pdf-overlay');
+        if (!overlay) {
+            this.showToast('Error', 'Overlay div not found', 'error');
+            return;
+        }
+        
+        // Generate unique ID for this signature placement
+        const placementId = 'sig-' + Date.now() + '-' + Math.round(Math.random() * 1000);
+        
+        // Initial size (scaled from original) - ADJUST BASED ON SIGNATURE TYPE
+        let initialWidth, initialHeight;
+        
+        // For text signatures, create a tighter fit
+        const isTextSignature = this.signatureMode === 'type';
+        if (isTextSignature) {
+            // Text signatures should have a tighter fit
+            initialWidth = Math.min(250, this.signatureImage.width * 1.1);
+        const aspectRatio = this.signatureImage.height / this.signatureImage.width;
+            initialHeight = initialWidth * aspectRatio;
+            
+            // Minimum height adjustment for text signatures to fit better
+            initialHeight = Math.max(initialHeight, 40);
+        } else {
+            // For drawn signatures, keep original sizing
+            initialWidth = Math.min(300, this.signatureImage.width * 1.5);
+            const aspectRatio = this.signatureImage.height / this.signatureImage.width;
+            initialHeight = initialWidth * aspectRatio;
+        }
+        
+        // Create wrapper div for signature + remove button + resize handles
+        const sigWrapper = document.createElement('div');
+        sigWrapper.className = 'signature-placement';
+        sigWrapper.dataset.id = placementId;
+        sigWrapper.dataset.pageIndex = this.currentPageNum - 1; // Store page index (0-based)
+        sigWrapper.style.position = 'absolute';
+        sigWrapper.style.left = offsetX + 'px';
+        sigWrapper.style.top = offsetY + 'px';
+        sigWrapper.style.zIndex = '10';
+        sigWrapper.style.width = initialWidth + 'px';
+        sigWrapper.style.height = initialHeight + 'px';
+        
+        // Add data attribute to identify signature type
+        sigWrapper.dataset.sigType = isTextSignature ? 'text' : 'drawn';
+        
+        // Create signature image
+        const sigImg = document.createElement('img');
+        sigImg.src = this.signatureImage.dataUrl;
+        sigImg.alt = 'Signature';
+        sigImg.style.width = '100%';
+        sigImg.style.height = '100%'; // Keep original height
+        sigImg.style.pointerEvents = 'none'; // Prevent image from capturing events
+        
+        // Get identity information
+        const identity = this.getFormattedDateTimeWithIdentity();
+        
+        // Create date element with identity info
+        const dateDiv = this.createDateElement(identity);
+        
+        // Position date element further below the signature for better spacing
+        dateDiv.style.position = 'absolute';
+        dateDiv.style.bottom = '-75px'; // Increased from -55px to provide more space
+        dateDiv.style.left = '0';
+        dateDiv.style.width = '100%';
+        dateDiv.style.pointerEvents = 'none';
+        
+        // Create remove button - now at the top-center
+        const removeBtn = document.createElement('div');
+        removeBtn.innerHTML = '✖';
+        removeBtn.className = 'remove-sig';
+        removeBtn.style.position = 'absolute';
+        removeBtn.style.top = '-10px'; // Position at top
+        removeBtn.style.left = '50%'; // Center horizontally
+        removeBtn.style.transform = 'translateX(-50%)'; // Center perfectly
+        removeBtn.style.backgroundColor = '#f44336';
+        removeBtn.style.color = 'white';
+        removeBtn.style.borderRadius = '50%';
+        removeBtn.style.width = '20px';
+        removeBtn.style.height = '20px';
+        removeBtn.style.textAlign = 'center';
+        removeBtn.style.lineHeight = '20px';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+        removeBtn.dataset.id = placementId;
+        
+        // Create resize handles
+        const positions = ['nw', 'ne', 'se', 'sw']; // northwest, northeast, southeast, southwest
+        const resizeHandles = {};
+        
+        positions.forEach(pos => {
+            const handle = document.createElement('div');
+            handle.className = `resize-handle resize-${pos}`;
+            handle.style.position = 'absolute';
+            handle.style.width = '10px';
+            handle.style.height = '10px';
+            handle.style.backgroundColor = '#22BDC1';
+            handle.style.borderRadius = '50%';
+            handle.style.cursor = pos + '-resize';
+            handle.style.zIndex = '11';
+            
+            // Position the handle
+            if (pos.includes('n')) { // North
+                handle.style.top = '-5px';
+            } else { // South
+                handle.style.bottom = '-5px';
             }
-            this.currentStep = 3;
-            this.updatePathClasses();
-        } catch (e) {
-            console.error('Signature capture error', e);
-            alert('Error capturing signature: ' + e.message);
+            
+            if (pos.includes('w')) { // West
+                handle.style.left = '-5px';
+            } else { // East
+                handle.style.right = '-5px';
+            }
+            
+            resizeHandles[pos] = handle;
+            sigWrapper.appendChild(handle);
+            
+            // Add resize event listener
+            handle.addEventListener('mousedown', (event) => {
+                event.stopPropagation();
+                this.startResizeSignature(event, sigWrapper, pos);
+            });
+        });
+        
+        // Add event listener to remove button
+        removeBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const id = event.target.dataset.id;
+            const sigElement = overlay.querySelector(`[data-id="${id}"]`);
+            if (sigElement) {
+                overlay.removeChild(sigElement);
+            }
+            // Also remove from our tracking array
+            this.placedSignatures = this.placedSignatures.filter(sig => sig.id !== id);
+        });
+        
+        // Add drag functionality to the signature
+        sigWrapper.addEventListener('mousedown', this.startDragSignature.bind(this));
+        
+        // Append elements
+        sigWrapper.appendChild(sigImg);
+        sigWrapper.appendChild(removeBtn);
+        sigWrapper.appendChild(dateDiv);
+        overlay.appendChild(sigWrapper);
+        
+        // Get dimensions of the iframe for scaling calculations
+        const iframe = this.template.querySelector('.pdf-iframe');
+        const iframeWidth = iframe ? iframe.clientWidth : 100;
+        const iframeHeight = iframe ? iframe.clientHeight : 100;
+        
+        // Record placement data for PDF processing
+        // We'll use percentages to handle different PDF sizes
+        const pdfDoc = this.pdfDoc;
+        if (pdfDoc) {
+            // Get page dimensions for the current page
+            const pageIndex = this.currentPageNum - 1; // Convert 1-based to 0-based
+            const page = pdfDoc.getPage(pageIndex);
+            const pdfWidth = page.getWidth();
+            const pdfHeight = page.getHeight();
+            const isPageLandscape = pdfWidth > pdfHeight;
+            
+            // Compute relative positions as percentages
+            const relativeX = offsetX / iframeWidth;
+            const relativeY = offsetY / iframeHeight;
+            
+            // Calculate actual PDF coordinates (note PDF origin is bottom-left)
+            let pdfX, pdfY;
+            
+            if (isPageLandscape) {
+                pdfX = relativeX * pdfWidth;
+                pdfY = pdfHeight - (relativeY * pdfHeight);
+            } else {
+                pdfX = relativeX * pdfWidth;
+                pdfY = pdfHeight - (relativeY * pdfHeight);
+            }
+            
+            // Calculate relative size
+            const relativeWidth = initialWidth / iframeWidth;
+            const relativeHeight = initialHeight / iframeHeight;
+            
+            // Store for later use when actually adding to PDF
+            this.placedSignatures.push({
+                id: placementId,
+                pageIndex: pageIndex, // Use 0-based page index
+                x: pdfX,
+                y: pdfY,
+                width: relativeWidth * pdfWidth,
+                height: relativeHeight * pdfHeight,
+                element: sigWrapper,
+                isLandscape: isPageLandscape,
+                identity: identity, // Store the identity information
+                isTextSignature: isTextSignature // Store signature type
+            });
+        }
+    }
+    
+    // Modified handleSignatureSubmit for better handling of text signatures
+    handleSignatureSubmit() {
+        if (this.signatureMode === 'draw') {
+            if (!this.signaturePad || this.signaturePad.isEmpty()) {
+                this.showToast('Warning', 'Please draw your signature before proceeding', 'warning');
+                return;
+            }
+            // Get image data from canvas
+            const dataUrl = this.signaturePad.toDataURL();
+            
+            // Save signature image data for placement
+            const tempImg = new Image();
+            tempImg.onload = () => {
+                this.signatureImage = {
+                    dataUrl: dataUrl,
+                    width: tempImg.width,
+                    height: tempImg.height
+                };
+                // Proceed to next step
+                this.currentStep = 3;
+            };
+            tempImg.src = dataUrl;
+        } else if (this.signatureMode === 'type') {
+            // For text signatures
+            if (!this.signatureText || this.signatureText.trim() === '') {
+                this.showToast('Warning', 'Please enter your signature text before proceeding', 'warning');
+                return;
+    }
+    
+            // Render the typed signature to the canvas first
+            this.renderTextSignatureOnCanvas();
+            
+            // Get signature image with proper dimensions for text
+            const dataUrl = this.canvasElement.toDataURL();
+            
+            // Create a temporary image to get dimensions
+            const tempImg = new Image();
+            tempImg.onload = () => {
+                // Calculate more appropriate dimensions for text signature
+                const originalWidth = tempImg.width;
+                const originalHeight = tempImg.height;
+                
+                // For text signatures, analyze the image to get better dimensions
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = originalWidth;
+                canvas.height = originalHeight;
+                ctx.drawImage(tempImg, 0, 0);
+        
+                // Get image data to analyze content boundaries
+                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imgData.data;
+                
+                // Find the actual content boundaries
+                let minX = canvas.width;
+                let minY = canvas.height;
+                let maxX = 0;
+                let maxY = 0;
+                
+                // Look for non-transparent pixels
+                for (let y = 0; y < canvas.height; y++) {
+                    for (let x = 0; x < canvas.width; x++) {
+                        const alpha = data[(y * canvas.width + x) * 4 + 3];
+                        if (alpha > 0) {
+                            minX = Math.min(minX, x);
+                            minY = Math.min(minY, y);
+                            maxX = Math.max(maxX, x);
+                            maxY = Math.max(maxY, y);
+                        }
+                    }
+                }
+                
+                // Add some padding to the bounds
+                const padding = 10;
+                minX = Math.max(0, minX - padding);
+                minY = Math.max(0, minY - padding);
+                maxX = Math.min(canvas.width, maxX + padding);
+                maxY = Math.min(canvas.height, maxY + padding);
+        
+                // Calculate content dimensions
+                const contentWidth = maxX - minX;
+                const contentHeight = maxY - minY;
+                
+                // Only crop if we found valid content boundaries
+                let finalDataUrl = dataUrl;
+                if (contentWidth > 0 && contentHeight > 0) {
+                    // Crop to content
+                    const cropCanvas = document.createElement('canvas');
+                    cropCanvas.width = contentWidth;
+                    cropCanvas.height = contentHeight;
+                    const cropCtx = cropCanvas.getContext('2d');
+                    cropCtx.drawImage(tempImg, minX, minY, contentWidth, contentHeight, 0, 0, contentWidth, contentHeight);
+                    finalDataUrl = cropCanvas.toDataURL();
+                    
+                    // Create a new image with the cropped data
+                    const croppedImg = new Image();
+                    croppedImg.onload = () => {
+                        this.signatureImage = {
+                            dataUrl: finalDataUrl,
+                            width: croppedImg.width,
+                            height: croppedImg.height
+                        };
+                        // Proceed to next step
+                        this.currentStep = 3;
+                    };
+                    croppedImg.src = finalDataUrl;
+                } else {
+                    // If we couldn't determine content boundaries, use the original
+                    this.signatureImage = {
+                        dataUrl: dataUrl,
+                        width: originalWidth,
+                        height: originalHeight
+                    };
+                    // Proceed to next step
+                    this.currentStep = 3;
+                }
+            };
+            tempImg.src = dataUrl;
         }
     }
 
@@ -639,7 +923,7 @@ export default class PdfSigner extends LightningElement {
         const rect = overlay.getBoundingClientRect();
         const offsetX = event.clientX - rect.left;
         const offsetY = event.clientY - rect.top;
-        
+            
         // Place signature at these coordinates
         this.placeSignatureOverlay(offsetX, offsetY);
     }
@@ -710,191 +994,9 @@ export default class PdfSigner extends LightningElement {
             dateDiv.appendChild(fedIdSpan);
         }
         
-        dateDiv.style.position = 'absolute';
-        dateDiv.style.bottom = '-55px'; // More space for two lines of IDs
-        dateDiv.style.left = '0';
-        dateDiv.style.width = '100%';
-        dateDiv.style.pointerEvents = 'none';
-        
         return dateDiv;
     }
 
-    // Modified placeSignatureOverlay to consider orientation and current page
-    placeSignatureOverlay(offsetX, offsetY) {
-        if (!this.signatureImage) {
-            this.showToast('Error', 'No signature image available', 'error');
-            return;
-        }
-        
-        // Get the overlay div to place signatures
-        const overlay = this.template.querySelector('.pdf-overlay');
-        if (!overlay) {
-            this.showToast('Error', 'Overlay div not found', 'error');
-            return;
-        }
-        
-        // Generate unique ID for this signature placement
-        const placementId = 'sig-' + Date.now() + '-' + Math.round(Math.random() * 1000);
-        
-        // Initial size (scaled from original) - LARGER size
-        const initialWidth = Math.min(300, this.signatureImage.width * 1.5); // Make initial size larger
-        const aspectRatio = this.signatureImage.height / this.signatureImage.width;
-        const initialHeight = initialWidth * aspectRatio;
-        
-        // Create wrapper div for signature + remove button + resize handles
-        const sigWrapper = document.createElement('div');
-        sigWrapper.className = 'signature-placement';
-        sigWrapper.dataset.id = placementId;
-        sigWrapper.dataset.pageIndex = this.currentPageNum - 1; // Store page index (0-based)
-        sigWrapper.style.position = 'absolute';
-        sigWrapper.style.left = offsetX + 'px';
-        sigWrapper.style.top = offsetY + 'px';
-        sigWrapper.style.zIndex = '10';
-        sigWrapper.style.width = initialWidth + 'px';
-        sigWrapper.style.height = initialHeight + 'px';
-        
-        // Create signature image
-        const sigImg = document.createElement('img');
-        sigImg.src = this.signatureImage.dataUrl;
-        sigImg.alt = 'Signature';
-        sigImg.style.width = '100%';
-        sigImg.style.height = '100%';
-        sigImg.style.pointerEvents = 'none'; // Prevent image from capturing events
-        
-        // Get identity information
-        const identity = this.getFormattedDateTimeWithIdentity();
-        
-        // Create date element with identity info
-        const dateDiv = this.createDateElement(identity);
-        
-        // Create remove button - now at the top-center
-        const removeBtn = document.createElement('div');
-        removeBtn.innerHTML = '✖';
-        removeBtn.className = 'remove-sig';
-        removeBtn.style.position = 'absolute';
-        removeBtn.style.top = '-10px'; // Position at top
-        removeBtn.style.left = '50%'; // Center horizontally
-        removeBtn.style.transform = 'translateX(-50%)'; // Center perfectly
-        removeBtn.style.backgroundColor = '#f44336';
-        removeBtn.style.color = 'white';
-        removeBtn.style.borderRadius = '50%';
-        removeBtn.style.width = '20px';
-        removeBtn.style.height = '20px';
-        removeBtn.style.textAlign = 'center';
-        removeBtn.style.lineHeight = '20px';
-        removeBtn.style.cursor = 'pointer';
-        removeBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-        removeBtn.dataset.id = placementId;
-        
-        // Create resize handles
-        const positions = ['nw', 'ne', 'se', 'sw']; // northwest, northeast, southeast, southwest
-        const resizeHandles = {};
-        
-        positions.forEach(pos => {
-            const handle = document.createElement('div');
-            handle.className = `resize-handle resize-${pos}`;
-            handle.style.position = 'absolute';
-            handle.style.width = '10px';
-            handle.style.height = '10px';
-            handle.style.backgroundColor = '#22BDC1';
-            handle.style.borderRadius = '50%';
-            handle.style.cursor = pos + '-resize';
-            handle.style.zIndex = '11';
-            
-            // Position the handle
-            if (pos.includes('n')) { // North
-                handle.style.top = '-5px';
-            } else { // South
-                handle.style.bottom = '-5px';
-            }
-            
-            if (pos.includes('w')) { // West
-                handle.style.left = '-5px';
-            } else { // East
-                handle.style.right = '-5px';
-            }
-            
-            resizeHandles[pos] = handle;
-            sigWrapper.appendChild(handle);
-            
-            // Add resize event listener
-            handle.addEventListener('mousedown', (event) => {
-                event.stopPropagation();
-                this.startResizeSignature(event, sigWrapper, pos);
-            });
-        });
-
-        // Add event listener to remove button
-        removeBtn.addEventListener('click', (event) => {
-            event.stopPropagation();
-            const id = event.target.dataset.id;
-            const sigElement = overlay.querySelector(`[data-id="${id}"]`);
-            if (sigElement) {
-                overlay.removeChild(sigElement);
-            }
-            // Also remove from our tracking array
-            this.placedSignatures = this.placedSignatures.filter(sig => sig.id !== id);
-        });
-        
-        // Add drag functionality to the signature
-        sigWrapper.addEventListener('mousedown', this.startDragSignature.bind(this));
-        
-        // Append elements
-        sigWrapper.appendChild(sigImg);
-        sigWrapper.appendChild(removeBtn);
-        sigWrapper.appendChild(dateDiv);
-        overlay.appendChild(sigWrapper);
-        
-        // Get dimensions of the iframe for scaling calculations
-        const iframe = this.template.querySelector('.pdf-iframe');
-        const iframeWidth = iframe ? iframe.clientWidth : 100;
-        const iframeHeight = iframe ? iframe.clientHeight : 100;
-        
-        // Record placement data for PDF processing
-        // We'll use percentages to handle different PDF sizes
-        const pdfDoc = this.pdfDoc;
-        if (pdfDoc) {
-            // Get page dimensions for the current page
-            const pageIndex = this.currentPageNum - 1; // Convert 1-based to 0-based
-            const page = pdfDoc.getPage(pageIndex);
-            const pdfWidth = page.getWidth();
-            const pdfHeight = page.getHeight();
-            const isPageLandscape = pdfWidth > pdfHeight;
-            
-            // Compute relative positions as percentages
-            const relativeX = offsetX / iframeWidth;
-            const relativeY = offsetY / iframeHeight;
-            
-            // Calculate actual PDF coordinates (note PDF origin is bottom-left)
-            let pdfX, pdfY;
-            
-            if (isPageLandscape) {
-                pdfX = relativeX * pdfWidth;
-                pdfY = pdfHeight - (relativeY * pdfHeight);
-            } else {
-                pdfX = relativeX * pdfWidth;
-                pdfY = pdfHeight - (relativeY * pdfHeight);
-            }
-            
-            // Calculate relative size
-            const relativeWidth = initialWidth / iframeWidth;
-            const relativeHeight = initialHeight / iframeHeight;
-            
-            // Store for later use when actually adding to PDF
-            this.placedSignatures.push({
-                id: placementId,
-                pageIndex: pageIndex, // Use 0-based page index
-                x: pdfX,
-                y: pdfY,
-                width: relativeWidth * pdfWidth,
-                height: relativeHeight * pdfHeight,
-                element: sigWrapper,
-                isLandscape: isPageLandscape,
-                identity: identity // Store the identity information
-            });
-        }
-    }
-    
     // New method to handle signature resizing
     startResizeSignature(event, sigElement, resizeHandle) {
         event.preventDefault();
@@ -1462,10 +1564,25 @@ export default class PdfSigner extends LightningElement {
         // Generate unique ID for this signature placement
         const placementId = 'sig-' + Date.now() + '-' + Math.round(Math.random() * 1000);
         
-        // Initial size (scaled from original) - LARGER size
-        const initialWidth = Math.min(300, this.signatureImage.width * 1.5); // Make initial size larger
+        // Initial size (scaled from original) - ADJUST BASED ON SIGNATURE TYPE
+        let initialWidth, initialHeight;
+        
+        // For text signatures, create a tighter fit
+        const isTextSignature = this.signatureMode === 'type';
+        if (isTextSignature) {
+            // Text signatures should have a tighter fit
+            initialWidth = Math.min(250, this.signatureImage.width * 1.1);
         const aspectRatio = this.signatureImage.height / this.signatureImage.width;
-        const initialHeight = initialWidth * aspectRatio;
+            initialHeight = initialWidth * aspectRatio;
+            
+            // Minimum height adjustment for text signatures to fit better
+            initialHeight = Math.max(initialHeight, 40);
+        } else {
+            // For drawn signatures, keep original sizing
+            initialWidth = Math.min(300, this.signatureImage.width * 1.5);
+            const aspectRatio = this.signatureImage.height / this.signatureImage.width;
+            initialHeight = initialWidth * aspectRatio;
+        }
         
         // Create wrapper div for signature + remove button + resize handles
         const sigWrapper = document.createElement('div');
@@ -1479,12 +1596,15 @@ export default class PdfSigner extends LightningElement {
         sigWrapper.style.width = initialWidth + 'px';
         sigWrapper.style.height = initialHeight + 'px';
         
+        // Add data attribute to identify signature type
+        sigWrapper.dataset.sigType = isTextSignature ? 'text' : 'drawn';
+        
         // Create signature image
         const sigImg = document.createElement('img');
         sigImg.src = this.signatureImage.dataUrl;
         sigImg.alt = 'Signature';
         sigImg.style.width = '100%';
-        sigImg.style.height = '100%';
+        sigImg.style.height = '100%'; // Keep original height
         sigImg.style.pointerEvents = 'none'; // Prevent image from capturing events
         
         // Get identity information
@@ -1492,6 +1612,13 @@ export default class PdfSigner extends LightningElement {
         
         // Create date element with identity info
         const dateDiv = this.createDateElement(identity);
+        
+        // Position date element further below the signature for better spacing
+        dateDiv.style.position = 'absolute';
+        dateDiv.style.bottom = '-75px'; // Increased from -55px to provide more space
+        dateDiv.style.left = '0';
+        dateDiv.style.width = '100%';
+        dateDiv.style.pointerEvents = 'none';
         
         // Create remove button - now at the top-center
         const removeBtn = document.createElement('div');
@@ -1511,7 +1638,7 @@ export default class PdfSigner extends LightningElement {
         removeBtn.style.cursor = 'pointer';
         removeBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
         removeBtn.dataset.id = placementId;
-
+        
         // Add event listener to remove button
         removeBtn.addEventListener('click', (event) => {
             event.stopPropagation();
@@ -1570,7 +1697,8 @@ export default class PdfSigner extends LightningElement {
             height: relativeHeight * pdfHeight,
             element: sigWrapper,
             isLandscape: pageInfo.isLandscape,
-            identity: identity // Store the identity information
+            identity: identity, // Store the identity information
+            isTextSignature: isTextSignature // Store signature type
         });
         
         console.log(`Placed signature on page ${pageIndex + 1} at PDF coordinates:`, pdfX, pdfY);
