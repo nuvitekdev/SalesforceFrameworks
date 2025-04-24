@@ -1,5 +1,6 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
+import { CurrentPageReference } from 'lightning/navigation';
 import getRecordMetadata from '@salesforce/apex/SlaTrackerController.getRecordMetadata';
 import calculateBusinessHours from '@salesforce/apex/SlaTrackerController.calculateBusinessHours';
 
@@ -40,9 +41,43 @@ export default class SlaTracker extends LightningElement {
     // Countdown timer
     countdownInterval;
     
+    // For record ID detection in portal/community
+    @wire(CurrentPageReference)
+    pageRef;
+    
+    // Record ID helper methods for portals/communities
+    getRecordIdFromUrl() {
+        const path = window.location.pathname;
+        const pathParts = path.split('/');
+        
+        const recordId = pathParts.find(part =>
+            (part.length === 15 || part.length === 18) &&
+            part.match(/^[a-zA-Z0-9]+$/)
+        );
+        return recordId || null;
+    }
+    
+    getRecordIdFromPageRef() {
+        if (this.pageRef) {
+            if (this.pageRef.attributes && this.pageRef.attributes.recordId) {
+                return this.pageRef.attributes.recordId;
+            }
+            // For Experience/Community sites
+            if (this.pageRef.state && this.pageRef.state.recordId) {
+                return this.pageRef.state.recordId;
+            }
+        }
+        return null;
+    }
+    
+    // Get effective record ID from all possible sources
+    get effectiveRecordId() {
+        return this.recordId || this.getRecordIdFromPageRef() || this.getRecordIdFromUrl();
+    }
+    
     // Getters
     get hasRecordId() {
-        return !!this.recordId;
+        return !!this.effectiveRecordId;
     }
     
     get hasRecord() {
@@ -136,7 +171,7 @@ export default class SlaTracker extends LightningElement {
     // Lifecycle hooks
     connectedCallback() {
         // Initialize the component
-        if (this.recordId) {
+        if (this.effectiveRecordId) {
             this.isLoading = true;
             this.errorMessage = null;
         }
@@ -152,8 +187,8 @@ export default class SlaTracker extends LightningElement {
         this.updateProgressBar();
     }
     
-    // Wire methods
-    @wire(getRecordMetadata, { recordId: '$recordId' })
+    // Wire methods - update to use effectiveRecordId
+    @wire(getRecordMetadata, { recordId: '$effectiveRecordId' })
     wiredRecordMetadata({ error, data }) {
         if (data) {
             this._objectApiName = data.objectApiName;
@@ -163,7 +198,7 @@ export default class SlaTracker extends LightningElement {
         }
     }
     
-    @wire(getRecord, { recordId: '$recordId', fields: '$_dynamicFields' })
+    @wire(getRecord, { recordId: '$effectiveRecordId', fields: '$_dynamicFields' })
     wiredRecord({ error, data }) {
         if (data) {
             this._recordData = data;
