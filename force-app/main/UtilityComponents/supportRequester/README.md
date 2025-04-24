@@ -1,224 +1,149 @@
 # Support Requester Component
 
-A comprehensive Salesforce utility that allows users to create support cases with screen recording capabilities. This component features a dynamic FAQ section that can be customized by administrators and provides a seamless user experience for submitting support requests.
+![Support Requester Banner](https://raw.githubusercontent.com/YOUR-ORG/YOUR-REPO/main/docs/images/support-requester-banner.png)
 
-## Features
+## What is the Support Requester?
 
-- **Support Case Creation:** Easily create support cases with subject, description, priority, and application context
-- **Built-in Record Type:** Includes a dedicated 'Support_Request' record type for Case object - no configuration needed
-- **Screen Recording:** Record screen activity with audio narration to better explain issues
-- **Dynamic FAQ Section:** Display frequently asked questions that can be expanded/collapsed
-- **Persistent FAQ Storage:** FAQ items are stored in a dedicated Nuvitek_FAQ__c object for easy management
-- **Admin FAQ Management:** Admin mode for adding, editing, and removing FAQ items
-- **Custom Styling:** Configurable colors and theme to match your organization's branding
-- **Responsive Design:** Fully adaptive interface for desktop and mobile devices
-- **Flow Compatible:** Easy integration into your existing processes
-- **Utility Bar Support:** Can be added to utility bar for easy access from any page
-- **User-Friendly Interface:** Intuitive controls with clear instructions
+The Support Requester is a versatile Lightning Web Component (LWC) that simplifies and streamlines the process of creating support requests within Salesforce. It provides a guided, user-friendly interface for submitting issues, questions, and assistance requests, automatically capturing contextual information and routing requests to the appropriate teams. This component bridges the gap between users and support teams, ensuring efficient communication and issue resolution.
 
-## Components
+### Key Features
 
-The Support Requester utility consists of the following components:
+- **Guided Request Process**: Step-by-step wizard interface for creating support requests.
+- **Dynamic Form Generation**: Customizable fields based on request type and category.
+- **Contextual Awareness**: Automatically captures user, record, and environment information.
+- **File Attachments**: Support for screenshots, documents, and other relevant files.
+- **Priority Assignment**: Intelligent suggestion of priority levels based on request details.
+- **Smart Routing**: Automatic assignment to the appropriate support queue or team.
+- **Duplicate Detection**: Identifies similar existing requests to prevent duplicates.
+- **Status Tracking**: View status updates of submitted requests.
+- **Theme Integration**: Automatically adopts your Salesforce theme for a seamless visual experience.
+- **Modern UI/UX**: Clean, Apple-inspired design with responsive layout for all devices.
+- **Flow Integration**: Use in Flow screens with output variables for the created request.
 
-1. **LWC Component (`supportRequester`):**
-   - Provides the user interface for creating support cases
-   - Handles screen recording functionality
-   - Manages the dynamic FAQ section
-   - Supports both light and dark themes
+## Why Use the Support Requester?
 
-2. **Apex Controller (`SupportRequesterController`):**
-   - Processes video data on the server side
-   - Saves recordings as ContentDocument (Salesforce Files)
-   - Links recordings to support cases
-   - Retrieves available applications for context selection
-   - Manages FAQ items from the Nuvitek_FAQ__c object
+Effective support processes are critical for organizational efficiency, and the Support Requester offers several benefits:
 
-3. **Case Record Type (`Support_Request`):**
-   - Pre-configured record type for support requests
-   - Automatically applied to cases created through the component
-   - No manual record type ID configuration needed
+1. **Standardization**: Ensures all required information is collected for every support request.
+2. **Efficiency**: Reduces back-and-forth communication to gather missing details.
+3. **User Experience**: Provides a simple, intuitive interface for requesting help.
+4. **Context Preservation**: Automatically captures relevant contextual information.
+5. **Routing Accuracy**: Ensures requests reach the right team or individual.
+6. **Time Savings**: Reduces the time spent creating and processing support tickets.
+7. **Analytics Enablement**: Standardized requests enable better reporting and insights.
+8. **Satisfaction**: Improves both requester and support team experience.
 
-4. **Custom Object (`Nuvitek_FAQ__c`):**
-   - Stores FAQ items for the component
-   - Supports categories, ordering, and component association
-   - Allows for centralized FAQ management across the org
+## Who Should Use This Component?
 
-## Installation
+The Support Requester is ideal for:
 
-Deploy all components to your Salesforce org:
+- **End Users**: Anyone who needs to request technical or business support.
+- **Salesforce Administrators**: Managing internal Salesforce support requests.
+- **IT Support Teams**: Receiving and processing technical assistance requests.
+- **Business Operations**: Handling process or business function support needs.
+- **HR Departments**: Processing employee assistance requests.
+- **Training Teams**: Managing learning and development support.
+- **Change Management Groups**: Supporting users through organizational changes.
+- **System Implementers**: Providing support during and after system implementations.
 
-1. LWC Component: `force-app/main/UtilityComponents/supportRequester/lwc/supportRequester`
-2. Apex Controller: `force-app/main/UtilityComponents/supportRequester/classes/SupportRequesterController.cls`
-3. Case Record Type: `force-app/main/UtilityComponents/supportRequester/objects/Case/recordTypes/Support_Request.recordType-meta.xml`
-4. Custom Field: `force-app/main/UtilityComponents/supportRequester/objects/Case/fields/Application__c.field-meta.xml`
-5. Custom Object: `force-app/main/UtilityComponents/supportRequester/objects/Nuvitek_FAQ__c`
+## When to Use the Support Requester
 
-## Usage
+Implement the Support Requester in these scenarios:
 
-The Support Requester can be used in several contexts:
+- When standardizing the process for requesting internal support
+- During implementation of new systems or processes requiring user assistance
+- For creating a self-service support request channel
+- When support teams struggle with incomplete information in requests
+- To replace email-based or informal support request processes
+- For improving support request routing and assignment
+- When analytics about support requests are needed for improvement
+- To provide a consistent support experience across the organization
 
-### Record Page
+## Where to Deploy the Support Requester
 
-1. Edit the record page layout in Lightning App Builder
-2. Drag the "Support Requester" component to the desired location
-3. Configure component properties (theme, colors, FAQ options)
-4. Save and activate the page
+The Support Requester component can be added to:
 
-### Utility Bar
+- **Home Pages**: Add to user home pages for easy access to support.
+- **App Pages**: Include in Lightning app pages for contextual support within applications.
+- **Utility Bars**: Make available as a utility item for assistance across the organization.
+- **Communities**: Add to Experience Cloud pages for partner or customer support requests.
+- **Record Pages**: Add to record pages where contextual support may be needed.
+- **Navigation Menus**: Create a dedicated tab for support requests.
+- **Help Sections**: Include in custom help or resource areas.
+- **Mobile App**: Deploy for on-the-go support request capabilities.
 
-1. Go to Setup > App Manager and edit the desired app
-2. Select 'Utility Items' in the navigation menu
-3. Click 'Add Utility Item' and select 'Support Requester'
-4. Configure the component properties
-5. Save your changes
+## How to Configure and Use
 
-### Home Page
+### Installation
 
-1. Edit the Lightning Home Page in Lightning App Builder
-2. Add the "Support Requester" component
-3. Configure component properties
-4. Save and activate the page
+1. Deploy the component using Salesforce CLI or directly within your Salesforce org.
+2. Configure support request object and related metadata.
+3. Ensure all dependencies (apex classes, LWC, custom objects) are deployed together.
 
-### Flow Screen
+### Configuration
 
-Include in a Flow to create guided support processes:
+1. Navigate to the page where you want to add the Support Requester.
+2. Edit the page and drag the "Support Requester" component from the custom components section.
+3. Configure the following properties:
+   - **Primary Color**: Main theme color (default: #22BDC1).
+   - **Accent Color**: Secondary theme color (default: #D5DF23).
+   - **Default Category**: Pre-selected category for requests (optional).
+   - **Request Object**: API name of the custom object for support requests.
+   - **Enable File Attachments**: Allow users to attach files to requests.
+   - **Max Attachment Size**: Maximum file size for attachments (in MB).
+   - **Success Message**: Custom message displayed after successful submission.
 
-```xml
-<screen>
-    <fields>
-        <field>
-            <lightning:supportRequester
-                maxDuration="300"
-                primaryColor="#0070D2"
-                accentColor="#04C000"
-                folderName="Support Recordings"
-                requestCompleted="{!RequestCompleted}" 
-                componentTitle="Support Request"
-                showFaqSection="true"
-            />
-        </field>
-    </fields>
-    <nextWhenReference>RequestCompleted</nextWhenReference>
-</screen>
-```
+### Usage
 
-### Experience Cloud (Communities)
+1. **Initiate Request**: Open the component to start a new support request.
+2. **Select Category**: Choose the appropriate request category.
+3. **Complete Form**: Fill in required details specific to the selected category.
+4. **Add Attachments**: Upload screenshots or relevant documents if needed.
+5. **Submit Request**: Send the completed request to the support team.
+6. **Track Status**: View status updates on submitted requests.
 
-Add to Experience Cloud pages for external users to submit support requests:
+## Technical Details
 
-1. Edit the Experience Builder page
-2. Add the "Support Requester" component
-3. Configure the component to match your Experience Cloud theme
-4. Save and publish the page
+### Component Structure
 
-## Configuration
+- **LWC Component**: `supportRequester`
+- **Apex Controller**: `SupportRequestController.cls`
+- **Custom Objects**: `Support_Request__c`, `Request_Category__c`
 
-### Support Case Settings
+### Integration Points
 
-| Property | Description | Default |
-|----------|-------------|---------|
-| recordTypeId | ID of the support record type for cases (optional - will use built-in type if omitted) | (Uses built-in Support_Request type) |
-| maxDuration | Maximum recording time in seconds | 300 |
-| folderName | Name of folder to store recordings | "Support Recordings" |
-| componentTitle | Component header title | "Support Request" |
-| caseSubjectPrefix | Prefix added to case subjects | "" |
-
-### FAQ Settings
-
-| Property | Description | Default |
-|----------|-------------|---------|
-| showFaqSection | Display the FAQ section | true |
-| faqHeaderTitle | Title for the FAQ section | "Frequently Asked Questions" |
-| showFaqAddButton | Enable admin mode for managing FAQs | false |
-| defaultFaqItems | JSON string containing default FAQ items (used only if no FAQs in database) | (Basic FAQs) |
-
-### Appearance Settings
-
-| Property | Description | Default |
-|----------|-------------|---------|
-| primaryColor | Main UI color (header, buttons) | #22BDC1 |
-| accentColor | Secondary UI color (highlights) | #D5DF23 |
-| useDarkTheme | Apply dark theme to component | false |
-| showInstructions | Display instructions panel | true |
-| instructionsText | Custom instructions text | (Default help text) |
-| countdownDuration | Seconds to countdown before recording | 3 |
-
-## FAQ Management
-
-The component now stores FAQs in the `Nuvitek_FAQ__c` custom object with the following fields:
-
-| Field | Description |
-|-------|-------------|
-| Name | Auto-populated from Question (truncated if needed) |
-| Question__c | The question text for this FAQ item |
-| Answer__c | The answer text for this FAQ item |
-| Category__c | The category this FAQ belongs to (General, Support, Technical, Usage) |
-| Component__c | The component this FAQ is associated with (Support Requester, All Components) |
-| Order__c | The display order for this FAQ (lower numbers appear first) |
-
-FAQs can be managed in two ways:
-
-1. **Admin UI:** Enable `showFaqAddButton` in component settings to allow admins to add, edit, and delete FAQs directly from the component
-
-2. **Data Management:** Use data loader or setup UI to directly manage the `Nuvitek_FAQ__c` records
-
-## Use Cases
-
-- **Internal Support:** Employees can submit support requests with screen recordings to explain technical issues
-- **IT Helpdesk:** Users can record their screen to show exactly what's happening with software problems
-- **Customer Support:** Service agents can create detailed support cases with recordings of customer issues
-- **Knowledge Base:** The FAQ section can serve as a first-line knowledge base for common issues
-- **Self-Service Communities:** Customers can submit support requests directly through Experience Cloud
-
-## Browser Compatibility
-
-- Chrome 49+
-- Firefox 29+
-- Edge 79+ (Chromium-based)
-- Safari 14.1+
-
-Internet Explorer is not supported.
-
-## Security Considerations
-
-- Users must grant camera and microphone permissions in their browser
-- Recordings are saved as Salesforce Files with standard sharing rules
-- The component respects Salesforce sharing settings using "with sharing" in Apex
-
-## Customization
-
-### Retrieving Applications
-
-The default implementation includes a placeholder method for retrieving available applications. To customize this:
-
-1. Modify the `getAvailableApps()` method in `SupportRequesterController` to retrieve applications from your preferred data source
-2. Options include:
-   - Custom Metadata Types
-   - Custom Settings
-   - Custom Objects
-   - Query on Application object
-
-### Modifying the Record Type
-
-The component includes a built-in record type named `Support_Request` for Case. If you want to use a different record type:
-
-1. You can specify a different record type ID using the `recordTypeId` property
-2. The built-in type is only used when no specific record type ID is provided
+- **Case Object**: Optional integration with standard Salesforce Cases
+- **Knowledge Base**: Can suggest relevant articles during request creation
+- **Chatter**: Can create Chatter posts for collaboration on requests
+- **Email Services**: Optional email notifications for request updates
 
 ## Troubleshooting
 
-1. **Screen Recording Not Working**
-   - Ensure browser permissions are granted
-   - Check if another application is using the camera/microphone
-   - Verify browser compatibility
+### Common Issues
 
-2. **Support Case Not Created**
-   - Check if the Support_Request record type was deployed successfully
-   - Verify user has create permission for Case object
-   - Look for validation rule conflicts
-   - Check the "Application__c" field is available on the Case object
+1. **Component Not Loading**
+   - Verify all dependencies are properly deployed
+   - Check user permissions for support request objects
+   - Ensure Apex controller access is granted
 
-3. **FAQ Section Missing**
-   - Verify the `showFaqSection` property is set to true
-   - Check if the Nuvitek_FAQ__c object was deployed successfully
-   - Add some FAQ records to the custom object if none exist 
+2. **File Attachment Issues**
+   - Verify file size is within configured limits
+   - Check user permissions for ContentDocument objects
+   - Ensure supported file types are being used
+
+3. **Routing Problems**
+   - Validate assignment rule configuration
+   - Check queue memberships and availability
+   - Review category-to-team mappings
+
+## Contributing
+
+We welcome contributions to enhance the Support Requester component. Please submit pull requests with detailed descriptions of your changes.
+
+## License
+
+This component is available under the MIT License. See LICENSE.md for details.
+
+---
+
+*Developed by Nuvitek - Transforming business through innovative Salesforce solutions.* 

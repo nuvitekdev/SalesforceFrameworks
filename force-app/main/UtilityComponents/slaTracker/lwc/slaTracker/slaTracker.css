@@ -1,59 +1,46 @@
+/* 
+ * SLA Tracker Component
+ * Follows Nuvitek UI design system with Apple HIG influences
+ */
+
+:host {
+    --sla-default-padding: 1rem;
+    --sla-border-radius: 12px;
+    --sla-animation-duration: 0.5s;
+    --sla-spring: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Theme system - inherits from the nuvitek theme variables */
 .sla-tracker-container {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    --primary-color: #22BDC1;
-    --primary-color-rgb: 34, 189, 193;
-    --primary-dark: #1a9599;
-    --primary-light: #63d1d4;
-    --accent-color: #D5DF23;
-    --accent-color-rgb: 213, 223, 35;
-    --accent-dark: #b8c11e;
-    --accent-light: #e1e95c;
-    --text-color: #1d1d1f;
-    --text-secondary: #6e6e73;
-    --text-tertiary: #a1a1a6;
-    --background: #ffffff;
-    --background-alt: #f5f5f7;
-    --background-elevated: #fbfbfd;
-    --border-color: rgba(0, 0, 0, 0.1);
-    --border-subtle: rgba(0, 0, 0, 0.05);
+    /* Colors - Light Mode */
+    --color-active: var(--nuvitek-color-primary);
+    --color-met: var(--nuvitek-color-success);
+    --color-breached: var(--nuvitek-color-error);
+    --color-paused: var(--nuvitek-color-warning);
 
-    /* Shadows */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
-    
-    /* Border radius */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 20px;
-    
-    /* Transitions */
-    --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+    /* Shadows & Effects */
+    --card-shadow: var(--nuvitek-shadow-card);
+    --card-hover-shadow: var(--nuvitek-shadow-card-hover);
+    --card-active-shadow: var(--nuvitek-shadow-card-active);
 }
 
-.sla-content {
-    padding: 0.5rem 1rem;
-}
-
-/* Status Card Styles */
+/* Card Styling */
 .status-card {
-    background-color: var(--background-elevated);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-medium);
+    background-color: var(--nuvitek-color-surface);
+    border-radius: var(--sla-border-radius);
+    box-shadow: var(--card-shadow);
+    transition: transform var(--sla-animation-duration) var(--sla-spring),
+                box-shadow var(--sla-animation-duration) var(--sla-spring);
     overflow: hidden;
     padding: 1.5rem;
-    margin-bottom: 1rem;
-    border: 1px solid var(--border-subtle);
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--nuvitek-color-border);
+    position: relative;
 }
 
 .status-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+    box-shadow: var(--card-hover-shadow);
 }
 
 /* Status Header */
@@ -61,142 +48,124 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
 }
 
 .label {
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--text-secondary);
+    color: var(--nuvitek-color-text-secondary);
+    letter-spacing: -0.01em;
 }
 
 /* Status Badge Styles */
 .status-badge {
     display: inline-flex;
-    padding: 0.25rem 0.75rem;
-    border-radius: 50px;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.02em;
 }
 
 .status-badge.active {
-    background-color: rgba(var(--primary-color-rgb), 0.15);
-    color: var(--primary-dark);
+    background-color: var(--nuvitek-color-primary-surface);
+    color: var(--nuvitek-color-primary);
 }
 
 .status-badge.met {
-    background-color: #EDF7ED;
-    color: #2E7D32;
+    background-color: var(--nuvitek-color-success-surface);
+    color: var(--nuvitek-color-success);
 }
 
 .status-badge.breached {
-    background-color: #FEECEB;
-    color: #D32F2F;
+    background-color: var(--nuvitek-color-error-surface);
+    color: var(--nuvitek-color-error);
 }
 
 .status-badge.paused {
-    background-color: #FFF8E1;
-    color: #F57C00;
+    background-color: var(--nuvitek-color-warning-surface);
+    color: var(--nuvitek-color-warning);
 }
 
 .status-badge.error {
-    background-color: #F5F5F5;
-    color: #757575;
+    background-color: var(--nuvitek-color-surface-variant);
+    color: var(--nuvitek-color-text-secondary);
 }
 
 /* Countdown Section */
 .countdown-section {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.75rem;
 }
 
 .countdown-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .countdown-label {
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--text-secondary);
-}
-
-.countdown-timer {
-    text-align: center;
+    color: var(--nuvitek-color-text-secondary);
+    letter-spacing: -0.01em;
 }
 
 /* Progress Bar */
 .progress-container {
-    height: 10px;
-    background-color: rgba(0, 0, 0, 0.05);
-    border-radius: 5px;
-    overflow: hidden;
-    margin-bottom: 0.75rem;
+    height: 6px;
+    background-color: var(--nuvitek-color-surface-variant);
+    border-radius: 3px;
+    overflow: visible;
+    margin-bottom: 1.5rem;
     position: relative;
 }
 
 .progress-bar {
     height: 100%;
-    border-radius: 5px;
-    transition: width var(--transition-medium);
+    border-radius: 3px;
+    transition: width 0.6s var(--sla-spring);
 }
 
-.progress-percentage {
+.progress-info {
     position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
+    top: -22px;
+    right: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.progress-percentage, 
+.progress-time {
     font-size: 0.7rem;
     font-weight: 600;
-    color: white;
-    text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-    z-index: 1;
-}
-
-.progress-bar.active-early {
-    background-color: var(--primary-color);
-}
-
-.progress-bar.active-midway {
-    background-color: var(--accent-color);
-}
-
-.progress-bar.active-late {
-    background-color: #D32F2F;
-}
-
-.progress-bar.met {
-    background-color: #2E7D32;
-}
-
-.progress-bar.breached {
-    background-color: #D32F2F;
-}
-
-.progress-bar.paused {
-    background-color: #F57C00;
-}
-
-.progress-bar.error {
-    background-color: #757575;
+    color: var(--nuvitek-color-text-secondary);
+    padding: 3px 6px;
+    border-radius: 4px;
+    background-color: var(--nuvitek-color-surface-variant);
+    letter-spacing: -0.01em;
+    transition: background-color 0.3s ease;
 }
 
 .time-display {
-    font-size: 1.5rem;
+    font-size: 2rem;
     font-weight: 600;
-    letter-spacing: -0.5px;
-    color: var(--text-color);
-    margin-top: 0.75rem;
+    letter-spacing: -0.03em;
+    color: var(--nuvitek-color-text);
+    text-align: center;
+    transition: color 0.3s ease;
 }
 
 /* SLA Details */
 .sla-details {
-    background-color: var(--background-alt);
-    border-radius: var(--radius-sm);
-    padding: 1rem;
+    background-color: var(--nuvitek-color-surface-variant);
+    border-radius: 8px;
+    padding: 1.25rem;
     margin-top: 1.5rem;
 }
 
@@ -205,7 +174,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--nuvitek-color-border);
 }
 
 .detail-row:last-child {
@@ -215,13 +184,15 @@
 .detail-label {
     font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--text-secondary);
+    color: var(--nuvitek-color-text-secondary);
+    letter-spacing: -0.01em;
 }
 
 .detail-value {
     font-size: 0.8125rem;
     font-weight: 400;
-    color: var(--text-color);
+    color: var(--nuvitek-color-text);
+    letter-spacing: -0.01em;
 }
 
 /* Loading State */
@@ -230,14 +201,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    padding: 2.5rem;
     text-align: center;
 }
 
 .loading-text {
-    margin-top: 0.75rem;
+    margin-top: 1rem;
     font-size: 0.875rem;
-    color: var(--text-secondary);
+    color: var(--nuvitek-color-text-secondary);
 }
 
 /* Error State */
@@ -246,18 +217,18 @@
     align-items: center;
     gap: 0.75rem;
     padding: 1rem;
-    background-color: #FEECEB;
-    border-radius: var(--radius-sm);
+    background-color: var(--nuvitek-color-error-surface);
+    border-radius: 8px;
     margin: 0.5rem 0;
 }
 
 .error-icon {
-    --sds-c-icon-color-foreground-default: #D32F2F;
+    --sds-c-icon-color-foreground-default: var(--nuvitek-color-error);
 }
 
 .error-message {
     font-size: 0.875rem;
-    color: #D32F2F;
+    color: var(--nuvitek-color-error);
     margin: 0;
 }
 
@@ -267,57 +238,21 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    padding: 2.5rem;
     text-align: center;
-    color: var(--text-secondary);
-    background-color: var(--background-alt);
-    border-radius: var(--radius-sm);
+    color: var(--nuvitek-color-text-secondary);
+    background-color: var(--nuvitek-color-surface-variant);
+    border-radius: 8px;
 }
 
 .no-record-container > lightning-icon {
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .no-record-container > p {
     font-size: 0.95rem;
     margin: 0;
-}
-
-/* Status Card Theme Colors */
-.status-card.theme-info {
-    background-color: #E1F5FE;
-    border-color: #81D4FA;
-}
-
-.status-card.theme-success {
-    background-color: #E8F5E9;
-    border-color: #A5D6A7;
-}
-
-.status-card.theme-warning {
-    background-color: #FFF8E1;
-    border-color: #FFE082;
-}
-
-.status-card.theme-error {
-    background-color: #FFEBEE;
-    border-color: #EF9A9A;
-}
-
-.status-card.theme-inverse {
-    background-color: #263238;
-    border-color: #455A64;
-    color: #ECEFF1;
-}
-
-.status-card.theme-inverse .label,
-.status-card.theme-inverse .detail-label {
-    color: #B0BEC5;
-}
-
-.status-card.theme-inverse .time-display,
-.status-card.theme-inverse .detail-value {
-    color: #ECEFF1;
+    letter-spacing: -0.01em;
 }
 
 /* Animation for active SLA */
@@ -331,15 +266,33 @@
     animation: pulse 2s infinite;
 }
 
+/* Custom icon styles */
+.slds-media__figure lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--nuvitek-color-primary);
+}
+
+/* Card title styles */
+.slds-card__header-title {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--nuvitek-color-text);
+}
+
 /* Media Queries for Responsiveness */
 @media (max-width: 768px) {
     .status-header, .countdown-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
     
     .time-display {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
+    }
+    
+    .progress-info {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
     }
 } 

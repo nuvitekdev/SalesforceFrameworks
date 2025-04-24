@@ -13,7 +13,6 @@ export default class SlaTracker extends LightningElement {
     @api statusFieldName = 'Status__c';
     @api closedStatusValues = 'Closed,Completed,Resolved';
     @api pendingStatusValues = 'Pending,On Hold,Waiting';
-    @api colorScheme = 'standard';
     @api showPastSLA = false;
     @api showProgressBar = false;
     @api businessHoursOnly = false;
@@ -52,13 +51,7 @@ export default class SlaTracker extends LightningElement {
     }
     
     get statusCardClass() {
-        let baseClass = 'status-card';
-        
-        if (this.colorScheme && this.colorScheme !== 'standard') {
-            baseClass += ` theme-${this.colorScheme.replace('slds-theme_', '')}`;
-        }
-        
-        return baseClass;
+        return 'nuvitek-card status-card';
     }
     
     get statusBadgeClass() {
@@ -84,20 +77,20 @@ export default class SlaTracker extends LightningElement {
         // Determine color based on SLA status and percentage complete
         if (this.slaStatus === 'Active') {
             if (this._percentComplete < 60) {
-                colorClass = '#2E7D32'; // Green
+                colorClass = 'var(--nuvitek-color-success)'; // Green
             } else if (this._percentComplete < 80) {
-                colorClass = '#F57C00'; // Orange
+                colorClass = 'var(--nuvitek-color-warning)'; // Orange
             } else {
-                colorClass = '#D32F2F'; // Red
+                colorClass = 'var(--nuvitek-color-error)'; // Red
             }
         } else if (this.slaStatus === 'Met') {
-            colorClass = '#2E7D32'; // Green
+            colorClass = 'var(--nuvitek-color-success)'; // Green
         } else if (this.slaStatus === 'Breached') {
-            colorClass = '#D32F2F'; // Red
+            colorClass = 'var(--nuvitek-color-error)'; // Red
         } else if (this.slaStatus === 'Paused') {
-            colorClass = '#F57C00'; // Orange
+            colorClass = 'var(--nuvitek-color-warning)'; // Orange
         } else {
-            colorClass = '#757575'; // Gray
+            colorClass = 'var(--nuvitek-color-text-secondary)'; // Gray
         }
         
         return `width: ${this._percentComplete}%; background-color: ${colorClass};`;
@@ -134,8 +127,7 @@ export default class SlaTracker extends LightningElement {
     }
     
     renderedCallback() {
-        // Update progress bar styles
-        this.updateProgressBar();
+        // Update progress bar styles if needed
     }
     
     // Wire methods
@@ -160,43 +152,6 @@ export default class SlaTracker extends LightningElement {
     }
     
     // Methods
-    updateProgressBar() {
-        if (this.showProgressBar) {
-            const progressBarEl = this.template.querySelector('.progress-bar');
-            if (progressBarEl) {
-                // Determine color based on SLA status and percentage complete
-                let colorClass;
-                
-                if (this.slaStatus === 'Active') {
-                    if (this._percentComplete < 60) {
-                        colorClass = 'active-early';
-                    } else if (this._percentComplete < 80) {
-                        colorClass = 'active-midway';
-                    } else {
-                        colorClass = 'active-late';
-                    }
-                } else if (this.slaStatus === 'Met') {
-                    colorClass = 'met';
-                } else if (this.slaStatus === 'Breached') {
-                    colorClass = 'breached';
-                } else if (this.slaStatus === 'Paused') {
-                    colorClass = 'paused';
-                } else {
-                    colorClass = 'error';
-                }
-                
-                // Clear all status classes
-                progressBarEl.classList.remove('active-early', 'active-midway', 'active-late', 'met', 'breached', 'paused', 'error');
-                
-                // Add the appropriate class
-                progressBarEl.classList.add(colorClass);
-                
-                // Set width based on percentage
-                progressBarEl.style.width = `${this._percentComplete}%`;
-            }
-        }
-    }
-    
     updateDynamicFields() {
         if (this._objectApiName) {
             this._dynamicFields = [

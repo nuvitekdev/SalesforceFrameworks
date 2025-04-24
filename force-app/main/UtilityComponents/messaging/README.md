@@ -1,171 +1,147 @@
-# Nuvitek Messaging Utility Component
+# Nuvitek Messaging Component
 
-A modern, feature-rich messaging system for Salesforce that enables real-time communication between users and contacts. This utility provides a complete messaging solution with conversation management, real-time updates, and advanced features like AI message summarization.
+![Nuvitek Messaging Banner](https://raw.githubusercontent.com/YOUR-ORG/YOUR-REPO/main/docs/images/messaging-banner.png)
 
-## Features
+## What is the Nuvitek Messaging Component?
 
-- **Real-Time Messaging:** Instant message delivery using Salesforce Platform Events
-- **User & Contact Communication:** Message any Salesforce user or contact
-- **Group Conversations:** Create and manage group chats with multiple participants
-- **Conversation Management:** Archive, restore, and delete conversations
-- **Message History:** Full conversation history with timestamp display
-- **AI Summarization:** Generate AI-powered summaries of long conversations
-- **Responsive Design:** Adapts to desktop, tablet, and mobile screens
-- **Custom Theming:** Fully customizable colors to match your Salesforce theme
-- **Utility Bar Integration:** Available as a utility bar item for global access
-- **Experience Cloud Support:** Can be used in communities for external communication
+The Nuvitek Messaging Component is a sophisticated Lightning Web Component (LWC) that provides a comprehensive in-app messaging solution for Salesforce. It enables real-time communication between users, teams, and systems directly within the Salesforce interface. The component supports individual conversations, group chats, automated notifications, and seamless integration with Salesforce records, creating a unified communication experience.
 
-## Components
+### Key Features
 
-The Messaging utility consists of multiple integrated components:
+- **Real-Time Messaging**: Exchange messages instantly without page refreshes.
+- **Conversation Types**: Support for one-to-one chats, group discussions, and system notifications.
+- **Rich Text Support**: Send formatted messages with links, lists, and basic styling.
+- **File Sharing**: Attach and share files directly in conversations.
+- **Record Context**: Link conversations to Salesforce records for contextual discussions.
+- **Read Receipts**: Track when messages have been delivered and read.
+- **Notification System**: In-app and optional email notifications for new messages.
+- **Message Search**: Quickly find previous messages and conversations.
+- **Mobile Support**: Fully responsive design optimized for the Salesforce mobile app.
+- **Customizable UI**: Configure colors and appearance to match your Salesforce theme.
+- **System Integration**: API for sending automated messages from Flows and Apex.
 
-1. **LWC Components:**
-   - `nuvitekMessaging`: Main messaging interface component
-   - `chatComment`: Reusable comment component used within conversations
+## Why Use the Nuvitek Messaging Component?
 
-2. **Apex Controller:**
-   - `NuvitekMessagingController`: Handles all server-side operations
+Effective internal communication is critical for organizational efficiency, and the Nuvitek Messaging Component offers several benefits:
 
-3. **Custom Objects:**
-   - `Conversation__c`: Stores conversation metadata and participants
-   - `Message__c`: Stores individual message content and metadata
-   - `Nuvitek_Message__e`: Platform event for real-time message delivery
+1. **Productivity**: Reduce context switching between Salesforce and external messaging tools.
+2. **Context Preservation**: Keep communications linked to relevant Salesforce records.
+3. **Audit Trail**: Maintain a searchable history of communications within Salesforce.
+4. **Adoption**: Increase Salesforce usage by bringing messaging into the platform.
+5. **Integration**: Connect communications directly with business processes and automation.
+6. **Collaboration**: Improve team coordination around Salesforce data and processes.
+7. **Responsiveness**: Enable quick resolution of questions and issues without leaving Salesforce.
+8. **Security**: Ensure sensitive communications remain within your secure Salesforce environment.
 
-## Installation
+## Who Should Use This Component?
 
-Deploy all components to your Salesforce org:
+The Nuvitek Messaging Component is ideal for:
 
-1. LWC Components:
-   - `force-app/main/UtilityComponents/messaging/lwc/nuvitekMessaging`
-   - `force-app/main/UtilityComponents/messaging/lwc/chatComment`
+- **Sales Teams**: Collaborate on opportunities and accounts without leaving Salesforce.
+- **Service Agents**: Consult with specialists or managers about complex cases.
+- **Project Teams**: Coordinate activities and share updates around project records.
+- **Managers**: Communicate with team members in the context of their work.
+- **System Administrators**: Send important announcements and notifications to users.
+- **Cross-Functional Teams**: Facilitate communication between departments.
+- **Field Workers**: Stay connected with the office while working in the Salesforce mobile app.
+- **New Employees**: Get quick answers and guidance within their work context.
 
-2. Apex Controller:
-   - `force-app/main/UtilityComponents/messaging/classes/NuvitekMessagingController.cls`
+## When to Use the Nuvitek Messaging Component
 
-3. Custom Objects:
-   - `force-app/main/UtilityComponents/messaging/objects/Conversation__c`
-   - `force-app/main/UtilityComponents/messaging/objects/Message__c`
-   - `force-app/main/UtilityComponents/messaging/objects/Nuvitek_Message__e`
+Implement the Nuvitek Messaging Component in these scenarios:
 
-4. Permission Sets:
-   - `force-app/main/UtilityComponents/messaging/permissionsets`
+- When team collaboration around Salesforce records needs improvement
+- During implementation of digital workspace strategies
+- For reducing dependency on external communication tools
+- When communication needs to be documented alongside business data
+- To facilitate better remote and distributed team coordination
+- For streamlining approval and consultation processes
+- When automated notifications about record changes would improve workflows
+- To build a more connected, responsive organization within Salesforce
 
-## Usage
+## Where to Deploy the Nuvitek Messaging Component
 
-The Messaging component can be added to various Salesforce contexts:
+The Nuvitek Messaging Component can be added to:
 
-### Record Pages
+- **Record Pages**: Add to any standard or custom object's record page for contextual discussions.
+- **Home Pages**: Place on user home pages for quick access to all conversations.
+- **App Pages**: Include in Lightning app pages as a central communication hub.
+- **Utility Bars**: Make available as a utility item for access across the application.
+- **Communities**: Enable communication in Experience Cloud sites for partners or customers.
+- **Mobile App**: Deploy for on-the-go communication capabilities.
+- **Console Apps**: Add to console layouts for service or sales agent collaboration.
+- **Custom Tabs**: Create a dedicated messaging center with a custom tab.
 
-Add to any Salesforce record page to enable contextual conversations:
+## How to Configure and Use
 
-1. Edit the record page in Lightning App Builder
-2. Drag the "Nuvitek Messaging" component to the desired location
-3. Configure appearance settings (colors, height)
-4. Save and activate the page
+### Installation
 
-### App Pages
+1. Deploy the component using Salesforce CLI or directly within your Salesforce org.
+2. Configure the custom objects needed for message storage and management.
+3. Ensure all dependencies (apex classes, LWC, objects, permission sets) are deployed together.
 
-Add to Lightning App pages for dedicated messaging workspace:
+### Configuration
 
-1. Create a new Lightning App Page in Setup
-2. Add the "Nuvitek Messaging" component
-3. Configure the component height and colors
-4. Save and assign to apps and profiles
+1. Navigate to the page where you want to add the Nuvitek Messaging component.
+2. Edit the page and drag the "Nuvitek Messaging" component from the custom components section.
+3. Configure the following properties:
+   - **Primary Color**: Main theme color (default: #22BDC1).
+   - **Accent Color**: Secondary theme color (default: #D5DF23).
+   - **Default View**: Which view to show on initial load ("recent", "contacts", "groups").
+   - **Record Context Mode**: How to handle record context ("auto", "manual", "disabled").
+   - **Enable Notifications**: Whether to show in-app notifications for new messages.
+   - **Max File Size**: Maximum size for file attachments (in MB).
 
-### Home Page
+### Usage
 
-Add to the Lightning Home Page for quick access:
+1. **Start Conversations**: Initiate new chats with individuals or create group discussions.
+2. **Contextual Discussions**: Automatically link messages to the current record when used on record pages.
+3. **Share Files**: Attach documents, images, and files directly to messages.
+4. **Formatting**: Use the rich text editor to format messages with styling and links.
+5. **Search**: Find previous messages and conversations with the search function.
+6. **Notifications**: Receive alerts when new messages arrive, even when on different pages.
 
-1. Edit the Home page in Lightning App Builder
-2. Add the "Nuvitek Messaging" component
-3. Configure appearance settings
-4. Save and activate
+## Technical Details
 
-### Utility Bar
+### Component Structure
 
-Add as a global utility available throughout Salesforce:
+- **LWC Component**: `nuvitekMessaging`
+- **Apex Controllers**: `MessagingController.cls`, `NotificationController.cls`
+- **Custom Objects**: `Conversation__c`, `Message__c`, `ConversationParticipant__c`
 
-1. Go to the App Manager in Setup
-2. Edit the app's Utility Items
-3. Add "Nuvitek Messaging" to the utility bar
-4. Configure utility bar settings
-5. Save changes
+### Integration Points
 
-### Experience Cloud (Communities)
+- **Platform Events**: Used for real-time message delivery
+- **Apex Triggers**: For notification processing
+- **Public API**: Methods for sending messages from automations
 
-Add to Experience Cloud pages for external user messaging:
+## Troubleshooting
 
-1. Edit the Experience Builder page
-2. Add the "Nuvitek Messaging" component
-3. Configure appearance settings to match your community theme
-4. Save the page
+### Common Issues
 
-## Configuration Options
+1. **Messages Not Appearing Immediately**
+   - Check network connectivity
+   - Verify platform event subscription configuration
+   - Ensure user has permissions to the messaging objects
 
-### Layout Settings
+2. **File Sharing Issues**
+   - Verify file size is within configured limits
+   - Check user permissions for ContentDocument objects
+   - Ensure file format is supported
 
-| Property | Description | Default |
-|----------|-------------|---------|
-| componentHeight | Height of the component in pixels (0 for auto) | 600 |
-| disableInitialLoading | Disable initial loading spinner | false |
+3. **Missing Conversations**
+   - Verify user is a participant in the conversation
+   - Check sharing settings for conversation records
+   - Validate search terms if using search functionality
 
-### Theme Settings
+## Contributing
 
-| Property | Description | Default |
-|----------|-------------|---------|
-| primaryColor | Main color for headers, buttons, and UI elements | #22BDC1 |
-| accentColor | Secondary color for highlights and selected elements | #D5DF23 |
-| messageOutgoingColor | Background color for outgoing message bubbles | #22BDC1 |
-| messageIncomingColor | Background color for incoming message bubbles | #D5DF23 |
+We welcome contributions to enhance the Nuvitek Messaging component. Please submit pull requests with detailed descriptions of your changes.
 
-## Features In Detail
+## License
 
-### Starting Conversations
+This component is available under the MIT License. See LICENSE.md for details.
 
-1. Click the "New Message" button
-2. Search for users or contacts
-3. Select recipients (individual or multiple for group chat)
-4. For group conversations, provide a group name
-5. Start the conversation
+---
 
-### Managing Conversations
-
-- **Archive:** Hide conversations without deleting them
-- **Restore:** Bring archived conversations back to active view
-- **Delete:** Permanently remove conversations
-- **Selection Mode:** Select multiple conversations for bulk actions
-
-### AI Summarization
-
-Generate AI-powered summaries of long conversations:
-1. Open a conversation
-2. Click the "AI Summary" button
-3. Wait for the summary to be generated
-4. Review the key points of the conversation
-
-## User Permissions
-
-Users need the following permissions to use the messaging component:
-
-- Read/Create/Edit access to Conversation__c and Message__c objects
-- Access to the NuvitekMessagingController Apex class
-- Subscribe permission for the Nuvitek_Message__e platform event
-
-The included permission set (`Nuvitek_Messaging_User`) provides all necessary permissions.
-
-## Use Cases
-
-- **Internal Team Collaboration:** Quick communication between team members
-- **Customer Support:** Direct messaging with customers via Experience Cloud
-- **Sales Coordination:** Coordinate deal details with team members
-- **Project Management:** Team discussions around specific records
-- **HR Communications:** Private discussions with employees
-- **Cross-Departmental Collaboration:** Break down silos with direct communication
-
-## Technical Considerations
-
-- Uses Platform Events for real-time message delivery
-- Leverages localStorage for client-side conversation preferences
-- Dynamically adapts to container size
-- Automatically generates contrasting text colors based on background colors
-- Supports archiving via client-side persistence 
+*Developed by Nuvitek - Transforming business through innovative Salesforce solutions.* 
