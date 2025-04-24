@@ -164,24 +164,8 @@
                     {errorMessage}
                 </div>
 
-                <!-- Typing indicator -->
-                <div if:true={isTyping} class="typing-indicator-container">
-                    <div class="model-badge slds-badge slds-theme_success slds-m-bottom_small">
-                        {selectedLLMLabel} is thinking...
-                    </div>
-                    <div class="typing-indicator">
-                        <div class="typing-animation">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
-                    </div>
-                    <div class="response-container typing">
-                        <div class="response-text">
-                            <lightning-formatted-rich-text value={formattedPartialResponse}></lightning-formatted-rich-text>
-                        </div>
-                    </div>
-                </div>
+                <!-- Removed Typing indicator block as simulateTyping is no longer used -->
+                <!-- <div if:true={isTyping} class="typing-indicator-container"> ... </div> -->
 
                 <!-- Response display - no typing animation -->
                 <template if:true={response}>

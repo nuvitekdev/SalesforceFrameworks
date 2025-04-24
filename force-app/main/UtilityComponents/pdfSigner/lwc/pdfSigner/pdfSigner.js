@@ -8,7 +8,14 @@ import saveSignedPdf from '@salesforce/apex/PdfSignController.saveSignedPdf';
 import getDocumentUrl from '@salesforce/apex/PdfSignController.getDocumentUrl';
 
 export default class PdfSigner extends LightningElement {
+    // Configurable properties
     @api recordId;              // Id of record to relate file to (optional)
+    @api primaryColor = '#22BDC1';
+    @api accentColor = '#D5DF23';
+    @api primaryColorRgb = '34, 189, 193';
+    @api accentColorRgb = '213, 223, 35';
+
+    // Internal state
     @track currentStep = 0;     // 0 = upload, 1 = preview, 2 = sign, 3 = place
     @track pagePreviews = [];   // {pageNumber, url, width, height} for each page image
     @track signatureMode = 'draw';  // 'draw' or 'type'
@@ -42,6 +49,7 @@ export default class PdfSigner extends LightningElement {
     @track fontLoaded = false;      // Track if signature font is loaded
     pdfWidth = 0;              // Width of the PDF page
     pdfHeight = 0;             // Height of the PDF page
+    themeVariablesSet = false; // Flag to set variables only once
 
     // Methods to get recordId from different contexts
     getRecordIdFromPageRef() {
@@ -118,6 +126,13 @@ export default class PdfSigner extends LightningElement {
             }).catch(error => {
                 console.error('Error loading libraries', error);
             });
+        }
+        
+        // Set theme variables once after initial render
+        if (!this.themeVariablesSet) {
+            this.themeVariablesSet = true;
+            this.updateThemeVariables();
+            this.updatePathClasses(); // Initial path setup
         }
         
         // Initialize SignaturePad when entering signature step
@@ -466,6 +481,7 @@ export default class PdfSigner extends LightningElement {
     goToStep(event) {
         const step = parseInt(event.target.dataset.step, 10);
         this.currentStep = step;
+        this.updatePathClasses(); // Update path visuals
         
         // Initialize canvas when entering signature step
         if (this.currentStep === 2) {
@@ -559,6 +575,7 @@ export default class PdfSigner extends LightningElement {
                 };
             }
             this.currentStep = 3;
+            this.updatePathClasses();
         } catch (e) {
             console.error('Signature capture error', e);
             alert('Error capturing signature: ' + e.message);
@@ -1625,6 +1642,7 @@ export default class PdfSigner extends LightningElement {
                     this.pdfDoc = await this.PDFLib.PDFDocument.load(uint8Array);
                     await this.analyzePdfOrientation();
                     this.currentStep = 1;
+                    this.updatePathClasses(); // Update path visuals
                 } catch (e) {
                     console.error('processFile: PDF load error', e);
                     alert('Failed to load PDF. Please try another file.');
@@ -1696,6 +1714,100 @@ export default class PdfSigner extends LightningElement {
 
         // Reset to step 0
         this.currentStep = 0;
+        this.updatePathClasses(); // Update path visuals
         console.log('handleClearPdf: Resetting to Step 0.');
+    }
+
+    /**
+     * Updates the CSS classes and text color on the path items based on the current step.
+     */
+    updatePathClasses() {
+        // Use setTimeout to ensure the DOM is updated after currentStep changes
+        setTimeout(() => {
+            const pathItems = this.template.querySelectorAll('.slds-path__item');
+            pathItems.forEach((item, index) => {
+                const link = item.querySelector('.slds-path__link');
+                if (!link) return;
+
+                // 1. Remove existing status classes
+                item.classList.remove('slds-is-current', 'slds-is-complete', 'slds-is-incomplete');
+                // Reset inline text color first
+                link.style.color = '';
+
+                // 2. Add the appropriate class based on the current step
+                if (index < this.currentStep) {
+                    item.classList.add('slds-is-complete');
+                } else if (index === this.currentStep) {
+                    item.classList.add('slds-is-current');
+                } else {
+                    item.classList.add('slds-is-incomplete');
+                }
+
+                // 3. Update aria-selected for accessibility
+                link.setAttribute('aria-selected', index === this.currentStep);
+
+                // 4. Dynamically set text color based on computed background
+                // We need another setTimeout to allow the browser to apply the class styles
+                setTimeout(() => {
+                    const computedStyle = window.getComputedStyle(link);
+                    const backgroundColor = computedStyle.backgroundColor;
+                    const contrastColor = this.getContrastColor(backgroundColor);
+                    link.style.color = contrastColor;
+                    console.log(`Step ${index}: BG=${backgroundColor}, Text=${contrastColor}`);
+                }, 0);
+            });
+            console.log(`Path classes updated for step: ${this.currentStep}`);
+        }, 0); // setTimeout with 0ms delay defers execution until after the current stack clears
+    }
+
+    /**
+     * Calculates whether white or black text provides better contrast against a given RGB background color.
+     * @param {string} rgbColor - Background color in rgb(r, g, b) format.
+     * @returns {string} 'white' or 'black'
+     */
+    getContrastColor(rgbColor) {
+        if (!rgbColor || !rgbColor.startsWith('rgb')) {
+            return 'black'; // Default to black if color is invalid
+        }
+
+        // Extract R, G, B values
+        const rgb = rgbColor.match(/\d+/g);
+        if (!rgb || rgb.length < 3) {
+            return 'black';
+        }
+
+        const r = parseInt(rgb[0], 10);
+        const g = parseInt(rgb[1], 10);
+        const b = parseInt(rgb[2], 10);
+
+        // Calculate luminance using the WCAG formula
+        // https://www.w3.org/TR/WCAG20/#relativeluminancedef
+        const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+
+        // WCAG contrast ratio threshold (4.5:1) suggests a luminance threshold around 0.179
+        // However, for simple black/white text, a threshold closer to 0.5 is often used.
+        // Let's use 0.5 for a balanced approach.
+        return luminance > 0.5 ? 'black' : 'white';
+    }
+
+    /**
+     * Updates the CSS variables on the host element based on API properties.
+     */
+    updateThemeVariables() {
+        const host = this.template.host;
+        if (host) {
+            host.style.setProperty('--theme-primary-color', this.primaryColor);
+            host.style.setProperty('--theme-accent-color', this.accentColor);
+            host.style.setProperty('--theme-primary-color-rgb', this.primaryColorRgb);
+            host.style.setProperty('--theme-accent-color-rgb', this.accentColorRgb);
+            console.log('Theme variables updated:', {
+                primary: this.primaryColor,
+                accent: this.accentColor,
+                primaryRgb: this.primaryColorRgb,
+                accentRgb: this.accentColorRgb
+            });
+        } else {
+            console.error('Host element not found for setting theme variables.');
+        }
     }
 }

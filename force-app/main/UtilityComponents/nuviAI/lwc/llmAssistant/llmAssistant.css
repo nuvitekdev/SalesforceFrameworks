@@ -255,7 +255,7 @@ lightning-spinner {
 }
 
 /* Response containers */
-.response-container, .typing-indicator-container {
+.response-container {
     background-color: var(--background-elevated);
     border-radius: var(--radius-md);
     padding: 1.25rem;
@@ -265,45 +265,6 @@ lightning-spinner {
     position: relative;
     overflow: hidden;
     animation: fadeInUp 0.5s ease-out;
-}
-
-.typing-indicator-container {
-    margin-bottom: 1rem;
-}
-
-/* Typing indicator */
-.typing-indicator {
-    display: inline-block;
-    position: relative;
-    width: 60px;
-    height: 30px;
-}
-
-.typing-animation {
-    text-align: center;
-}
-
-.typing-animation span {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    margin: 0 2px;
-    background-color: var(--primary-color);
-    border-radius: 50%;
-    animation: bounce 1.4s infinite ease-in-out both;
-}
-
-.typing-animation span:nth-child(1) {
-    animation-delay: -0.32s;
-}
-
-.typing-animation span:nth-child(2) {
-    animation-delay: -0.16s;
-}
-
-.response-container.typing {
-    border: 1px dashed var(--primary-light);
-    background-color: rgba(var(--primary-color-rgb), 0.05);
 }
 
 /* Model badge */
@@ -656,11 +617,6 @@ lightning-button-icon .slds-button {
     0% { opacity: 0.6; }
     50% { opacity: 1; }
     100% { opacity: 0.6; }
-}
-
-@keyframes bounce {
-    0%, 80%, 100% { transform: scale(0); }
-    40% { transform: scale(1); }
 }
 
 @keyframes ripple {

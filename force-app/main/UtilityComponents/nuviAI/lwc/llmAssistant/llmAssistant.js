@@ -7,7 +7,6 @@ import checkRecordForAnomalies from '@salesforce/apex/LLMController.checkRecordF
 import saveAnalysisToField from '@salesforce/apex/LLMController.saveAnalysisToField';
 import { getRecord } from 'lightning/uiRecordApi';
 import { getObjectInfo } from 'lightning/uiObjectInfoApi';
-import { getObjectInfos } from 'lightning/uiObjectInfoApi';
 import ID_FIELD from '@salesforce/schema/Account.Id';
 
 // Constants
@@ -24,7 +23,7 @@ export default class LLMAssistant extends LightningElement {
     @api cardTitle = 'AI Assistant'; // Configurable title
     @api contextPrompt = '';       // Custom context to provide to the LLM about its purpose/placement
     @api enableAnomalyDetection = false; // Whether to enable anomaly detection
-    @api enableImageValidation = false; // Placeholder property to maintain backward compatibility
+    @api enableImageValidation = false; // Kept for backward compatibility/external dependencies
     @api relatedObjects = '';      // Comma-separated list of object API names to search across for related data
     @api analysisFieldApiName = ''; // API name of field to save analysis summary
     
@@ -41,10 +40,7 @@ export default class LLMAssistant extends LightningElement {
     @track conversationHistory = []; // Track conversation history
     @track showConversationHistory = false; // Default to hiding history
     @track conversationSummary = ''; // Track conversation summary
-    @track isSummarizing = false; // Track if summarization is in progress
     @track messagesTotalCount = 0; // Total message count including those pruned due to limits
-    @track isTyping = false;
-    @track partialResponse = '';
     
     // New properties for analysis field functionality
     @track objectApiName;
@@ -255,7 +251,6 @@ export default class LLMAssistant extends LightningElement {
         this.conversationSummary = '';
         this.messagesTotalCount = 0;
         this.response = '';
-        this.partialResponse = '';
         
         // Show feedback
         const clearButton = this.template.querySelector('.clear-button');
@@ -449,12 +444,6 @@ SUMMARY:`;
         }
     }
     
-    applyDynamicStyling() {
-        // No need for direct DOM manipulation in this approach
-        // CSS variables defined in the component style will be used
-        // and will be updated whenever the component properties change
-    }
-    
     // Debounce function to limit frequency of calls
     debounce(func, wait) {
         let timeout;
@@ -525,103 +514,6 @@ SUMMARY:`;
         if (!this.anomalyCheckResult && !this.anomalyCheckLoading) {
             this.performInitialAnomalyCheck();
         }
-    }
-
-    // Simulate typing effect (optimized)
-    simulateTyping(result) {
-        const chars = result.split('');
-        this.partialResponse = '';
-        this.isTyping = true;
-        
-        // Using a state object makes it easier to maintain animation state
-        const typingState = {
-            chars: chars,
-            charIndex: 0,
-            lastUpdate: Date.now(),
-            timeSinceLastChar: 0,
-            nextCharDelay: 0
-        };
-        
-        // Use requestAnimationFrame for smoother animation that continues in background
-        const animateTyping = () => {
-            const now = Date.now();
-            const elapsed = now - typingState.lastUpdate;
-            typingState.lastUpdate = now;
-            
-            // Add elapsed time to our counter
-            typingState.timeSinceLastChar += elapsed;
-            
-            // Check if it's time to type the next character
-            if (typingState.timeSinceLastChar >= typingState.nextCharDelay) {
-                // Type next character if available
-                if (typingState.charIndex < typingState.chars.length) {
-                    this.partialResponse += typingState.chars[typingState.charIndex];
-                    typingState.charIndex++;
-                    
-                    // Reset timer and calculate next delay
-                    typingState.timeSinceLastChar = 0;
-                    
-                    // Faster typing with batch processing for better performance
-                    // Process multiple characters at once for common sequences
-                    if (typingState.charIndex < typingState.chars.length) {
-                        // Batch process spaces and common characters
-                        const currentChar = typingState.chars[typingState.charIndex - 1];
-                        
-                        // Optimize: Process multiple characters at once for better performance
-                        // at higher indexes when we're deeper in the text
-                        if (typingState.charIndex > 100) {
-                            // For long texts, speed up more significantly as we go
-                            typingState.nextCharDelay = 1; // Super fast
-                            
-                            // Batch process more characters at once in long texts
-                            if (typingState.charIndex % 5 === 0 && typingState.charIndex < typingState.chars.length - 10) {
-                                // Process 5 characters every 5th position for long text
-                                const batchSize = 5;
-                                if (typingState.charIndex + batchSize <= typingState.chars.length) {
-                                    this.partialResponse += typingState.chars.slice(typingState.charIndex, typingState.charIndex + batchSize).join('');
-                                    typingState.charIndex += batchSize;
-                                }
-                            }
-                        } else {
-                            // Normal speed for the beginning of text
-                            typingState.nextCharDelay = Math.floor(Math.random() * 4) + 1; // 1-5ms
-                        }
-                        
-                        // Shorter pause at punctuation
-                        if ('.!?,:;'.includes(currentChar)) {
-                            typingState.nextCharDelay += 15;
-                        }
-                    }
-                    
-                    // Continue animation
-                    requestAnimationFrame(animateTyping);
-                } else {
-                    // Finished typing
-                    this.isTyping = false;
-                    this.response = result;
-                }
-            } else {
-                // Not time for next character yet
-                requestAnimationFrame(animateTyping);
-            }
-        };
-        
-        // Add document visibility change detection
-        const handleVisibilityChange = () => {
-            if (document.hidden) {
-                // Tab is hidden, update the lastUpdate time when we return
-                typingState.lastUpdate = Date.now();
-            }
-        };
-        
-        // Listen for visibility changes
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        
-        // Start animation
-        requestAnimationFrame(animateTyping);
-        
-        // Clean up when component is disconnected or when typing finishes
-        this.visibilityChangeHandler = handleVisibilityChange;
     }
 
     // Adjust a hex color by a percentage amount (more efficient version)
@@ -901,20 +793,6 @@ SUMMARY:`;
         return formatted;
     }
     
-    // For partial response during typing
-    get formattedPartialResponse() {
-        if (!this.partialResponse) return '';
-        
-        // Replace newlines with HTML breaks
-        let formatted = this.partialResponse.replace(/\n/g, '<br />');
-        
-        // Remove any "User:" prefixes that might have slipped through
-        formatted = formatted.replace(/User:\s+/g, '');
-        formatted = formatted.replace(/You:\s+/g, '');
-        
-        return formatted;
-    }
-
     // Copy response to clipboard
     copyResponseToClipboard(event) {
         if (!this.response) return;
