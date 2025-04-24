@@ -13,6 +13,7 @@ export default class SlaTracker extends LightningElement {
     @api statusFieldName = 'Status__c';
     @api closedStatusValues = 'Closed,Completed,Resolved';
     @api pendingStatusValues = 'Pending,On Hold,Waiting';
+    @api colorScheme = 'standard';
     @api showPastSLA = false;
     @api showProgressBar = false;
     @api businessHoursOnly = false;
@@ -31,6 +32,8 @@ export default class SlaTracker extends LightningElement {
     @track _completionTime;
     @track _dynamicFields = [];
     @track _percentComplete = 0;
+    @track _hoursUsed = 0;
+    @track _hoursRemaining = 0;
     @track errorMessage;
     @track isLoading = true;
     
@@ -51,7 +54,13 @@ export default class SlaTracker extends LightningElement {
     }
     
     get statusCardClass() {
-        return 'nuvitek-card status-card';
+        let baseClass = 'status-card';
+        
+        if (this.colorScheme && this.colorScheme !== 'standard') {
+            baseClass += ` theme-${this.colorScheme.replace('slds-theme_', '')}`;
+        }
+        
+        return baseClass;
     }
     
     get statusBadgeClass() {
@@ -77,20 +86,20 @@ export default class SlaTracker extends LightningElement {
         // Determine color based on SLA status and percentage complete
         if (this.slaStatus === 'Active') {
             if (this._percentComplete < 60) {
-                colorClass = 'var(--nuvitek-color-success)'; // Green
+                colorClass = '#2E7D32'; // Green
             } else if (this._percentComplete < 80) {
-                colorClass = 'var(--nuvitek-color-warning)'; // Orange
+                colorClass = '#F57C00'; // Orange
             } else {
-                colorClass = 'var(--nuvitek-color-error)'; // Red
+                colorClass = '#D32F2F'; // Red
             }
         } else if (this.slaStatus === 'Met') {
-            colorClass = 'var(--nuvitek-color-success)'; // Green
+            colorClass = '#2E7D32'; // Green
         } else if (this.slaStatus === 'Breached') {
-            colorClass = 'var(--nuvitek-color-error)'; // Red
+            colorClass = '#D32F2F'; // Red
         } else if (this.slaStatus === 'Paused') {
-            colorClass = 'var(--nuvitek-color-warning)'; // Orange
+            colorClass = '#F57C00'; // Orange
         } else {
-            colorClass = 'var(--nuvitek-color-text-secondary)'; // Gray
+            colorClass = '#757575'; // Gray
         }
         
         return `width: ${this._percentComplete}%; background-color: ${colorClass};`;
@@ -112,6 +121,18 @@ export default class SlaTracker extends LightningElement {
         return this.slaStatus === 'Met' || this.slaStatus === 'Breached';
     }
     
+    get totalHours() {
+        return `${this.slaDurationHours}h total`;
+    }
+    
+    get hoursUsedFormatted() {
+        return `${this._hoursUsed.toFixed(1)}h used`;
+    }
+    
+    get hoursRemainingFormatted() {
+        return `${this._hoursRemaining.toFixed(1)}h left`;
+    }
+    
     // Lifecycle hooks
     connectedCallback() {
         // Initialize the component
@@ -127,7 +148,8 @@ export default class SlaTracker extends LightningElement {
     }
     
     renderedCallback() {
-        // Update progress bar styles if needed
+        // Update progress bar styles
+        this.updateProgressBar();
     }
     
     // Wire methods
@@ -152,6 +174,43 @@ export default class SlaTracker extends LightningElement {
     }
     
     // Methods
+    updateProgressBar() {
+        if (this.showProgressBar) {
+            const progressBarEl = this.template.querySelector('.progress-bar');
+            if (progressBarEl) {
+                // Determine color based on SLA status and percentage complete
+                let colorClass;
+                
+                if (this.slaStatus === 'Active') {
+                    if (this._percentComplete < 60) {
+                        colorClass = 'active-early';
+                    } else if (this._percentComplete < 80) {
+                        colorClass = 'active-midway';
+                    } else {
+                        colorClass = 'active-late';
+                    }
+                } else if (this.slaStatus === 'Met') {
+                    colorClass = 'met';
+                } else if (this.slaStatus === 'Breached') {
+                    colorClass = 'breached';
+                } else if (this.slaStatus === 'Paused') {
+                    colorClass = 'paused';
+                } else {
+                    colorClass = 'error';
+                }
+                
+                // Clear all status classes
+                progressBarEl.classList.remove('active-early', 'active-midway', 'active-late', 'met', 'breached', 'paused', 'error');
+                
+                // Add the appropriate class
+                progressBarEl.classList.add(colorClass);
+                
+                // Set width based on percentage
+                progressBarEl.style.width = `${this._percentComplete}%`;
+            }
+        }
+    }
+    
     updateDynamicFields() {
         if (this._objectApiName) {
             this._dynamicFields = [
@@ -237,6 +296,10 @@ export default class SlaTracker extends LightningElement {
             const actualDuration = this._completionTime - this._startTime;
             const targetDuration = this._slaDeadline - this._startTime;
             this._percentComplete = Math.min(100, Math.round((actualDuration / targetDuration) * 100));
+            
+            // Calculate hours used and remaining
+            this._hoursUsed = actualDuration / (1000 * 60 * 60);
+            this._hoursRemaining = Math.max(0, this.slaDurationHours - this._hoursUsed);
         } else if (pendingStatuses.includes(statusValue)) {
             // SLA paused due to pending status
             this.slaStatus = 'Paused';
@@ -246,12 +309,20 @@ export default class SlaTracker extends LightningElement {
             const elapsedTime = now - this._startTime;
             const totalDuration = this._slaDeadline - this._startTime;
             this._percentComplete = Math.min(100, Math.round((elapsedTime / totalDuration) * 100));
+            
+            // Calculate hours used and remaining
+            this._hoursUsed = elapsedTime / (1000 * 60 * 60);
+            this._hoursRemaining = Math.max(0, this.slaDurationHours - this._hoursUsed);
         } else {
             // Active SLA - Check if current time exceeds deadline
             if (now > this._slaDeadline) {
                 this.slaStatus = 'Breached';
                 this._timeUntilSLABreach = 'Exceeded Deadline';
                 this._percentComplete = 100;
+                
+                // All hours used and no hours remaining when breached
+                this._hoursUsed = parseFloat(this.slaDurationHours);
+                this._hoursRemaining = 0;
             } else {
                 this.slaStatus = 'Active';
                 this._timeUntilSLABreach = this.formatTimeDifference(now, this._slaDeadline);
@@ -260,6 +331,10 @@ export default class SlaTracker extends LightningElement {
                 const elapsed = now - this._startTime;
                 const total = this._slaDeadline - this._startTime;
                 this._percentComplete = Math.min(100, Math.round((elapsed / total) * 100));
+                
+                // Calculate hours used and remaining
+                this._hoursUsed = elapsed / (1000 * 60 * 60);
+                this._hoursRemaining = Math.max(0, this.slaDurationHours - this._hoursUsed);
                 
                 // Start countdown timer for active SLAs
                 this.startCountdown();
@@ -297,6 +372,8 @@ export default class SlaTracker extends LightningElement {
                     this.slaStatus = 'Breached';
                     this._timeUntilSLABreach = 'Exceeded Deadline';
                     this._percentComplete = 100;
+                    this._hoursUsed = parseFloat(this.slaDurationHours);
+                    this._hoursRemaining = 0;
                     this.clearCountdownInterval();
                 } else {
                     // Update countdown and percentage
@@ -305,6 +382,10 @@ export default class SlaTracker extends LightningElement {
                     const elapsed = now - this._startTime;
                     const total = this._slaDeadline - this._startTime;
                     this._percentComplete = Math.min(100, Math.round((elapsed / total) * 100));
+                    
+                    // Update hours calculations
+                    this._hoursUsed = elapsed / (1000 * 60 * 60);
+                    this._hoursRemaining = Math.max(0, this.slaDurationHours - this._hoursUsed);
                 }
                 
                 // Update Flow output variable if in a Flow
@@ -383,4 +464,4 @@ export default class SlaTracker extends LightningElement {
         }
         return error.body?.message || error.message || JSON.stringify(error);
     }
-}
+} 

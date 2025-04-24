@@ -39,6 +39,9 @@
             <!-- Component Appearance -->
             <property name="componentTitle" type="String" label="Component Title" 
                      description="Title displayed in the component header" default="Response Time Tracker"/>
+            <property name="colorScheme" type="String" label="Color Scheme" 
+                     description="Color theme for the component" default="standard" 
+                     datasource="standard,slds-theme_info,slds-theme_success,slds-theme_warning,slds-theme_error,slds-theme_inverse"/>
             <property name="showPastSLA" type="Boolean" label="Show Past SLA" 
                      description="When true, displays the component even after SLA has been met or breached" default="true"/>
             <property name="showProgressBar" type="Boolean" label="Show Progress Bar" 
@@ -85,6 +88,9 @@
             <!-- Component Appearance -->
             <property name="componentTitle" type="String" label="Component Title" 
                      description="Title displayed in the component header" default="Response Time Tracker"/>
+            <property name="colorScheme" type="String" label="Color Scheme" 
+                     description="Color theme for the component" default="standard" 
+                     datasource="standard,slds-theme_info,slds-theme_success,slds-theme_warning,slds-theme_error,slds-theme_inverse"/>
             <property name="showPastSLA" type="Boolean" label="Show Past SLA" 
                      description="When true, displays the component even after SLA has been met or breached" default="true"/>
             <property name="showProgressBar" type="Boolean" label="Show Progress Bar" 
@@ -124,10 +130,13 @@
             <!-- Component Appearance -->
             <property name="componentTitle" type="String" label="Component Title" 
                      description="Title displayed in the component header" default="Response Time Tracker"/>
+            <property name="colorScheme" type="String" label="Color Scheme" 
+                     description="Color theme for the component" default="standard" 
+                     datasource="standard,slds-theme_info,slds-theme_success,slds-theme_warning,slds-theme_error,slds-theme_inverse"/>
             <property name="showPastSLA" type="Boolean" label="Show Past SLA" 
                      description="When true, displays the component even after SLA has been met or breached" default="true"/>
             <property name="showProgressBar" type="Boolean" label="Show Progress Bar" 
                      description="Display a visual progress bar for SLA tracking" default="true"/>
         </targetConfig>
     </targetConfigs>
-</LightningComponentBundle>
+</LightningComponentBundle> 
