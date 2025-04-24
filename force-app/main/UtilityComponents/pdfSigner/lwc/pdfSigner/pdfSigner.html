@@ -1,48 +1,36 @@
 <template>
-    <div class="pdf-signer-container" class:class={currentStepClass}>
-        <div class="slds-path">
-            <div class="slds-grid slds-path__track">
-                <div class="slds-grid slds-path__scroller-container">
-                    <div class="slds-path__scroller">
-                        <div class="slds-path__scroller_inner">
-                            <ul class="slds-path__nav" role="listbox">
-                                <li class="slds-path__item" role="presentation">
-                                    <a aria-selected={isStep0} class="slds-path__link" role="option" tabindex="0" data-step="0" onclick={handlePathClick}>
-                                        <span class="slds-path__stage">
-                                            <span class="slds-assistive-text">Current Stage:</span>
-                                        </span>
-                                        <span class="slds-path__title">Upload PDF</span>
-                                    </a>
-                                </li>
-                                <li class="slds-path__item" role="presentation">
-                                    <a aria-selected={isStep1} class="slds-path__link" role="option" tabindex="-1">
-                                        <span class="slds-path__stage">
-                                            <span class="slds-assistive-text">Stage:</span>
-                                        </span>
-                                        <span class="slds-path__title">Preview</span>
-                                    </a>
-                                </li>
-                                <li class="slds-path__item" role="presentation">
-                                    <a aria-selected={isStep2} class="slds-path__link" role="option" tabindex="-1">
-                                        <span class="slds-path__stage">
-                                            <span class="slds-assistive-text">Stage:</span>
-                                        </span>
-                                        <span class="slds-path__title">Sign</span>
-                                    </a>
-                                </li>
-                                <li class="slds-path__item" role="presentation">
-                                    <a aria-selected={isStep3} class="slds-path__link" role="option" tabindex="-1">
-                                        <span class="slds-path__stage">
-                                            <span class="slds-assistive-text">Stage:</span>
-                                        </span>
-                                        <span class="slds-path__title">Place & Save</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+    <div class={containerClasses}>
+        <!-- Custom Path Component -->
+        <div class="custom-path-container">
+            <ul class="custom-path">
+                <li class="custom-path-item" data-step="0">
+                    <div class="custom-path-indicator" data-step="0" onclick={goToStep}>
+                        <span class="custom-path-number">1</span>
                     </div>
-                </div>
-            </div>
+                    <div class="custom-path-label">Upload PDF</div>
+                </li>
+                <li class="custom-path-item" data-step="1">
+                    <div class="custom-path-line"></div>
+                    <div class="custom-path-indicator" data-step="1" onclick={goToStep}>
+                        <span class="custom-path-number">2</span>
+                    </div>
+                    <div class="custom-path-label">Preview</div>
+                </li>
+                <li class="custom-path-item" data-step="2">
+                    <div class="custom-path-line"></div>
+                    <div class="custom-path-indicator" data-step="2" onclick={goToStep}>
+                        <span class="custom-path-number">3</span>
+                    </div>
+                    <div class="custom-path-label">Sign</div>
+                </li>
+                <li class="custom-path-item" data-step="3">
+                    <div class="custom-path-line"></div>
+                    <div class="custom-path-indicator" data-step="3" onclick={goToStep}>
+                        <span class="custom-path-number">4</span>
+                    </div>
+                    <div class="custom-path-label">Place & Save</div>
+                </li>
+            </ul>
         </div>
 
         <!-- Step 0: File Upload -->

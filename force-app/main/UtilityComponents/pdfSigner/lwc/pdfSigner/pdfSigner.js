@@ -93,6 +93,11 @@ export default class PdfSigner extends LightningElement {
         return `step-${this.currentStep}-mode`;
     }
     
+    // Getter for combined container classes
+    get containerClasses() {
+        return `pdf-signer-container ${this.currentStepClass}`;
+    }
+    
     // Getter for PDF container class based on orientation
     get pdfContainerClass() {
         return this.isPdfLandscape ? 'iframe-container landscape' : 'iframe-container';
@@ -477,9 +482,9 @@ export default class PdfSigner extends LightningElement {
         }
     }
 
-    // Step navigation
+    // Handle path navigation click
     goToStep(event) {
-        const step = parseInt(event.target.dataset.step, 10);
+        const step = parseInt(event.currentTarget.dataset.step, 10);
         this.currentStep = step;
         this.updatePathClasses(); // Update path visuals
         
@@ -1719,75 +1724,35 @@ export default class PdfSigner extends LightningElement {
     }
 
     /**
-     * Updates the CSS classes and text color on the path items based on the current step.
+     * Updates the CSS classes on the path items based on the current step.
      */
     updatePathClasses() {
         // Use setTimeout to ensure the DOM is updated after currentStep changes
         setTimeout(() => {
-            const pathItems = this.template.querySelectorAll('.slds-path__item');
-            pathItems.forEach((item, index) => {
-                const link = item.querySelector('.slds-path__link');
-                if (!link) return;
-
-                // 1. Remove existing status classes
-                item.classList.remove('slds-is-current', 'slds-is-complete', 'slds-is-incomplete');
-                // Reset inline text color first
-                link.style.color = '';
-
-                // 2. Add the appropriate class based on the current step
-                if (index < this.currentStep) {
-                    item.classList.add('slds-is-complete');
-                } else if (index === this.currentStep) {
-                    item.classList.add('slds-is-current');
+            // No specific classes to add/remove from path items as the CSS handles it based on step-N-mode class
+            // But we can update aria attributes for accessibility
+            const pathItems = this.template.querySelectorAll('.custom-path-item');
+            pathItems.forEach((item) => {
+                const indicator = item.querySelector('.custom-path-indicator');
+                if (!indicator) return;
+                
+                const itemStep = parseInt(item.dataset.step, 10);
+                
+                // Set aria-current for the current step
+                indicator.setAttribute('aria-current', itemStep === this.currentStep ? 'step' : 'false');
+                
+                // Set aria-label to indicate status (completed, current, or future)
+                if (itemStep < this.currentStep) {
+                    indicator.setAttribute('aria-label', 'Completed step');
+                } else if (itemStep === this.currentStep) {
+                    indicator.setAttribute('aria-label', 'Current step');
                 } else {
-                    item.classList.add('slds-is-incomplete');
+                    indicator.setAttribute('aria-label', 'Future step');
                 }
-
-                // 3. Update aria-selected for accessibility
-                link.setAttribute('aria-selected', index === this.currentStep);
-
-                // 4. Dynamically set text color based on computed background
-                // We need another setTimeout to allow the browser to apply the class styles
-                setTimeout(() => {
-                    const computedStyle = window.getComputedStyle(link);
-                    const backgroundColor = computedStyle.backgroundColor;
-                    const contrastColor = this.getContrastColor(backgroundColor);
-                    link.style.color = contrastColor;
-                    console.log(`Step ${index}: BG=${backgroundColor}, Text=${contrastColor}`);
-                }, 0);
             });
+            
             console.log(`Path classes updated for step: ${this.currentStep}`);
         }, 0); // setTimeout with 0ms delay defers execution until after the current stack clears
-    }
-
-    /**
-     * Calculates whether white or black text provides better contrast against a given RGB background color.
-     * @param {string} rgbColor - Background color in rgb(r, g, b) format.
-     * @returns {string} 'white' or 'black'
-     */
-    getContrastColor(rgbColor) {
-        if (!rgbColor || !rgbColor.startsWith('rgb')) {
-            return 'black'; // Default to black if color is invalid
-        }
-
-        // Extract R, G, B values
-        const rgb = rgbColor.match(/\d+/g);
-        if (!rgb || rgb.length < 3) {
-            return 'black';
-        }
-
-        const r = parseInt(rgb[0], 10);
-        const g = parseInt(rgb[1], 10);
-        const b = parseInt(rgb[2], 10);
-
-        // Calculate luminance using the WCAG formula
-        // https://www.w3.org/TR/WCAG20/#relativeluminancedef
-        const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-
-        // WCAG contrast ratio threshold (4.5:1) suggests a luminance threshold around 0.179
-        // However, for simple black/white text, a threshold closer to 0.5 is often used.
-        // Let's use 0.5 for a balanced approach.
-        return luminance > 0.5 ? 'black' : 'white';
     }
 
     /**

@@ -85,199 +85,232 @@
     transform: translateY(-2px);
 }
 
-/* Path styling */
-.slds-path {
+/* Custom Path Component Styling */
+.custom-path-container {
     margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm) 0;
+    /* Ensure container allows for full width */
+    box-sizing: border-box;
 }
 
-.slds-path__track {
-    background: transparent;
-    padding: 0;
-}
-
-.slds-path__scroller {
-    width: 100%;
-}
-
-.slds-path__nav {
+.custom-path {
     display: flex;
-    background-color: transparent;
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    box-shadow: none;
-    border: none;
-}
-
-.slds-path__item {
-    position: relative;
-    flex: 1;
+    list-style: none;
+    padding: 0;
     margin: 0;
-    border-radius: 0;
-    overflow: hidden;
-    transition: all var(--transition-fast);
-}
-
-.slds-path__item .slds-path__link {
-    height: 58px;
-    padding: 0 var(--spacing-sm);
-    line-height: 58px;
-    border-radius: 0;
-    text-align: center;
     position: relative;
-    background: var(--background-alt); /* Default background for incomplete */
-    color: var(--text-secondary); /* Default text color */
-    border: none;
-    transition: all var(--transition-fast);
-    overflow: hidden;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    /* Remove margin, let flexbox handle spacing */
 }
 
-/* Remove the "Current Stage" text */
-.slds-path__stage {
-    display: none;
+.custom-path-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex-grow: 1; /* Use flex-grow for even spacing */
+    flex-basis: 0; /* Allows flex-grow to work properly */
+    z-index: 1;
+    text-align: center;
 }
 
-/* Add connecting shapes between stages */
-.slds-path__item:not(:last-child) .slds-path__link:after {
+/* Common style for the line */
+.custom-path-item:not(:first-child)::before {
     content: '';
     position: absolute;
-    top: 0;
-    right: -15px;
-    width: 30px;
-    height: 58px;
-    background: inherit;
-    transform: skewX(-20deg);
-    z-index: 1;
-    border-right: 1px solid rgba(255, 255, 255, 0.15);
+    height: 2px;
+    background-color: var(--border-color); /* Default line color */
+    /* Calculate width to span the gap BETWEEN indicators */
+    /* 100% of the item width MINUS the width of one indicator */
+    width: calc(100% - 44px);
+    top: 21px; /* Vertically centered with the indicator (44px height / 2 - 1px line height) */
+    /* Position starts just after the previous indicator's center */
+    /* (-50% of width = center of previous item) + (22px = half indicator width) */
+    left: calc(-50% + 22px);
+    z-index: 0; /* Behind the indicator */
+    transition: background-color var(--transition-fast);
 }
 
-/* Hide the connector shape on the very last item */
-.slds-path__item:last-child .slds-path__link:after {
-    display: none;
-}
-
-/* Current/active item styling (Uses --theme-* vars from JS/target config) */
-.slds-path__item.slds-is-current .slds-path__link {
-    background-color: var(--theme-accent-color);
-    /* Text color set dynamically by JS */
-    box-shadow: 0 2px 12px rgba(var(--theme-accent-color-rgb), 0.4);
-}
-
-/* Completed item styling (Uses --theme-* vars from JS/target config) */
-.slds-path__item.slds-is-complete .slds-path__link {
+/* Change line color to primary when the step *before* it is completed */
+.step-1-mode .custom-path-item[data-step="1"]::before,
+.step-2-mode .custom-path-item[data-step="1"]::before,
+.step-2-mode .custom-path-item[data-step="2"]::before,
+.step-3-mode .custom-path-item[data-step="1"]::before,
+.step-3-mode .custom-path-item[data-step="2"]::before,
+.step-3-mode .custom-path-item[data-step="3"]::before,
+.step-4-mode .custom-path-item[data-step="1"]::before,
+.step-4-mode .custom-path-item[data-step="2"]::before,
+.step-4-mode .custom-path-item[data-step="3"]::before {
     background-color: var(--theme-primary-color);
-    /* Text color set dynamically by JS */
-    opacity: 0.95;
-    box-shadow: none; /* No shadow for completed */
 }
 
-/* Override for INCOMPLETE items (future steps) (Uses local vars) */
-.slds-path__item.slds-is-incomplete .slds-path__link {
-    background-color: var(--background-alt);
-    color: var(--text-secondary);
-    opacity: 1;
-    box-shadow: none;
-}
-
-/* Explicit override: Completed steps (that are NOT the current step) (Uses --theme-* vars) */
-.slds-path__item.slds-is-complete:not(.slds-is-current) .slds-path__link {
-    background-color: var(--theme-primary-color);
-    /* Text color set dynamically by JS */
-    opacity: 0.85;
-    box-shadow: none;
-}
-
-/* Remove any conflicting default background from SLDS */
-.slds-path__nav .slds-is-complete {
-    background: none !important; 
-}
-
-/* Text colors are now handled dynamically by JS */
-
-/* Title styling (Uses local vars) */
-.slds-path__title {
-    font-weight: 600;
-    font-size: var(--font-size-sm);
-    position: relative;
-    z-index: 2;
-    letter-spacing: 0.3px;
+.custom-path-indicator {
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: var(--radius-sm);
+    background-color: var(--background-alt); /* Default background */
+    color: var(--text-secondary); /* Default text color */
+    margin-bottom: var(--spacing-xs);
+    position: relative; /* Keep relative for z-index */
+    z-index: 1; /* Ensure indicator is above the line */
+    border: 1px solid var(--border-color);
+    font-weight: 500;
+    font-size: var(--font-size-md);
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
 }
 
-/* Hover effects (Uses --theme-* vars) */
-.slds-path__item:not(.slds-is-incomplete) .slds-path__link:hover {
-    /* Use primary color for hover, slightly brighter */
-    background-color: var(--theme-primary-color);
-    filter: brightness(115%); 
+.custom-path-indicator:hover {
     transform: translateY(-2px);
-    transition-duration: 0.2s;
-    /* JS will handle text color adjustment on hover */
+    box-shadow: var(--shadow-md);
 }
 
-.slds-path__item:first-child .slds-path__link {
-    border-top-left-radius: var(--radius-md);
-    border-bottom-left-radius: var(--radius-md);
+.custom-path-number {
+    font-weight: 600;
 }
 
-.slds-path__item:last-child .slds-path__link {
-    border-top-right-radius: var(--radius-md);
-    border-bottom-right-radius: var(--radius-md);
+.custom-path-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary); /* Default label color */
+    text-align: center;
+    transition: color var(--transition-fast);
+    font-weight: 500;
+    margin-top: var(--spacing-xs);
+    padding: 0 4px; /* Add padding to prevent overlap */
 }
 
-/* Make sure the shadow appears on top of other elements */
-.slds-path__item.slds-is-current {
-    z-index: 3;
-    border: none !important;
-}
+/* Default/Future State Indicator Styling */
+/* (Already covered by .custom-path-indicator defaults) */
 
-/* Explicitly remove border from current first item */
-.slds-path__nav .slds-is-current:first-child,
-.slds-path__nav .slds-is-current .slds-path__link {
-    border: none !important;
-    /* Shadow uses --theme-* var */
+/* Current step Indicator Styling (Accent Color) */
+.step-0-mode .custom-path-item[data-step="0"] .custom-path-indicator,
+.step-1-mode .custom-path-item[data-step="1"] .custom-path-indicator,
+.step-2-mode .custom-path-item[data-step="2"] .custom-path-indicator,
+.step-3-mode .custom-path-item[data-step="3"] .custom-path-indicator,
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-indicator /* Keep last step highlighted on success */ {
+    background-color: var(--theme-accent-color);
+    color: white; /* Assuming accent is dark enough for white text */
+    border-color: transparent;
     box-shadow: 0 2px 12px rgba(var(--theme-accent-color-rgb), 0.4);
 }
 
-/* Remove any default SLDS background color */
-.slds-path__nav .slds-is-current {
-    background-color: transparent !important;
+/* Current step Label Styling */
+.step-0-mode .custom-path-item[data-step="0"] .custom-path-label,
+.step-1-mode .custom-path-item[data-step="1"] .custom-path-label,
+.step-2-mode .custom-path-item[data-step="2"] .custom-path-label,
+.step-3-mode .custom-path-item[data-step="3"] .custom-path-label,
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-label {
+    color: var(--text-color);
+    font-weight: 600;
 }
 
-/* Responsive design for path */
+/* Completed step Indicator Styling (Primary Color) */
+.step-1-mode .custom-path-item[data-step="0"] .custom-path-indicator,
+.step-2-mode .custom-path-item[data-step="0"] .custom-path-indicator,
+.step-2-mode .custom-path-item[data-step="1"] .custom-path-indicator,
+.step-3-mode .custom-path-item[data-step="0"] .custom-path-indicator,
+.step-3-mode .custom-path-item[data-step="1"] .custom-path-indicator,
+.step-3-mode .custom-path-item[data-step="2"] .custom-path-indicator,
+.step-4-mode .custom-path-item[data-step="0"] .custom-path-indicator,
+.step-4-mode .custom-path-item[data-step="1"] .custom-path-indicator,
+.step-4-mode .custom-path-item[data-step="2"] .custom-path-indicator {
+    background-color: var(--theme-primary-color);
+    color: white; /* Assuming primary is dark enough for white text */
+    border-color: transparent;
+    opacity: 0.9;
+    box-shadow: none;
+}
+
+/* Completed step Label Styling */
+.step-1-mode .custom-path-item[data-step="0"] .custom-path-label,
+.step-2-mode .custom-path-item[data-step="0"] .custom-path-label,
+.step-2-mode .custom-path-item[data-step="1"] .custom-path-label,
+.step-3-mode .custom-path-item[data-step="0"] .custom-path-label,
+.step-3-mode .custom-path-item[data-step="1"] .custom-path-label,
+.step-3-mode .custom-path-item[data-step="2"] .custom-path-label,
+.step-4-mode .custom-path-item[data-step="0"] .custom-path-label,
+.step-4-mode .custom-path-item[data-step="1"] .custom-path-label,
+.step-4-mode .custom-path-item[data-step="2"] .custom-path-label {
+    color: var(--text-secondary); /* Keep label color standard for completed */
+    font-weight: 500; /* Reset font weight */
+}
+
+/* Change number to checkmark for completed steps */
+.step-1-mode .custom-path-item[data-step="0"] .custom-path-number::before,
+.step-2-mode .custom-path-item[data-step="0"] .custom-path-number::before,
+.step-2-mode .custom-path-item[data-step="1"] .custom-path-number::before,
+.step-3-mode .custom-path-item[data-step="0"] .custom-path-number::before,
+.step-3-mode .custom-path-item[data-step="1"] .custom-path-number::before,
+.step-3-mode .custom-path-item[data-step="2"] .custom-path-number::before,
+.step-4-mode .custom-path-item[data-step="0"] .custom-path-number::before,
+.step-4-mode .custom-path-item[data-step="1"] .custom-path-number::before,
+.step-4-mode .custom-path-item[data-step="2"] .custom-path-number::before {
+    content: '\2713'; /* Unicode checkmark */
+    font-size: 1.2em;
+    line-height: 1;
+    display: inline-block;
+}
+
+/* Hide the original number when checkmark is shown */
+.step-1-mode .custom-path-item[data-step="0"] .custom-path-number,
+.step-2-mode .custom-path-item[data-step="0"] .custom-path-number,
+.step-2-mode .custom-path-item[data-step="1"] .custom-path-number,
+.step-3-mode .custom-path-item[data-step="0"] .custom-path-number,
+.step-3-mode .custom-path-item[data-step="1"] .custom-path-number,
+.step-3-mode .custom-path-item[data-step="2"] .custom-path-number,
+.step-4-mode .custom-path-item[data-step="0"] .custom-path-number,
+.step-4-mode .custom-path-item[data-step="1"] .custom-path-number,
+.step-4-mode .custom-path-item[data-step="2"] .custom-path-number {
+    font-size: 0; /* Hide the number */
+}
+
+.custom-path-number::before {
+    display: inline-block;
+}
+
+/* Responsive styling for custom path */
 @media (max-width: 768px) {
-    .slds-path__item .slds-path__link {
-        height: 50px;
-        line-height: 50px;
-        padding: 0 8px;
+    .custom-path-item:not(:first-child)::before {
+        /* Adjust line width and positioning for smaller indicator */
+        width: calc(100% - 36px);
+        top: 17px; /* Re-center line (36px / 2 - 1px) */
+        left: calc(-50% + 18px); /* Re-position line start */
     }
-    
-    .slds-path__item:not(:last-child) .slds-path__link:after {
-        height: 50px;
-        right: -12px;
-        width: 24px;
+
+    .custom-path-indicator {
+        width: 36px;
+        height: 36px;
+        font-size: var(--font-size-sm);
     }
-    
-    .slds-path__title {
-        font-size: var(--font-size-xs);
+
+    .custom-path-label {
+        font-size: 10px;
     }
 }
 
 @media (max-width: 480px) {
-    .slds-path__item .slds-path__link {
-        height: 45px;
-        line-height: 45px;
-        padding: 0 4px;
+    .custom-path-item:not(:first-child)::before {
+        /* Adjust line width and positioning for smallest indicator */
+        width: calc(100% - 30px);
+        top: 14px; /* Re-center line (30px / 2 - 1px) */
+        left: calc(-50% + 15px); /* Re-position line start */
     }
-    
-    .slds-path__item:not(:last-child) .slds-path__link:after {
-        height: 45px;
-        right: -10px;
-        width: 20px;
-    }
-    
-    .slds-path__title {
+
+    .custom-path-indicator {
+        width: 30px;
+        height: 30px;
         font-size: 11px;
+        border-radius: 6px;
+    }
+
+    .custom-path-label {
+        font-size: 9px;
     }
 }
 
