@@ -1,11 +1,13 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { CurrentPageReference } from 'lightning/navigation';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import PDF_LIB from '@salesforce/resourceUrl/pdf_lib';
 import SIGNATURE_PAD from '@salesforce/resourceUrl/signature_pad';
 import SIGNATURE from '@salesforce/resourceUrl/signature';
 import { loadScript, loadStyle } from 'lightning/platformResourceLoader';
 import saveSignedPdf from '@salesforce/apex/PdfSignController.saveSignedPdf';
 import getDocumentUrl from '@salesforce/apex/PdfSignController.getDocumentUrl';
+import deleteTemporaryPdf from '@salesforce/apex/PdfSignController.deleteTemporaryPdf';
 
 export default class PdfSigner extends LightningElement {
     // Configurable properties
@@ -32,6 +34,7 @@ export default class PdfSigner extends LightningElement {
     @track useMultiPageView = false; // Whether to use multi-page view
     @track currentPageNum = 1;  // Current page number (1-based)
     @track totalPages = 1;      // Total number of pages in PDF
+    @track isLoading = false;   // Track if a file is currently loading
     pdfPages = [];            // Array to store page data for multi-page view
     
     @wire(CurrentPageReference) pageRef;
@@ -482,26 +485,38 @@ export default class PdfSigner extends LightningElement {
         }
     }
 
-    // Handle path navigation click
+    // Modified to only allow going backwards in the path
     goToStep(event) {
-        const step = parseInt(event.currentTarget.dataset.step, 10);
-        this.currentStep = step;
-        this.updatePathClasses(); // Update path visuals
+        // Get the target step from the data-step attribute
+        const targetStep = parseInt(event.currentTarget.dataset.step, 10);
         
-        // Initialize canvas when entering signature step
-        if (this.currentStep === 2) {
-            // We'll let renderedCallback handle the initialization
-            // This ensures the DOM is ready
-        }
-        
-        // Reset to page 1 when entering placement step
-        if (this.currentStep === 3) {
-            this.currentPageNum = 1;
-            
-            // Wait for DOM update before configuring
-            setTimeout(() => {
-                this.configureIframeView();
-            }, 100);
+        // Only allow navigation to previous steps via the path indicators
+        // If coming from a button click (currentTarget is a button), allow normal navigation
+        if (event.currentTarget.tagName === 'BUTTON' || targetStep < this.currentStep) {
+            // Only set valid steps (0-4)
+            if (targetStep >= 0 && targetStep <= 4) {
+                this.currentStep = targetStep;
+                this.updatePathClasses(); // Update path visuals
+                
+                // Initialize canvas when entering signature step
+                if (this.currentStep === 2) {
+                    // We'll let renderedCallback handle the initialization
+                    // This ensures the DOM is ready
+                }
+                
+                // Reset to page 1 when entering placement step
+                if (this.currentStep === 3) {
+                    this.currentPageNum = 1;
+                    
+                    // Wait for DOM update before configuring
+                    setTimeout(() => {
+                        this.configureIframeView();
+                    }, 100);
+                }
+            }
+        } else {
+            // Show a message that forward navigation via path isn't allowed
+            this.showToast('Info', 'Please complete the current step first', 'info');
         }
     }
     
@@ -636,14 +651,14 @@ export default class PdfSigner extends LightningElement {
     // Modified placeSignatureOverlay to consider orientation and current page
     placeSignatureOverlay(offsetX, offsetY) {
         if (!this.signatureImage) {
-            console.error('No signature image available');
+            this.showToast('Error', 'No signature image available', 'error');
             return;
         }
         
         // Get the overlay div to place signatures
         const overlay = this.template.querySelector('.pdf-overlay');
         if (!overlay) {
-            console.error('Overlay div not found');
+            this.showToast('Error', 'Overlay div not found', 'error');
             return;
         }
         
@@ -674,6 +689,23 @@ export default class PdfSigner extends LightningElement {
         sigImg.style.width = '100%';
         sigImg.style.height = '100%';
         sigImg.style.pointerEvents = 'none'; // Prevent image from capturing events
+        
+        // Create date text element
+        const currentDate = new Date();
+        const dateStr = currentDate.toLocaleDateString();
+        const dateDiv = document.createElement('div');
+        dateDiv.className = 'signature-date';
+        dateDiv.textContent = dateStr;
+        dateDiv.style.textAlign = 'center';
+        dateDiv.style.fontFamily = 'Arial, sans-serif';
+        dateDiv.style.fontSize = '12px';
+        dateDiv.style.color = '#333';
+        dateDiv.style.paddingTop = '5px';
+        dateDiv.style.position = 'absolute';
+        dateDiv.style.bottom = '-20px';
+        dateDiv.style.left = '0';
+        dateDiv.style.width = '100%';
+        dateDiv.style.pointerEvents = 'none';
         
         // Create remove button - now at the top-center
         const removeBtn = document.createElement('div');
@@ -750,6 +782,7 @@ export default class PdfSigner extends LightningElement {
         // Append elements
         sigWrapper.appendChild(sigImg);
         sigWrapper.appendChild(removeBtn);
+        sigWrapper.appendChild(dateDiv);
         overlay.appendChild(sigWrapper);
         
         // Get dimensions of the iframe for scaling calculations
@@ -796,7 +829,8 @@ export default class PdfSigner extends LightningElement {
                 width: relativeWidth * pdfWidth,
                 height: relativeHeight * pdfHeight,
                 element: sigWrapper,
-                isLandscape: isPageLandscape
+                isLandscape: isPageLandscape,
+                dateStr: dateStr // Store the date string
             });
             
             console.log(`Placed signature on page ${pageIndex + 1} at PDF coordinates:`, pdfX, pdfY);
@@ -981,14 +1015,14 @@ export default class PdfSigner extends LightningElement {
     // Final save: combine PDF and upload
     async handleSavePdf() {
         if (!this.pdfDoc) {
-            alert('No PDF document loaded');
+            this.showToast('Error', 'No PDF document loaded', 'error');
             return;
         }
         
         try {
             // Check for signatures
             if (this.placedSignatures.length === 0) {
-                alert('No signature placed on the document.');
+                this.showToast('Warning', 'No signature placed on the document', 'warning');
                 return;
             }
             
@@ -1038,6 +1072,14 @@ export default class PdfSigner extends LightningElement {
                                 width: placement.width,
                                 height: placement.height
                             });
+                            
+                            // Draw date text under signature
+                            page.drawText(placement.dateStr, {
+                                x: placement.x + (placement.width / 2) - 30, // Center approximately
+                                y: placement.y - placement.height - 20, // Position below signature
+                                size: 10,
+                                color: this.PDFLib.rgb(0, 0, 0)
+                            });
                         } catch (err) {
                             console.error(`Error placing signature on page ${pageIdx}:`, err);
                         }
@@ -1065,6 +1107,17 @@ export default class PdfSigner extends LightningElement {
                 isTemporary: false
             });
             
+            // Delete temporary file
+            if (this.contentVersionId) {
+                try {
+                    await deleteTemporaryPdf({ contentVersionId: this.contentVersionId });
+                    console.log('Temporary PDF deleted successfully');
+                } catch (deleteError) {
+                    console.error('Error deleting temporary PDF:', deleteError);
+                }
+                this.contentVersionId = null;
+            }
+            
             // Trigger file download for user
             const blob = new Blob([modifiedBytes], { type: 'application/pdf' });
             const downloadUrl = URL.createObjectURL(blob);
@@ -1079,7 +1132,7 @@ export default class PdfSigner extends LightningElement {
             this.currentStep = 4; // completion step
         } catch (error) {
             console.error('Error saving signed PDF', error);
-            alert('Error saving PDF: ' + (error.message || error));
+            this.showToast('Error', 'Error saving PDF: ' + (error.message || error), 'error');
         }
     }
 
@@ -1354,6 +1407,23 @@ export default class PdfSigner extends LightningElement {
         sigImg.style.height = '100%';
         sigImg.style.pointerEvents = 'none'; // Prevent image from capturing events
         
+        // Create date text element
+        const currentDate = new Date();
+        const dateStr = currentDate.toLocaleDateString();
+        const dateDiv = document.createElement('div');
+        dateDiv.className = 'signature-date';
+        dateDiv.textContent = dateStr;
+        dateDiv.style.textAlign = 'center';
+        dateDiv.style.fontFamily = 'Arial, sans-serif';
+        dateDiv.style.fontSize = '12px';
+        dateDiv.style.color = '#333';
+        dateDiv.style.paddingTop = '5px';
+        dateDiv.style.position = 'absolute';
+        dateDiv.style.bottom = '-20px';
+        dateDiv.style.left = '0';
+        dateDiv.style.width = '100%';
+        dateDiv.style.pointerEvents = 'none';
+        
         // Create remove button - now at the top-center
         const removeBtn = document.createElement('div');
         removeBtn.innerHTML = '✖';
@@ -1429,6 +1499,7 @@ export default class PdfSigner extends LightningElement {
         // Append elements
         sigWrapper.appendChild(sigImg);
         sigWrapper.appendChild(removeBtn);
+        sigWrapper.appendChild(dateDiv);
         overlay.appendChild(sigWrapper);
         
         // Get dimensions of the page overlay for scaling calculations
@@ -1467,7 +1538,8 @@ export default class PdfSigner extends LightningElement {
             width: relativeWidth * pdfWidth,
             height: relativeHeight * pdfHeight,
             element: sigWrapper,
-            isLandscape: pageInfo.isLandscape
+            isLandscape: pageInfo.isLandscape,
+            dateStr: dateStr // Store the date string
         });
         
         console.log(`Placed signature on page ${pageIndex + 1} at PDF coordinates:`, pdfX, pdfY);
@@ -1621,7 +1693,7 @@ export default class PdfSigner extends LightningElement {
             if (file.type === 'application/pdf') {
                 this.processFile(file);
             } else {
-                alert('Please upload a PDF file.');
+                this.showToast('Warning', 'Please upload a PDF file.', 'warning');
             }
         }
     }
@@ -1629,6 +1701,7 @@ export default class PdfSigner extends LightningElement {
     // Process file - common function for both drag-drop and file input
     processFile(file) {
         if (file && file.type === 'application/pdf') {
+            this.isLoading = true;
             this.pdfFilename = file.name;
             const reader = new FileReader();
             reader.onload = async () => {
@@ -1648,18 +1721,21 @@ export default class PdfSigner extends LightningElement {
                     await this.analyzePdfOrientation();
                     this.currentStep = 1;
                     this.updatePathClasses(); // Update path visuals
+                    this.isLoading = false;
                 } catch (e) {
                     console.error('processFile: PDF load error', e);
-                    alert('Failed to load PDF. Please try another file.');
+                    this.showToast('Error', 'Failed to load PDF. Please try another file.', 'error');
+                    this.isLoading = false;
                 }
             };
             reader.onerror = (error) => {
                 console.error('processFile: FileReader error:', error);
-                alert('Error reading the file.');
+                this.showToast('Error', 'Error reading the file.', 'error');
+                this.isLoading = false;
             };
             reader.readAsArrayBuffer(file);
         } else {
-            alert('Please upload a PDF file.');
+            this.showToast('Warning', 'Please upload a PDF file.', 'warning');
         }
     }
     
@@ -1703,17 +1779,16 @@ export default class PdfSigner extends LightningElement {
         this.signatureText = '';
         this.signatureMode = 'draw';
 
-        // Optional: Delete temporary ContentVersion - requires Apex method
+        // Delete temporary ContentVersion
         if (this.contentVersionId) {
             console.log('handleClearPdf: Requesting deletion of temporary ContentVersion:', this.contentVersionId);
-            // Call an Apex method here to delete the temporary file
-            // deleteTemporaryPdf({ contentVersionId: this.contentVersionId })
-            //     .then(() => {
-            //         console.log('handleClearPdf: Temporary PDF deleted successfully.');
-            //     })
-            //     .catch(error => {
-            //         console.error('handleClearPdf: Error deleting temporary PDF:', error);
-            //     });
+            deleteTemporaryPdf({ contentVersionId: this.contentVersionId })
+                .then(() => {
+                    console.log('handleClearPdf: Temporary PDF deleted successfully.');
+                })
+                .catch(error => {
+                    console.error('handleClearPdf: Error deleting temporary PDF:', error);
+                });
             this.contentVersionId = null; // Clear ID regardless of delete success
         }
 
@@ -1774,5 +1849,15 @@ export default class PdfSigner extends LightningElement {
         } else {
             console.error('Host element not found for setting theme variables.');
         }
+    }
+
+    // Toast notification helper
+    showToast(title, message, variant) {
+        const evt = new ShowToastEvent({
+            title: title,
+            message: message,
+            variant: variant // info, success, warning, error
+        });
+        this.dispatchEvent(evt);
     }
 }

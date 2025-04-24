@@ -43,6 +43,10 @@
                     ondragover={handleDragOver}
                     ondragleave={handleDragLeave}
                     ondrop={handleFileDrop}>
+                    <!-- Loading spinner that shows only when a file is uploading -->
+                    <div if:true={isLoading} class="upload-spinner-container">
+                        <lightning-spinner alternative-text="Loading" size="medium" variant="brand"></lightning-spinner>
+                    </div>
                     <!-- Visual elements (icon and text) -->
                     <div class="file-upload-icon">
                         <lightning-icon icon-name="doctype:pdf" size="large" alternative-text="Upload PDF"></lightning-icon>

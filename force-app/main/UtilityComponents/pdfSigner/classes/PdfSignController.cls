@@ -62,4 +62,29 @@ public with sharing class PdfSignController {
             throw new AuraHandledException('Error retrieving document URL: ' + e.getMessage());
         }
     }
+    
+    @AuraEnabled(cacheable=false)
+    public static void deleteTemporaryPdf(Id contentVersionId) {
+        if (contentVersionId == null) {
+            throw new AuraHandledException('No Content Version Id provided');
+        }
+        
+        try {
+            // First, get the ContentDocument ID from the ContentVersion
+            ContentVersion cv = [SELECT Id, ContentDocumentId, Description 
+                                FROM ContentVersion 
+                                WHERE Id = :contentVersionId LIMIT 1];
+            
+            // Only delete if it's a temporary file (safety check)
+            if (cv.Description != null && cv.Description.contains('Temporary PDF for preview')) {
+                // Delete the ContentDocument (this will cascade delete all versions and links)
+                if (cv.ContentDocumentId != null) {
+                    ContentDocument cd = new ContentDocument(Id = cv.ContentDocumentId);
+                    delete cd;
+                }
+            }
+        } catch (Exception e) {
+            throw new AuraHandledException('Error deleting temporary PDF: ' + e.getMessage());
+        }
+    }
 }
