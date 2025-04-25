@@ -55,6 +55,8 @@ export default class PdfSigner extends LightningElement {
     @track currentPageNum = 1;  // Current page number (1-based)
     @track totalPages = 1;      // Total number of pages in PDF
     @track isLoading = false;   // Track if a file is currently loading
+    @track isSaving = false;    // Track if the PDF is currently saving
+    @track showSignatureConfirmation = false; // Track if signature confirmation modal is shown
     pdfPages = [];            // Array to store page data for multi-page view
     
     @wire(CurrentPageReference) pageRef;
@@ -508,23 +510,31 @@ export default class PdfSigner extends LightningElement {
     // Handle path navigation click
     goToStep(event) {
         const step = parseInt(event.currentTarget.dataset.step, 10);
-        this.currentStep = step;
-        this.updatePathClasses(); // Update path visuals
         
-        // Initialize canvas when entering signature step
-        if (this.currentStep === 2) {
-            // We'll let renderedCallback handle the initialization
-            // This ensures the DOM is ready
+        // Special case: if we're at step 3 and trying to go back to step 2
+        if (this.currentStep === 3 && step === 2) {
+            // Show toast explaining why they can't go back
+            this.showToast(
+                'Cannot Edit Signature', 
+                'Your signature has been confirmed. To make changes, please restart the process.', 
+                'warning'
+            );
+            return;
         }
         
-        // Reset to page 1 when entering placement step
-        if (this.currentStep === 3) {
-            this.currentPageNum = 1;
-            
-            // Wait for DOM update before configuring
-            setTimeout(() => {
-                this.configureIframeView();
-            }, 100);
+        // For all other cases, proceed as normal
+        this.currentStep = step;
+        this.updatePathClasses();
+        
+        if (step === 3) {
+            // When moving to step 3, prepare for signature placement
+            this.renderPdfPagesForSigning();
+        } else if (step === 0) {
+            // When starting over, clear everything
+            this.handleClearPdf();
+            this.signaturePad = null;
+            this.signatureImage = null;
+            this.placedSignatures = [];
         }
     }
     
@@ -637,9 +647,10 @@ export default class PdfSigner extends LightningElement {
         // Create date element with identity info
         const dateDiv = this.createDateElement(identity);
         
-        // Position date element further below the signature for better spacing
+        // Position date element dynamically below the signature wrapper
         dateDiv.style.position = 'absolute';
-        dateDiv.style.bottom = '-75px'; // Increased from -55px to provide more space
+        dateDiv.style.top = '100%'; // Position top edge at the bottom of the wrapper
+        dateDiv.style.marginTop = '5px'; // Add a small space below the signature
         dateDiv.style.left = '0';
         dateDiv.style.width = '100%';
         dateDiv.style.pointerEvents = 'none';
@@ -775,123 +786,14 @@ export default class PdfSigner extends LightningElement {
     
     // Modified handleSignatureSubmit for better handling of text signatures
     handleSignatureSubmit() {
-        if (this.signatureMode === 'draw') {
-            if (!this.signaturePad || this.signaturePad.isEmpty()) {
-                this.showToast('Warning', 'Please draw your signature before proceeding', 'warning');
-                return;
-            }
-            // Get image data from canvas
-            const dataUrl = this.signaturePad.toDataURL();
-            
-            // Save signature image data for placement
-            const tempImg = new Image();
-            tempImg.onload = () => {
-                this.signatureImage = {
-                    dataUrl: dataUrl,
-                    width: tempImg.width,
-                    height: tempImg.height
-                };
-                // Proceed to next step
-                this.currentStep = 3;
-            };
-            tempImg.src = dataUrl;
-        } else if (this.signatureMode === 'type') {
-            // For text signatures
-            if (!this.signatureText || this.signatureText.trim() === '') {
-                this.showToast('Warning', 'Please enter your signature text before proceeding', 'warning');
-                return;
-    }
-    
-            // Render the typed signature to the canvas first
-            this.renderTextSignatureOnCanvas();
-            
-            // Get signature image with proper dimensions for text
-            const dataUrl = this.canvasElement.toDataURL();
-            
-            // Create a temporary image to get dimensions
-            const tempImg = new Image();
-            tempImg.onload = () => {
-                // Calculate more appropriate dimensions for text signature
-                const originalWidth = tempImg.width;
-                const originalHeight = tempImg.height;
-                
-                // For text signatures, analyze the image to get better dimensions
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = originalWidth;
-                canvas.height = originalHeight;
-                ctx.drawImage(tempImg, 0, 0);
+        // Hide the confirmation modal
+        this.showSignatureConfirmation = false;
         
-                // Get image data to analyze content boundaries
-                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imgData.data;
-                
-                // Find the actual content boundaries
-                let minX = canvas.width;
-                let minY = canvas.height;
-                let maxX = 0;
-                let maxY = 0;
-                
-                // Look for non-transparent pixels
-                for (let y = 0; y < canvas.height; y++) {
-                    for (let x = 0; x < canvas.width; x++) {
-                        const alpha = data[(y * canvas.width + x) * 4 + 3];
-                        if (alpha > 0) {
-                            minX = Math.min(minX, x);
-                            minY = Math.min(minY, y);
-                            maxX = Math.max(maxX, x);
-                            maxY = Math.max(maxY, y);
-                        }
-                    }
-                }
-                
-                // Add some padding to the bounds
-                const padding = 10;
-                minX = Math.max(0, minX - padding);
-                minY = Math.max(0, minY - padding);
-                maxX = Math.min(canvas.width, maxX + padding);
-                maxY = Math.min(canvas.height, maxY + padding);
+        // Move to the next step
+        this.goToStep({ currentTarget: { dataset: { step: '3' } } });
         
-                // Calculate content dimensions
-                const contentWidth = maxX - minX;
-                const contentHeight = maxY - minY;
-                
-                // Only crop if we found valid content boundaries
-                let finalDataUrl = dataUrl;
-                if (contentWidth > 0 && contentHeight > 0) {
-                    // Crop to content
-                    const cropCanvas = document.createElement('canvas');
-                    cropCanvas.width = contentWidth;
-                    cropCanvas.height = contentHeight;
-                    const cropCtx = cropCanvas.getContext('2d');
-                    cropCtx.drawImage(tempImg, minX, minY, contentWidth, contentHeight, 0, 0, contentWidth, contentHeight);
-                    finalDataUrl = cropCanvas.toDataURL();
-                    
-                    // Create a new image with the cropped data
-                    const croppedImg = new Image();
-                    croppedImg.onload = () => {
-                        this.signatureImage = {
-                            dataUrl: finalDataUrl,
-                            width: croppedImg.width,
-                            height: croppedImg.height
-                        };
-                        // Proceed to next step
-                        this.currentStep = 3;
-                    };
-                    croppedImg.src = finalDataUrl;
-                } else {
-                    // If we couldn't determine content boundaries, use the original
-                    this.signatureImage = {
-                        dataUrl: dataUrl,
-                        width: originalWidth,
-                        height: originalHeight
-                    };
-                    // Proceed to next step
-                    this.currentStep = 3;
-                }
-            };
-            tempImg.src = dataUrl;
-        }
+        // Prepare pages for signature placement
+        this.renderPdfPagesForSigning();
     }
 
     // Drag and drop handlers for placing signature
@@ -1179,21 +1081,29 @@ export default class PdfSigner extends LightningElement {
             this.showToast('Error', 'No PDF document loaded', 'error');
             return;
         }
-        
+
+        if (this.placedSignatures.length === 0) {
+            this.showToast('Warning', 'No signature placed on the document', 'warning');
+            return;
+        }
+
+        // Show spinner
+        this.isSaving = true;
+
         try {
-            // Check for signatures
-            if (this.placedSignatures.length === 0) {
-                this.showToast('Warning', 'No signature placed on the document', 'warning');
-                return;
-            }
-            
             // Convert dataUrl to bytes for pdf-lib
+            // Assuming only one signature image source is needed now
+            const firstSignature = this.placedSignatures[0]; // Use the first placed signature's source image
+            if (!firstSignature || !this.signatureImage || !this.signatureImage.dataUrl) {
+                throw new Error('Signature image data not found.');
+            }
             const signatureBase64 = this.signatureImage.dataUrl.split(',')[1];
             const signatureBytes = this.base64ToUint8Array(signatureBase64);
-            
+
             // Embed the signature image in PDF
-            const pngImage = await this.pdfDoc.embedPng(signatureBytes);
-            
+            // Choose the correct embed method based on image type (assuming PNG from canvas)
+            const embeddedImage = await this.pdfDoc.embedPng(signatureBytes);
+
             // Group signatures by page
             const signaturesByPage = {};
             this.placedSignatures.forEach(placement => {
@@ -1203,93 +1113,103 @@ export default class PdfSigner extends LightningElement {
                 }
                 signaturesByPage[pageIndex].push(placement);
             });
-            
+
             // Draw signatures on each page
-            Object.keys(signaturesByPage).forEach(pageIndex => {
+            const pageIndices = Object.keys(signaturesByPage).map(idx => parseInt(idx, 10));
+
+            for (const pageIndex of pageIndices) {
                 try {
-                    const pageIdx = parseInt(pageIndex, 10);
-                    // Make sure the page exists in the document
-                    if (pageIdx >= this.pdfDoc.getPageCount()) {
-                        console.error(`Page ${pageIdx} does not exist in the document`);
-                        return;
+                    if (pageIndex >= this.pdfDoc.getPageCount()) {
+                        console.error(`Page ${pageIndex} does not exist in the document`);
+                        continue; // Skip this page
                     }
-                    
-                    const page = this.pdfDoc.getPage(pageIdx);
-                    const { width, height } = page.getSize();
-                    const isPageLandscape = width > height;
-                    
-                    console.log(`Processing page ${pageIdx} - Size: ${width}x${height}, Landscape: ${isPageLandscape}`);
-                    
+
+                    const page = this.pdfDoc.getPage(pageIndex);
+                    const { width: pageWidth, height: pageHeight } = page.getSize();
+
+                    console.log(`Processing page ${pageIndex} - Size: ${pageWidth}x${pageHeight}`);
+
                     // Place each signature on this page
-                    signaturesByPage[pageIndex].forEach(placement => {
+                    for (const placement of signaturesByPage[pageIndex]) {
                         try {
-                            // Log placement details for debugging
                             console.log(`Placing signature at: x=${placement.x}, y=${placement.y}, w=${placement.width}, h=${placement.height}`);
-                            
-                            // Draw the signature with correct coordinates
-                            page.drawImage(pngImage, {
+
+                            // Draw the signature image
+                            page.drawImage(embeddedImage, {
                                 x: placement.x,
                                 y: placement.y - placement.height, // adjust for PDF coords (bottom-left origin)
                                 width: placement.width,
                                 height: placement.height
                             });
-                            
+
                             // Draw identity information under signature
                             if (placement.identity) {
-                                // Draw date/time with emphasis on time
-                                page.drawText(placement.identity.dateTime, {
-                                    x: placement.x + (placement.width / 2) - 50, // Center approximately
-                                    y: placement.y - placement.height - 15, // Position below signature
+                                const textOptions = {
                                     size: 8,
-                                    color: this.PDFLib.rgb(0, 0, 0)
+                                    color: this.PDFLib.rgb(0, 0, 0),
+                                    lineHeight: 10, // Adjust line height
+                                    maxWidth: placement.width * 1.5 // Allow text to wrap slightly wider than sig
+                                };
+                                const smallTextOptions = { ...textOptions, size: 6, color: this.PDFLib.rgb(0.4, 0.4, 0.4), lineHeight: 8 };
+
+                                let currentY = placement.y - placement.height - 12; // Start position below signature
+
+                                // Draw date/time
+                                page.drawText(placement.identity.dateTime, {
+                                    ...textOptions,
+                                    x: placement.x,
+                                    y: currentY
                                 });
-                                
-                                // Draw user ID information
+                                currentY -= textOptions.lineHeight;
+
+                                // Draw user ID
                                 page.drawText('User ID: ' + this.userId, {
-                                    x: placement.x + (placement.width / 2) - 40, // Center approximately
-                                    y: placement.y - placement.height - 25, // Position further below
-                                    size: 6,
-                                    color: this.PDFLib.rgb(0.4, 0.4, 0.4)
+                                    ...smallTextOptions,
+                                    x: placement.x,
+                                    y: currentY
                                 });
-                                
+                                currentY -= smallTextOptions.lineHeight;
+
                                 // Draw federation ID if it exists
                                 if (this.federationId) {
                                     page.drawText('Fed ID: ' + this.federationId, {
-                                        x: placement.x + (placement.width / 2) - 40, // Center approximately
-                                        y: placement.y - placement.height - 35, // Position even further below
-                                        size: 6,
-                                        color: this.PDFLib.rgb(0.4, 0.4, 0.4)
+                                        ...smallTextOptions,
+                                        x: placement.x,
+                                        y: currentY
                                     });
+                                    // currentY -= smallTextOptions.lineHeight; // Adjust if more lines are added
                                 }
                             }
                         } catch (err) {
-                            console.error(`Error placing signature on page ${pageIdx}:`, err);
+                            console.error(`Error placing signature on page ${pageIndex}:`, err);
+                            // Optionally show a non-blocking warning to the user
                         }
-                    });
+                    }
                 } catch (err) {
                     console.error(`Error processing page ${pageIndex}:`, err);
+                    // Optionally show a non-blocking warning to the user
                 }
-            });
-            
+            }
+
             // Save the modified PDF
             const modifiedBytes = await this.pdfDoc.save();
-            
+
             // Convert to base64 for Apex
             const base64Data = this.arrayBufferToBase64(modifiedBytes);
-            
+
             // Generate filename with _signed suffix
-            const fileName = this.pdfFilename ? 
+            const fileName = this.pdfFilename ?
                 this.pdfFilename.replace(/\.pdf$/i, '_signed.pdf') : 'SignedDocument.pdf';
-            
+
             // Save to Salesforce
-            const resultId = await saveSignedPdf({ 
-                base64Data: base64Data, 
-                fileName: fileName, 
+            const resultId = await saveSignedPdf({
+                base64Data: base64Data,
+                fileName: fileName,
                 recordId: this.effectiveRecordId,
                 isTemporary: false
             });
-            
-            // Delete temporary file
+
+            // Delete temporary file (if one was created)
             if (this.contentVersionId) {
                 try {
                     await deleteTemporaryPdf({ contentVersionId: this.contentVersionId });
@@ -1299,22 +1219,29 @@ export default class PdfSigner extends LightningElement {
                 }
                 this.contentVersionId = null;
             }
-            
+
             // Trigger file download for user
             const blob = new Blob([modifiedBytes], { type: 'application/pdf' });
             const downloadUrl = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = downloadUrl;
             a.download = fileName;
+            document.body.appendChild(a); // Required for Firefox
             a.click();
+            document.body.removeChild(a);
             URL.revokeObjectURL(downloadUrl);
-            
-            // Show success message
+
+            // Show success message & move to final step
             this.successMessage = 'Signed PDF saved successfully!';
             this.currentStep = 4; // completion step
+            this.updatePathClasses(); // Update path visuals for completion
+
         } catch (error) {
             console.error('Error saving signed PDF', error);
-            this.showToast('Error', 'Error saving PDF: ' + (error.message || error), 'error');
+            this.showToast('Error', 'Error saving PDF: ' + (error.message || JSON.stringify(error)), 'error');
+        } finally {
+            // Hide spinner regardless of success or error
+            this.isSaving = false;
         }
     }
 
@@ -1613,9 +1540,10 @@ export default class PdfSigner extends LightningElement {
         // Create date element with identity info
         const dateDiv = this.createDateElement(identity);
         
-        // Position date element further below the signature for better spacing
+        // Position date element dynamically below the signature wrapper
         dateDiv.style.position = 'absolute';
-        dateDiv.style.bottom = '-75px'; // Increased from -55px to provide more space
+        dateDiv.style.top = '100%'; // Position top edge at the bottom of the wrapper
+        dateDiv.style.marginTop = '5px'; // Add a small space below the signature
         dateDiv.style.left = '0';
         dateDiv.style.width = '100%';
         dateDiv.style.pointerEvents = 'none';
@@ -2018,5 +1946,138 @@ export default class PdfSigner extends LightningElement {
             variant: variant // info, success, warning, error
         });
         this.dispatchEvent(evt);
+    }
+
+    /**
+     * Analyzes a canvas or image data URL to find the tightest bounding box 
+     * containing non-transparent pixels.
+     * @param {string | HTMLCanvasElement} source - The data URL string or canvas element.
+     * @param {number} padding - Optional padding around the content.
+     * @returns {Promise<{dataUrl: string, width: number, height: number}>} 
+     *          A promise that resolves with the cropped image dataUrl and dimensions.
+     */
+    async cropSignature(source, padding = 2) { // Reduced padding
+        return new Promise((resolve, reject) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            img.onload = () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+
+                try {
+                    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imgData.data;
+                    let minX = canvas.width, minY = canvas.height, maxX = 0, maxY = 0;
+
+                    // Find bounds of non-transparent pixels
+                    for (let y = 0; y < canvas.height; y++) {
+                        for (let x = 0; x < canvas.width; x++) {
+                            const alphaIndex = (y * canvas.width + x) * 4 + 3;
+                            if (data[alphaIndex] > 10) { // Use a threshold > 0 for anti-aliasing
+                                minX = Math.min(minX, x);
+                                minY = Math.min(minY, y);
+                                maxX = Math.max(maxX, x);
+                                maxY = Math.max(maxY, y);
+                            }
+                        }
+                    }
+
+                    // Check if any content was found
+                    if (minX > maxX || minY > maxY) {
+                        console.warn('Cropping failed: No content found or image is transparent.');
+                        // Resolve with original if cropping fails
+                        resolve({ dataUrl: source instanceof HTMLCanvasElement ? source.toDataURL() : source, width: img.width, height: img.height });
+                        return;
+                    }
+
+                    // Apply padding
+                    minX = Math.max(0, minX - padding);
+                    minY = Math.max(0, minY - padding);
+                    maxX = Math.min(canvas.width - 1, maxX + padding);
+                    maxY = Math.min(canvas.height - 1, maxY + padding);
+
+                    const contentWidth = maxX - minX + 1;
+                    const contentHeight = maxY - minY + 1;
+
+                    // Create new canvas for cropped image
+                    const cropCanvas = document.createElement('canvas');
+                    cropCanvas.width = contentWidth;
+                    cropCanvas.height = contentHeight;
+                    const cropCtx = cropCanvas.getContext('2d');
+
+                    // Draw the cropped portion onto the new canvas
+                    cropCtx.drawImage(canvas, minX, minY, contentWidth, contentHeight, 0, 0, contentWidth, contentHeight);
+
+                    // Get the new data URL
+                    const croppedDataUrl = cropCanvas.toDataURL('image/png');
+
+                    console.log(`Cropped signature from ${img.width}x${img.height} to ${contentWidth}x${contentHeight}`);
+                    resolve({ dataUrl: croppedDataUrl, width: contentWidth, height: contentHeight });
+
+                } catch (error) {
+                    console.error('Error during signature cropping:', error);
+                    // Resolve with original on error
+                    resolve({ dataUrl: source instanceof HTMLCanvasElement ? source.toDataURL() : source, width: img.width, height: img.height });
+                }
+            };
+
+            img.onerror = (error) => {
+                console.error('Error loading image for cropping:', error);
+                reject(new Error('Failed to load image for cropping'));
+            };
+
+            // Set the source for the image
+            if (typeof source === 'string') {
+                img.src = source;
+            } else if (source instanceof HTMLCanvasElement) {
+                img.src = source.toDataURL();
+            } else {
+                reject(new Error('Invalid source type for cropping'));
+            }
+        });
+    }
+
+    // Handle signature confirmation modal
+    async handleSignatureConfirmation() {
+        // First check if signature exists
+        if ((this.isDraw && (!this.signaturePad || this.signaturePad.isEmpty())) ||
+            (this.isType && (!this.signatureText || this.signatureText.trim() === ''))) {
+            this.showToast('Error', 'Please create a signature before proceeding', 'error');
+            return;
+        }
+
+        try {
+            let sourceDataUrl;
+            if (this.isDraw) {
+                // Get the full data URL from the signature pad
+                sourceDataUrl = this.signaturePad.toDataURL('image/png');
+            } else {
+                // For typed signatures, render to canvas first
+                this.renderTextSignatureOnCanvas();
+                // Get the full data URL from the canvas
+                sourceDataUrl = this.canvasElement.toDataURL('image/png');
+            }
+
+            // Crop the signature tightly
+            const croppedSignature = await this.cropSignature(sourceDataUrl);
+
+            // Update signatureImage with cropped data
+            this.signatureImage = croppedSignature;
+
+            // Show confirmation modal
+            this.showSignatureConfirmation = true;
+
+        } catch (error) {
+            console.error('Error preparing signature for confirmation:', error);
+            this.showToast('Error', 'Could not process signature. Please try again.', 'error');
+        }
+    }
+    
+    handleCancelConfirmation() {
+        // Hide the confirmation modal
+        this.showSignatureConfirmation = false;
     }
 }

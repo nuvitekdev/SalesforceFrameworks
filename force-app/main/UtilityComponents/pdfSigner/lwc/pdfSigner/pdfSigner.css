@@ -142,7 +142,8 @@
 .step-3-mode .custom-path-item[data-step="3"]::before,
 .step-4-mode .custom-path-item[data-step="1"]::before,
 .step-4-mode .custom-path-item[data-step="2"]::before,
-.step-4-mode .custom-path-item[data-step="3"]::before {
+.step-4-mode .custom-path-item[data-step="3"]::before,
+.step-4-mode .custom-path-item[data-step="4"]::before /* Added for line before success step */ { 
     background-color: var(--theme-primary-color);
 }
 
@@ -193,7 +194,7 @@
 .step-1-mode .custom-path-item[data-step="1"] .custom-path-indicator,
 .step-2-mode .custom-path-item[data-step="2"] .custom-path-indicator,
 .step-3-mode .custom-path-item[data-step="3"] .custom-path-indicator,
-.step-4-mode .custom-path-item[data-step="3"] .custom-path-indicator /* Keep last step highlighted on success */ {
+.step-4-mode .custom-path-item[data-step="4"] .custom-path-indicator /* Highlight step 4 indicator on success */ { 
     background-color: var(--theme-accent-color);
     color: white; /* Assuming accent is dark enough for white text */
     border-color: transparent;
@@ -205,7 +206,7 @@
 .step-1-mode .custom-path-item[data-step="1"] .custom-path-label,
 .step-2-mode .custom-path-item[data-step="2"] .custom-path-label,
 .step-3-mode .custom-path-item[data-step="3"] .custom-path-label,
-.step-4-mode .custom-path-item[data-step="3"] .custom-path-label {
+.step-4-mode .custom-path-item[data-step="4"] .custom-path-label /* Highlight step 4 label on success */ { 
     color: var(--text-color);
     font-weight: 600;
 }
@@ -219,7 +220,8 @@
 .step-3-mode .custom-path-item[data-step="2"] .custom-path-indicator,
 .step-4-mode .custom-path-item[data-step="0"] .custom-path-indicator,
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-indicator,
-.step-4-mode .custom-path-item[data-step="2"] .custom-path-indicator {
+.step-4-mode .custom-path-item[data-step="2"] .custom-path-indicator,
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-indicator /* Added step 3 */ { 
     background-color: var(--theme-primary-color);
     color: white; /* Assuming primary is dark enough for white text */
     border-color: transparent;
@@ -236,7 +238,8 @@
 .step-3-mode .custom-path-item[data-step="2"] .custom-path-label,
 .step-4-mode .custom-path-item[data-step="0"] .custom-path-label,
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-label,
-.step-4-mode .custom-path-item[data-step="2"] .custom-path-label {
+.step-4-mode .custom-path-item[data-step="2"] .custom-path-label,
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-label /* Added step 3 */ { 
     color: var(--text-secondary); /* Keep label color standard for completed */
     font-weight: 500; /* Reset font weight */
 }
@@ -250,7 +253,8 @@
 .step-3-mode .custom-path-item[data-step="2"] .custom-path-number::before,
 .step-4-mode .custom-path-item[data-step="0"] .custom-path-number::before,
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-number::before,
-.step-4-mode .custom-path-item[data-step="2"] .custom-path-number::before {
+.step-4-mode .custom-path-item[data-step="2"] .custom-path-number::before,
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-number::before /* Added step 3 */ { 
     content: '\2713'; /* Unicode checkmark */
     font-size: 1.2em;
     line-height: 1;
@@ -266,7 +270,8 @@
 .step-3-mode .custom-path-item[data-step="2"] .custom-path-number,
 .step-4-mode .custom-path-item[data-step="0"] .custom-path-number,
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-number,
-.step-4-mode .custom-path-item[data-step="2"] .custom-path-number {
+.step-4-mode .custom-path-item[data-step="2"] .custom-path-number,
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-number /* Added step 3 */ { 
     font-size: 0; /* Hide the number */
 }
 
@@ -902,4 +907,113 @@ lightning-button.clear-button button {
 .signature-date .user-id {
     font-size: 9px;
     color: #666;
+}
+
+/* Signature Confirmation Modal */
+.signature-confirmation-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 15;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn var(--transition-fast);
+}
+
+.modal-content {
+    background-color: var(--background);
+    border-radius: var(--radius-md);
+    width: 90%;
+    max-width: 500px;
+    box-shadow: var(--shadow-xl);
+    animation: slideIn var(--transition-medium);
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: var(--spacing-md);
+    background-color: var(--background-alt);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-body {
+    padding: var(--spacing-md);
+}
+
+.modal-footer {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    background-color: var(--background-alt);
+}
+
+.warning-text {
+    margin-top: var(--spacing-sm);
+    color: #ea001e;
+    font-weight: 500;
+}
+
+.signature-preview {
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-sm);
+    background-color: var(--background-alt);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    text-align: center;
+}
+
+.signature-preview img {
+    max-width: 100%;
+    max-height: 80px;
+    margin: 0 auto;
+    display: block;
+}
+
+.signature-date {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #333;
+    text-align: center;
+    margin-top: 5px;
+    line-height: 1.3;
+    padding: 8px 4px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.signature-date .date-time {
+    font-weight: bold;
+}
+
+.signature-date .user-id {
+    font-size: 9px;
+    color: #666;
+}
+
+/* Save Spinner Container */
+.save-spinner-container {
+    position: absolute; /* Changed back to absolute */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.85); /* Slightly more opaque */
+    z-index: 20; /* Lowered z-index slightly */
+    display: flex;
+    flex-direction: column; /* Stack spinner and text */
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--radius-lg); /* Added back border-radius */
+    animation: fadeIn var(--transition-fast);
+}
+
+.spinner-text {
+    color: var(--text-secondary);
+    font-weight: 500;
 }

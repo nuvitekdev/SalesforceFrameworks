@@ -1,5 +1,11 @@
 <template>
     <div class={containerClasses}>
+        <!-- Loading Spinner for Saving -->
+        <div if:true={isSaving} class="save-spinner-container">
+            <lightning-spinner alternative-text="Saving PDF..." size="medium" variant="brand"></lightning-spinner>
+            <p class="spinner-text slds-m-top_small">Saving your signed PDF...</p>
+        </div>
+
         <!-- Custom Path Component -->
         <div class="custom-path-container">
             <ul class="custom-path">
@@ -173,7 +179,7 @@
                             variant="brand" 
                             label="Next: Place Signature" 
                             icon-name="utility:forward"
-                            onclick={handleSignatureSubmit}>
+                            onclick={handleSignatureConfirmation}>
                         </lightning-button>
                     </div>
                 </div>
@@ -182,7 +188,13 @@
 
         <!-- Step 3: Place Signature on Pages with overlay -->
         <template if:true={isStep3}>
-            <div class="step-section slds-p-around_medium">
+            <div class="step-section slds-p-around_medium" style="position: relative;">
+                <!-- Loading Spinner for Saving - Placed inside Step 3 -->
+                <div if:true={isSaving} class="save-spinner-container">
+                    <lightning-spinner alternative-text="Saving PDF..." size="medium" variant="brand"></lightning-spinner>
+                    <p class="spinner-text slds-m-top_small">Saving your signed PDF...</p>
+                </div>
+                
                 <div class="slds-text-heading_medium slds-m-bottom_small">Position Signature</div>
                 <p class="slds-m-bottom_medium">
                     Drag your signature onto the document or double-click to place it.
@@ -206,21 +218,6 @@
                                 icon-name="utility:chevronleft" 
                                 onclick={handlePrevPage}
                                 disabled={isFirstPage}>
-                            </lightning-button>
-                            <lightning-button 
-                                label="Fit Width" 
-                                icon-name="utility:expand_alt" 
-                                onclick={handleFitWidth}>
-                            </lightning-button>
-                            <lightning-button 
-                                label="Zoom In" 
-                                icon-name="utility:add" 
-                                onclick={handleZoomIn}>
-                            </lightning-button>
-                            <lightning-button 
-                                label="Zoom Out" 
-                                icon-name="utility:dash" 
-                                onclick={handleZoomOut}>
                             </lightning-button>
                             <lightning-button 
                                 label="Next" 
@@ -251,7 +248,6 @@
                 </div>
 
                 <div class="slds-m-top_medium slds-text-align_right">
-                    <lightning-button label="Back" onclick={goToStep} data-step="2"></lightning-button>
                     <lightning-button variant="brand" label="Finish & Save PDF" onclick={handleSavePdf}
                         class="slds-m-left_x-small"></lightning-button>
                 </div>
@@ -282,4 +278,37 @@
             </div>
         </template>
     </div>
+
+    <!-- Signature Confirmation Modal - Moved outside main container -->
+    <template if:true={showSignatureConfirmation}>
+        <div class="signature-confirmation-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="slds-text-heading_medium">Confirm Your Signature</h2>
+                </div>
+                <div class="modal-body">
+                    <p>Please confirm that your signature is complete and accurate.</p>
+                    <p class="warning-text">Once you proceed, you cannot change your signature unless you restart the entire process.</p>
+                    
+                    <div class="signature-preview">
+                        <img src={signatureImage.dataUrl} alt="Your signature" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <lightning-button 
+                        class="cancel-button"
+                        variant="neutral" 
+                        label="Go Back" 
+                        onclick={handleCancelConfirmation}>
+                    </lightning-button>
+                    <lightning-button 
+                        class="confirm-button slds-m-left_x-small"
+                        variant="brand" 
+                        label="Confirm Signature" 
+                        onclick={handleSignatureSubmit}>
+                    </lightning-button>
+                </div>
+            </div>
+        </div>
+    </template>
 </template>
