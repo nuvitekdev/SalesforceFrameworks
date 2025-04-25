@@ -5,6 +5,70 @@
     <businessProcess>EEO Compliance Support</businessProcess>
     <label>EEO Compliance Support</label>
     <picklistValues>
+        <picklist>Action_Org_Agency__c</picklist>
+        <values>
+            <fullName>Agency 1</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Agency 2</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Agency 3</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Action_Org_Mission_Area_Staff_Office__c</picklist>
+        <values>
+            <fullName>Mission Area 1</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Mission Area 2</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Mission Area 3</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Correspondence_Priority__c</picklist>
+        <values>
+            <fullName>1</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>2</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>3</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>4</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>5</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Joint_Response__c</picklist>
+        <values>
+            <fullName>No</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Yes</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
         <picklist>Origin</picklist>
         <values>
             <fullName>Email</fullName>
@@ -16,6 +80,36 @@
         </values>
         <values>
             <fullName>Web</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Owner_Agency__c</picklist>
+        <values>
+            <fullName>Agency 1</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Agency 2</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Agency 3</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Owner_Mission_Area_Staff_Office__c</picklist>
+        <values>
+            <fullName>Mission Area 1</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Mission Area 2</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Mission Area 3</fullName>
             <default>false</default>
         </values>
     </picklistValues>
@@ -32,6 +126,29 @@
         <values>
             <fullName>Medium</fullName>
             <default>true</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Processing_Code__c</picklist>
+        <values>
+            <fullName>PC 1</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>PC 2</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>PC 3</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>PC 4</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>PC 5</fullName>
+            <default>false</default>
         </values>
     </picklistValues>
     <picklistValues>
@@ -58,6 +175,60 @@
         </values>
     </picklistValues>
     <picklistValues>
+        <picklist>Sub_Subject__c</picklist>
+        <values>
+            <fullName>Sub-Subject 1</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sub-Subject 2</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sub-Subject 3</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sub-Subject 4</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sub-Subject 5</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sub-Subject 6</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sub-Subject 7</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sub-Subject 8</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sub-Subject 9</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Subject_s__c</picklist>
+        <values>
+            <fullName>Subject 1</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Subject 2</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Subject 3</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
         <picklist>Type</picklist>
         <values>
             <fullName>Feature Request</fullName>
@@ -69,6 +240,55 @@
         </values>
         <values>
             <fullName>Question</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>VIP_Type__c</picklist>
+        <values>
+            <fullName>Member of Congress</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>White_House_Correspondence__c</picklist>
+        <values>
+            <fullName>No</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Yes</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Workflow_Stage__c</picklist>
+        <values>
+            <fullName>Approval</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Clearance</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Distribution</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Draft and Review</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Ready for Closure</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Review and Assign</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Signature</fullName>
             <default>false</default>
         </values>
     </picklistValues>
