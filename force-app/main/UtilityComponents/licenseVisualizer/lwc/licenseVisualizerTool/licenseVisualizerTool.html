@@ -1,0 +1,808 @@
+<template>
+    <div class="license-visualizer-container">
+        <!-- Header with app title and controls -->
+        <header class="tool-header">
+            <div class="header-left">
+                <lightning-icon icon-name="standard:dashboard" size="medium" class="header-icon"></lightning-icon>
+                <h1 class="header-title">License Visualization Tool</h1>
+            </div>
+            <div class="header-controls">
+                <template if:true={enableExport}>
+                    <lightning-button-icon 
+                        icon-name="utility:download" 
+                        title="Export Data" 
+                        class="control-button" 
+                        onclick={handleExportClick}>
+                    </lightning-button-icon>
+                </template>
+                <lightning-button-icon 
+                    icon-name="utility:refresh" 
+                    title="Refresh Data" 
+                    class="control-button" 
+                    onclick={handleRefreshClick}
+                    disabled={isLoading}>
+                </lightning-button-icon>
+                <lightning-button-icon 
+                    icon-name={displayModeIcon} 
+                    title="Change Display Mode" 
+                    class="control-button" 
+                    onclick={toggleDisplayMode}>
+                </lightning-button-icon>
+            </div>
+        </header>
+        
+        <!-- Loading state -->
+        <div if:true={isLoading} class="loading-container">
+            <div class="spinner-container">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+            <p class="loading-message">Loading license insights...</p>
+        </div>
+        
+        <!-- Error state -->
+        <template if:true={hasError}>
+            <div class="error-container">
+                <lightning-icon icon-name="utility:error" class="error-icon" size="medium"></lightning-icon>
+                <div class="error-content">
+                    <h3 class="error-title">We hit a snag</h3>
+                    <p class="error-message">{errorMessage}</p>
+                    <lightning-button 
+                        label="Try Again" 
+                        variant="brand" 
+                        onclick={handleRefreshClick}
+                        class="error-action">
+                    </lightning-button>
+                </div>
+            </div>
+        </template>
+        
+        <!-- Main dashboard content -->
+        <template if:false={isLoading}>
+            <template if:false={hasError}>
+                <!-- Navigation tabs -->
+                <div class="tab-navigation">
+                    <div class={licenseTabClass} data-tab="license_usage" onclick={handleTabSelect}>
+                        <lightning-icon icon-name="standard:entitlement" size="small"></lightning-icon>
+                        <span class="tab-label">License Usage</span>
+                    </div>
+                    <div class={userActivityTabClass} data-tab="user_activity" onclick={handleTabSelect}>
+                        <lightning-icon icon-name="standard:user" size="small"></lightning-icon>
+                        <span class="tab-label">User Activity</span>
+                    </div>
+                    <div class={featureTabClass} data-tab="feature_adoption" onclick={handleTabSelect}>
+                        <lightning-icon icon-name="standard:metric" size="small"></lightning-icon>
+                        <span class="tab-label">Feature Adoption</span>
+                    </div>
+                    <div class={apiTabClass} data-tab="api_usage" onclick={handleTabSelect}>
+                        <lightning-icon icon-name="standard:service_resource" size="small"></lightning-icon>
+                        <span class="tab-label">API Usage</span>
+                    </div>
+                </div>
+                
+                <!-- Dashboard content area -->
+                <div class="dashboard-content">
+                    <!-- License Usage Tab -->
+                    <template if:true={isLicenseTab}>
+                        <div class="section-title">
+                            <h2>License Utilization</h2>
+                            <p class="last-refreshed">Last updated: {lastRefreshDate}</p>
+                        </div>
+                        
+                        <!-- Summary cards -->
+                        <div class="summary-cards">
+                            <div class="summary-card total-licenses">
+                                <div class="card-content">
+                                    <span class="card-label">Total Licenses</span>
+                                    <h3 class="card-value">{totalLicenseCount}</h3>
+                                    <p class="card-detail">Allocated licenses across all types</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:asset_object" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card assigned-licenses">
+                                <div class="card-content">
+                                    <span class="card-label">Assigned Licenses</span>
+                                    <h3 class="card-value">{assignedLicenseCount}</h3>
+                                    <p class="card-detail">{assignedLicensePercentage}% of total licenses</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:person_account" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card inactive-users">
+                                <div class="card-content">
+                                    <span class="card-label">Inactive Users</span>
+                                    <h3 class="card-value">{inactiveUserCount}</h3>
+                                    <p class="card-detail">No login for {inactiveUserThreshold}+ days</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:outcome" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card license-savings">
+                                <div class="card-content">
+                                    <span class="card-label">Potential Savings</span>
+                                    <h3 class="card-value">{potentialSavings}</h3>
+                                    <p class="card-detail">If inactive licenses reassigned</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:opportunity" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- License usage chart -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3 class="chart-title">License Usage by Type</h3>
+                                <div class="chart-legend">
+                                    <div class="legend-item">
+                                        <span class="legend-color assigned"></span>
+                                        <span class="legend-label">Assigned</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color inactive"></span>
+                                        <span class="legend-label">Inactive</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color available"></span>
+                                        <span class="legend-label">Available</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-area" lwc:dom="manual"></div>
+                        </div>
+                        
+                        <!-- License usage table -->
+                        <div class="section-title">
+                            <h3>License Details</h3>
+                        </div>
+                        <div class="license-table-container">
+                            <lightning-datatable
+                                key-field="id"
+                                data={licenseTableData}
+                                columns={licenseColumns}
+                                hide-checkbox-column
+                                sorted-by={sortBy}
+                                sorted-direction={sortDirection}
+                                onrowaction={handleRowAction}
+                                onsort={handleSort}>
+                            </lightning-datatable>
+                        </div>
+                        
+                        <!-- Inactive user modal -->
+                        <template if:true={showInactiveUserModal}>
+                            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                                <div class="slds-modal__container">
+                                    <header class="slds-modal__header">
+                                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeInactiveUserModal}>
+                                            <lightning-icon icon-name="utility:close" size="medium"></lightning-icon>
+                                            <span class="slds-assistive-text">Close</span>
+                                        </button>
+                                        <h2 class="slds-text-heading_medium slds-hyphenate">
+                                            Inactive Users - {selectedLicense.licenseName}
+                                        </h2>
+                                        <p class="slds-m-top_x-small">
+                                            These users haven't logged in for at least {inactiveUserThreshold} days.
+                                            Monthly potential savings: <span class="slds-text-color_success">
+                                                ${selectedLicense.inactiveSavings}
+                                            </span>
+                                        </p>
+                                    </header>
+                                    <div class="slds-modal__content slds-p-around_medium">
+                                        <lightning-datatable
+                                            key-field="id"
+                                            data={inactiveUserDetails}
+                                            columns={inactiveUserColumns}
+                                            hide-checkbox-column>
+                                        </lightning-datatable>
+                                    </div>
+                                    <footer class="slds-modal__footer">
+                                        <lightning-button 
+                                            variant="neutral" 
+                                            label="Cancel" 
+                                            title="Cancel" 
+                                            onclick={closeInactiveUserModal}
+                                            class="slds-m-right_x-small">
+                                        </lightning-button>
+                                        <lightning-button 
+                                            variant="brand" 
+                                            label="Export to CSV" 
+                                            title="Export to CSV" 
+                                            onclick={exportInactiveUsers}>
+                                        </lightning-button>
+                                    </footer>
+                                </div>
+                            </section>
+                            <div class="slds-backdrop slds-backdrop_open"></div>
+                        </template>
+                        
+                        <!-- License sharing modal -->
+                        <template if:true={showLicenseSharingModal}>
+                            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                                <div class="slds-modal__container">
+                                    <header class="slds-modal__header">
+                                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeLicenseSharingModal}>
+                                            <lightning-icon icon-name="utility:close" size="medium"></lightning-icon>
+                                            <span class="slds-assistive-text">Close</span>
+                                        </button>
+                                        <h2 class="slds-text-heading_medium slds-hyphenate">
+                                            License Sharing Opportunities - {selectedLicense.licenseName}
+                                        </h2>
+                                        <p class="slds-m-top_x-small">
+                                            Users with similar login patterns who could potentially share licenses.
+                                        </p>
+                                    </header>
+                                    <div class="slds-modal__content slds-p-around_medium">
+                                        <div class="section-title">
+                                            <h3>Login Pattern Groups</h3>
+                                            <p>Users who login during similar time periods could potentially share licenses.</p>
+                                        </div>
+                                        
+                                        <template for:each={licenseSharingDetails} for:item="group" for:index="index">
+                                            <div key={group.id} class="sharing-group slds-m-bottom_medium slds-p-around_small slds-border_bottom">
+                                                <div class="slds-grid slds-gutters">
+                                                    <div class="slds-col slds-size_2-of-3">
+                                                        <p class="slds-text-heading_small">{group.pattern}</p>
+                                                        <p class="slds-text-body_regular">
+                                                            {group.userCount} users with similar login patterns
+                                                        </p>
+                                                        <div class="slds-m-top_small">
+                                                            <lightning-button 
+                                                                variant="neutral" 
+                                                                label="View Users" 
+                                                                title="View Users" 
+                                                                data-id={group.id}
+                                                                onclick={viewSharingGroupUsers}>
+                                                            </lightning-button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-col slds-size_1-of-3">
+                                                        <div class="sharing-stats">
+                                                            <p class="slds-text-heading_medium slds-text-align_right">
+                                                                {group.userCount} users
+                                                            </p>
+                                                            <p class="slds-text-body_regular slds-text-align_right">
+                                                                Potential savings: <span class="slds-text-color_success">
+                                                                    ${group.potentialSavings}
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <footer class="slds-modal__footer">
+                                        <lightning-button 
+                                            variant="neutral" 
+                                            label="Cancel" 
+                                            title="Cancel" 
+                                            onclick={closeLicenseSharingModal}
+                                            class="slds-m-right_x-small">
+                                        </lightning-button>
+                                        <lightning-button 
+                                            variant="brand" 
+                                            label="Export to CSV" 
+                                            title="Export to CSV" 
+                                            onclick={exportLicenseSharing}>
+                                        </lightning-button>
+                                    </footer>
+                                </div>
+                            </section>
+                            <div class="slds-backdrop slds-backdrop_open"></div>
+                        </template>
+                    </template>
+                    
+                    <!-- User Activity Tab -->
+                    <template if:true={isUserActivityTab}>
+                        <div class="section-title">
+                            <h2>User Login Activity</h2>
+                            <p class="last-refreshed">Last updated: {lastRefreshDate}</p>
+                        </div>
+                        
+                        <!-- User activity metrics -->
+                        <div class="summary-cards">
+                            <div class="summary-card active-today">
+                                <div class="card-content">
+                                    <span class="card-label">Active Today</span>
+                                    <h3 class="card-value">{usersActiveToday}</h3>
+                                    <p class="card-detail">{usersActiveTodayPercentage}% of all users</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:today" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card avg-sessions">
+                                <div class="card-content">
+                                    <span class="card-label">Avg. Session</span>
+                                    <h3 class="card-value">{avgSessionDuration}</h3>
+                                    <p class="card-detail">Average user session time</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:service_appointment" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card mobile-users">
+                                <div class="card-content">
+                                    <span class="card-label">Mobile Usage</span>
+                                    <h3 class="card-value">{mobileUserPercentage}%</h3>
+                                    <p class="card-detail">Accessing via mobile app</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:connected_apps" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card peak-time">
+                                <div class="card-content">
+                                    <span class="card-label">Peak Usage</span>
+                                    <h3 class="card-value">{peakUsageTime}</h3>
+                                    <p class="card-detail">Highest login activity period</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:timesheet_entry" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card unique-users">
+                                <div class="card-content">
+                                    <span class="card-label">Weekly Active</span>
+                                    <h3 class="card-value">{uniqueUsersThisWeek}</h3>
+                                    <p class="card-detail">Unique users in the last 7 days</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:user" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card inactive-users">
+                                <div class="card-content">
+                                    <span class="card-label">Inactive Users</span>
+                                    <h3 class="card-value">{inactiveUserCount}</h3>
+                                    <p class="card-detail">{inactiveUserPercentage}% of all users</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:data_mapping" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card lockouts" onclick={viewLockoutDetails}>
+                                <div class="card-content">
+                                    <span class="card-label">Account Lockouts</span>
+                                    <h3 class="card-value">{userLockouts}</h3>
+                                    <p class="card-detail">In the selected time period</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:password" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card unique-users-month">
+                                <div class="card-content">
+                                    <span class="card-label">Monthly Active</span>
+                                    <h3 class="card-value">{uniqueUsersThisMonth}</h3>
+                                    <p class="card-detail">Unique users in the last 30 days</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:user" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Time scale selector -->
+                        <div class="filter-container slds-m-top_medium slds-m-bottom_small">
+                            <lightning-combobox
+                                name="timeScale"
+                                label="Time Period"
+                                value={selectedTimeScale}
+                                options={timeScaleOptions}
+                                onchange={handleTimeScaleChange}>
+                            </lightning-combobox>
+                        </div>
+                        
+                        <!-- Login trend chart -->
+                        <div class="chart-container login-trend-container">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Login Activity Trend</h3>
+                            </div>
+                            <div class="login-trend-chart" lwc:dom="manual"></div>
+                        </div>
+                        
+                        <!-- Activity heatmap -->
+                        <div class="section-title">
+                            <h3>Login Activity Heatmap</h3>
+                            <p>Shows when users are most active during the day and week</p>
+                        </div>
+                        <div class="chart-container heatmap-container">
+                            <div class="heatmap-chart" lwc:dom="manual"></div>
+                        </div>
+                        
+                        <!-- User details table -->
+                        <div class="section-title slds-m-top_large">
+                            <h3>User Activity Details</h3>
+                            <p>Activity status for all users in the system</p>
+                        </div>
+                        <div class="user-activity-table">
+                            <lightning-datatable
+                                key-field="id"
+                                data={userActivityDetails}
+                                columns={userActivityColumns}
+                                hide-checkbox-column
+                                sorted-by="lastLogin"
+                                sorted-direction="desc">
+                            </lightning-datatable>
+                        </div>
+                        
+                        <!-- Login methods and geo distribution -->
+                        <div class="slds-grid slds-gutters slds-m-top_large">
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="section-title">
+                                    <h3>Login Methods</h3>
+                                </div>
+                                <div class="chart-container login-method-chart" lwc:dom="manual"></div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="section-title">
+                                    <h3>Geographic Distribution</h3>
+                                </div>
+                                <div class="chart-container geo-map-container" lwc:dom="manual"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Account lockout modal -->
+                        <template if:true={showLockoutModal}>
+                            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                                <div class="slds-modal__container">
+                                    <header class="slds-modal__header">
+                                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeLockoutModal}>
+                                            <lightning-icon icon-name="utility:close" size="medium"></lightning-icon>
+                                            <span class="slds-assistive-text">Close</span>
+                                        </button>
+                                        <h2 class="slds-text-heading_medium slds-hyphenate">
+                                            Account Lockouts - {selectedTimeScale}
+                                        </h2>
+                                        <p class="slds-m-top_x-small">
+                                            Users who have been locked out due to failed login attempts.
+                                        </p>
+                                    </header>
+                                    <div class="slds-modal__content slds-p-around_medium">
+                                        <template if:true={lockoutDetails.length}>
+                                            <lightning-datatable
+                                                key-field="id"
+                                                data={lockoutDetails}
+                                                columns={lockoutColumns}
+                                                hide-checkbox-column>
+                                            </lightning-datatable>
+                                            <div class="slds-m-top_medium">
+                                                <div class="slds-box slds-theme_info">
+                                                    <div class="slds-media">
+                                                        <div class="slds-media__figure">
+                                                            <lightning-icon icon-name="utility:info" size="small"></lightning-icon>
+                                                        </div>
+                                                        <div class="slds-media__body">
+                                                            <h3 class="slds-text-heading_small">Security Recommendations</h3>
+                                                            <ul class="slds-list_dotted slds-m-top_x-small">
+                                                                <li>Consider implementing SSO or MFA for accounts with frequent lockouts</li>
+                                                                <li>Review unusual login attempts from unfamiliar locations or IP addresses</li>
+                                                                <li>Monitor accounts that experience multiple lockouts for possible credential theft attempts</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template if:false={lockoutDetails.length}>
+                                            <div class="empty-state">
+                                                <lightning-icon icon-name="utility:success" size="large"></lightning-icon>
+                                                <h3 class="slds-text-heading_medium">No Lockouts Found</h3>
+                                                <p>There are no account lockouts recorded in the current time period. This is great news for your security posture!</p>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <footer class="slds-modal__footer">
+                                        <lightning-button 
+                                            variant="neutral" 
+                                            label="Close" 
+                                            title="Close" 
+                                            onclick={closeLockoutModal}
+                                            class="slds-m-right_x-small">
+                                        </lightning-button>
+                                        <template if:true={lockoutDetails.length}>
+                                            <lightning-button 
+                                                variant="brand" 
+                                                label="Export to CSV" 
+                                                title="Export to CSV" 
+                                                onclick={exportLockoutDetails}>
+                                            </lightning-button>
+                                        </template>
+                                    </footer>
+                                </div>
+                            </section>
+                            <div class="slds-backdrop slds-backdrop_open"></div>
+                        </template>
+                    </template>
+                    
+                    <!-- Feature Adoption Tab -->
+                    <template if:true={isFeatureTab}>
+                        <div class="section-title">
+                            <h2>Feature Adoption</h2>
+                            <p class="last-refreshed">Last updated: {lastRefreshDate}</p>
+                        </div>
+                        
+                        <!-- Feature adoption metrics -->
+                        <div class="summary-cards">
+                            <div class="summary-card permission-set-usage">
+                                <div class="card-content">
+                                    <span class="card-label">Permission Sets</span>
+                                    <h3 class="card-value">{permissionSetUsage}%</h3>
+                                    <p class="card-detail">Of users have permission sets</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:permission_set" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card report-adoption">
+                                <div class="card-content">
+                                    <span class="card-label">Report Adoption</span>
+                                    <h3 class="card-value">{reportAdoption}%</h3>
+                                    <p class="card-detail">Of users run reports</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:report" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card dashboard-adoption">
+                                <div class="card-content">
+                                    <span class="card-label">Dashboard Adoption</span>
+                                    <h3 class="card-value">{dashboardAdoption}%</h3>
+                                    <p class="card-detail">Of users view dashboards</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:dashboard" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card chatter-usage">
+                                <div class="card-content">
+                                    <span class="card-label">Chatter Usage</span>
+                                    <h3 class="card-value">{chatterUsage}%</h3>
+                                    <p class="card-detail">Of users engage with Chatter</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:feed" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Profile activity matrix -->
+                        <div class="section-title slds-m-top_large">
+                            <h3>Profile Activity Matrix</h3>
+                            <p class="section-description">User activity breakdown by profile</p>
+                        </div>
+                        
+                        <div class="profile-activity-table">
+                            <lightning-datatable
+                                key-field="profileId"
+                                data={profileActivityMatrix}
+                                columns={profileActivityColumns}
+                                hide-checkbox-column>
+                            </lightning-datatable>
+                        </div>
+                        
+                        <!-- Profile chart -->
+                        <div class="section-title slds-m-top_large">
+                            <h3>Profile Distribution</h3>
+                            <p class="section-description">Distribution of users by profile</p>
+                        </div>
+                        
+                        <div class="chart-container profile-chart" lwc:dom="manual"></div>
+                        
+                        <!-- Permission set assignments by profile -->
+                        <div class="section-title slds-m-top_large">
+                            <h3>Permission Set Usage by Profile</h3>
+                            <p class="section-description">How permission sets are distributed across profiles</p>
+                        </div>
+                        
+                        <div class="chart-container perm-profile-chart" lwc:dom="manual"></div>
+                        
+                        <!-- Top permission sets -->
+                        <div class="section-title slds-m-top_large">
+                            <h3>Top Permission Sets</h3>
+                            <p class="section-description">Most frequently assigned permission sets</p>
+                        </div>
+                        
+                        <div class="chart-container permission-chart" lwc:dom="manual"></div>
+                        
+                        <!-- Object usage stats -->
+                        <div class="section-title slds-m-top_large">
+                            <h3>Object Usage Statistics</h3>
+                            <p class="section-description">Record counts and user adoption by object</p>
+                        </div>
+                        
+                        <div class="chart-container object-usage-chart" lwc:dom="manual"></div>
+                        
+                        <div class="object-usage-table">
+                            <lightning-datatable
+                                key-field="name"
+                                data={objectUsageData}
+                                columns={objectUsageColumns}
+                                hide-checkbox-column>
+                            </lightning-datatable>
+                        </div>
+                        
+                        <!-- Object adoption trends -->
+                        <div class="section-title slds-m-top_large">
+                            <h3>Object Adoption Trends</h3>
+                            <p class="section-description">Record creation trends over time</p>
+                        </div>
+                        
+                        <div class="chart-container object-trend-chart" lwc:dom="manual"></div>
+                    </template>
+                    
+                    <!-- API Usage Tab -->
+                    <template if:true={isApiTab}>
+                        <div class="section-title">
+                            <h2>API Usage Analytics</h2>
+                            <p class="last-refreshed">Last updated: {lastRefreshDate}</p>
+                        </div>
+                        
+                        <!-- API usage metrics -->
+                        <div class="summary-cards">
+                            <div class="summary-card api-calls">
+                                <div class="card-content">
+                                    <span class="card-label">API Calls</span>
+                                    <h3 class="card-value">{totalApiCalls}</h3>
+                                    <p class="card-detail">{apiUsagePercentage}% of daily limit</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:api" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card api-trend">
+                                <div class="card-content">
+                                    <span class="card-label">API Trend</span>
+                                    <h3 class="card-value">{apiTrendValue}</h3>
+                                    <p class="card-detail">Compared to previous period</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:chart" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card data-storage">
+                                <div class="card-content">
+                                    <span class="card-label">Data Storage</span>
+                                    <h3 class="card-value">{dataStorageUsed}</h3>
+                                    <p class="card-detail">{dataStoragePercentage}% of allocation</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:database" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card file-storage">
+                                <div class="card-content">
+                                    <span class="card-label">File Storage</span>
+                                    <h3 class="card-value">{fileStorageUsed}</h3>
+                                    <p class="card-detail">{fileStoragePercentage}% of allocation</p>
+                                </div>
+                                <div class="card-icon">
+                                    <lightning-icon icon-name="standard:file" size="small"></lightning-icon>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Time period selector -->
+                        <div class="filter-container slds-m-top_medium slds-m-bottom_small">
+                            <lightning-combobox
+                                name="apiTimeframe"
+                                label="Time Period"
+                                value={selectedApiTimeframe}
+                                options={apiTimeframeOptions}
+                                onchange={handleApiTimeframeChange}>
+                            </lightning-combobox>
+                            
+                            <lightning-input 
+                                type="toggle"
+                                label="Show Detailed API Usage"
+                                checked={showDetailedApiUsage}
+                                message-toggle-active="On"
+                                message-toggle-inactive="Off"
+                                class="slds-m-left_medium"
+                                onchange={handleToggleDetailedApiUsage}>
+                            </lightning-input>
+                        </div>
+                        
+                        <!-- API trend chart -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3 class="chart-title">API Usage Trend</h3>
+                            </div>
+                            <div class="api-trend-chart" lwc:dom="manual"></div>
+                        </div>
+                        
+                        <!-- API Consumers and Connected Apps -->
+                        <div class="slds-grid slds-gutters slds-m-top_large">
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="section-title">
+                                    <h3>Top API Consumers</h3>
+                                    <p>Users and integrations with highest API usage</p>
+                                </div>
+                                <div class="chart-container api-consumers-chart" lwc:dom="manual"></div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="section-title">
+                                    <h3>Connected Apps</h3>
+                                    <p>API usage by connected application</p>
+                                </div>
+                                <div class="chart-container connected-apps-chart" lwc:dom="manual"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Detailed API usage -->
+                        <template if:true={showDetailedApiUsage}>
+                            <div class="section-title slds-m-top_large">
+                                <h3>Detailed API Usage</h3>
+                                <p>Per-consumer API calls over different time periods</p>
+                            </div>
+                            <div class="api-usage-table">
+                                <lightning-datatable
+                                    key-field="id"
+                                    data={apiUsageTableData}
+                                    columns={apiUsageColumns}
+                                    hide-checkbox-column
+                                    sorted-by={apiSortBy}
+                                    sorted-direction={apiSortDirection}
+                                    onsort={handleApiSort}>
+                                </lightning-datatable>
+                            </div>
+                        </template>
+                        
+                        <!-- API usage recommendations -->
+                        <div class="api-recommendations slds-m-top_large">
+                            <div class="slds-box slds-theme_info">
+                                <div class="slds-media">
+                                    <div class="slds-media__figure">
+                                        <lightning-icon icon-name="utility:info" size="small"></lightning-icon>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <h3 class="slds-text-heading_small">API Usage Optimization Recommendations</h3>
+                                        <ul class="slds-list_dotted slds-m-top_x-small">
+                                            <li>Consider implementing API rate limiting for high-volume integrations</li>
+                                            <li>Review API consumers with sudden increases in usage for potential inefficiencies</li>
+                                            <li>Use bulk API operations for data loads to reduce individual API call counts</li>
+                                            <li>Monitor off-hours API usage for unauthorized access or inefficient scheduling</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </template>
+        
+        <!-- Footer with auto-refresh status -->
+        <footer class="tool-footer">
+            <template if:true={isAutoRefreshEnabled}>
+                <div class="auto-refresh-indicator">
+                    <lightning-icon icon-name="utility:dynamic_record_choice" size="x-small"></lightning-icon>
+                    <span>Auto-refreshing every {autoRefreshInterval} minutes</span>
+                </div>
+            </template>
+            <div class="footer-meta">
+                <span>Powered by Nuvitek</span>
+            </div>
+        </footer>
+    </div>
+</template> 

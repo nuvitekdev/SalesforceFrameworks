@@ -1,0 +1,657 @@
+/* License Visualizer Tool - CSS with Apple-inspired design system */
+
+.license-visualizer-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    --primary-color: #22BDC1;
+    --primary-color-rgb: 34, 189, 193;
+    --primary-dark: #1a9599;
+    --primary-light: #63d1d4;
+    --accent-color: #D5DF23;
+    --accent-color-rgb: 213, 223, 35;
+    --accent-dark: #b8c11e;
+    --accent-light: #e1e95c;
+    --success-color: #23C552;
+    --warning-color: #F8A100;
+    --danger-color: #F53F50;
+    --neutral-color: #7C8693;
+    --text-color: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #a1a1a6;
+    --background: #ffffff;
+    --background-alt: #f5f5f7;
+    --background-elevated: #fbfbfd;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-subtle: rgba(0, 0, 0, 0.05);
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+    
+    /* Border radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+    
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background-color: var(--background);
+    color: var(--text-color);
+}
+
+/* ========== HEADER STYLES ========== */
+.tool-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background-color: var(--background-elevated);
+    border-bottom: 1px solid var(--border-subtle);
+    z-index: 10;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-icon {
+    --sds-c-icon-color-background: transparent;
+    --sds-c-icon-color-foreground-default: var(--primary-color);
+}
+
+.header-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: var(--text-color);
+}
+
+.header-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.control-button {
+    --sds-c-button-radius-border: 50%;
+    --sds-c-icon-color-foreground-default: var(--text-secondary);
+    --sds-c-button-text-color: var(--text-secondary);
+    transition: transform var(--transition-fast);
+}
+
+.control-button:hover {
+    --sds-c-icon-color-foreground-default: var(--primary-color);
+    transform: scale(1.05);
+}
+
+/* ========== LOADING STATE ========== */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    flex: 1;
+}
+
+.spinner-container {
+    height: 6rem;
+    width: 6rem;
+    position: relative;
+}
+
+.loading-message {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* ========== ERROR STATE ========== */
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #FFF5F5;
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    margin: 2rem;
+    text-align: center;
+    gap: 1rem;
+}
+
+.error-icon {
+    --sds-c-icon-color-foreground-default: var(--danger-color);
+}
+
+.error-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0.5rem 0 0 0;
+    color: var(--danger-color);
+}
+
+.error-message {
+    font-size: 0.9rem;
+    margin: 0.5rem 0 1.5rem 0;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    max-width: 400px;
+}
+
+.error-action {
+    --sds-c-button-brand-color-background: var(--primary-color);
+    --sds-c-button-brand-color-background-hover: var(--primary-dark);
+    --sds-c-button-radius-border: 8px;
+}
+
+/* ========== TAB NAVIGATION ========== */
+.tab-navigation {
+    display: flex;
+    padding: 0 1.5rem;
+    background-color: var(--background-elevated);
+    border-bottom: 1px solid var(--border-subtle);
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+}
+
+.tab-navigation::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+}
+
+.tab-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    position: relative;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.tab-item:hover {
+    color: var(--primary-color);
+}
+
+.tab-item.active {
+    color: var(--primary-color);
+}
+
+.tab-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--primary-color);
+    border-radius: 3px 3px 0 0;
+}
+
+.tab-item lightning-icon {
+    --sds-c-icon-color-foreground-default: currentColor;
+}
+
+/* ========== DASHBOARD CONTENT ========== */
+.dashboard-content {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-title h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.section-title h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 1.5rem 0 1rem;
+}
+
+.last-refreshed {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    margin: 0;
+}
+
+/* ========== SUMMARY CARDS ========== */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background-color: var(--background-elevated);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-medium);
+    border: 1px solid var(--border-subtle);
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.card-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.card-value {
+    font-size: 1.75rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.25rem 0;
+    color: var(--text-color);
+}
+
+.card-detail {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    margin: 0;
+}
+
+.card-icon {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-icon lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--primary-color);
+}
+
+.summary-card.total-licenses .card-icon {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.summary-card.assigned-licenses .card-icon {
+    background-color: rgba(var(--accent-color-rgb), 0.1);
+}
+
+.summary-card.inactive-users .card-icon,
+.summary-card.file-storage .card-icon {
+    background-color: rgba(245, 63, 80, 0.1); /* Danger color with alpha */
+}
+
+.summary-card.license-savings .card-icon,
+.summary-card.active-today .card-icon {
+    background-color: rgba(35, 197, 82, 0.1); /* Success color with alpha */
+}
+
+.summary-card.avg-sessions .card-icon,
+.summary-card.data-storage .card-icon {
+    background-color: rgba(124, 134, 147, 0.1); /* Neutral color with alpha */
+}
+
+.summary-card.mobile-usage .card-icon,
+.summary-card.api-calls .card-icon {
+    background-color: rgba(248, 161, 0, 0.1); /* Warning color with alpha */
+}
+
+.summary-card.peak-time .card-icon,
+.summary-card.api-trend .card-icon {
+    background-color: rgba(var(--accent-color-rgb), 0.1);
+}
+
+.summary-card.lockouts {
+    cursor: pointer;
+    transition: transform var(--transition-bounce);
+}
+
+.summary-card.lockouts:hover {
+    transform: scale(1.03);
+    box-shadow: var(--shadow-md);
+}
+
+/* ========== CHART CONTAINER ========== */
+.chart-container {
+    background-color: var(--background-elevated);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-subtle);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.chart-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.chart-legend {
+    display: flex;
+    gap: 1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.legend-color.assigned {
+    background-color: var(--primary-color);
+}
+
+.legend-color.inactive {
+    background-color: var(--danger-color);
+}
+
+.legend-color.available {
+    background-color: var(--neutral-color);
+}
+
+.legend-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.chart-area, 
+.heatmap-container, 
+.geo-map-container, 
+.login-method-chart,
+.permission-chart,
+.profile-chart,
+.object-usage-chart,
+.api-trend-chart,
+.api-consumers-chart,
+.connected-apps-chart {
+    width: 100%;
+    height: 300px;
+    min-height: 300px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Chart Grid for dual charts */
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-grid-item {
+    background-color: var(--background-elevated);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-subtle);
+}
+
+/* ========== ADOPTION METRICS ========== */
+.adoption-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.metric-container {
+    padding: 1.5rem;
+    background-color: var(--background-elevated);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-subtle);
+}
+
+.metric-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+}
+
+.metric-progress-container {
+    position: relative;
+    margin-bottom: 0.5rem;
+}
+
+.metric-value {
+    position: absolute;
+    right: 0;
+    top: -1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* ========== TABLE CONTAINERS ========== */
+.license-table-container,
+.api-table-container {
+    margin-bottom: 2rem;
+    background-color: var(--background-elevated);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-subtle);
+}
+
+/* Style for datatable to match our design system */
+.license-table-container lightning-datatable,
+.api-table-container lightning-datatable {
+    --lwc-colorTextIconDefault: var(--text-secondary);
+    --lwc-colorBorderSeparator: var(--border-subtle);
+    --lwc-tableColorBackgroundHeader: var(--background-elevated);
+    --lwc-fontSize3: 0.85rem;
+}
+
+/* ========== FOOTER ========== */
+.tool-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--background-elevated);
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+}
+
+.auto-refresh-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.auto-refresh-indicator lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--primary-color);
+}
+
+.footer-meta {
+    font-weight: 500;
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.summary-cards, 
+.chart-container, 
+.metric-container,
+.license-table-container,
+.api-table-container {
+    animation: fadeIn var(--transition-medium) forwards;
+}
+
+.summary-cards {
+    animation-delay: 0.1s;
+}
+
+.chart-container {
+    animation-delay: 0.2s;
+}
+
+.chart-grid {
+    animation-delay: 0.3s;
+}
+
+/* Pulse animation for auto-refresh indicator */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.auto-refresh-indicator {
+    animation: pulse 2s infinite;
+}
+
+/* Progress bar animations */
+.metric-progress-container lightning-progress-bar {
+    transition: width var(--transition-bounce);
+}
+
+/* Chart filter styles */
+.chart-filters lightning-combobox {
+    --sds-c-input-radius-border: var(--radius-sm);
+    min-width: 120px;
+}
+
+/* ========== RESPONSIVE STYLES ========== */
+@media (max-width: 768px) {
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .adoption-metrics {
+        grid-template-columns: 1fr;
+    }
+    
+    .tab-navigation {
+        padding: 0;
+    }
+    
+    .tab-item {
+        padding: 0.75rem 1rem;
+    }
+    
+    .tab-label {
+        display: none;
+    }
+    
+    .tab-item.active .tab-label {
+        display: inline;
+    }
+    
+    .header-title {
+        font-size: 1rem;
+    }
+}
+
+/* ========== MODAL STYLES ========== */
+/* Empty state for modals */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.empty-state lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--success-color);
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    margin: 0.5rem 0;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    max-width: 30rem;
+    margin: 0.5rem auto 0;
+}
+
+/* Animation for security recommendations */
+.slds-box.slds-theme_info {
+    animation: fadeSlideIn 0.4s cubic-bezier(0.28, 0.84, 0.42, 1);
+}
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+} 

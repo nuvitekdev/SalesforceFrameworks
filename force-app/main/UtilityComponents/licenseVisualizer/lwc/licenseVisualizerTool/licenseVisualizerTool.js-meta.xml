@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>License Visualization Tool</masterLabel>
+    <description>Dashboard for visualizing Salesforce license usage, user adoption, and login activity</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightning__Tab</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage,lightning__HomePage">
+            <!-- Data Refresh Configuration -->
+            <property name="autoRefreshInterval" type="Integer" label="Auto Refresh Interval (minutes)" 
+                     description="Set how often the dashboard should automatically refresh data (0 to disable)" 
+                     default="60" min="0" max="1440"/>
+            
+            <!-- License Configuration -->
+            <property name="showInactiveUsers" type="Boolean" label="Show Inactive Users" 
+                     description="Include inactive users in license counts and analytics" default="false"/>
+            <property name="inactiveUserThreshold" type="Integer" label="Inactive User Threshold (days)" 
+                     description="Number of days without login to consider a user inactive" 
+                     default="90" min="7" max="365"/>
+            
+            <!-- Display Configuration -->
+            <property name="defaultTabName" type="String" label="Default Tab" 
+                     description="The tab to display when the component loads" default="license_usage" 
+                     datasource="license_usage,user_activity,feature_adoption,api_usage"/>
+            <property name="displayMode" type="String" label="Display Mode" 
+                     description="How to display the license data" default="graphical" 
+                     datasource="graphical,tabular,compact"/>
+            <property name="colorTheme" type="String" label="Color Theme" 
+                     description="Color scheme for the dashboard" default="nuvitek" 
+                     datasource="nuvitek,salesforce,neutral,dark,light"/>
+            
+            <!-- Advanced Options -->
+            <property name="enableExport" type="Boolean" label="Enable Data Export" 
+                     description="Allow exporting data to CSV and Excel formats" default="false"/>
+            <property name="showDetailedApiUsage" type="Boolean" label="Show Detailed API Usage" 
+                     description="Display detailed API usage metrics per user and connected app" default="false"/>
+            <property name="enableRealTimeUpdates" type="Boolean" label="Enable Real-Time Updates" 
+                     description="Enable real-time data updates using streaming API (may impact performance)" default="false"/>
+            
+            <supportedFormFactors>
+                <supportedFormFactor type="Large" />
+            </supportedFormFactors>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle> 
