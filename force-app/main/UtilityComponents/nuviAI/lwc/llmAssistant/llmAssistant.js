@@ -8,12 +8,14 @@ import saveAnalysisToField from '@salesforce/apex/LLMController.saveAnalysisToFi
 import { getRecord } from 'lightning/uiRecordApi';
 import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 import ID_FIELD from '@salesforce/schema/Account.Id';
+import { CurrentPageReference } from 'lightning/navigation';
 
 // Constants
 const MAX_HISTORY_MESSAGES = 50; // Maximum number of messages to keep in history
 
 export default class LLMAssistant extends LightningElement {
     @api recordId;
+    @wire(CurrentPageReference) pageRef;
     
     // Design attributes for configuration from targetConfig
     @api primaryColor = '#22BDC1';  // Default Nuvitek teal
@@ -392,10 +394,10 @@ SUMMARY:`;
         }, 300); // 300ms debounce
 
         // If the component is on a record page and has a recordId, get the object API name
-        if (this.recordId) {
+        if (this.effectiveRecordId) {
             // The first 3 characters of a Salesforce ID represent the object's key prefix
-            this.objectApiName = this.recordId.substring(0, 3);
-            console.log('Record ID detected:', this.recordId);
+            this.objectApiName = this.effectiveRecordId.substring(0, 3);
+            console.log('Record ID detected:', this.effectiveRecordId);
             console.log('Object API Name key prefix:', this.objectApiName);
         }
     }
@@ -485,7 +487,7 @@ SUMMARY:`;
                         this.selectedLLMLabel = selectedOption ? selectedOption.label : 'Unknown Model';
                         
                         // For a record page, perform an initial anomaly check
-                        if (this.enableAnomalyDetection && this.recordId) {
+                        if (this.enableAnomalyDetection && this.effectiveRecordId) {
                             this.performInitialAnomalyCheck();
                         }
                     }
@@ -571,7 +573,7 @@ SUMMARY:`;
         
         // Only get DOM information if we're on a record page
         let domInfo = '';
-        if (this.recordId) {
+        if (this.effectiveRecordId) {
             domInfo = this.truncateContent(this.getDOMInformation(), 10000);
         }
         
@@ -601,7 +603,7 @@ SUMMARY:`;
         // Combine and truncate the final prompt
         let finalPrompt;
         if (operation === 'summarize') {
-            if (!this.recordId) {
+            if (!this.effectiveRecordId) {
                 this.showError('Cannot analyze record: No record is available');
                 this.isLoading = false;
                 return;
@@ -629,12 +631,12 @@ SUMMARY:`;
         let analysisResult = '';
 
         // If this is analyze operation and we have a field to save to, we'll need to prepare modal first
-        if (operation === 'summarize' && this.recordId && this.analysisFieldApiName && this.analysisFieldApiName.trim() !== '') {
+        if (operation === 'summarize' && this.effectiveRecordId && this.analysisFieldApiName && this.analysisFieldApiName.trim() !== '') {
             shouldShowResultsImmediately = false;
         }
 
         handleRequest({
-            recordId: this.recordId || null, // Pass null if no record ID
+            recordId: this.effectiveRecordId || null, // Use effectiveRecordId instead of recordId
             configName: this.selectedLLM,
             prompt: finalPrompt,
             operation: operation,
@@ -645,7 +647,7 @@ SUMMARY:`;
             analysisResult = result;
             
             // If this is a summarize operation and we have a field to save to, prepare the modal
-            if (operation === 'summarize' && this.recordId && this.analysisFieldApiName && this.analysisFieldApiName.trim() !== '') {
+            if (operation === 'summarize' && this.effectiveRecordId && this.analysisFieldApiName && this.analysisFieldApiName.trim() !== '') {
                 this.currentAnalysis = result;
                 return this.prepareSynopsisModal(result);
             } else {
@@ -733,7 +735,7 @@ SUMMARY:`;
 
     validateInputs(operation) {
         // When analyzing a record, we need a recordId
-        if (operation === 'summarize' && !this.recordId) {
+        if (operation === 'summarize' && !this.effectiveRecordId) {
             this.showError('No record ID available for analysis');
             return false;
         }
@@ -953,10 +955,10 @@ SUMMARY:`;
     // Perform the initial anomaly check when the component has the recordId and a model selected
     async performInitialAnomalyCheck() {
         // Only run if anomaly detection is enabled, we have a recordId and a selected LLM
-        if (!this.enableAnomalyDetection || !this.recordId || !this.selectedLLM || this.anomalyCheckLoading) {
+        if (!this.enableAnomalyDetection || !this.effectiveRecordId || !this.selectedLLM || this.anomalyCheckLoading) {
             console.log('Anomaly check skipped: ' + 
                 (!this.enableAnomalyDetection ? 'Anomaly detection disabled, ' : '') +
-                (!this.recordId ? 'Missing recordId, ' : '') + 
+                (!this.effectiveRecordId ? 'Missing recordId, ' : '') + 
                 (!this.selectedLLM ? 'No LLM selected, ' : '') + 
                 (this.anomalyCheckLoading ? 'Already loading' : ''));
             return;
@@ -971,7 +973,7 @@ SUMMARY:`;
         try {
             // Call the Apex method
             const result = await checkRecordForAnomalies({ 
-                recordId: this.recordId, 
+                recordId: this.effectiveRecordId, 
                 configName: this.selectedLLM,
                 relatedObjects: this.relatedObjects
             });
@@ -1027,7 +1029,7 @@ SUMMARY:`;
     }
 
     // Wire to get the record data first to determine object API name properly
-    @wire(getRecord, { recordId: '$recordId', fields: [ID_FIELD] })
+    @wire(getRecord, { recordId: '$effectiveRecordId', fields: [ID_FIELD] })
     wiredRecord({ error, data }) {
         if (data) {
             // Extract the object API name from the record data
@@ -1065,7 +1067,7 @@ SUMMARY:`;
             console.log('Preparing synopsis modal for field:', this.analysisFieldApiName);
             
             // Make sure we have a recordId and analysis field name
-            if (!this.recordId || !this.analysisFieldApiName) {
+            if (!this.effectiveRecordId || !this.analysisFieldApiName) {
                 console.error('Missing recordId or analysisFieldApiName');
                 resolve(); // Resolve anyway to continue the flow
                 return;
@@ -1081,7 +1083,7 @@ SUMMARY:`;
                 
                 // Use apex to check field existence
                 saveAnalysisToField({
-                    recordId: this.recordId,
+                    recordId: this.effectiveRecordId,
                     fieldApiName: this.analysisFieldApiName,
                     analysisText: 'FIELD_CHECK_ONLY'
                 })
@@ -1144,7 +1146,7 @@ SUMMARY:`;
             console.log('Getting full record context...');
             // First get full record context to have the most complete information
             handleRequest({
-                recordId: this.recordId,
+                recordId: this.effectiveRecordId,
                 configName: this.selectedLLM,
                 prompt: 'Provide a detailed analysis of this record including all important fields and relationships.',
                 operation: 'summarize',
@@ -1163,7 +1165,7 @@ SUMMARY:`;
                 FINAL REMINDER: The output MUST be under 600 characters total.`;
                 
                 return handleRequest({
-                    recordId: this.recordId,
+                    recordId: this.effectiveRecordId,
                     configName: this.selectedLLM,
                     prompt: enhancedPrompt,
                     operation: 'ask',
@@ -1189,7 +1191,7 @@ SUMMARY:`;
                 console.error('Error generating summary:', error);
                 // If summary generation fails, use a simplified approach
                 handleRequest({
-                    recordId: this.recordId,
+                    recordId: this.effectiveRecordId,
                     configName: this.selectedLLM,
                     prompt: `${promptForSummary} REMEMBER: Output MUST be 600 characters or less.`,
                     operation: 'ask',
@@ -1240,7 +1242,7 @@ SUMMARY:`;
         this.isLoading = true;
         
         saveAnalysisToField({
-            recordId: this.recordId,
+            recordId: this.effectiveRecordId,
             fieldApiName: this.analysisFieldApiName,
             analysisText: this.analysisSummary
         })
@@ -1248,7 +1250,7 @@ SUMMARY:`;
             console.log('Analysis saved successfully');
             
             // Refresh the record data
-            getRecordNotifyChange([{recordId: this.recordId}]);
+            getRecordNotifyChange([{recordId: this.effectiveRecordId}]);
             
             // Show success toast with field label or API name
             const fieldDisplayName = this.fieldLabel || this.analysisFieldApiName || 'specified';
@@ -1287,5 +1289,28 @@ SUMMARY:`;
             return 'character-count-warning';
         }
         return '';
+    }
+
+    // Get recordId from PageReference if available
+    getRecordIdFromPageRef() {
+        if (this.pageRef && this.pageRef.attributes) {
+            return this.pageRef.attributes.recordId || null;
+        }
+        return null;
+    }
+
+    // Get recordId from URL if present
+    getRecordIdFromUrl() {
+        const url = window.location.href;
+        const idPattern = /\/([a-zA-Z0-9]{15,18})(?:\/|\?|$)/;
+        const match = url.match(idPattern);
+        return match ? match[1] : null;
+    }
+    
+    // Get the effective record ID from all possible sources
+    get effectiveRecordId() {
+        const id = this.recordId || this.getRecordIdFromPageRef() || this.getRecordIdFromUrl();
+        console.log('Effective Record ID:', id);
+        return id;
     }
 }
