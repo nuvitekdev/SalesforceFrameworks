@@ -20,7 +20,7 @@
     </values>
     <values>
         <field>Model_Name__c</field>
-        <value xsi:type="xsd:string">gpt-4-vision-preview</value>
+        <value xsi:type="xsd:string">gpt-4o</value>
     </values>
     <values>
         <field>Provider__c</field>

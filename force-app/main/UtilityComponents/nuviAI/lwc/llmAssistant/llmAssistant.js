@@ -608,7 +608,7 @@ SUMMARY:`;
                 content: result,
                 formattedContent: this.getFormattedMessageContent(result),
                 timestamp: this.getFormattedTimestamp(),
-                model: this.selectedLLMLabel
+                model: 'OpenAI GPT4o Vision'
             });
             
             // Scroll to the response

@@ -159,9 +159,6 @@ export default class SurveyCreator extends LightningElement {
         // Set current step explicitly to 1 (first step)
         this.currentStep = 1;
         
-        // Set theme variables
-        this.updateThemeVariables();
-        
         // Create initial empty question
         if (this.questions.length === 0) {
             this.addQuestion();
@@ -169,27 +166,6 @@ export default class SurveyCreator extends LightningElement {
         
         // Update path indicator on initial load
         this.updatePathClasses();
-    }
-
-    /**
-     * Updates the CSS custom properties based on the API values.
-     */
-    updateThemeVariables() {
-        const style = document.createElement('style');
-        const rgbPrimary = this.hexToRgb(this.primaryColor);
-        const rgbAccent = this.hexToRgb(this.accentColor);
-
-        style.innerText = `
-            :host {
-                --primary-color: ${this.primaryColor};
-                --primary-rgb: ${rgbPrimary};
-                --accent-color: ${this.accentColor};
-                --accent-rgb: ${rgbAccent};
-                --text-color: ${this.textColor};
-                --background-color: ${this.backgroundColor};
-            }
-        `;
-        this.template.appendChild(style);
     }
 
     /**
@@ -354,14 +330,18 @@ export default class SurveyCreator extends LightningElement {
      * @returns {string} CSS style string.
      */
     get componentStyle() {
-        return `
-            background-color: ${this.backgroundColor};
-            color: ${this.textColor};
-            border: 1px solid var(--border-color, #dddddd);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        `;
+        // Use direct API properties with fallbacks
+        const primaryColor = this.primaryColor || '#22BDC1';
+        const accentColor = this.accentColor || '#D5DF23';
+        const textColor = this.textColor || '#1d1d1f';
+        const backgroundColor = this.backgroundColor || '#ffffff';
+        
+        // Convert hex to RGB for rgba values
+        const primaryRgb = this.hexToRgb(primaryColor);
+        const accentRgb = this.hexToRgb(accentColor);
+        
+        // Return a single-line string to avoid CSS validation errors
+        return `--primary-color: ${primaryColor}; --primary-color-rgb: ${primaryRgb}; --accent-color: ${accentColor}; --accent-color-rgb: ${accentRgb}; --background-color: ${backgroundColor}; --text-color: ${textColor};`;
     }
 
     get questionsWithComputedFields() {

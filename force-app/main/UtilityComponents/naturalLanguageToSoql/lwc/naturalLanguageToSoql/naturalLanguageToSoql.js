@@ -30,13 +30,31 @@ export default class NaturalLanguageToSoql extends LightningElement {
      * @type {String}
      * @description Primary color of the component, should match org theme
      */
-    @api primaryColor = '#22BDC1';
+    @api 
+    get primaryColor() { 
+        return this._primaryColor || '#22BDC1'; 
+    }
+    set primaryColor(value) {
+        this._primaryColor = value;
+        if (this.isConnected) {
+            this.updateThemeVariables();
+        }
+    }
     
     /**
      * @type {String}
      * @description Accent color of the component
      */
-    @api accentColor = '#D5DF23';
+    @api 
+    get accentColor() { 
+        return this._accentColor || '#D5DF23'; 
+    }
+    set accentColor(value) {
+        this._accentColor = value;
+        if (this.isConnected) {
+            this.updateThemeVariables();
+        }
+    }
     
     /**
      * @type {Number}
@@ -138,8 +156,17 @@ export default class NaturalLanguageToSoql extends LightningElement {
      */
     @track isLoadingExamples = false;
     
+    /**
+     * @type {Boolean}
+     * @description Flag to track if theme variables have been set
+     */
+    themeVariablesSet = false;
+    
     // Store parsed object names
     _objectList = [];
+
+    // Add a flag to track connection state
+    isConnected = false;
 
     // =========================================================================
     // Lifecycle Hooks
@@ -149,18 +176,23 @@ export default class NaturalLanguageToSoql extends LightningElement {
      * @description Connected callback lifecycle hook
      */
     connectedCallback() {
-        this.processObjectApiNames(); // Parse the names on init
+        this.isConnected = true;
+        
+        // Set theme colors first thing, before anything else
+        this.updateThemeVariables();
+        
+        // Then continue with other initialization
+        this.processObjectApiNames();
         this.loadQueryHistory();
         if (!this.recordLimit) this.recordLimit = 50;
-        this.fetchDynamicExamples(); // Call new method to fetch examples
+        this.fetchDynamicExamples();
     }
     
     /**
      * @description Rendered callback lifecycle hook
      */
     renderedCallback() {
-        // Always update theme variables when rendered
-        // This ensures changes to primaryColor and accentColor from config are applied
+        // Update theme variables in rendered callback
         this.updateThemeVariables();
     }
     
@@ -446,10 +478,21 @@ export default class NaturalLanguageToSoql extends LightningElement {
      * @description Updates CSS variables based on the component's configuration
      */
     updateThemeVariables() {
-        // Get the host element
+        // Get the host element 
         const hostElement = this.template.host;
+        if (!hostElement) {
+            // If host not available yet, try again in the next microtask
+            Promise.resolve().then(() => this.updateThemeVariables());
+            return;
+        }
         
-        // Set CSS variables for theming
+        // Log the colors being applied for debugging
+        console.log('Applying theme colors:', {
+            primaryColor: this.primaryColor,
+            accentColor: this.accentColor
+        });
+        
+        // Set CSS variables for theming - use getters to ensure defaults are applied
         hostElement.style.setProperty('--primary-color', this.primaryColor);
         hostElement.style.setProperty('--accent-color', this.accentColor);
         
@@ -457,17 +500,6 @@ export default class NaturalLanguageToSoql extends LightningElement {
         const getRgbValues = (hex) => {
             // Remove # if present
             hex = hex.replace('#', '');
-            
-            // Check for shorthand hex and expand if needed
-            if (hex.length === 3) {
-                hex = hex.split('').map(c => c + c).join('');
-            }
-            
-            // Ensure hex is 6 characters (default to black if invalid)
-            if (hex.length !== 6) {
-                console.warn('Invalid hex color format:', hex);
-                return '0, 0, 0';
-            }
             
             // Parse the hex values
             const r = parseInt(hex.substring(0, 2), 16);
@@ -477,21 +509,137 @@ export default class NaturalLanguageToSoql extends LightningElement {
             return `${r}, ${g}, ${b}`;
         };
         
-        // Set RGB variables for both primary and accent colors
+        // Set RGB variables if needed
         try {
-            // Always try to set the RGB values, regardless of formatting
-            const primaryRgb = getRgbValues(this.primaryColor);
-            const accentRgb = getRgbValues(this.accentColor);
+            const primaryHex = this.primaryColor;
+            const accentHex = this.accentColor;
             
-            hostElement.style.setProperty('--primary-color-rgb', primaryRgb);
-            hostElement.style.setProperty('--accent-color-rgb', accentRgb);
+            if (primaryHex && primaryHex.startsWith('#')) {
+                const primaryRgb = getRgbValues(primaryHex);
+                hostElement.style.setProperty('--primary-color-rgb', primaryRgb);
+                
+                // Also set derived colors
+                const hsl = this.hexToHSL(primaryHex);
+                const darkerHex = this.hslToHex(hsl.h, hsl.s, Math.max(0, hsl.l - 10));
+                const lighterHex = this.hslToHex(hsl.h, hsl.s, Math.min(100, hsl.l + 10));
+                
+                hostElement.style.setProperty('--primary-dark', darkerHex);
+                hostElement.style.setProperty('--primary-light', lighterHex);
+                
+                // Force header to use current primary color
+                const headerElements = this.template.querySelectorAll('.header-section');
+                if (headerElements.length > 0) {
+                    headerElements.forEach(el => {
+                        el.style.backgroundColor = this.primaryColor;
+                    });
+                }
+            }
             
-            console.log(`Theme variables updated: Primary=${this.primaryColor}, Accent=${this.accentColor}`);
+            if (accentHex && accentHex.startsWith('#')) {
+                const accentRgb = getRgbValues(accentHex);
+                hostElement.style.setProperty('--accent-color-rgb', accentRgb);
+                
+                // Also set derived colors
+                const hsl = this.hexToHSL(accentHex);
+                const darkerHex = this.hslToHex(hsl.h, hsl.s, Math.max(0, hsl.l - 10));
+                const lighterHex = this.hslToHex(hsl.h, hsl.s, Math.min(100, hsl.l + 10));
+                
+                hostElement.style.setProperty('--accent-dark', darkerHex);
+                hostElement.style.setProperty('--accent-light', lighterHex);
+                
+                // Force accent border to use current accent color
+                const headerElements = this.template.querySelectorAll('.header-section');
+                if (headerElements.length > 0) {
+                    headerElements.forEach(el => {
+                        // Apply a pseudo-element style through a custom property
+                        el.style.setProperty('--current-accent-color', this.accentColor);
+                    });
+                }
+            }
         } catch (error) {
             console.error('Error setting RGB color values', error);
         }
     }
 
+    /**
+     * @description Converts hex color to HSL
+     * @param {String} hex - Hex color code
+     * @returns {Object} HSL values
+     */
+    hexToHSL(hex) {
+        // Remove the # if present
+        hex = hex.replace(/^#/, '');
+        
+        // Parse the RGB values
+        let r = parseInt(hex.slice(0, 2), 16) / 255;
+        let g = parseInt(hex.slice(2, 4), 16) / 255;
+        let b = parseInt(hex.slice(4, 6), 16) / 255;
+        
+        // Find min and max values to compute the hue
+        let max = Math.max(r, g, b);
+        let min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+        
+        if (max === min) {
+            h = s = 0; // achromatic
+        } else {
+            let d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        
+        return { h: h * 360, s: s * 100, l: l * 100 };
+    }
+
+    /**
+     * @description Converts HSL values to hex color
+     * @param {Number} h - Hue (0-360)
+     * @param {Number} s - Saturation (0-100)
+     * @param {Number} l - Lightness (0-100)
+     * @returns {String} Hex color code
+     */
+    hslToHex(h, s, l) {
+        h /= 360;
+        s /= 100;
+        l /= 100;
+        
+        let r, g, b;
+        
+        if (s === 0) {
+            r = g = b = l; // achromatic
+        } else {
+            const hue2rgb = (p, q, t) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            };
+            
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            
+            r = hue2rgb(p, q, h + 1/3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1/3);
+        }
+        
+        // Convert to hex
+        const toHex = x => {
+            const hex = Math.round(x * 255).toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+        };
+        
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    }
+    
     /**
      * @description Generates generic example queries suitable for multi-object context
      */

@@ -78,6 +78,11 @@ export default class SurveyResponder extends LightningElement {
      */
     deviceFingerprint;
 
+    /**
+     * @description Tracks the ID of the current question for rating components
+     */
+    currentQuestion;
+
     // --- Wired Properties ---
     /**
      * @description Wires the CurrentPageReference to extract the survey ID from URL state.
@@ -107,28 +112,38 @@ export default class SurveyResponder extends LightningElement {
 
     // --- Getters for Template Logic ---
     get componentStyle() {
-        return `
-            --primary-color: ${this.primaryColor};
-            --primary-color-rgb: ${this.hexToRgb(this.primaryColor)};
-            --accent-color: ${this.accentColor};
-            --accent-color-rgb: ${this.hexToRgb(this.accentColor)};
-            --text-color: ${this.textColor};
-            --background-color: ${this.backgroundColor};
-        `;
+        // Use direct API properties with fallbacks
+        const primaryColor = this.primaryColor || '#22BDC1';
+        const accentColor = this.accentColor || '#D5DF23';
+        const textColor = this.textColor || '#1d1d1f';
+        const backgroundColor = this.backgroundColor || '#ffffff';
+        
+        // Convert hex to RGB for rgba values
+        const primaryRgb = this.hexToRgb(primaryColor);
+        const accentRgb = this.hexToRgb(accentColor);
+        
+        // Return a single-line string to avoid CSS validation errors
+        return `--primary-color: ${primaryColor}; --primary-color-rgb: ${primaryRgb}; --accent-color: ${accentColor}; --accent-color-rgb: ${accentRgb}; --background-color: ${backgroundColor}; --text-color: ${textColor};`;
     }
 
     // --- Rating options getter ---
     get ratingOptions() {
-        // This assumes a 5-point rating scale
-        const options = [];
-        for (let i = 1; i <= 5; i++) {
-            options.push({
+        const ratings = [];
+        // Assuming we want 5 rating options
+        const maxRating = 5;
+        
+        for (let i = 1; i <= maxRating; i++) {
+            // Check if this rating is selected for the currently active question
+            const isSelected = this.responses[this.currentQuestion] === i.toString();
+            
+            ratings.push({
                 value: i.toString(),
-                label: i.toString(),
-                class: 'rating-button'
+                class: isSelected ? 'rating-option rating-selected' : 'rating-option',
+                selected: isSelected
             });
         }
-        return options;
+        
+        return ratings;
     }
 
     // --- Lifecycle Hooks ---
@@ -136,7 +151,15 @@ export default class SurveyResponder extends LightningElement {
      * @description Called when the component is inserted. Checks if surveyId is already set.
      */
     connectedCallback() {
-        console.log('SurveyResponder: connectedCallback started. surveyId:', this._surveyId);
+        console.log('SurveyResponder: connectedCallback started');
+        
+        // Log the current color values for debugging
+        console.log('Color values being applied:', {
+            primaryColor: this.primaryColor,
+            accentColor: this.accentColor,
+            textColor: this.textColor,
+            backgroundColor: this.backgroundColor
+        });
 
         // Generate a device fingerprint for tracking submissions
         this.generateDeviceFingerprint();
@@ -363,6 +386,9 @@ export default class SurveyResponder extends LightningElement {
         const questionId = event.currentTarget.dataset.id;
         const value = event.currentTarget.dataset.value;
         
+        // Set this as the current question for the ratingOptions getter
+        this.currentQuestion = questionId;
+        
         // Update the response
         this.responses[questionId] = value;
         
@@ -540,17 +566,25 @@ export default class SurveyResponder extends LightningElement {
     }
 
     /**
-     * Utility function to convert hex color to RGB.
+     * Helper method to convert hex to RGB
      */
     hexToRgb(hex) {
-        // Remove the hash if it exists
+        // Remove # if present
         hex = hex.replace(/^#/, '');
         
-        // Parse the hex color
-        const bigint = parseInt(hex, 16);
-        const r = (bigint >> 16) & 255;
-        const g = (bigint >> 8) & 255;
-        const b = bigint & 255;
+        // Parse hex values
+        let r, g, b;
+        if (hex.length === 3) {
+            // For 3-digit hex codes
+            r = parseInt(hex.charAt(0) + hex.charAt(0), 16);
+            g = parseInt(hex.charAt(1) + hex.charAt(1), 16);
+            b = parseInt(hex.charAt(2) + hex.charAt(2), 16);
+        } else {
+            // For 6-digit hex codes
+            r = parseInt(hex.substring(0, 2), 16);
+            g = parseInt(hex.substring(2, 4), 16);
+            b = parseInt(hex.substring(4, 6), 16);
+        }
         
         return `${r}, ${g}, ${b}`;
     }

@@ -24,15 +24,43 @@ public with sharing class LLMController {
             
             String context = '';
             String attachments = '';
+            String documentAnalysis = '';
             
             // Only get record context if a recordId is provided
             if (String.isNotBlank(recordId)) {
                 context = getRecordContext(recordId, relatedObjects);
                 
+                // Check for PDFs and documents that would benefit from Vision analysis
+                // Include all attachment types for regular analysis
+                List<Map<String, String>> docAttachments = getDocumentsForVisionAnalysis(recordId, true);
+                if (!docAttachments.isEmpty()) {
+                    System.debug('Found ' + docAttachments.size() + ' documents for Vision analysis');
+                    
+                    // Get Vision configuration
+                    List<LLM_Configuration__mdt> visionConfigs = [SELECT Id, API_Key__c, Base_URL__c, Model_Name__c
+                                                                 FROM LLM_Configuration__mdt 
+                                                                 WHERE DeveloperName = 'OpenAI_GPT4_Vision'
+                                                                 LIMIT 1];
+                    
+                    if (!visionConfigs.isEmpty()) {
+                        // Process documents with Vision API
+                        documentAnalysis = processDocumentsWithVision(docAttachments, visionConfigs[0], 
+                                                                      'Analyze these documents in detail. Extract all important information.');
+                    }
+                }
+                
+                // Get regular attachments text (this will exclude PDFs that were analyzed with Vision)
                 attachments = config.Supports_Files__c ? getAttachmentsText(recordId) : '';
             }
             
+            // Include document analysis in the prompt if available
             String fullPrompt = buildFullPrompt(operation, context, attachments, prompt);
+            
+            // Add document analysis results if available
+            if (String.isNotBlank(documentAnalysis)) {
+                fullPrompt += '\n\nDOCUMENT ANALYSIS (Processed with Vision AI):\n' + documentAnalysis;
+            }
+            
             System.debug('Full prompt length: ' + fullPrompt.length());
             
             return makeLLMCall(config, fullPrompt);
@@ -1016,6 +1044,15 @@ public with sharing class LLMController {
                         continue;
                     }
                     
+                    // Skip files that should be processed by Vision instead
+                    if (cv.FileExtension != null) {
+                        String ext = cv.FileExtension.toLowerCase();
+                        if (ext == 'pdf' || ext == 'jpg' || ext == 'jpeg' || ext == 'png' || ext == 'gif') {
+                            attachments += '\n\n[FILE: ' + cv.Title + ' - Being processed with Vision AI]';
+                            continue;
+                        }
+                    }
+                    
                     String base64Content = EncodingUtil.base64Encode(cv.VersionData);
                     Integer contentLength = base64Content.length();
                     
@@ -1843,10 +1880,10 @@ public with sharing class LLMController {
     @AuraEnabled
     public static String processImagesWithAI(String recordId, String prompt) {
         try {
-            // Get base64 encoded attachments
-            List<Map<String, String>> attachments = getAttachmentsBase64(recordId);
+            // Get base64 encoded attachments - ONLY include image types (not PDFs or other documents)
+            List<Map<String, String>> attachments = getDocumentsForVisionAnalysis(recordId, false);
             if (attachments == null || attachments.isEmpty()) {
-                return 'No attachments found for this record.';
+                return 'No images found for this record.';
             }
             
             // Get API Key from custom metadata
@@ -1885,17 +1922,14 @@ public with sharing class LLMController {
                 String fileName = attachment.get('fileName');
                 String contentType = attachment.get('contentType');
                 
-                // Only process image types
-                if (contentType.startsWith('image/')) {
-                    Map<String, Object> imageContent = new Map<String, Object>();
-                    imageContent.put('type', 'image_url');
-                    
-                    Map<String, String> imageUrl = new Map<String, String>();
-                    imageUrl.put('url', 'data:' + contentType + ';base64,' + base64Data);
-                    
-                    imageContent.put('image_url', imageUrl);
-                    contentItems.add(imageContent);
-                }
+                Map<String, Object> imageContent = new Map<String, Object>();
+                imageContent.put('type', 'image_url');
+                
+                Map<String, String> imageUrl = new Map<String, String>();
+                imageUrl.put('url', 'data:' + contentType + ';base64,' + base64Data);
+                
+                imageContent.put('image_url', imageUrl);
+                contentItems.add(imageContent);
             }
             
             userMessage.put('content', contentItems);
@@ -2007,6 +2041,190 @@ public with sharing class LLMController {
             System.debug('ERROR in getAttachmentsBase64: ' + e.getMessage());
             System.debug('Stack trace: ' + e.getStackTraceString());
             throw new AuraHandledException('Failed to process attachments: ' + e.getMessage());
+        }
+    }
+
+    /**
+     * Identifies documents on the record that should be analyzed with Vision API
+     * @param recordId The ID of the record to check for documents
+     * @param includeAllAttachments Whether to include all attachment types or just images
+     * @return List<Map<String, String>> List of document attachments formatted for Vision processing
+     */
+    private static List<Map<String, String>> getDocumentsForVisionAnalysis(String recordId, Boolean includeAllAttachments) {
+        try {
+            List<ContentDocumentLink> links = [SELECT ContentDocumentId 
+                                               FROM ContentDocumentLink 
+                                               WHERE LinkedEntityId = :recordId
+                                               LIMIT 10];
+            
+            if (links.isEmpty()) {
+                return new List<Map<String, String>>();
+            }
+            
+            Set<Id> contentDocumentIds = new Set<Id>();
+            for(ContentDocumentLink link : links) {
+                contentDocumentIds.add(link.ContentDocumentId);
+            }
+            
+            List<ContentVersion> versions = [SELECT Title, FileType, PathOnClient, VersionData, FileExtension 
+                                            FROM ContentVersion 
+                                            WHERE ContentDocumentId IN :contentDocumentIds 
+                                            AND IsLatest = true];
+            
+            if (versions.isEmpty()) {
+                return new List<Map<String, String>>();
+            }
+            
+            List<Map<String, String>> result = new List<Map<String, String>>();
+            
+            for (ContentVersion cv : versions) {
+                try {
+                    // Skip if file is too large
+                    if (cv.VersionData.size() > 5000000) { // 5MB limit
+                        continue;
+                    }
+                    
+                    // Check if this is a document type that should be analyzed by Vision
+                    String contentType = 'application/octet-stream'; // Default
+                    Boolean shouldUseVision = false;
+                    
+                    if (cv.FileExtension != null) {
+                        String ext = cv.FileExtension.toLowerCase();
+                        if (ext == 'pdf') {
+                            contentType = 'application/pdf';
+                            shouldUseVision = includeAllAttachments; // Include PDFs only if we want all attachments
+                        } else if (ext == 'docx' || ext == 'doc') {
+                            contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+                            shouldUseVision = includeAllAttachments; // Include DOC/DOCX only if we want all attachments
+                        } else if (ext == 'jpg' || ext == 'jpeg') {
+                            contentType = 'image/jpeg';
+                            shouldUseVision = true; // Always include image types
+                        } else if (ext == 'png') {
+                            contentType = 'image/png';
+                            shouldUseVision = true; // Always include image types
+                        } else if (ext == 'gif') {
+                            contentType = 'image/gif';
+                            shouldUseVision = true; // Always include image types
+                        } else if (includeAllAttachments) {
+                            // Include other file types if we want all attachments
+                            shouldUseVision = true;
+                        }
+                    }
+                    
+                    // Only include files that should use Vision
+                    if (shouldUseVision) {
+                        Map<String, String> attachment = new Map<String, String>();
+                        attachment.put('fileName', cv.Title);
+                        attachment.put('contentType', contentType);
+                        attachment.put('base64', EncodingUtil.base64Encode(cv.VersionData));
+                        
+                        result.add(attachment);
+                    }
+                    
+                } catch (Exception e) {
+                    System.debug('ERROR processing file ' + cv.Title + ': ' + e.getMessage());
+                }
+            }
+            
+            return result;
+            
+        } catch (Exception e) {
+            System.debug('ERROR in getDocumentsForVisionAnalysis: ' + e.getMessage());
+            System.debug('Stack trace: ' + e.getStackTraceString());
+            return new List<Map<String, String>>(); // Return empty list on error
+        }
+    }
+    
+    /**
+     * Processes documents with the OpenAI Vision API
+     * @param attachments List of document/image attachments to analyze
+     * @param config The Vision API configuration to use
+     * @param prompt The prompt to guide the analysis
+     * @return String The detailed document analysis from Vision API
+     */
+    private static String processDocumentsWithVision(List<Map<String, String>> attachments, 
+                                                    LLM_Configuration__mdt config,
+                                                    String prompt) {
+        try {
+            if (attachments == null || attachments.isEmpty()) {
+                return '';
+            }
+            
+            String apiKey = config.API_Key__c;
+            String model = config.Model_Name__c;
+            String endpoint = config.Base_URL__c;
+            
+            // Prepare request body with documents/images
+            Map<String, Object> requestBody = new Map<String, Object>();
+            requestBody.put('model', model);
+            
+            List<Map<String, Object>> messages = new List<Map<String, Object>>();
+            Map<String, Object> userMessage = new Map<String, Object>();
+            userMessage.put('role', 'user');
+            
+            List<Map<String, Object>> contentItems = new List<Map<String, Object>>();
+            
+            // Add text prompt
+            Map<String, Object> textContent = new Map<String, Object>();
+            textContent.put('type', 'text');
+            textContent.put('text', prompt);
+            contentItems.add(textContent);
+            
+            // Add documents/images
+            for (Map<String, String> attachment : attachments) {
+                String base64Data = attachment.get('base64');
+                String fileName = attachment.get('fileName');
+                String contentType = attachment.get('contentType');
+                
+                System.debug('Processing document for Vision: ' + fileName + ' (' + contentType + ')');
+                
+                Map<String, Object> imageContent = new Map<String, Object>();
+                imageContent.put('type', 'image_url');
+                
+                Map<String, String> imageUrl = new Map<String, String>();
+                imageUrl.put('url', 'data:' + contentType + ';base64,' + base64Data);
+                
+                imageContent.put('image_url', imageUrl);
+                contentItems.add(imageContent);
+            }
+            
+            userMessage.put('content', contentItems);
+            messages.add(userMessage);
+            requestBody.put('messages', messages);
+            
+            // Additional options
+            requestBody.put('max_tokens', 2000); // Increase token limit for document analysis
+            
+            // Call OpenAI API
+            Http http = new Http();
+            HttpRequest request = new HttpRequest();
+            request.setEndpoint(endpoint);
+            request.setMethod('POST');
+            request.setHeader('Content-Type', 'application/json');
+            request.setHeader('Authorization', 'Bearer ' + apiKey);
+            request.setBody(JSON.serialize(requestBody));
+            request.setTimeout(120000); // 2-minute timeout
+            
+            HttpResponse response = http.send(request);
+            
+            if (response.getStatusCode() == 200) {
+                Map<String, Object> responseMap = (Map<String, Object>)JSON.deserializeUntyped(response.getBody());
+                List<Object> choices = (List<Object>)responseMap.get('choices');
+                
+                if (choices != null && !choices.isEmpty()) {
+                    Map<String, Object> choice = (Map<String, Object>)choices[0];
+                    Map<String, Object> message = (Map<String, Object>)choice.get('message');
+                    String contentText = (String)message.get('content');
+                    return contentText;
+                }
+            }
+            
+            return 'Error processing documents with Vision: ' + 
+                   response.getStatusCode() + ' ' + response.getStatus();
+        } catch (Exception e) {
+            System.debug('ERROR in processDocumentsWithVision: ' + e.getMessage());
+            System.debug('Stack trace: ' + e.getStackTraceString());
+            return 'Error analyzing documents with Vision: ' + e.getMessage();
         }
     }
 }
