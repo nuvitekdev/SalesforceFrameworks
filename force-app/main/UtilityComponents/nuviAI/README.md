@@ -117,6 +117,7 @@ The Image Analysis capability allows you to:
 - Process PDFs to extract meaningful information
 - Analyze business cards, receipts, and other visual materials
 - Convert image content into structured information
+- Receive suitability assessments for each analyzed image
 
 To use this feature:
 1. Ensure the "Enable Image Analysis" option is turned on (this shows the "Analyze Images" button)
@@ -124,6 +125,20 @@ To use this feature:
 3. Click the "Analyze Images" button in the LLM Assistant
 4. Optionally enter a prompt to guide the analysis (e.g., "Extract contact information from this business card")
 5. The AI will process the images and provide detailed information about their contents
+
+**Enhanced Image Analysis Format:**
+
+Each image analysis now includes:
+- **Detailed Description**: Comprehensive observations about what appears in the image
+- **Content Analysis**: Structured breakdown of text, objects, people, or other elements identified
+- **Suitability Assessment**: An evaluation of whether the image is appropriate, useful, and relevant
+- **Properly Formatted Output**: Using HTML formatting for improved readability with:
+  - Bold section headers
+  - Bulleted lists for features or elements
+  - Numbered lists for sequential instructions
+  - Clear structure similar to anomaly detection output
+
+This structured format makes it easier to review and understand the analysis results, especially when processing multiple images.
 
 **Automatic Document Analysis:**
 - When using "Analyze Record", PDFs and images are automatically detected and processed using OpenAI's Vision API
@@ -137,6 +152,7 @@ To use this feature:
 - PDF files are fully supported and will be processed like images
 - Files must be under 5MB to be processed
 - Multiple images/documents can be analyzed in a single request
+- Image metadata (file size, dimensions) is included in the analysis prompt
 
 **Analyzing Content with GPT4o Vision:**
 
@@ -147,6 +163,7 @@ This component provides two different ways to analyze document content:
    - Ignores PDFs and other document types
    - Best for specifically analyzing visual content
    - Uses OpenAI's GPT4o Vision model
+   - Provides detailed analysis with suitability assessment for each image
 
 2. **Analyze Record Button:**
    - Processes ALL attachment types (images, PDFs, documents)

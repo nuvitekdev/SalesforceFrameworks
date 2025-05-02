@@ -1900,8 +1900,20 @@ public with sharing class LLMController {
             String model = config.Model_Name__c;
             String endpoint = config.Base_URL__c;
             
-            // Enhance the prompt with metadata about the images
+            // Enhance the prompt with metadata and formatting instructions
             String enhancedPrompt = prompt + '\n\n';
+            
+            // Add formatting instructions to make output similar to anomaly detection
+            enhancedPrompt += 'IMPORTANT FORMATTING INSTRUCTIONS:\n' +
+                '- For EACH image, provide a detailed analysis with the following structure:\n' +
+                '  - Use <b> tags to highlight image titles (e.g., <b>Image 1: Filename</b>)\n' +
+                '  - For each image, create a section titled <b>Description</b> with detailed observations\n' +
+                '  - Include a <b>Content Analysis</b> section detailing text, objects, people, or other elements identified\n' +
+                '  - End with a <b>Suitability Assessment</b> that evaluates if the image is appropriate, useful, and relevant\n' +
+                '  - Use <ul> and <li> for listing features or elements found in each image\n' +
+                '  - Use <ol> and <li> for any sequential instructions or steps visible in the image\n' +
+                '  - Use <br> for line breaks where appropriate\n\n';
+            
             enhancedPrompt += 'Image Information:\n';
             Integer imageIndex = 1;
             
@@ -1963,7 +1975,7 @@ public with sharing class LLMController {
             requestBody.put('messages', messages);
             
             // Additional options
-            requestBody.put('max_tokens', 1000);
+            requestBody.put('max_tokens', 2000); // Increase token limit for better analysis
             
             // Call OpenAI API
             Http http = new Http();
