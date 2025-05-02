@@ -144,6 +144,18 @@ export default class NaturalLanguageToSoql extends LightningElement {
      */
     themeVariablesSet = false;
     
+    /**
+     * @type {Boolean}
+     * @description Flag to track if global OOTB styles have been applied
+     */
+    ootbComponentsStyled = false;
+    
+    /**
+     * @type {MutationObserver}
+     * @description Mutation observer for dynamic component theme application
+     */
+    mutationObserver;
+    
     // Store parsed object names
     _objectList = [];
 
@@ -159,6 +171,9 @@ export default class NaturalLanguageToSoql extends LightningElement {
         this.loadQueryHistory();
         if (!this.recordLimit) this.recordLimit = 50;
         this.fetchDynamicExamples(); // Call new method to fetch examples
+        
+        // Set up observers for dynamic theming
+        this.setupMutationObserver();
     }
     
     /**
@@ -169,6 +184,17 @@ export default class NaturalLanguageToSoql extends LightningElement {
         if (!this.themeVariablesSet) {
             this.themeVariablesSet = true;
             this.updateThemeVariables();
+        }
+    }
+    
+    /**
+     * @description Disconnected callback lifecycle hook
+     */
+    disconnectedCallback() {
+        // Clean up mutation observer when component is destroyed
+        if (this.mutationObserver) {
+            this.mutationObserver.disconnect();
+            this.mutationObserver = null;
         }
     }
     
@@ -454,40 +480,62 @@ export default class NaturalLanguageToSoql extends LightningElement {
      * @description Updates CSS variables based on the component's configuration
      */
     updateThemeVariables() {
-        // Get the host element
         const hostElement = this.template.host;
         
-        // Set CSS variables for theming
+        // Apply CSS variables to the host element
         hostElement.style.setProperty('--primary-color', this.primaryColor);
         hostElement.style.setProperty('--accent-color', this.accentColor);
         
-        // Derive RGB values for transparency effects (if needed later)
+        // Apply variables for derived colors - text, backgrounds
+        hostElement.style.setProperty('--text-color', '#1d1d1f');
+        hostElement.style.setProperty('--background-color', '#ffffff');
+        hostElement.style.setProperty('--background-alt-color', '#f5f5f7');
+        
+        // SLDS component overrides using CSS variables
+        hostElement.style.setProperty('--sds-c-button-brand-color-background', this.primaryColor);
+        hostElement.style.setProperty('--sds-c-button-brand-text-color', '#ffffff');
+        hostElement.style.setProperty('--lwc-colorTextLink', this.primaryColor);
+        
+        // Calculate RGB values for opacity-based colors
         const getRgbValues = (hex) => {
-            // Remove # if present
-            hex = hex.replace('#', '');
-            
-            // Parse the hex values
-            const r = parseInt(hex.substring(0, 2), 16);
-            const g = parseInt(hex.substring(2, 4), 16);
-            const b = parseInt(hex.substring(4, 6), 16);
-            
-            return `${r}, ${g}, ${b}`;
+            // Helper to convert hex to rgb array [r, g, b]
+            hex = hex.replace(/^#/, '');
+            if (hex.length === 3) {
+                hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+            }
+            const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result 
+                ? [
+                    parseInt(result[1], 16),
+                    parseInt(result[2], 16),
+                    parseInt(result[3], 16)
+                ] 
+                : [0, 0, 0];
         };
         
-        // Set RGB variables if needed
-        try {
-            if (this.primaryColor.startsWith('#')) {
-                const primaryRgb = getRgbValues(this.primaryColor);
-                hostElement.style.setProperty('--primary-color-rgb', primaryRgb);
-            }
-            
-            if (this.accentColor.startsWith('#')) {
-                const accentRgb = getRgbValues(this.accentColor);
-                hostElement.style.setProperty('--accent-color-rgb', accentRgb);
-            }
-        } catch (error) {
-            console.error('Error setting RGB color values', error);
+        // Set RGB values as separate properties for use with opacity
+        if (this.primaryColor.startsWith('#')) {
+            const primaryRgb = getRgbValues(this.primaryColor);
+            hostElement.style.setProperty('--primary-color-rgb', primaryRgb.join(', '));
         }
+        
+        if (this.accentColor.startsWith('#')) {
+            const accentRgb = getRgbValues(this.accentColor);
+            hostElement.style.setProperty('--accent-color-rgb', accentRgb.join(', '));
+        }
+        
+        // Create derived color variants
+        // Primary with various opacity levels
+        hostElement.style.setProperty('--primary-color-10', `rgba(var(--primary-color-rgb), 0.1)`);
+        hostElement.style.setProperty('--primary-color-20', `rgba(var(--primary-color-rgb), 0.2)`);
+        hostElement.style.setProperty('--primary-color-50', `rgba(var(--primary-color-rgb), 0.5)`);
+        hostElement.style.setProperty('--primary-color-80', `rgba(var(--primary-color-rgb), 0.8)`);
+        
+        // Accent with various opacity levels
+        hostElement.style.setProperty('--accent-color-10', `rgba(var(--accent-color-rgb), 0.1)`);
+        hostElement.style.setProperty('--accent-color-20', `rgba(var(--accent-color-rgb), 0.2)`);
+        hostElement.style.setProperty('--accent-color-50', `rgba(var(--accent-color-rgb), 0.5)`);
+        hostElement.style.setProperty('--accent-color-80', `rgba(var(--accent-color-rgb), 0.8)`);
     }
 
     /**
@@ -815,5 +863,134 @@ export default class NaturalLanguageToSoql extends LightningElement {
             
             return processedColumn;
         });
+    }
+
+    /**
+     * @description Set up mutation observer to apply theme to dynamically added components
+     */
+    setupMutationObserver() {
+        // Create mutation observer to watch for new elements
+        this.mutationObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList' && mutation.addedNodes.length) {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === 1) { // Element node
+                            this.processChildComponents(node);
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Start observing
+        const config = { 
+            childList: true, 
+            subtree: true 
+        };
+        
+        this.mutationObserver.observe(this.template, config);
+    }
+    
+    /**
+     * @description Process child components to apply theming
+     * @param {HTMLElement} parentElement - The parent element to process
+     */
+    processChildComponents(parentElement) {
+        // Process the parent element itself
+        this.applyThemeClassesToElement(parentElement);
+        
+        // Handle lightning components
+        if (parentElement.tagName && parentElement.tagName.toLowerCase().startsWith('lightning-')) {
+            this.injectStylesIntoLightningComponent(parentElement);
+        }
+        
+        // Process all child elements
+        const childElements = parentElement.querySelectorAll('*');
+        childElements.forEach(element => {
+            this.applyThemeClassesToElement(element);
+            
+            // Handle lightning components
+            if (element.tagName && element.tagName.toLowerCase().startsWith('lightning-')) {
+                this.injectStylesIntoLightningComponent(element);
+            }
+        });
+    }
+    
+    /**
+     * @description Apply theme classes to an element
+     * @param {HTMLElement} element - The element to apply classes to
+     */
+    applyThemeClassesToElement(element) {
+        // Add theme class to elements (if not already present)
+        if (element.classList && !element.classList.contains('nuvitek-theme')) {
+            element.classList.add('nuvitek-theme');
+        }
+    }
+    
+    /**
+     * @description Inject styles into a Lightning component's shadow DOM
+     * @param {HTMLElement} component - The component to inject styles into
+     */
+    injectStylesIntoLightningComponent(component) {
+        // Attempt to access shadow root and inject styles
+        if (component.shadowRoot) {
+            this.injectStyleElement(component.shadowRoot);
+        }
+
+        // Some components expose their template differently
+        if (component.template) {
+            this.injectStyleElement(component.template);
+        }
+    }
+    
+    /**
+     * @description Inject a style element with theme variables
+     * @param {ShadowRoot} targetRoot - The shadow root to inject styles into
+     */
+    injectStyleElement(targetRoot) {
+        if (!targetRoot) return;
+
+        // Check if styles are already injected
+        const existingStyle = targetRoot.querySelector('.nuvitek-injected-style');
+        if (existingStyle) return;
+
+        // Create a style element
+        const styleElement = document.createElement('style');
+        styleElement.className = 'nuvitek-injected-style';
+        styleElement.textContent = this.getThemeVariablesCSS();
+
+        // Append to shadow root
+        targetRoot.appendChild(styleElement);
+    }
+    
+    /**
+     * @description Get CSS variables as a stylesheet string
+     * @returns {String} CSS variable definitions
+     */
+    getThemeVariablesCSS() {
+        // Generate CSS variables based on current theme settings
+        return `
+            :host {
+                --primary-color: ${this.primaryColor};
+                --accent-color: ${this.accentColor};
+                --text-color: #1d1d1f;
+                --background-color: #ffffff;
+                --background-alt-color: #f5f5f7;
+                
+                /* Override SLDS variables */
+                --sds-c-button-brand-color-background: ${this.primaryColor};
+                --sds-c-button-brand-text-color: white;
+                --lwc-colorTextLink: ${this.primaryColor};
+            }
+            
+            /* Basic style resets */
+            .slds-button {
+                transition: all 0.3s ease;
+            }
+            
+            .slds-button:hover {
+                transform: translateY(-2px);
+            }
+        `;
     }
 } 
