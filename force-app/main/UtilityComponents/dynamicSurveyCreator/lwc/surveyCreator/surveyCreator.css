@@ -127,7 +127,13 @@
 .step-4-mode .custom-path-item[data-step="1"]::before,
 .step-4-mode .custom-path-item[data-step="2"]::before,
 .step-4-mode .custom-path-item[data-step="3"]::before, 
-.step-4-mode .custom-path-item[data-step="4"]::before { 
+.step-4-mode .custom-path-item[data-step="4"]::before,
+.step-5-mode .custom-path-item[data-step="0"]::before,
+.step-5-mode .custom-path-item[data-step="1"]::before,
+.step-5-mode .custom-path-item[data-step="2"]::before,
+.step-5-mode .custom-path-item[data-step="3"]::before,
+.step-5-mode .custom-path-item[data-step="4"]::before,
+.step-5-mode .custom-path-item[data-step="5"]::before { 
     background-color: var(--theme-primary-color);
 }
 
@@ -170,7 +176,8 @@
 .step-1-mode .custom-path-item[data-step="1"] .custom-path-indicator,
 .step-2-mode .custom-path-item[data-step="2"] .custom-path-indicator,
 .step-3-mode .custom-path-item[data-step="3"] .custom-path-indicator,
-.step-4-mode .custom-path-item[data-step="4"] .custom-path-indicator { 
+.step-4-mode .custom-path-item[data-step="4"] .custom-path-indicator,
+.step-5-mode .custom-path-item[data-step="5"] .custom-path-indicator { 
     background-color: var(--theme-accent-color);
     color: white;
     border-color: transparent;
@@ -183,7 +190,8 @@
 .step-1-mode .custom-path-item[data-step="1"] .custom-path-label,
 .step-2-mode .custom-path-item[data-step="2"] .custom-path-label,
 .step-3-mode .custom-path-item[data-step="3"] .custom-path-label,
-.step-4-mode .custom-path-item[data-step="4"] .custom-path-label { 
+.step-4-mode .custom-path-item[data-step="4"] .custom-path-label,
+.step-5-mode .custom-path-item[data-step="5"] .custom-path-label { 
     color: var(--text-color);
     font-weight: 600;
 }
@@ -198,7 +206,12 @@
 .step-4-mode .custom-path-item[data-step="0"] .custom-path-indicator,
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-indicator,
 .step-4-mode .custom-path-item[data-step="2"] .custom-path-indicator,
-.step-4-mode .custom-path-item[data-step="3"] .custom-path-indicator { 
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-indicator,
+.step-5-mode .custom-path-item[data-step="0"] .custom-path-indicator,
+.step-5-mode .custom-path-item[data-step="1"] .custom-path-indicator,
+.step-5-mode .custom-path-item[data-step="2"] .custom-path-indicator,
+.step-5-mode .custom-path-item[data-step="3"] .custom-path-indicator,
+.step-5-mode .custom-path-item[data-step="4"] .custom-path-indicator { 
     background-color: var(--theme-primary-color);
     color: white;
     border-color: transparent;
@@ -206,40 +219,15 @@
     box-shadow: 0 1px 4px rgba(var(--theme-primary-color-rgb), 0.3);
 }
 
-/* Change number to checkmark for completed steps */
-.step-1-mode .custom-path-item[data-step="0"] .custom-path-number::before,
-.step-2-mode .custom-path-item[data-step="0"] .custom-path-number::before,
-.step-2-mode .custom-path-item[data-step="1"] .custom-path-number::before,
-.step-3-mode .custom-path-item[data-step="0"] .custom-path-number::before,
-.step-3-mode .custom-path-item[data-step="1"] .custom-path-number::before,
-.step-3-mode .custom-path-item[data-step="2"] .custom-path-number::before,
-.step-4-mode .custom-path-item[data-step="0"] .custom-path-number::before,
-.step-4-mode .custom-path-item[data-step="1"] .custom-path-number::before,
-.step-4-mode .custom-path-item[data-step="2"] .custom-path-number::before,
-.step-4-mode .custom-path-item[data-step="3"] .custom-path-number::before { 
-    content: '\2713';
-    font-size: 1.2em;
-    line-height: 1;
-    display: inline-block;
-}
-
-/* Hide the original number when checkmark is shown */
-.step-1-mode .custom-path-item[data-step="0"] .custom-path-number,
-.step-2-mode .custom-path-item[data-step="0"] .custom-path-number,
-.step-2-mode .custom-path-item[data-step="1"] .custom-path-number,
-.step-3-mode .custom-path-item[data-step="0"] .custom-path-number,
-.step-3-mode .custom-path-item[data-step="1"] .custom-path-number,
-.step-3-mode .custom-path-item[data-step="2"] .custom-path-number,
-.step-4-mode .custom-path-item[data-step="0"] .custom-path-number,
-.step-4-mode .custom-path-item[data-step="1"] .custom-path-number,
-.step-4-mode .custom-path-item[data-step="2"] .custom-path-number,
-.step-4-mode .custom-path-item[data-step="3"] .custom-path-number { 
-    font-size: 0;
-}
-
+/* 
+ * IMPORTANT: Checkmarks are now handled by JavaScript in updatePathClasses method
+ * instead of using CSS pseudo-elements to avoid double checkmarks
+ */
+/* 
 .custom-path-number::before {
     display: inline-block;
 }
+*/
 
 /* Step styling */
 .step-section {
@@ -599,7 +587,8 @@ lightning-combobox {
 .step-1-mode .custom-path-item[data-step="1"] .custom-path-indicator,
 .step-2-mode .custom-path-item[data-step="2"] .custom-path-indicator,
 .step-3-mode .custom-path-item[data-step="3"] .custom-path-indicator,
-.step-4-mode .custom-path-item[data-step="4"] .custom-path-indicator { 
+.step-4-mode .custom-path-item[data-step="4"] .custom-path-indicator,
+.step-5-mode .custom-path-item[data-step="5"] .custom-path-indicator { 
     background-color: var(--theme-accent-color);
     color: white;
     border-color: transparent;
@@ -617,7 +606,12 @@ lightning-combobox {
 .step-4-mode .custom-path-item[data-step="0"] .custom-path-indicator,
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-indicator,
 .step-4-mode .custom-path-item[data-step="2"] .custom-path-indicator,
-.step-4-mode .custom-path-item[data-step="3"] .custom-path-indicator { 
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-indicator,
+.step-5-mode .custom-path-item[data-step="0"] .custom-path-indicator,
+.step-5-mode .custom-path-item[data-step="1"] .custom-path-indicator,
+.step-5-mode .custom-path-item[data-step="2"] .custom-path-indicator,
+.step-5-mode .custom-path-item[data-step="3"] .custom-path-indicator,
+.step-5-mode .custom-path-item[data-step="4"] .custom-path-indicator { 
     background-color: var(--theme-primary-color);
     color: white;
     border-color: transparent;
@@ -625,18 +619,20 @@ lightning-combobox {
     box-shadow: 0 1px 4px rgba(var(--theme-primary-color-rgb), 0.3);
 }
 
-/* Add a subtle pulse animation on current step */
+/* Pulsing effect for current step */
 @keyframes accentPulse {
-    0% { box-shadow: 0 0 0 0 rgba(var(--theme-accent-color-rgb), 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(var(--theme-accent-color-rgb), 0); }
-    100% { box-shadow: 0 0 0 0 rgba(var(--theme-accent-color-rgb), 0); }
+    0% { box-shadow: 0 2px 12px rgba(var(--theme-accent-color-rgb), 0.3); }
+    50% { box-shadow: 0 2px 16px rgba(var(--theme-accent-color-rgb), 0.7); }
+    100% { box-shadow: 0 2px 12px rgba(var(--theme-accent-color-rgb), 0.3); }
 }
 
+/* Apply pulsing animation to the current step */
 .step-0-mode .custom-path-item[data-step="0"] .custom-path-indicator,
 .step-1-mode .custom-path-item[data-step="1"] .custom-path-indicator,
 .step-2-mode .custom-path-item[data-step="2"] .custom-path-indicator,
 .step-3-mode .custom-path-item[data-step="3"] .custom-path-indicator,
-.step-4-mode .custom-path-item[data-step="4"] .custom-path-indicator {
+.step-4-mode .custom-path-item[data-step="4"] .custom-path-indicator,
+.step-5-mode .custom-path-item[data-step="5"] .custom-path-indicator {
     animation: accentPulse 2s infinite;
 }
 
@@ -684,4 +680,115 @@ lightning-combobox {
     .action-section {
         flex-direction: column;
     }
+}
+
+/* Survey Created Step Styles */
+.survey-created-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.survey-created-message {
+    display: flex;
+    align-items: center;
+    background-color: rgba(var(--theme-primary-color-rgb), 0.08);
+    padding: 1rem;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.success-icon {
+    --sds-c-icon-color-foreground-default: var(--theme-primary-color);
+}
+
+.success-text {
+    font-weight: 600;
+    color: var(--theme-primary-color);
+    margin: 0;
+}
+
+.survey-id-container {
+    background-color: #f7f9fd;
+    border: 1px solid #e1e5ee;
+    padding: 1rem;
+    border-radius: 0.25rem;
+}
+
+.survey-id {
+    font-family: monospace;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    background: rgba(var(--theme-accent-color-rgb), 0.1);
+    border-radius: 0.25rem;
+}
+
+.copy-icon {
+    margin-left: 0.5rem;
+    margin-top: -0.25rem;
+    color: var(--theme-primary-color);
+}
+
+.help-text {
+    color: #706e6b;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+
+.survey-options {
+    margin-top: 1rem;
+}
+
+.options-header {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.options-container {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.option-card {
+    flex: 1;
+    min-width: 230px;
+    background: white;
+    border: 1px solid #e1e5ee;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.option-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border-color: var(--theme-primary-color);
+}
+
+.option-card lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--theme-primary-color);
+    margin-bottom: 0.75rem;
+}
+
+.option-card h4 {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.option-card p {
+    font-size: 0.875rem;
+    color: #706e6b;
+    margin: 0;
 } 

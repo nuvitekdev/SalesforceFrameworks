@@ -20,19 +20,25 @@
     --spacing-lg: 48px;
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
     --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    
+    /* Ensure host takes full width of its container */
+    display: block;
+    width: 100%;
 }
 
 .survey-responder-container {
     background-color: var(--background-color);
     color: var(--text-color);
     padding: var(--spacing-lg);
-    max-width: 800px; /* Constrain width for readability */
-    margin: var(--spacing-lg) auto; /* Center the container */
+    width: 100%; /* Use full width of the container */
+    max-width: 100%; /* Remove max-width constraint */
+    margin: 0; /* Remove auto margins */
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    box-sizing: border-box; /* Ensure padding is included in width calculation */
 }
 
 /* Loading State */
@@ -40,6 +46,7 @@
     text-align: center;
     padding: var(--spacing-lg);
     color: var(--text-secondary);
+    width: 100%;
 }
 
 .loading-container p {
@@ -56,6 +63,8 @@
     border-radius: var(--radius-md);
     font-weight: 500;
     margin-bottom: var(--spacing-lg);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .error-title {
@@ -68,6 +77,8 @@
     text-align: center;
     border-bottom: 1px solid var(--border-subtle);
     padding-bottom: var(--spacing-md);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .survey-title {
@@ -75,15 +86,17 @@
     font-weight: 600;
     margin-bottom: var(--spacing-xs);
     color: var(--primary-color);
+    word-wrap: break-word; /* Allow long titles to wrap */
 }
 
 .survey-description {
     font-size: 16px;
     color: var(--text-secondary);
     margin-bottom: var(--spacing-sm);
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: none; /* Remove max-width constraint */
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .survey-welcome {
@@ -94,6 +107,14 @@
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--radius-md);
     text-align: left;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Form elements to use full width */
+.survey-form {
+    width: 100%;
+    display: block;
 }
 
 /* Question Styling */
@@ -102,6 +123,9 @@
     border: 1px solid transparent; /* Add border for hover effect */
     border-radius: var(--radius-md);
     transition: border-color var(--transition-fast), background-color var(--transition-fast);
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: var(--spacing-md);
 }
 
 .question-container:hover {
@@ -115,6 +139,7 @@
     font-weight: 500;
     margin-bottom: var(--spacing-sm);
     color: var(--text-color);
+    width: 100%;
 }
 
 .question-number {
@@ -131,9 +156,11 @@
 /* Input Area Alignment */
 .question-input-area {
     margin-top: var(--spacing-sm);
+    width: 100%;
+    box-sizing: border-box;
 }
 
-/* Input Element Styling */
+/* Input Element Styling - force full width */
 lightning-input,
 lightning-textarea,
 lightning-radio-group,
@@ -148,17 +175,29 @@ lightning-checkbox-group {
     --lwc-shadowFocus: 0 0 0 3px rgba(34, 189, 193, 0.2);
     --lwc-colorTextRequired: #c23131;
     --lwc-fontSizeMedium: 16px;
+    
+    display: block;
+    width: 100%;
+}
+
+/* Force inner input elements to take full width */
+lightning-input .slds-input,
+lightning-textarea .slds-textarea,
+.slds-form-element__control {
+    width: 100% !important;
 }
 
 lightning-radio-group .slds-radio,
 lightning-checkbox-group .slds-checkbox {
     display: block; /* Ensure options stack vertically */
     margin-bottom: var(--spacing-xs);
+    width: 100%;
 }
 
 lightning-radio-group label.slds-radio__label,
 lightning-checkbox-group label.slds-checkbox__label {
     font-size: 16px;
+    width: 100%;
 }
 
 /* Rating Question */
@@ -166,6 +205,9 @@ lightning-checkbox-group label.slds-checkbox__label {
     display: flex;
     gap: var(--spacing-xs);
     align-items: center;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
 }
 
 .rating-button {
@@ -194,6 +236,7 @@ lightning-checkbox-group label.slds-checkbox__label {
 .rating-error-message {
     margin-top: var(--spacing-xs);
     font-size: 12px;
+    width: 100%;
 }
 
 /* Submission Area */
@@ -201,6 +244,8 @@ lightning-checkbox-group label.slds-checkbox__label {
     text-align: center;
     padding-top: var(--spacing-md);
     border-top: 1px solid var(--border-subtle);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .submit-button {
@@ -219,7 +264,7 @@ lightning-checkbox-group label.slds-checkbox__label {
 }
 
 .submit-button:hover:not(:disabled) {
-    background-color: var(--primary-dark); /* Need definition */
+    background-color: #1aa8ac; /* Darker shade of primary color */
     transform: translateY(-1px);
     box-shadow: var(--shadow-sm);
 }
@@ -237,6 +282,7 @@ lightning-checkbox-group label.slds-checkbox__label {
 .error-text {
     color: #c23131;
     font-weight: 500;
+    width: 100%;
 }
 
 /* Thank You Message */
@@ -245,6 +291,8 @@ lightning-checkbox-group label.slds-checkbox__label {
     padding: var(--spacing-lg) var(--spacing-md);
     background-color: var(--background-alt);
     border-radius: var(--radius-lg);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .thank-you-icon {
@@ -274,11 +322,61 @@ lightning-checkbox-group label.slds-checkbox__label {
     color: var(--text-color);
     line-height: 1.6;
     text-align: left;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+    width: 100%; /* Full width */
+    max-width: 100%; /* Remove fixed width */
+    margin-left: 0;
+    margin-right: 0;
     background-color: #fff;
     padding: var(--spacing-sm);
     border-radius: var(--radius-md);
     border: 1px solid var(--border-subtle);
+    box-sizing: border-box;
+}
+
+/* Responsive styling */
+@media (max-width: 768px) {
+    .survey-responder-container {
+        padding: var(--spacing-md);
+    }
+    
+    .question-container {
+        padding: var(--spacing-sm);
+    }
+    
+    .survey-title {
+        font-size: 24px;
+    }
+    
+    .question-label {
+        font-size: 16px;
+    }
+    
+    .rating-group {
+        justify-content: center; /* Center rating buttons on smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .survey-responder-container {
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-md); /* Smaller radius on mobile */
+    }
+    
+    .survey-title {
+        font-size: 20px;
+    }
+    
+    .submission-section {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .submit-button {
+        width: 100%;
+    }
+    
+    .question-container {
+        margin-bottom: var(--spacing-sm);
+    }
 } 

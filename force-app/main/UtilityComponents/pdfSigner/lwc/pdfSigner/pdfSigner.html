@@ -248,8 +248,20 @@
                 </div>
 
                 <div class="slds-m-top_medium slds-text-align_right">
-                    <lightning-button variant="brand" label="Finish & Save PDF" onclick={handleSavePdf}
-                        class="slds-m-left_x-small"></lightning-button>
+                    <!-- Added Clear button that will show confirmation modal -->
+                    <lightning-button 
+                        label="Clear Signatures" 
+                        variant="neutral" 
+                        icon-name="utility:delete" 
+                        onclick={handleClearRequest}
+                        class="clear-button">
+                    </lightning-button>
+                    <lightning-button 
+                        variant="brand" 
+                        label="Finish & Save PDF" 
+                        onclick={handleSavePdf}
+                        class="slds-m-left_x-small">
+                    </lightning-button>
                 </div>
             </div>
         </template>
@@ -306,6 +318,35 @@
                         variant="brand" 
                         label="Confirm Signature" 
                         onclick={handleSignatureSubmit}>
+                    </lightning-button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Add Clear Confirmation Modal -->
+    <template if:true={showClearConfirmation}>
+        <div class="signature-confirmation-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="slds-text-heading_medium">Clear All Signatures</h2>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to clear all signatures and restart?</p>
+                    <p class="warning-text">This will take you back to the preview step and you'll need to create your signature again.</p>
+                </div>
+                <div class="modal-footer">
+                    <lightning-button 
+                        class="cancel-button"
+                        variant="neutral" 
+                        label="Cancel" 
+                        onclick={handleCancelClear}>
+                    </lightning-button>
+                    <lightning-button 
+                        class="confirm-button slds-m-left_x-small"
+                        variant="destructive" 
+                        label="Clear and Restart" 
+                        onclick={handleConfirmClear}>
                     </lightning-button>
                 </div>
             </div>

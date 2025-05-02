@@ -2,7 +2,7 @@
  * @description Controller for managing Survey__c related operations, intended for internal use.
  */
 public with sharing class SurveyController {
-    
+
     /**
      * @description Top-level wrapper for deserializing the survey data JSON.
      */
@@ -53,35 +53,82 @@ public with sharing class SurveyController {
      */
     @AuraEnabled
     public static Id saveSurvey(String surveyJson) {
-        System.debug(LoggingLevel.DEBUG, 'saveSurvey initiated. JSON received: ' + surveyJson);
+        // Safe logging - don't risk exceptions just for logging
+        try {
+            if (surveyJson != null) {
+                Integer maxLogLength = Math.min(surveyJson.length(), 255);
+                System.debug(LoggingLevel.DEBUG, 'saveSurvey initiated. JSON received (first 255 chars): ' + 
+                         surveyJson.substring(0, maxLogLength) + 
+                         (surveyJson.length() > 255 ? '...' : ''));
+            } else {
+                System.debug(LoggingLevel.DEBUG, 'saveSurvey initiated. JSON received: null');
+            }
+        } catch (Exception e) {
+            System.debug(LoggingLevel.WARN, 'Error logging survey JSON: ' + e.getMessage());
+        }
+        
         Savepoint sp = Database.setSavepoint();
         Id surveyId;
 
         try {
+            // Basic validation before attempting to deserialize
+            if (String.isBlank(surveyJson)) {
+                throw new AuraHandledException('No survey data provided. Please complete the survey form.');
+            }
+            
+            // Clean the JSON string if needed (handle any potential issues)
+            surveyJson = cleanJsonString(surveyJson);
+            
             // Deserialize the JSON into wrapper classes
-            SurveyDataWrapper wrapper = (SurveyDataWrapper)JSON.deserialize(surveyJson, SurveyDataWrapper.class);
+            SurveyDataWrapper wrapper;
+            try {
+                wrapper = (SurveyDataWrapper)System.JSON.deserialize(surveyJson, SurveyDataWrapper.class);
+            } catch (JSONException je) {
+                System.debug(LoggingLevel.ERROR, 'JSON Parse Error: ' + je.getMessage());
+                System.debug(LoggingLevel.ERROR, 'JSON Content (first 1000 chars): ' + 
+                            (surveyJson.length() > 1000 ? surveyJson.substring(0, 1000) + '...' : surveyJson));
+                throw new AuraHandledException('Unable to parse survey data: ' + je.getMessage());
+            } catch (Exception e) {
+                System.debug(LoggingLevel.ERROR, 'General Parse Error: ' + e.getMessage());
+                System.debug(LoggingLevel.ERROR, 'Error Type: ' + e.getTypeName());
+                throw new AuraHandledException('Error processing survey data: ' + e.getMessage());
+            }
 
             // Validate the wrapper data (basic checks)
-            if (wrapper == null || wrapper.survey == null || String.isBlank(wrapper.survey.Name)) {
-                throw new AuraHandledException('Invalid survey data provided. Survey Name is required.');
+            if (wrapper == null) {
+                throw new AuraHandledException('Survey data is empty or invalid format.');
+            } 
+            
+            if (wrapper.survey == null) {
+                throw new AuraHandledException('Survey details are missing or invalid.');
             }
+            
+            if (String.isBlank(wrapper.survey.Name)) {
+                throw new AuraHandledException('Survey Name is required.');
+            }
+            
             if (wrapper.questions == null || wrapper.questions.isEmpty()) {
                  throw new AuraHandledException('At least one question is required to save the survey.');
             }
 
             // Prepare Survey record for DML
             Survey__c surveyToSave = wrapper.survey;
-            // Remove fields that might not be updateable - removed system fields
-            surveyToSave.OwnerId = null;
-            // System fields removed as they're not writeable
-
-            // Using upsert is safer if editing is intended
-            Database.UpsertResult surveyResult = Database.upsert(surveyToSave, Survey__c.Id, false);
-            if (!surveyResult.isSuccess()) {
-                throw createAuraException('Failed to save Survey record', surveyResult.getErrors());
+            
+            // *** ADDED DEBUG LOG ***
+            System.debug(LoggingLevel.DEBUG, 'Attempting to upsert Survey__c: ' + JSON.serializePretty(surveyToSave));
+            
+            try {
+                // Using upsert is safer if editing is intended
+                Database.UpsertResult surveyResult = Database.upsert(surveyToSave, Survey__c.Id, false);
+                if (!surveyResult.isSuccess()) {
+                    throw createAuraException('Failed to save Survey record', surveyResult.getErrors());
+                }
+                surveyId = surveyResult.getId();
+                System.debug(LoggingLevel.INFO, 'Survey Upsert successful. ID: ' + surveyId);
+            } catch (DmlException de) {
+                System.debug(LoggingLevel.ERROR, 'DML Exception on Survey insert: ' + de.getMessage());
+                throw new AuraHandledException('Error saving survey: ' + de.getMessage());
             }
-            surveyId = surveyResult.getId();
-            System.debug(LoggingLevel.INFO, 'Survey Upsert successful. ID: ' + surveyId);
 
             // --- Prepare Questions and Options --- //
             List<Question__c> questionsToUpsert = new List<Question__c>();
@@ -94,13 +141,25 @@ public with sharing class SurveyController {
             // First pass: Prepare Questions and gather Options with their question index
             for (Integer i = 0; i < wrapper.questions.size(); i++) {
                 QuestionDataWrapper questionWrapper = wrapper.questions[i];
+                
+                if (questionWrapper == null) {
+                    System.debug(LoggingLevel.WARN, 'Null question at index ' + i);
+                    continue; // Skip null questions
+                }
+                
+                // If a field is missing, use a default value
+                String questionText = questionWrapper.questionText != null ? questionWrapper.questionText : '';
+                String questionType = questionWrapper.type != null ? questionWrapper.type : 'Text';
+                Integer displayOrder = questionWrapper.displayOrder != null ? questionWrapper.displayOrder : (i + 1);
+                Boolean isRequired = questionWrapper.isRequired != null ? questionWrapper.isRequired : false;
+                
                 Question__c question = new Question__c(
                     Id = questionWrapper.Id,
                     Survey__c = surveyId, // Link to parent survey
-                    Question_Text__c = questionWrapper.questionText, // Updated field name
-                    Type__c = questionWrapper.type, // Updated field name
-                    Order__c = questionWrapper.displayOrder, // Updated field name
-                    Is_Required__c = questionWrapper.isRequired != null ? questionWrapper.isRequired : false // Updated field name
+                    Question_Text__c = questionText,
+                    Type__c = questionType,
+                    Order__c = displayOrder,
+                    Is_Required__c = isRequired
                 );
                 questionsToUpsert.add(question);
                 if (question.Id != null) {
@@ -109,17 +168,25 @@ public with sharing class SurveyController {
 
                 // Gather options associated with this question's index
                 List<Answer_Option__c> currentQuestionOptions = new List<Answer_Option__c>();
-                if (questionWrapper.answerOptions != null) { // Updated field name
-                    for (AnswerOptionWrapper optionWrapper : questionWrapper.answerOptions) { // Updated field name
+                if (questionWrapper.answerOptions != null) {
+                    for (AnswerOptionWrapper optionWrapper : questionWrapper.answerOptions) {
+                        if (optionWrapper == null) {
+                            continue; // Skip null options
+                        }
+                        
+                        // Handle potential null values
+                        String optionText = optionWrapper.optionText != null ? optionWrapper.optionText : '';
+                        Integer optionOrder = optionWrapper.displayOrder != null ? optionWrapper.displayOrder : 1;
+                        
                         Answer_Option__c option = new Answer_Option__c(
                             Id = optionWrapper.Id,
-                            Option_Text__c = optionWrapper.optionText, // Updated field name
-                            Order__c = optionWrapper.displayOrder // Updated field name
+                            Option_Text__c = optionText,
+                            Order__c = optionOrder
                             // Question__c will be set after questions are upserted
                         );
                         optionsFromPayload.add(option);
                         currentQuestionOptions.add(option);
-                         if (option.Id != null) {
+                        if (option.Id != null) {
                             currentOptionIds.add(option.Id);
                         }
                     }
@@ -127,82 +194,86 @@ public with sharing class SurveyController {
                 questionIndexToOptionsMap.put(i, currentQuestionOptions);
             }
 
-            // --- Upsert Questions --- //
-            List<Database.UpsertResult> questionResults = Database.upsert(questionsToUpsert, Question__c.Id, false);
-
-            // Map original question index to the saved/upserted Question ID
-            Map<Integer, Id> questionIndexToSavedIdMap = new Map<Integer, Id>();
-            for (Integer i = 0; i < questionResults.size(); i++) {
-                if (questionResults[i].isSuccess()) {
-                    questionIndexToSavedIdMap.put(i, questionResults[i].getId());
-                } else {
-                    throw createAuraException('Failed to save Question ' + (i+1), questionResults[i].getErrors());
+            try {
+                // --- Upsert Questions --- //
+                if (questionsToUpsert.isEmpty()) {
+                    throw new AuraHandledException('No valid questions found to save.');
                 }
-            }
-
-             // --- Link Options to Saved Questions --- //
-            List<Answer_Option__c> finalOptionsToUpsert = new List<Answer_Option__c>();
-            for (Integer i = 0; i < wrapper.questions.size(); i++) {
-                Id savedQuestionId = questionIndexToSavedIdMap.get(i);
-                List<Answer_Option__c> optionsForThisQuestion = questionIndexToOptionsMap.get(i);
-                if (savedQuestionId != null && optionsForThisQuestion != null) {
-                    for (Answer_Option__c option : optionsForThisQuestion) {
-                        option.Question__c = savedQuestionId; // Link to the correct, saved Question ID
-                        finalOptionsToUpsert.add(option);
+                
+                List<Database.UpsertResult> questionResults = Database.upsert(questionsToUpsert, Question__c.Id, false);
+    
+                // Map original question index to the saved/upserted Question ID
+                Map<Integer, Id> questionIndexToSavedIdMap = new Map<Integer, Id>();
+                for (Integer i = 0; i < questionResults.size(); i++) {
+                    if (questionResults[i].isSuccess()) {
+                        questionIndexToSavedIdMap.put(i, questionResults[i].getId());
+                    } else {
+                        throw createAuraException('Failed to save Question ' + (i+1), questionResults[i].getErrors());
                     }
                 }
-            }
-
-            // --- Upsert Options --- //
-            if (!finalOptionsToUpsert.isEmpty()) {
-                List<Database.UpsertResult> optionResults = Database.upsert(finalOptionsToUpsert, Answer_Option__c.Id, false);
-                for (Database.UpsertResult optResult : optionResults) {
-                    if (!optResult.isSuccess()) {
-                        throw createAuraException('Failed to save Answer Option', optResult.getErrors());
+    
+                 // --- Link Options to Saved Questions --- //
+                List<Answer_Option__c> finalOptionsToUpsert = new List<Answer_Option__c>();
+                for (Integer i = 0; i < questionsToUpsert.size(); i++) {
+                    Id savedQuestionId = questionIndexToSavedIdMap.get(i);
+                    List<Answer_Option__c> optionsForThisQuestion = questionIndexToOptionsMap.get(i);
+                    if (savedQuestionId != null && optionsForThisQuestion != null && !optionsForThisQuestion.isEmpty()) {
+                        for (Answer_Option__c option : optionsForThisQuestion) {
+                            option.Question__c = savedQuestionId; // Link to the correct, saved Question ID
+                            finalOptionsToUpsert.add(option);
+                        }
                     }
                 }
+    
+                // --- Upsert Options --- //
+                if (!finalOptionsToUpsert.isEmpty()) {
+                    List<Database.UpsertResult> optionResults = Database.upsert(finalOptionsToUpsert, Answer_Option__c.Id, false);
+                    for (Database.UpsertResult optResult : optionResults) {
+                        if (!optResult.isSuccess()) {
+                            throw createAuraException('Failed to save Answer Option', optResult.getErrors());
+                        }
+                    }
+                }
+            } catch (DmlException de) {
+                System.debug(LoggingLevel.ERROR, 'DML Exception on Questions/Options: ' + de.getMessage());
+                throw new AuraHandledException('Error saving questions or options: ' + de.getMessage());
             }
 
-            // --- Handle Deletes (If supporting editing/removal) --- //
-            // This part needs careful implementation based on how you want editing to work.
-            // Example: Query existing questions/options for this survey ID *excluding* those just upserted,
-            // then delete the ones not found in the current payload.
-            // List<Question__c> questionsToDelete = [SELECT Id FROM Question__c WHERE Survey__c = :surveyId AND Id NOT IN :currentQuestionIds];
-            // List<Answer_Option__c> optionsToDelete = [SELECT Id FROM Answer_Option__c WHERE Question__c IN (SELECT Id FROM Question__c WHERE Survey__c = :surveyId) AND Id NOT IN :currentOptionIds];
-            // if (!questionsToDelete.isEmpty()) Database.delete(questionsToDelete, false);
-            // if (!optionsToDelete.isEmpty()) Database.delete(optionsToDelete, false);
-
-            System.debug(LoggingLevel.INFO, 'saveSurvey completed successfully for Survey ID: ' + surveyId);
+            System.debug(LoggingLevel.INFO, 'Survey saved successfully with ID: ' + surveyId);
             return surveyId;
 
         } catch (Exception e) {
             Database.rollback(sp); // Roll back transaction on error
 
             // Enhanced Logging
-            String exceptionType = String.valueOf(e).substring(0, String.valueOf(e).indexOf(':'));
+            String exceptionType = String.valueOf(e);
+            if (exceptionType.contains(':')) {
+                exceptionType = exceptionType.substring(0, exceptionType.indexOf(':'));
+            }
+            
             System.debug(LoggingLevel.ERROR, '***** SURVEY SAVE ERROR *****');
             System.debug(LoggingLevel.ERROR, 'Exception Type: ' + exceptionType);
             System.debug(LoggingLevel.ERROR, 'Detail Message: ' + e.getMessage());
             System.debug(LoggingLevel.ERROR, 'Line Number: ' + e.getLineNumber());
             System.debug(LoggingLevel.ERROR, 'Stack Trace: \n' + e.getStackTraceString());
-            System.debug(LoggingLevel.ERROR, 'Initial JSON Payload: ' + surveyJson); // Log the input data
+            
+            // Log a shorter version of the payload to avoid exceeding debug log size limits
+            if (surveyJson != null) {
+                Integer maxLen = Math.min(surveyJson.length(), 1000);
+                System.debug(LoggingLevel.ERROR, 'Initial JSON Payload (truncated): ' + surveyJson.substring(0, maxLen) + 
+                             (surveyJson.length() > 1000 ? '...' : ''));
+            }
             System.debug(LoggingLevel.ERROR, '***************************');
 
             // Create User-Friendly Error Message
             String userMessage = 'An unexpected error occurred while saving the survey.'; // Default
             if (e instanceof System.JSONException || e.getMessage().contains('deserialize')) {
-                 userMessage = 'Invalid data format received. Please check the survey details and questions.';
+                 userMessage = 'Invalid data format received. Please check the survey details and questions format.';
             } else if (e instanceof DmlException) {
                 DmlException dmlEx = (DmlException)e;
                 // Try to get a more specific DML message
                 if (dmlEx.getNumDml() > 0) {
                      userMessage = 'Error saving data: ' + dmlEx.getDmlMessage(0);
-                      // Log specific DML details
-                      System.debug(LoggingLevel.ERROR, 'DML Error Details: Index=' + dmlEx.getDmlIndex(0) +
-                         ', FieldNames=' + String.join(dmlEx.getDmlFieldNames(0), ', ') +
-                         ', Id=' + dmlEx.getDmlId(0));
-                } else {
-                     userMessage = 'Error during data operation: ' + dmlEx.getMessage();
                 }
             } else if (e instanceof AuraHandledException) {
                  userMessage = e.getMessage(); // Use message from our explicit throws
@@ -214,6 +285,38 @@ public with sharing class SurveyController {
 
             throw new AuraHandledException(userMessage);
         }
+    }
+
+    /**
+     * @description Cleans a JSON string to remove potential issues
+     * @param jsonString The JSON string to clean
+     * @return A cleaned JSON string
+     */
+    private static String cleanJsonString(String jsonString) {
+        if (String.isBlank(jsonString)) {
+            return '';
+        }
+        
+        // Simply perform basic replacements that might cause issues
+        String cleanedJson = jsonString;
+        
+        try {
+            // Replace problematic backslash-escape sequences
+            cleanedJson = cleanedJson.replace('\\\\', '\\');
+            cleanedJson = cleanedJson.replace('\\\"', '"');
+            
+            // Replace any unescaped quotes and special characters
+            cleanedJson = cleanedJson.replace('\"', '"');
+            
+            // Handle ampersands (these can sometimes cause issues)
+            cleanedJson = cleanedJson.replace('&', '&amp;');
+        } catch (Exception e) {
+            System.debug(LoggingLevel.WARN, 'Error in cleanJsonString: ' + e.getMessage());
+            // Just return the original if any error occurs
+            return jsonString;
+        }
+        
+        return cleanedJson;
     }
 
     /**
@@ -394,14 +497,34 @@ public with sharing class SurveyController {
 
     // --- Helper for creating AuraHandledException from DML errors --- //
     private static AuraHandledException createAuraException(String prefix, List<Database.Error> errors) {
-        String message = prefix + ': ';
-        for (Database.Error error : errors) {
-            message += error.getStatusCode() + ': ' + error.getMessage(); // Include status code
-            if (error.getFields() != null && !error.getFields().isEmpty()) {
-                message += ' (Fields: ' + String.join(error.getFields(), ', ') + ')';
+        String detailedMessage = prefix;
+        
+        if (errors != null && !errors.isEmpty()) {
+            try {
+                // Safely try to get details from the first error
+                Database.Error firstError = errors[0];
+                if (firstError != null) {
+                    detailedMessage += ': (' + firstError.getStatusCode() + ') ' + firstError.getMessage();
+                    
+                    // Safely try to add fields
+                    List<String> fields = firstError.getFields();
+                    if (fields != null && !fields.isEmpty()) {
+                        detailedMessage += ' [Fields: ' + String.join(fields, ', ') + ']';
+                    }
+                } else {
+                    detailedMessage += ': Unknown database error details';
+                }
+            } catch (Exception e) {
+                // Fallback if accessing error details fails
+                detailedMessage += ': Failed to retrieve detailed error message (' + e.getMessage() + ')';
             }
-            message += '; ';
+        } else {
+            detailedMessage += ': No specific error details provided';
         }
-        return new AuraHandledException(message.removeEnd('; '));
+        
+        // Log the detailed message before throwing
+        System.debug(LoggingLevel.ERROR, 'Creating AuraHandledException with message: ' + detailedMessage);
+        
+        return new AuraHandledException(detailedMessage);
     }
 } 

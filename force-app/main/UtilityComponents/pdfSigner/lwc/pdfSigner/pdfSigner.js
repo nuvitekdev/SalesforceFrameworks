@@ -76,6 +76,9 @@ export default class PdfSigner extends LightningElement {
     pdfHeight = 0;             // Height of the PDF page
     themeVariablesSet = false; // Flag to set variables only once
 
+    // Add a new property to track the clear confirmation modal state
+    @track showClearConfirmation = false;
+
     // Methods to get recordId from different contexts
     getRecordIdFromPageRef() {
         if (this.pageRef) {
@@ -234,7 +237,7 @@ export default class PdfSigner extends LightningElement {
             
             // Set canvas dimensions 
             // This is important for proper drawing/cursor alignment
-            const containerWidth = this.canvasElement.parentElement.clientWidth;
+            const containerWidth = this.canvasElement.parentElement?.clientWidth || 400;
             this.canvasElement.width = containerWidth > 0 ? containerWidth : 400;
             this.canvasElement.height = 150;
             
@@ -244,9 +247,7 @@ export default class PdfSigner extends LightningElement {
             // Initialize SignaturePad if in draw mode
             if (this.isDraw && window.SignaturePad) {
                 try {
-                    if (this.signaturePad) {
-                        this.signaturePad.clear();
-                    } else {
+                    // Always create a new instance to avoid issues
                         this.signaturePad = new window.SignaturePad(this.canvasElement, {
                             backgroundColor: 'rgba(255, 255, 255, 0)', // Transparent background
                             penColor: 'black',
@@ -255,7 +256,7 @@ export default class PdfSigner extends LightningElement {
                             throttle: 16, // Adjust for better performance
                             velocityFilterWeight: 0.7 // Adjust for smoother lines
                         });
-                    }
+                    
                     console.log('Signature pad initialized');
                 } catch (error) {
                     console.error('Error initializing SignaturePad:', error);
@@ -510,15 +511,39 @@ export default class PdfSigner extends LightningElement {
     // Handle path navigation click
     goToStep(event) {
         const step = parseInt(event.currentTarget.dataset.step, 10);
+        const previousStep = this.currentStep;
+        console.log(`Navigation request from step ${previousStep} to ${step}`);
         
-        // Special case: if we're at step 3 and trying to go back to step 2
-        if (this.currentStep === 3 && step === 2) {
-            // Show toast explaining why they can't go back
+        // Don't allow skipping forward
+        if (step > previousStep && step - previousStep > 1) {
             this.showToast(
-                'Cannot Edit Signature', 
-                'Your signature has been confirmed. To make changes, please restart the process.', 
+                'Cannot Skip Steps', 
+                'Please complete each step in order.', 
                 'warning'
             );
+            return;
+        }
+        
+        // Special case: if we're at step 3 and trying to go back to step 2
+        if (previousStep === 3 && step === 2) {
+            // Special handling: reinitialize the signature mode
+            this.currentStep = step;
+            this.updatePathClasses();
+            
+            // Clear any existing signature pad instance
+            if (this.signaturePad) {
+                this.signaturePad.off();
+                this.signaturePad = null;
+            }
+            
+            // Clear the canvas and context references
+            this.canvasElement = null;
+            this.ctx = null;
+            
+            // Reinitialize the canvas (important fix)
+            setTimeout(() => {
+                this.initializeCanvas();
+            }, 50);
             return;
         }
         
@@ -526,13 +551,27 @@ export default class PdfSigner extends LightningElement {
         this.currentStep = step;
         this.updatePathClasses();
         
-        if (step === 3) {
+        if (step === 2) {
+            // When moving to step 2, make sure the canvas is properly initialized
+            // Clear any existing signature pad instance first
+            if (this.signaturePad) {
+                this.signaturePad.off();
+                this.signaturePad = null;
+            }
+            
+            setTimeout(() => {
+                this.initializeCanvas();
+            }, 50);
+        } else if (step === 3) {
             // When moving to step 3, prepare for signature placement
             this.renderPdfPagesForSigning();
         } else if (step === 0) {
             // When starting over, clear everything
             this.handleClearPdf();
+            if (this.signaturePad) {
+                this.signaturePad.off();
             this.signaturePad = null;
+            }
             this.signatureImage = null;
             this.placedSignatures = [];
         }
@@ -784,13 +823,26 @@ export default class PdfSigner extends LightningElement {
         }
     }
     
-    // Modified handleSignatureSubmit for better handling of text signatures
+    // Modified handleSignatureSubmit for better handling when navigating between steps
     handleSignatureSubmit() {
         // Hide the confirmation modal
         this.showSignatureConfirmation = false;
         
+        // Save the current step before changing
+        const previousStep = this.currentStep;
+        
         // Move to the next step
-        this.goToStep({ currentTarget: { dataset: { step: '3' } } });
+        this.currentStep = 3;
+        this.updatePathClasses();
+        
+        // If we were already at step 3 and went back to step 2, we need special handling
+        if (previousStep === 2) {
+            // Clear any existing signature pad to prevent memory leaks
+            if (this.signaturePad) {
+                this.signaturePad.off();
+                this.signaturePad = null;
+            }
+        }
         
         // Prepare pages for signature placement
         this.renderPdfPagesForSigning();
@@ -1891,48 +1943,99 @@ export default class PdfSigner extends LightningElement {
     updatePathClasses() {
         // Use setTimeout to ensure the DOM is updated after currentStep changes
         setTimeout(() => {
+            // Get RGB values of theme colors for custom styling
+            const primaryRgb = this.primaryColorRgb || '34, 189, 193';
+            const accentRgb = this.accentColorRgb || '213, 223, 35';
+            
             // No specific classes to add/remove from path items as the CSS handles it based on step-N-mode class
             // But we can update aria attributes for accessibility
             const pathItems = this.template.querySelectorAll('.custom-path-item');
+            console.log(`Found ${pathItems.length} path items for step: ${this.currentStep}`);
+            
             pathItems.forEach((item) => {
                 const indicator = item.querySelector('.custom-path-indicator');
+                const label = item.querySelector('.custom-path-label');
                 const number = item.querySelector('.custom-path-number');
                 
                 if (!indicator) return;
                 
                 const itemStep = parseInt(item.dataset.step, 10);
+                const stepNum = itemStep + 1; // The actual step number (1-indexed)
                 
                 // Set aria-current for the current step
-                indicator.setAttribute('aria-current', itemStep === this.currentStep ? 'step' : 'false');
+                const isCurrent = itemStep === this.currentStep;
+                indicator.setAttribute('aria-current', isCurrent ? 'step' : 'false');
                 
-                // Set aria-label to indicate status (completed, current, or future)
+                // Apply direct styles to ensure proper coloring
                 if (itemStep < this.currentStep) {
-                    indicator.setAttribute('aria-label', 'Completed step');
+                    // Completed step - primary color
+                    indicator.style.backgroundColor = this.primaryColor;
+                    indicator.style.color = 'white';
+                    indicator.style.borderColor = 'transparent';
+                    indicator.style.boxShadow = `0 1px 4px rgba(${primaryRgb}, 0.3)`;
                     
-                    // Add checkmark for completed steps
-                    if (number) {
+                    // Convert number to checkmark - but only if not already a checkmark
+                    // This prevents double checkmarks
+                    if (number && number.innerHTML !== '✓') {
                         number.innerHTML = '✓';
-                        number.classList.add('checkmark');
                         number.style.fontSize = '1.2em';
                     }
                     
+                    if (label) {
+                        label.style.color = this.textColor || '#1d1d1f';
+                    }
+                    
+                    indicator.setAttribute('aria-label', 'Completed step');
                 } else if (itemStep === this.currentStep) {
+                    // Current step - accent color
+                    indicator.style.backgroundColor = this.accentColor;
+                    indicator.style.color = 'white';
+                    indicator.style.borderColor = 'transparent';
+                    indicator.style.boxShadow = `0 2px 12px rgba(${accentRgb}, 0.5)`;
+                    indicator.style.transform = 'translateY(-2px)';
+                    
+                    // Ensure the number is shown for current step (in case we went back)
+                    if (number) {
+                        number.innerHTML = stepNum;
+                        number.style.fontSize = ''; // Reset font size
+                    }
+                    
+                    if (label) {
+                        label.style.color = this.textColor || '#1d1d1f';
+                        label.style.fontWeight = '600';
+                    }
+                    
                     indicator.setAttribute('aria-label', 'Current step');
-                    
-                    // Reset number for current step (in case we go back)
-                    if (number) {
-                        number.innerHTML = (itemStep + 1).toString();
-                        number.style.fontSize = '';
-                    }
-                    
                 } else {
-                    indicator.setAttribute('aria-label', 'Future step');
+                    // Future step - reset to default
+                    indicator.style.backgroundColor = '';
+                    indicator.style.color = '';
+                    indicator.style.borderColor = '';
+                    indicator.style.boxShadow = '';
+                    indicator.style.transform = '';
                     
-                    // Reset number for future steps
+                    // Make sure the number is visible
                     if (number) {
-                        number.innerHTML = (itemStep + 1).toString();
-                        number.style.fontSize = '';
+                        number.innerHTML = stepNum;
+                        number.style.fontSize = ''; // Reset font size
                     }
+                    
+                    if (label) {
+                        label.style.color = '';
+                        label.style.fontWeight = '';
+                    }
+                    
+                    indicator.setAttribute('aria-label', 'Future step');
+                }
+            });
+            
+            // Also apply connecting lines coloring
+            pathItems.forEach((item) => {
+                const itemStep = parseInt(item.dataset.step, 10);
+                if (itemStep <= this.currentStep && itemStep > 0) {
+                    item.style.setProperty('--line-color', this.primaryColor);
+                } else {
+                    item.style.setProperty('--line-color', '');
                 }
             });
             
@@ -2102,5 +2205,35 @@ export default class PdfSigner extends LightningElement {
     handleCancelConfirmation() {
         // Hide the confirmation modal
         this.showSignatureConfirmation = false;
+    }
+
+    // Add handler method to show the clear confirmation modal
+    handleClearRequest() {
+        this.showClearConfirmation = true;
+    }
+
+    // Add handler method to hide the clear confirmation modal
+    handleCancelClear() {
+        this.showClearConfirmation = false;
+    }
+
+    // Add handler method to confirm clearing and reset to step 1
+    handleConfirmClear() {
+        // Hide the confirmation modal
+        this.showClearConfirmation = false;
+        
+        // Clear signatures and reset
+        this.placedSignatures = [];
+        
+        // Keep the current PDF but restart the signing process
+        this.currentStep = 1;
+        this.updatePathClasses();
+        
+        // Show a toast to confirm the action
+        this.showToast(
+            'Signatures Cleared', 
+            'All signatures have been cleared. You can restart the signing process.', 
+            'info'
+        );
     }
 }

@@ -152,16 +152,23 @@ export default class SurveyCreator extends LightningElement {
 
     // --- Lifecycle Hooks ---
     /**
-     * Initializes the component, adds a default question, and applies theme.
+     * Lifecycle hook when component is inserted into the DOM.
+     * Sets up initial state and default values.
      */
     connectedCallback() {
-        this.addQuestion(); // Start with one question
-        this.updateThemeVariables(); // Apply custom styling
+        // Set current step explicitly to 1 (first step)
+        this.currentStep = 1;
         
-        // Schedule an update of the path indicators after render
-        setTimeout(() => {
-            this.updatePathClasses();
-        }, 100);
+        // Set theme variables
+        this.updateThemeVariables();
+        
+        // Create initial empty question
+        if (this.questions.length === 0) {
+            this.addQuestion();
+        }
+        
+        // Update path indicator on initial load
+        this.updatePathClasses();
     }
 
     /**
@@ -199,99 +206,98 @@ export default class SurveyCreator extends LightningElement {
      * This is similar to pdfSigner's path indicator implementation.
      */
     updatePathClasses() {
-        // Use setTimeout to ensure the DOM is updated after currentStep changes
+        // Use setTimeout to ensure the DOM is updated
         setTimeout(() => {
-            // Debug log for step class
-            console.log(`Current step is ${this.currentStep}, using class: ${this.currentStepClass}`);
-            
-            // No specific classes to add/remove from path items as the CSS handles it based on step-N-mode class
-            // But we can update aria attributes for accessibility
-            const pathItems = this.template.querySelectorAll('.custom-path-item');
-            console.log(`Found ${pathItems.length} path items`);
-            
             // Get RGB values of theme colors for custom styling
             const primaryRgb = this.hexToRgb(this.primaryColor);
             const accentRgb = this.hexToRgb(this.accentColor);
             
-            pathItems.forEach((item) => {
-                const indicator = item.querySelector('.custom-path-indicator');
-                const label = item.querySelector('.custom-path-label');
-                const number = item.querySelector('.custom-path-number');
+            // Set the overall step mode class on the container
+            const container = this.template.querySelector('.custom-path-container');
+            
+            // Add the appropriate step mode class 
+            if (container) {
+                // First remove any existing step mode classes
+                const existingClasses = Array.from(container.classList)
+                    .filter(cls => cls.includes('step-') && cls.includes('-mode'));
                 
-                if (!indicator) return;
-                
-                const itemStep = parseInt(item.dataset.step, 10);
-                
-                // Set aria-current for the current step
-                const isCurrent = itemStep === this.currentStep - 1;
-                indicator.setAttribute('aria-current', isCurrent ? 'step' : 'false');
-                
-                // Apply direct styles to ensure proper coloring
-                if (itemStep < this.currentStep - 1) {
-                    // Completed step - primary color
-                    indicator.style.backgroundColor = this.primaryColor;
-                    indicator.style.color = 'white';
-                    indicator.style.borderColor = 'transparent';
-                    indicator.style.boxShadow = `0 1px 4px rgba(${primaryRgb}, 0.3)`;
-                    
-                    // Convert number to checkmark
-                    if (number) {
-                        number.innerHTML = '✓';
-                        number.style.fontSize = '1.2em';
+                ['step-0-mode', 'step-1-mode', 'step-2-mode', 'step-3-mode', 'step-4-mode', 'step-5-mode'].forEach(cls => {
+                    if (container.classList.contains(cls)) {
+                        container.classList.remove(cls);
                     }
+                });
+                
+                // IMPORTANT FIX: Use the currentStep directly (1-indexed) for the CSS class
+                // instead of converting to 0-indexed - this keeps alignment with the CSS selectors
+                container.classList.add(`step-${this.currentStep - 1}-mode`);
+                
+                // Update CSS properties for items based on completion status
+                const pathItems = this.template.querySelectorAll('.custom-path-item');
+                
+                pathItems.forEach((item, index) => {
+                    // Get the step index from the data-step attribute
+                    const itemStepIndex = parseInt(item.dataset.step, 10);
+                    // The step in the UI is 1-indexed for display
+                    const displayStep = itemStepIndex + 1;
                     
-                    if (label) {
-                        label.style.color = this.textColor;
-                    }
+                    // Get elements
+                    const indicator = item.querySelector('.custom-path-indicator');
+                    const number = item.querySelector('.custom-path-number');
+                    const label = item.querySelector('.custom-path-label');
                     
-                    indicator.setAttribute('aria-label', 'Completed step');
-                    console.log(`Step ${itemStep + 1} marked as completed`);
+                    // Set ARIA attributes for accessibility
+                    item.setAttribute('aria-current', displayStep === this.currentStep ? 'step' : 'false');
+                    item.setAttribute('aria-selected', displayStep === this.currentStep ? 'true' : 'false');
                     
-                } else if (itemStep === this.currentStep - 1) {
-                    // Current step - accent color
-                    indicator.style.backgroundColor = this.accentColor;
-                    indicator.style.color = 'white';
-                    indicator.style.borderColor = 'transparent';
-                    indicator.style.boxShadow = `0 2px 12px rgba(${accentRgb}, 0.5)`;
-                    indicator.style.transform = 'translateY(-2px)';
-                    
-                    if (label) {
-                        label.style.color = this.textColor;
-                        label.style.fontWeight = '600';
-                    }
-                    
-                    indicator.setAttribute('aria-label', 'Current step');
-                    console.log(`Step ${itemStep + 1} marked as current`);
-                    
-                } else {
-                    // Future step - reset to default
+                    // Reset all
                     indicator.style.backgroundColor = '';
-                    indicator.style.color = '';
                     indicator.style.borderColor = '';
-                    indicator.style.boxShadow = '';
-                    indicator.style.transform = '';
+                    number.style.color = '';
+                    number.style.fontSize = '';
+                    number.style.fontWeight = '';
+                    number.innerHTML = displayStep;
                     
-                    if (label) {
-                        label.style.color = '';
-                        label.style.fontWeight = '';
+                    // Apply styles based on step status
+                    if (displayStep < this.currentStep) {
+                        // Completed step
+                        indicator.style.backgroundColor = `rgb(${primaryRgb})`;
+                        indicator.style.borderColor = `rgb(${primaryRgb})`;
+                        number.style.color = 'white';
+                        // Show checkmark instead of number - make it more visible with unicode heavy checkmark
+                        number.innerHTML = '&#10004;'; // Unicode heavy checkmark: ✔
+                        number.style.fontSize = '24px'; // Make checkmark larger
+                        number.style.fontWeight = 'bold'; // Make checkmark bolder
+                        
+                        if (label) {
+                            label.style.color = this.textColor || '#1d1d1f';
+                        }
+                    } else if (displayStep === this.currentStep) {
+                        // Current step (accent color)
+                        indicator.style.backgroundColor = `rgb(${accentRgb})`;
+                        indicator.style.borderColor = `rgb(${accentRgb})`;
+                        number.style.color = 'rgba(0, 0, 0, 0.8)'; // Dark text on accent color
+                        
+                        if (label) {
+                            label.style.color = this.textColor || '#1d1d1f';
+                            label.style.fontWeight = '600';
+                        }
+                    } else {
+                        // Future step - reset everything to default
+                        indicator.style.backgroundColor = '';
+                        indicator.style.borderColor = '';
+                        number.style.color = '';
+                        number.style.fontSize = '';
+                        number.style.fontWeight = '';
+                        number.innerHTML = displayStep;
+                        
+                        if (label) {
+                            label.style.color = '';
+                            label.style.fontWeight = '';
+                        }
                     }
-                    
-                    indicator.setAttribute('aria-label', 'Future step');
-                    console.log(`Step ${itemStep + 1} marked as future`);
-                }
-            });
-            
-            // Also apply connecting lines coloring
-            pathItems.forEach((item) => {
-                const itemStep = parseInt(item.dataset.step, 10);
-                // We need to color the line before steps that are completed or current
-                if (itemStep <= this.currentStep - 1 && itemStep > 0) {
-                    item.style.setProperty('--line-color', this.primaryColor);
-                }
-            });
-            
-            console.log(`Path classes updated for step: ${this.currentStep}`);
-        }, 0); // setTimeout with 0ms delay defers execution until after the current stack clears
+                });
+            }
+        }, 0);
     }
 
     // --- Getters for Template Logic ---
@@ -299,27 +305,31 @@ export default class SurveyCreator extends LightningElement {
     get isStep2() { return this.currentStep === 2; }
     get isStep3() { return this.currentStep === 3; }
     get isStep4() { return this.currentStep === 4; }
-    get isStep5() { return this.currentStep === 5; } // Sent Confirmation Step
+    get isStep5() { return this.currentStep === 5; } // Created Survey, show ID
+    get isStep6() { return this.currentStep === 6; } // Sent Confirmation Step
 
     get step1Title() { return 'Step 1: Survey Details'; }
     get step2Title() { return 'Step 2: Build Questions'; }
     get step3Title() { return 'Step 3: Add Recipients'; }
-    get step4Title() { return 'Step 4: Review and Send'; }
-    get step5Title() { return 'Survey Sent!'; }
+    get step4Title() { return 'Step 4: Review'; }
+    get step5Title() { return 'Step 5: Survey Created'; }
+    get step6Title() { return 'Survey Sent!'; }
 
-    get showPreviousButton() { return this.currentStep > 1 && this.currentStep < 5; } // Don't show on first or last step
+    get showPreviousButton() { return this.currentStep > 1 && this.currentStep !== 6; } // Don't show on first or confirmation step
     get showNextButton() { return this.currentStep < 4; } // Show until Review step
-    get showSaveAndSendButton() { return this.currentStep === 4; } // Only on Review step
-    get showCreateAnotherButton() { return this.currentStep === 5; } // Only on Confirmation step
+    get showSaveButton() { return this.currentStep === 4; } // Only on Review step
+    get showSendButton() { return this.currentStep === 5; } // Only on Created step
+    get showCreateAnotherButton() { return this.currentStep === 6; } // Only on Sent Confirmation step
+    get showNavButtons() { return this.currentStep <= 4; } // Only show navigation buttons for steps 1-4
 
     get nextButtonLabel() {
         return this.currentStep === 3 ? 'Review' : 'Next';
     }
 
     get currentStepClass() {
-        // Used for CSS scoping based on current step
-        // Adjust to use 0-indexed values for CSS classes to match the data-step attributes
-        return `step-${this.currentStep - 1}-mode`;
+        // Convert from 1-indexed step to 0-indexed CSS class
+        const stepIndex = this.currentStep - 1;
+        return `step-${stepIndex}-mode`;
     }
 
     get questionTypeOptions() {
@@ -355,10 +365,22 @@ export default class SurveyCreator extends LightningElement {
     }
 
     get questionsWithComputedFields() {
-        return this.questions.map(q => ({
-            ...q,
-            showOptions: ['Multiple Choice - Single', 'Multiple Choice - Multiple'].includes(q.type)
-        }));
+        return this.questions.map(q => {
+            if (!q) return q;
+            
+            // Determine if this question type should show answer options
+            const showOptions = q.type && 
+                ['Multiple Choice - Single', 'Multiple Choice - Multiple'].includes(q.type);
+            
+            // Ensure answerOptions is always an array
+            const answerOptions = Array.isArray(q.answerOptions) ? q.answerOptions : [];
+            
+            return {
+                ...q,
+                showOptions,
+                answerOptions
+            };
+        });
     }
 
     // --- Utility Methods ---
@@ -395,279 +417,265 @@ export default class SurveyCreator extends LightningElement {
         const field = event.target.dataset.field; // e.g., 'questionText', 'type', 'isRequired'
         let value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
 
-        // *** ADDED LOGGING ***
-        console.log(`handleQuestionChange: index=${questionIndex}, field=${field}, value=${value}`);
+        // Create a copy of the questions array and the specific question to modify
+        const questions = [...this.questions];
+        const updatedQuestion = { ...questions[questionIndex] };
 
-        // Find the question to update
-        const updatedQuestions = this.questions.map((q, index) => {
-            if (index === questionIndex) {
-                const updatedQuestion = { ...q, [field]: value };
-
-                // *** ADDED LOGGING ***
-                console.log('handleQuestionChange: Updated question object:', JSON.stringify(updatedQuestion));
-
-                // If type changes, reset options if it's no longer a choice type
-                if (field === 'type' &&
-                    !['Multiple Choice - Single', 'Multiple Choice - Multiple'].includes(value)) {
-                    updatedQuestion.answerOptions = []; // Clear options for non-choice types
-                }
-                // If type becomes a choice type, add a default option if none exist
-                else if (field === 'type' &&
-                         ['Multiple Choice - Single', 'Multiple Choice - Multiple'].includes(value) &&
-                         updatedQuestion.answerOptions.length === 0) {
-                    updatedQuestion.answerOptions = [this.createAnswerOption(1)];
-                }
-                 // If Required checkbox changes
-                 else if (field === 'isRequired') {
-                     updatedQuestion.isRequired = value;
-                 }
-
-                return updatedQuestion;
-            }
-            return q;
-        });
-
-        this.questions = updatedQuestions;
-        // *** ADDED LOGGING ***
-        console.log('handleQuestionChange: Full questions array after update:', JSON.stringify(this.questions));
+        // Update the specific field
+        updatedQuestion[field] = value;
+        
+        // Update required flag separately as it needs special handling
+        if (field === 'isRequired') {
+            updatedQuestion.isRequired = value;
+        }
+        
+        // Replace the question in the array
+        questions[questionIndex] = updatedQuestion;
+        
+        // Update the questions array
+        this.questions = questions;
     }
 
     /**
-     * Updates an answer option's text when it changes.
+     * Updates an answer option when its value changes.
      */
     handleOptionChange(event) {
         const questionIndex = parseInt(event.target.dataset.qindex, 10);
         const optionIndex = parseInt(event.target.dataset.optindex, 10);
         const value = event.target.value;
 
-        // Add debug logs
-        console.log(`handleOptionChange: qIndex=${questionIndex}, oIndex=${optionIndex}, value=${value}`);
-
-        const updatedQuestions = this.questions.map((q, qIndex) => {
-            if (qIndex === questionIndex) {
-                const updatedOptions = q.answerOptions.map((opt, oIndex) => {
-                    if (oIndex === optionIndex) {
-                        return { ...opt, optionText: value }; // Update 'optionText'
-                    }
-                    return opt;
-                });
-                return { ...q, answerOptions: updatedOptions };
-            }
-            return q;
-        });
-        this.questions = updatedQuestions;
+        // Create a copy of the questions array
+        const questions = [...this.questions];
+        
+        // Create a copy of the specific question
+        const question = { ...questions[questionIndex] };
+        
+        // Create a copy of the options array
+        const options = [...question.answerOptions];
+        
+        // Create a copy of the specific option
+        const option = { ...options[optionIndex] };
+        
+        // Update the option value
+        option.optionText = value;
+        
+        // Replace the option in the options array
+        options[optionIndex] = option;
+        
+        // Replace the options in the question
+        question.answerOptions = options;
+        
+        // Replace the question in the questions array
+        questions[questionIndex] = question;
+        
+        // Update the questions array
+        this.questions = questions;
     }
 
     /**
-     * Updates the recipient email string.
+     * Updates the recipient email addresses.
      */
     handleEmailChange(event) {
         this.recipientEmails = event.target.value;
-        // Force path update after a short delay to ensure visuals are correct
-        setTimeout(() => {
-            this.forcePathUpdate();
-        }, 10);
     }
 
     // --- Question & Option Management ---
     /**
-     * Adds a new, blank question to the survey.
+     * Adds a new question to the questions array.
      */
     addQuestion() {
-        this.questionKeyCounter++;
+        // Create a new question
         const newQuestion = {
-            key: `question-${this.questionKeyCounter}`, // Unique key for LWC iteration
-            sObjectType: 'Question__c', // Match Apex wrapper
+            key: `q_${this.questionKeyCounter++}`,
+            sObjectType: 'Question__c',
             Id: null,
             questionText: '',
-            type: 'Text', // Default type
+            type: 'Text',
             displayOrder: this.questions.length + 1,
             isRequired: false,
-            answerOptions: [] // Initialize empty options array, matches wrapper
+            answerOptions: []
         };
+        
+        // Add it to the questions array
         this.questions = [...this.questions, newQuestion];
     }
 
     /**
-     * Removes a question based on its index.
+     * Removes a question from the questions array.
      */
     removeQuestion(event) {
-        const questionIndexToRemove = parseInt(event.target.dataset.index, 10);
-        console.log(`Removing question at index ${questionIndexToRemove}`);
+        // Ensure we get the correct index by checking different data attributes
+        const qindex = event.target.dataset.qindex;
+        const index = event.target.dataset.index;
+        
+        // Use whichever attribute is available
+        const questionIndexToRemove = parseInt(qindex || index, 10);
+        
+        if (isNaN(questionIndexToRemove)) {
+            this.showToast('Error', 'Could not determine which question to remove.', 'error');
+            return;
+        }
         
         this.questions = this.questions.filter((_, index) => index !== questionIndexToRemove);
-        // Re-order remaining questions
-        this.questions = this.questions.map((q, index) => ({ ...q, displayOrder: index + 1 }));
     }
 
     /**
-     * Adds a new, blank answer option to a specific question.
+     * Adds an answer option to a multiple-choice question.
      */
     addAnswerOption(event) {
-        const questionIndex = parseInt(event.target.dataset.qindex, 10);
-        console.log(`Adding option to question index ${questionIndex}`);
-
-        this.questions = this.questions.map((q, index) => {
-            if (index === questionIndex) {
-                const newOrder = q.answerOptions.length + 1;
-                const newOption = this.createAnswerOption(newOrder);
-                return { ...q, answerOptions: [...q.answerOptions, newOption] };
-            }
-            return q;
-        });
+        // Ensure we get the correct index by checking different data attributes
+        const qindex = event.target.dataset.qindex;
+        const index = event.target.dataset.index;
+        
+        // Use whichever attribute is available
+        const questionIndex = parseInt(qindex || index, 10);
+        
+        if (isNaN(questionIndex)) {
+            this.showToast('Error', 'Could not determine which question to add an option to.', 'error');
+            return;
+        }
+        
+        // Create a copy of the questions array
+        const questions = [...this.questions];
+        
+        if (!questions[questionIndex]) {
+            this.showToast('Error', `Question at index ${questionIndex} not found.`, 'error');
+            return;
+        }
+        
+        // Get the current options count
+        const optionsCount = 
+            questions[questionIndex].answerOptions ? 
+            questions[questionIndex].answerOptions.length : 0;
+        
+        // Create a new option
+        const newOption = this.createAnswerOption(optionsCount + 1);
+        
+        // Ensure answerOptions array exists
+        if (!questions[questionIndex].answerOptions) {
+            questions[questionIndex].answerOptions = [];
+        }
+        
+        // Add the option to the question
+        questions[questionIndex].answerOptions = [...questions[questionIndex].answerOptions, newOption];
+        
+        // Update the questions array
+        this.questions = questions;
     }
 
     /**
-     * Helper to create a new answer option object.
+     * Creates a new answer option object.
      */
     createAnswerOption(order) {
-        this.optionKeyCounter++;
         return {
-            key: `option-${this.optionKeyCounter}`, // Unique key for LWC iteration
-            sObjectType: 'Answer_Option__c', // Match Apex wrapper
+            key: `o_${this.optionKeyCounter++}`,
+            sObjectType: 'Answer_Option__c',
             Id: null,
-            optionText: '', // Match wrapper
-            displayOrder: order // Match wrapper
+            optionText: '',
+            displayOrder: order
         };
     }
 
     /**
-     * Removes an answer option from a specific question.
+     * Removes an answer option from a multiple-choice question.
      */
     removeAnswerOption(event) {
         const questionIndex = parseInt(event.target.dataset.qindex, 10);
         const optionIndexToRemove = parseInt(event.target.dataset.optindex, 10);
-        
-        console.log(`Removing option ${optionIndexToRemove} from question ${questionIndex}`);
 
-        this.questions = this.questions.map((q, index) => {
-            if (index === questionIndex) {
-                let updatedOptions = q.answerOptions.filter((_, oIndex) => oIndex !== optionIndexToRemove);
-                // Re-order remaining options
-                updatedOptions = updatedOptions.map((opt, oIndex) => ({ ...opt, displayOrder: oIndex + 1 }));
-                return { ...q, answerOptions: updatedOptions };
-            }
-            return q;
-        });
+        // Create a copy of the questions array
+        const questions = [...this.questions];
+        
+        // Create a copy of the specific question
+        const question = { ...questions[questionIndex] };
+        
+        // Filter out the option to remove
+        question.answerOptions = question.answerOptions.filter((_, index) => index !== optionIndexToRemove);
+
+        // Re-order remaining options
+        question.answerOptions = question.answerOptions.map((opt, oIndex) => ({ ...opt, displayOrder: oIndex + 1 }));
+        
+        // Replace the question in the questions array
+        questions[questionIndex] = question;
+        
+        // Update the questions array
+        this.questions = questions;
     }
 
     // --- Navigation and Validation ---
     /**
-     * Moves to the next step if the current step is valid.
+     * Moves to the next step in the survey creation process.
+     * Validates the current step before proceeding.
      */
     handleNext() {
-        this.error = null; // Clear previous errors
-        if (this.validateForm()) {
-            // Log current step before changing
-            console.log('Current step before navigation:', this.currentStep);
-            
-            // Fix navigation to ensure we can go to step 4
-            this.currentStep++;
-            
-            // Update path classes based on new step
-            this.updatePathClasses();
-            
-            // Log current step after changing
-            console.log('Current step after navigation:', this.currentStep);
-        } else {
-            // Validation errors handled within validateForm (shows toast)
-            console.log('Validation failed for step:', this.currentStep);
+        // Validate the current step
+        if (!this.validateForm()) {
+            return;
         }
+        
+        // Move to the next step
+        this.currentStep += 1;
+        
+        // Update the path indicator
+        this.updatePathClasses();
     }
 
     /**
-     * Moves to the previous step.
+     * Moves to the previous step in the survey creation process.
      */
     handlePrevious() {
-        this.error = null; // Clear errors when moving back
         if (this.currentStep > 1) {
-            this.currentStep--;
-            this.updatePathClasses(); // Update path indicator
+            // Move to the previous step
+            this.currentStep -= 1;
+            
+            // Update the path indicator
+            this.updatePathClasses();
         }
     }
 
     /**
-     * Validates the form fields for the current step.
-     * @returns {boolean} True if the current step is valid, false otherwise.
+     * Validates the current form step.
+     * @returns {boolean} True if validation passes, false otherwise.
      */
     validateForm() {
         let isValid = true;
         let errorMessage = '';
-
-        if (this.currentStep === 1) { // Validate Survey Details
+        
+        if (this.currentStep === 1) {
+            // Validate Survey Details
             if (!this.survey.Name || this.survey.Name.trim() === '') {
                 isValid = false;
-                errorMessage = 'Survey Name is required.';
+                errorMessage = 'Please enter a survey name.';
             }
-            // Add validation for Expiration_Date__c if needed (e.g., must be in the future)
-            if (this.survey.Expiration_Date__c) {
-                 const today = new Date();
-                 today.setHours(0, 0, 0, 0); // Compare dates only
-                 const expDate = new Date(this.survey.Expiration_Date__c);
-                 // Adjust comparison to account for timezone differences if necessary
-                 // For simplicity, comparing date part only
-                 const expDateUTC = Date.UTC(expDate.getFullYear(), expDate.getMonth(), expDate.getDate());
-                 const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-
-                 if (expDateUTC < todayUTC) {
-                      isValid = false;
-                      errorMessage = 'Expiration Date cannot be in the past.';
-                 }
-            }
-
-        } else if (this.currentStep === 2) { // Validate Questions
-            if (this.questions.length === 0) {
+        } else if (this.currentStep === 2) {
+            // Validate Questions
+            const hasQuestions = this.questions.length > 0;
+            if (!hasQuestions) {
                 isValid = false;
-                errorMessage = 'Please add at least one question.';
+                errorMessage = 'Add at least one question to your survey.';
             } else {
+                // Check each question
                 for (let i = 0; i < this.questions.length; i++) {
                     const q = this.questions[i];
-
-                    // *** ADDED LOGGING ***
-                    console.log(`validateForm (Step 2): Checking question ${i + 1}, questionText: '${q.questionText}'`, JSON.stringify(q));
-
+                    
+                    // Check if question has text
                     if (!q.questionText || q.questionText.trim() === '') {
-                        isValid = false;
-                        errorMessage = `Question ${i + 1}: Question text cannot be empty.`;
+                    isValid = false;
+                        errorMessage = `Question ${i + 1} is missing question text.`;
                         break;
                     }
-                    if (['Multiple Choice - Single', 'Multiple Choice - Multiple'].includes(q.type)) {
-                        if (q.answerOptions.length < 2) {
-                            isValid = false;
-                            errorMessage = `Question ${i + 1}: Multiple choice questions require at least two answer options.`;
-                            break;
-                        }
-                        for (let j = 0; j < q.answerOptions.length; j++) {
-                            if (!q.answerOptions[j].optionText || q.answerOptions[j].optionText.trim() === '') {
-                                isValid = false;
-                                errorMessage = `Question ${i + 1}, Option ${j + 1}: Answer option text cannot be empty.`;
-                                break; // Break inner loop
-                            }
-                        }
-                        if (!isValid) break; // Break outer loop if inner validation failed
-                    }
+                    
+                    // For multiple choice, check if options exist
+                    if (q.type.startsWith('Multiple Choice') && (!q.answerOptions || q.answerOptions.length < 2)) {
+                        isValid = false;
+                        errorMessage = `Question ${i + 1} needs at least two answer options.`;
+                        break;
                 }
             }
-        } else if (this.currentStep === 3) { // Validate Recipients
-            // First validate if any emails are provided
-            if (!this.recipientEmails || this.recipientEmails.trim() === '') {
-                isValid = false;
-                errorMessage = 'Please enter at least one recipient email address.';
-            } else {
-                // Get the list of emails and validate them
-                const emailList = this.emailList;
-                if (emailList.length === 0) {
-                    isValid = false;
-                    errorMessage = 'Please enter at least one valid recipient email address.';
-                } else if (!this.validateEmails(emailList)) {
-                    isValid = false;
-                    errorMessage = 'One or more email addresses are invalid. Please check the format.';
-                }
             }
-            
-            // Note: We'll only check publicSiteUrl during final send in step 4
-            // This allows users to proceed with the survey creation workflow
-            console.log(`Validation for step 3 - Valid: ${isValid}, Emails: ${this.recipientEmails}`);
+        } else if (this.currentStep === 3) {
+            // Step 3 is now just an informational step, no validation needed
+            isValid = true;
         } else if (this.currentStep === 4) { // Validate before sending
             // Check publicSiteUrl before allowing send
             if (!this.publicSiteUrl || this.publicSiteUrl.trim() === '') {
@@ -677,6 +685,13 @@ export default class SurveyCreator extends LightningElement {
                 isValid = false;
                 errorMessage = 'Public Site URL must start with http:// or https://';
             }
+        } else if (this.currentStep === 5) {
+            // We only need validation for step 5 when sending emails
+            // handleSendEmails method handles its own validation
+            isValid = true;
+        } else if (this.currentStep === 6) {
+            // Step 6 is now just an informational step, no validation needed
+            isValid = true;
         }
 
         if (!isValid) {
@@ -699,20 +714,147 @@ export default class SurveyCreator extends LightningElement {
 
     // --- Data Operations ---
     /**
-     * Handles the final "Save and Send" button click.
-     * Validates the entire survey, saves it, and sends invitations.
+     * Handles the "Save Survey" button click.
+     * Creates the survey and all its questions.
      */
-    async handleSendSurvey() {
+    async handleSaveSurvey() {
+        this.error = null; // Clear previous errors
+        
+        // Validate the form
+        if (!this.validateForm()) {
+            return;
+        }
+
+        // Start processing
+        this.isProcessing = true;
+        
+        try {
+            // Sanitize the data to remove any potential issues
+            const sanitizeString = (str) => {
+                if (!str) return '';
+                
+                // Convert to string in case it's a different type
+                let result = String(str);
+                
+                try {
+                    // Handle HTML entities and special characters first
+                    result = result
+                        .replace(/&/g, '&amp;')     // Replace & with &amp;
+                        .replace(/</g, '&lt;')      // Replace < with &lt;
+                        .replace(/>/g, '&gt;')      // Replace > with &gt;
+                        .replace(/"/g, '&quot;')    // Replace " with &quot;
+                        .replace(/'/g, '&#39;')     // Replace ' with &#39;
+                        
+                        // Also handle common problematic characters for JSON
+                        .replace(/\\/g, '\\\\')     // Escape backslashes
+                        .replace(/\n/g, ' ')        // Replace newlines with spaces
+                        .replace(/\r/g, ' ')        // Replace carriage returns with spaces
+                        .replace(/\t/g, ' ')        // Replace tabs with spaces
+                        .replace(/\f/g, ' ');       // Replace form feeds with spaces
+                } catch (e) {
+                    // If any error in sanitization, return an empty string to be safe
+                    console.error('Error sanitizing string:', e);
+                    return '';
+                }
+                
+                return result;
+            };
+            
+            // Prepare the data structure for Apex with sanitized values
+            const formattedQuestions = this.questions.map((q, index) => {
+                if (!q) return null;
+                
+                // Map to the fields expected by the Apex controller
+                return {
+                    sObjectType: 'Question__c',
+                    Id: q.Id || null,
+                    questionText: sanitizeString(q.questionText || ''),
+                    type: sanitizeString(q.type || 'Text'),
+                    displayOrder: index + 1,
+                    isRequired: q.isRequired === true,
+                    answerOptions: Array.isArray(q.answerOptions) ? q.answerOptions.map((opt, optIndex) => {
+                        if (!opt) return null;
+                        return {
+                            sObjectType: 'Answer_Option__c',
+                            Id: opt.Id || null,
+                            optionText: sanitizeString(opt.optionText || ''),
+                            displayOrder: optIndex + 1
+                        };
+                    }).filter(Boolean) : [] // Remove any null entries
+                };
+            }).filter(Boolean); // Remove any null entries
+            
+            // Create a clean survey object with only the fields we need
+            const cleanSurvey = {
+                Id: this.survey.Id || null,
+                Name: sanitizeString(this.survey.Name || ''),
+                Description__c: sanitizeString(this.survey.Description__c || ''),
+                Welcome_Message__c: sanitizeString(this.survey.Welcome_Message__c || ''),
+                Thank_You_Message__c: sanitizeString(this.survey.Thank_You_Message__c || ''),
+                Is_Active__c: this.survey.Is_Active__c === true,
+                Expiration_Date__c: this.survey.Expiration_Date__c || null
+            };
+            
+        const surveyData = {
+                survey: cleanSurvey,
+                questions: formattedQuestions
+            };
+            
+            // Use a more robust way to convert to JSON
+            let surveyJson;
+            try {
+                // Use JSON.stringify with a replacer function to handle any circular references
+                surveyJson = JSON.stringify(surveyData, (key, value) => {
+                    // Convert any objects that might cause issues to simpler forms
+                    if (typeof value === 'object' && value !== null) {
+                        // Handle dates
+                        if (value instanceof Date) {
+                            return value.toISOString();
+                        }
+                    }
+                    return value;
+                });
+            } catch (jsonError) {
+                throw new Error('Failed to convert survey data to JSON: ' + jsonError.message);
+            }
+            
+            // Save the Survey definition using the imported saveSurvey method
+            const savedSurveyId = await saveSurvey({ 
+                surveyJson: surveyJson
+            });
+            
+            this.surveyId = savedSurveyId; // Store the returned ID
+            
+            // Show success toast
+            this.showToast('Success', 'Survey created successfully! You can now send invitations.', 'success');
+            
+            // Move to step 5 (Survey Created) where we show the survey ID
+            this.currentStep = 5;
+            this.updatePathClasses();
+        } catch (error) {
+            // Use reduceErrors to get a clean message
+            const errorMessage = reduceErrors(error).join(', ');
+            this.error = errorMessage;
+            this.showToast('Error', `Failed to save survey: ${errorMessage}`, 'error');
+        } finally {
+            this.isProcessing = false;
+        }
+    }
+
+    /**
+     * Handles the "Send Emails" button click.
+     * Sends invitations for the already created survey.
+     */
+    async handleSendEmails() {
         this.error = null; // Clear previous errors
 
-        // Final validation check (redundant if steps were followed, but good practice)
-        if (!this.validateForm() && this.currentStep < 4) {
-             this.showToast('Validation Error', 'Please complete all previous steps.', 'error');
-             return;
-        }
         const emailList = this.emailList;
-        if (emailList.length === 0 || !this.validateEmails(emailList)) {
+        if (emailList.length === 0) {
             this.showToast('Validation Error', 'Please provide at least one valid recipient email address.', 'error');
+            return;
+        }
+        if (!this.validateEmails(emailList)) {
+            this.showToast('Validation Error', 'Please ensure all email addresses are valid.', 'error');
             return;
         }
         if (!this.publicSiteUrl || this.publicSiteUrl.trim() === '') {
@@ -726,42 +868,24 @@ export default class SurveyCreator extends LightningElement {
 
         this.isProcessing = true;
 
-        // Prepare the data structure for Apex - matching the updated wrappers
-        const surveyData = {
-            survey: this.survey,       // Directly pass the survey object
-            questions: this.questions // Pass the questions array
-        };
-
         try {
-            // Step 1: Save the Survey definition
-            const savedSurveyId = await saveSurvey({ surveyJson: JSON.stringify(surveyData) });
-            this.surveyId = savedSurveyId; // Store the returned ID
-            console.log('Survey saved successfully with ID:', this.surveyId);
+            // Send emails for the saved survey
+            const sendResultCount = await createAndSendResponses({
+                surveyId: this.surveyId,
+                recipientEmails: emailList,
+                publicSiteUrl: this.publicSiteUrl
+            });
 
-            // Step 2: If save was successful, create responses and send emails
-            if (this.surveyId) {
-                const sendResultCount = await createAndSendResponses({
-                    surveyId: this.surveyId,
-                    recipientEmails: emailList,
-                    publicSiteUrl: this.publicSiteUrl
-                });
-
-                this.sentCount = sendResultCount;
-                this.showToast('Success', `Survey saved and ${this.sentCount} invitations sent successfully!`, 'success');
-                this.currentStep = 5; // Move to confirmation step
-                this.updatePathClasses(); // Update path indicator
-            } else {
-                 // This case should ideally not happen if saveSurvey throws on error
-                 throw new Error('Failed to save the survey, cannot proceed to send.');
-            }
-
+            this.sentCount = sendResultCount;
+            this.showToast('Success', `${this.sentCount} invitations sent successfully!`, 'success');
+            this.currentStep = 6; // Move to confirmation step
+            this.updatePathClasses(); // Update path indicator
         } catch (error) {
             // Use reduceErrors to get a clean message
             const errorMessage = reduceErrors(error).join(', ');
             this.error = errorMessage;
-            this.showToast('Error', `Failed to save or send survey: ${errorMessage}`, 'error');
-            console.error('Error saving/sending survey:', error); // Log detailed error
-
+            this.showToast('Error', `Failed to send survey: ${errorMessage}`, 'error');
+            console.error('Error sending survey:', error);
         } finally {
             this.isProcessing = false;
         }
@@ -796,9 +920,6 @@ export default class SurveyCreator extends LightningElement {
 
         // Update path indicator
         this.updatePathClasses();
-
-        // Clear any visual error indicators if necessary
-        // (e.g., remove error classes from inputs - handled by LWC reactivity)
     }
 
 
@@ -841,7 +962,8 @@ export default class SurveyCreator extends LightningElement {
      * @param {Event} event - The click event
      */
     goToStep(event) {
-        const step = parseInt(event.currentTarget.dataset.step, 10) + 1; // Convert 0-indexed to 1-indexed
+        const stepIndex = parseInt(event.currentTarget.dataset.step, 10);
+        const step = stepIndex + 1; // Convert from 0-indexed to 1-indexed
         
         // Don't allow skipping forward
         if (step > this.currentStep) {
@@ -854,7 +976,7 @@ export default class SurveyCreator extends LightningElement {
         }
         
         // Don't allow going back from confirmation
-        if (this.currentStep === 5 && step < 5) {
+        if (this.currentStep === 6 && step < 6) {
             this.showToast(
                 'Survey Already Sent', 
                 'This survey has already been sent. Create a new one to start over.', 
@@ -862,6 +984,9 @@ export default class SurveyCreator extends LightningElement {
             );
             return;
         }
+        
+        // Check if we're navigating backwards
+        const goingBack = step < this.currentStep;
         
         // Proceed with navigation
         this.currentStep = step;
@@ -876,4 +1001,71 @@ export default class SurveyCreator extends LightningElement {
         // Force a re-render of the path indicators
         this.updatePathClasses();
     }
-}
+
+    /**
+     * @description Generates the direct survey link for public access
+     * @return {string} The complete URL to access the survey directly
+     */
+    get directSurveyLink() {
+        if (!this.surveyId || !this.publicSiteUrl) {
+            return 'Configure site URL in Settings tab';
+        }
+        
+        // Ensure the URL has a trailing slash
+        let baseUrl = this.publicSiteUrl;
+        if (!baseUrl.endsWith('/')) {
+            baseUrl += '/';
+        }
+        
+        // Return the complete URL with the survey ID parameter
+        return `${baseUrl}survey?id=${this.surveyId}`;
+    }
+
+    /**
+     * Copies the survey ID to the clipboard and shows a toast message
+     */
+    copySurveyIdToClipboard() {
+        if (!this.surveyId) return;
+        
+        // Create a temporary element to copy from
+        const el = document.createElement('textarea');
+        el.value = this.surveyId;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        
+        // Show toast
+        this.showToast('Copied!', 'Survey ID copied to clipboard', 'success');
+    }
+    
+    /**
+     * Copies the direct survey link to the clipboard and shows a toast message
+     */
+    copyDirectLinkToClipboard() {
+        if (!this.directSurveyLink || this.directSurveyLink.includes('Configure')) {
+            this.showToast('Error', 'Please configure the public site URL first', 'error');
+            return;
+        }
+        
+        // Create a temporary element to copy from
+        const el = document.createElement('textarea');
+        el.value = this.directSurveyLink;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        
+        // Show toast
+        this.showToast('Copied!', 'Survey link copied to clipboard', 'success');
+    }
+
+    /**
+     * Legacy method for backward compatibility.
+     * This is now replaced by handleSaveSurvey
+     */
+    async handleSendSurvey() {
+        // Call the current implementation to maintain compatibility
+        await this.handleSaveSurvey();
+    }
+} 

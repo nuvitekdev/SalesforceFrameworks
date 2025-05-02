@@ -173,29 +173,7 @@
 }
 
 .custom-path-number {
-    font-weight: 700;
-    transition: all 0.2s ease-in-out;
-}
-
-/* Style for the checkmark */
-.checkmark {
-    color: white;
-    font-size: 1.2em;
-    animation: checkmarkPop 0.3s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
-}
-
-@keyframes checkmarkPop {
-    0% {
-        transform: scale(0);
-        opacity: 0;
-    }
-    50% {
-        transform: scale(1.2);
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
+    font-weight: 600;
 }
 
 .custom-path-label {
@@ -266,7 +244,7 @@
     font-weight: 500; /* Reset font weight */
 }
 
-/* Change number to checkmark for completed steps */
+/* Change number to checkmark for completed steps - DISABLED to prevent duplicate checkmarks */
 .step-1-mode .custom-path-item[data-step="0"] .custom-path-number::before,
 .step-2-mode .custom-path-item[data-step="0"] .custom-path-number::before,
 .step-2-mode .custom-path-item[data-step="1"] .custom-path-number::before,
@@ -277,10 +255,9 @@
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-number::before,
 .step-4-mode .custom-path-item[data-step="2"] .custom-path-number::before,
 .step-4-mode .custom-path-item[data-step="3"] .custom-path-number::before /* Added step 3 */ { 
-    content: '\2713'; /* Unicode checkmark */
-    font-size: 1.2em;
-    line-height: 1;
-    display: inline-block;
+    /* Removed content: '\2713'; to prevent duplicate checkmarks - this is now handled in JavaScript */
+    content: '';
+    font-size: 0;
 }
 
 /* Hide the original number when checkmark is shown */
@@ -293,8 +270,8 @@
 .step-4-mode .custom-path-item[data-step="0"] .custom-path-number,
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-number,
 .step-4-mode .custom-path-item[data-step="2"] .custom-path-number,
-.step-4-mode .custom-path-item[data-step="3"] .custom-path-number /* Added step 3 */ { 
-    font-size: 0; /* Hide the number */
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-number {
+    /* No need to set font-size: 0 since we're handling the display in JavaScript */
 }
 
 .custom-path-number::before {
@@ -523,16 +500,16 @@ lightning-input.signature-text-input {
 }
 
 lightning-button.clear-button button {
-    border-color: var(--border-color);
-    color: var(--text-secondary);
-    border-radius: var(--radius-sm);
+    --sds-c-button-neutral-color-background: transparent;
+    --sds-c-button-neutral-color-border: transparent;
+    --sds-c-button-text-color: var(--text-secondary);
+    --sds-c-button-shadow: none;
     transition: all var(--transition-fast);
 }
 
 lightning-button.clear-button button:hover {
-    background-color: var(--background-alt);
-    border-color: var(--text-tertiary);
-    color: var(--text-color);
+    --sds-c-button-color-background-hover: rgba(var(--theme-primary-color-rgb), 0.05);
+    --sds-c-button-text-color-hover: var(--theme-primary-color);
     transform: translateY(-1px);
 }
 
@@ -891,6 +868,29 @@ lightning-button.clear-button button {
     color: var(--text-secondary);
     border-radius: var(--radius-sm);
     transition: all var(--transition-fast);
+}
+
+lightning-button.clear-button button:hover {
+    background-color: var(--background-alt);
+    border-color: #ea001e;
+    color: #ea001e;
+    transform: translateY(-1px);
+}
+
+/* Destructive button for clear modal */
+lightning-button.confirm-button[variant="destructive"] button {
+    background-color: #ea001e;
+    border-color: #ea001e;
+    color: white;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+lightning-button.confirm-button[variant="destructive"] button:hover {
+    background-color: #ba0516;
+    border-color: #ba0516;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 /* Add this to the appropriate section in the CSS file */

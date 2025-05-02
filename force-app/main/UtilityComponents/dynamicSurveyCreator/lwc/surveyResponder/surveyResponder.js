@@ -1,22 +1,22 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import getSurveyDetails from '@salesforce/apex/SurveyPublicController.getSurveyDetails';
+import getSurveyById from '@salesforce/apex/SurveyPublicController.getSurveyById';
 import submitSurveyResponse from '@salesforce/apex/SurveyPublicController.submitSurveyResponse';
 import { CurrentPageReference } from 'lightning/navigation';
 
 export default class SurveyResponder extends LightningElement {
     // --- Public API Properties ---
     /**
-     * The unique ID from the URL identifying this specific survey response attempt.
-     * This will typically be passed via the URL parameter.
+     * The ID of the survey to load directly.
+     * This will be the primary identifier used to load the survey.
      * @type {string}
      */
-    _responseId;
-    @api get responseId() {
-        return this._responseId;
+    _surveyId;
+    @api get surveyId() {
+        return this._surveyId;
     }
-    set responseId(value) {
-        this._responseId = value;
-        // If the responseId changes, reload the survey
+    set surveyId(value) {
+        this._surveyId = value;
+        // If the surveyId changes, load the survey
         if (value) {
             this.loadSurvey();
         }
@@ -27,6 +27,12 @@ export default class SurveyResponder extends LightningElement {
     @api accentColor = '#D5DF23';
     @api textColor = '#1d1d1f';
     @api backgroundColor = '#ffffff';
+    
+    /**
+     * If false, prevents users from submitting the same survey multiple times from the same browser.
+     * @type {boolean}
+     */
+    @api allowMultipleSubmissions = false;
 
     // --- State Properties ---
     /**
@@ -61,72 +67,140 @@ export default class SurveyResponder extends LightningElement {
      * @description The record ID of the Survey_Response__c being updated.
      */
     surveyResponseRecordId;
+    
+    /**
+     * @description Indicates if the user has previously submitted this survey.
+     */
+    @track hasPreviouslySubmitted = false;
+    
+    /**
+     * @description Browser device fingerprint used for tracking submissions.
+     */
+    deviceFingerprint;
 
     // --- Wired Properties ---
     /**
-     * @description Wires the CurrentPageReference to potentially extract the responseId from URL state.
+     * @description Wires the CurrentPageReference to extract the survey ID from URL state.
      */
     @wire(CurrentPageReference)
     getStateParameters(currentPageReference) {
+       console.log('SurveyResponder: Page reference received:', JSON.stringify(currentPageReference));
        if (currentPageReference && currentPageReference.state) {
-          // Look for a state parameter named 'responseId' (adjust key if needed)
-          const stateResponseId = currentPageReference.state.responseId;
-          if (stateResponseId && !this._responseId) {
-             console.log('Setting responseId from page state:', stateResponseId);
-             this.responseId = stateResponseId;
+          console.log('SurveyResponder: Page state:', JSON.stringify(currentPageReference.state));
+          
+          // Look for survey ID in URL parameters
+          // Check both 'id' and 'surveyId' parameters for flexibility
+          const urlSurveyId = currentPageReference.state.id || currentPageReference.state.surveyId;
+          
+          console.log('SurveyResponder: Extracted surveyId:', urlSurveyId);
+          
+          if (urlSurveyId && !this._surveyId) {
+             console.log('SurveyResponder: Setting surveyId from page state:', urlSurveyId);
+             this.surveyId = urlSurveyId;
+          } else if (!urlSurveyId) {
+             console.warn('SurveyResponder: No survey ID found in page state.');
           }
+       } else {
+           console.warn('SurveyResponder: No currentPageReference or state received.');
        }
     }
 
     // --- Getters for Template Logic ---
-
-    /**
-     * @description Dynamically computes the style for the main container based on theme properties.
-     */
     get componentStyle() {
         return `
             --primary-color: ${this.primaryColor};
+            --primary-color-rgb: ${this.hexToRgb(this.primaryColor)};
             --accent-color: ${this.accentColor};
+            --accent-color-rgb: ${this.hexToRgb(this.accentColor)};
             --text-color: ${this.textColor};
             --background-color: ${this.backgroundColor};
-            /* Add other derived variables if needed */
         `;
     }
 
-    /**
-     * @description Options for the Rating (1-5) question type.
-     */
+    // --- Rating options getter ---
     get ratingOptions() {
+        // This assumes a 5-point rating scale
         const options = [];
         for (let i = 1; i <= 5; i++) {
-            options.push({ label: String(i), value: String(i) });
+            options.push({
+                value: i.toString(),
+                label: i.toString(),
+                class: 'rating-button'
+            });
         }
         return options;
     }
 
     // --- Lifecycle Hooks ---
-
     /**
-     * @description Called when the component is inserted. Checks if responseId is already set.
+     * @description Called when the component is inserted. Checks if surveyId is already set.
      */
     connectedCallback() {
-        if (this._responseId) {
+        console.log('SurveyResponder: connectedCallback started. surveyId:', this._surveyId);
+
+        // Generate a device fingerprint for tracking submissions
+        this.generateDeviceFingerprint();
+        
+        if (this._surveyId) {
             this.loadSurvey();
         } else {
-            // If responseId is not set via @api or URL state by now, show an error
-            this.loadError = 'Survey response ID is missing. Please check the link.';
-            this.isLoading = false;
-            console.error('SurveyResponder: responseId is missing.');
+            // If surveyId is not set via @api or URL state by now, show an error after a short delay
+            // to allow wire service to potentially populate values
+            const checkState = () => {
+                if (this._surveyId) {
+                    console.log('SurveyResponder: surveyId found after delay, loading survey.');
+                    this.loadSurvey();
+                } else {
+                    console.error('SurveyResponder: No survey ID found after delay.');
+                    this.loadError = 'Survey ID is missing. Please check the link.';
+                    this.isLoading = false;
+                }
+            };
+            // Wait a short moment for the @wire to potentially complete
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            setTimeout(checkState, 300); 
         }
+    }
+
+    /**
+     * @description Generates a simple device fingerprint based on browser properties
+     */
+    generateDeviceFingerprint() {
+        const components = [];
+        
+        // Browser and platform information
+        components.push(navigator.userAgent);
+        components.push(navigator.language);
+        components.push(screen.width + 'x' + screen.height + 'x' + screen.colorDepth);
+        components.push(new Date().getTimezoneOffset());
+        
+        // Try to get additional browser features
+        if (navigator.plugins) {
+            components.push(navigator.plugins.length);
+        }
+        
+        // Create a simple hash
+        let fingerprint = components.join('|');
+        
+        // Convert to a simple hash
+        let hash = 0;
+        for (let i = 0; i < fingerprint.length; i++) {
+            hash = ((hash << 5) - hash) + fingerprint.charCodeAt(i);
+            hash |= 0; // Convert to 32bit integer
+        }
+        
+        // Store the fingerprint
+        this.deviceFingerprint = 'device_' + Math.abs(hash).toString(16);
+        console.log('Device fingerprint generated:', this.deviceFingerprint);
     }
 
     // --- Data Loading ---
     /**
-     * @description Loads the survey details from the Apex controller based on the responseId.
+     * @description Loads the survey details directly using the survey ID.
      */
     loadSurvey() {
-        if (!this._responseId) {
-            this.loadError = 'Cannot load survey: Response ID is missing.';
+        if (!this._surveyId) {
+            this.loadError = 'Cannot load survey: Survey ID is missing.';
             this.isLoading = false;
             return;
         }
@@ -137,9 +211,16 @@ export default class SurveyResponder extends LightningElement {
         this.responses = {};
         this.isCompleted = false;
 
-        getSurveyDetails({ responseId: this._responseId })
+        // Check if the survey has already been submitted by this device
+        this.checkPreviousSubmission();
+
+        getSurveyById({ surveyId: this._surveyId })
             .then(result => {
-                this.surveyResponseRecordId = result.responseId;
+                // Store the responseId if it's provided (legacy support)
+                if (result.responseId) {
+                    this.surveyResponseRecordId = result.responseId;
+                }
+                
                 // Process the data for easier template rendering
                 const processedData = this.processSurveyData(result);
                 this.surveyData = processedData;
@@ -153,175 +234,277 @@ export default class SurveyResponder extends LightningElement {
     }
 
     /**
-     * @description Processes the raw survey data from Apex to add helper flags and format options.
-     * @param {object} rawData - The data returned from SurveyPublicController.getSurveyDetails.
-     * @returns {object} Processed survey data suitable for the template.
+     * @description Checks if the user has previously submitted this survey
+     */
+    checkPreviousSubmission() {
+        if (!this.allowMultipleSubmissions && this._surveyId) {
+            try {
+                // Get the stored submission records from localStorage
+                const storageKey = 'SurveyResponder_Submissions';
+                const submissionsStr = localStorage.getItem(storageKey);
+                
+                if (submissionsStr) {
+                    const submissions = JSON.parse(submissionsStr);
+                    
+                    // Check if this survey ID is in the submissions list for this device
+                    if (submissions[this.deviceFingerprint] && 
+                        submissions[this.deviceFingerprint].includes(this._surveyId)) {
+                        console.log('User has previously submitted this survey');
+                        this.hasPreviouslySubmitted = true;
+                        this.isCompleted = true; // Show the thank you screen
+                        
+                        // Don't set loadError since this isn't an error condition
+                        // This will prevent the error panel from showing
+                    } else {
+                        this.hasPreviouslySubmitted = false;
+                    }
+                } else {
+                    this.hasPreviouslySubmitted = false;
+                }
+            } catch (error) {
+                console.error('Error checking previous submissions:', error);
+                // In case of error, we let the user continue
+                this.hasPreviouslySubmitted = false;
+            }
+        }
+    }
+
+    /**
+     * @description Records a submission for the current survey and device
+     */
+    recordSubmission() {
+        if (!this.allowMultipleSubmissions && this._surveyId) {
+            try {
+                // Get the stored submission records from localStorage
+                const storageKey = 'SurveyResponder_Submissions';
+                const submissionsStr = localStorage.getItem(storageKey);
+                
+                // Parse existing submissions or create a new object
+                let submissions = {};
+                if (submissionsStr) {
+                    submissions = JSON.parse(submissionsStr);
+                }
+                
+                // Ensure the device entry exists
+                if (!submissions[this.deviceFingerprint]) {
+                    submissions[this.deviceFingerprint] = [];
+                }
+                
+                // Add this survey ID to the submissions list for this device
+                if (!submissions[this.deviceFingerprint].includes(this._surveyId)) {
+                    submissions[this.deviceFingerprint].push(this._surveyId);
+                }
+                
+                // Store back to localStorage
+                localStorage.setItem(storageKey, JSON.stringify(submissions));
+                console.log('Recorded survey submission for deviceFingerprint:', this.deviceFingerprint);
+            } catch (error) {
+                console.error('Error recording submission:', error);
+            }
+        }
+    }
+
+    /**
+     * @description Processes survey data for use in the template.
      */
     processSurveyData(rawData) {
-        if (!rawData || !rawData.questions) {
-            return rawData;
+        // Check if survey is null or empty
+        if (!rawData || !rawData.survey || !rawData.questions) {
+            return null;
         }
 
-        const processedQuestions = rawData.questions.map((q, index) => {
-            const question = { ...q }; // Clone the question object
-            question.displayOrder = index + 1;
-            question.isText = q.Type__c === 'Text';
-            question.isTextarea = q.Type__c === 'Textarea';
-            question.isRadio = q.Type__c === 'Radio';
-            question.isCheckbox = q.Type__c === 'Checkbox';
-            question.isRating = q.Type__c === 'Rating (1-5)';
+        // Process the questions array to add display properties
+        const processedQuestions = rawData.questions.map((question, index) => {
+            // Create a new object instead of modifying the original directly
+            let processedQuestion = { ...question };
+            
+            // Set the display order (1-based)
+            processedQuestion.displayOrder = index + 1;
 
-            // Format options for radio/checkbox groups
-            if (question.isRadio || question.isCheckbox) {
-                question.Answer_Options__r = (q.Answer_Options__r || []).map(opt => ({
-                    label: opt.Option_Text__c,
-                    value: opt.Option_Text__c // Use text as value for simplicity
+            // Add question type flags for template rendering
+            processedQuestion.isText = question.Type__c === 'Text';
+            processedQuestion.isTextarea = question.Type__c === 'Long Text';
+            processedQuestion.isRadio = question.Type__c === 'Single Select';
+            processedQuestion.isCheckbox = question.Type__c === 'Multi Select';
+            processedQuestion.isRating = question.Type__c === 'Rating';
+
+            // For checkbox and radio options, format for the lightning-* components
+            if ((processedQuestion.isRadio || processedQuestion.isCheckbox) && question.Answer_Options__r) {
+                processedQuestion.Answer_Options__r = question.Answer_Options__r.map(option => ({
+                    label: option.Option_Text__c,
+                    value: option.Id
                 }));
             }
 
-            return question;
+            return processedQuestion;
         });
 
+        // Return the processed data
         return {
-            ...rawData,
+            survey: rawData.survey,
             questions: processedQuestions
         };
     }
 
-    // --- Response Handling ---
-
     /**
-     * @description Handles changes in input fields (Text, Textarea, Radio, Checkbox).
-     * @param {Event} event - The input change event.
+     * @description Handles regular inputs and textareas.
      */
     handleResponseChange(event) {
         const questionId = event.target.dataset.id;
         const value = event.target.value;
+        
         this.responses[questionId] = value;
-
-        // Special handling for rating validation input if needed
-        if(event.target.classList.contains('rating-validation-input')){
-             this.updateRatingValidation(questionId, value);
-        }
     }
 
     /**
-     * @description Handles clicks on rating buttons.
-     * @param {Event} event - The button click event.
+     * @description Handles rating selections.
      */
     handleRatingClick(event) {
         const questionId = event.currentTarget.dataset.id;
         const value = event.currentTarget.dataset.value;
-
-        // Update the internal response state
+        
+        // Update the response
         this.responses[questionId] = value;
-
-        // Update button styles visually
-        const buttons = this.template.querySelectorAll(`.rating-button[data-id="${questionId}"]`);
-        buttons.forEach(button => {
-            const buttonValue = button.dataset.value;
-            const isSelected = buttonValue === value;
-            button.classList.toggle('selected', isSelected);
-            button.setAttribute('aria-pressed', isSelected);
-        });
-
-        // Update hidden input for validation purposes
+        
+        // Update the validation for this rating
         this.updateRatingValidation(questionId, value);
+        
+        // Update the UI to show the selected rating
+        const ratingButtons = this.template.querySelectorAll(`button[data-id="${questionId}"]`);
+        ratingButtons.forEach(button => {
+            const buttonValue = button.dataset.value;
+            // Compare as strings to ensure type safety
+            if (buttonValue <= value) {
+                button.classList.add('rating-selected');
+                button.setAttribute('aria-pressed', 'true');
+            } else {
+                button.classList.remove('rating-selected');
+                button.setAttribute('aria-pressed', 'false');
+            }
+        });
     }
 
     /**
-    * @description Updates the hidden input associated with a rating question for validation.
-    * @param {string} questionId - The ID of the question.
-    * @param {string} value - The selected rating value.
-    */
+     * @description Updates hidden input used for validation of rating questions
+     */
     updateRatingValidation(questionId, value){
         const validationInput = this.template.querySelector(`.rating-validation-input[data-id="${questionId}"]`);
-        if(validationInput) {
-            validationInput.value = value; // Set value to allow LWC validation
-            validationInput.reportValidity(); // Trigger validation check
+        if (validationInput) {
+            validationInput.value = value || '';
+            // Manually trigger validation if empty
+            if (!value && validationInput.required) {
+                validationInput.reportValidity();
+            }
         }
     }
 
-    // --- Submission Logic ---
-
     /**
-     * @description Validates the form before submission.
-     * @returns {boolean} True if the form is valid, false otherwise.
+     * @description Validates all required questions have answers.
+     * @returns {Object} Object with isValid and errorMessage properties.
      */
     validateResponses() {
-        let isValid = true;
+        if (!this.surveyData || !this.surveyData.questions) {
+            return { 
+                isValid: false, 
+                errorMessage: 'No survey data available.' 
+            };
+        }
 
-        // Use lightning-input/textarea/radio/checkbox built-in validation
-        this.template.querySelectorAll('lightning-input, lightning-textarea, lightning-radio-group, lightning-checkbox-group').forEach(input => {
-            if (!input.reportValidity()) {
-                isValid = false;
-            }
-        });
-
-        // Custom validation for required rating questions
-        this.template.querySelectorAll('.rating-validation-input[required]').forEach(input => {
-            if (!input.value) {
-                // Manually show error message - LWC validation doesn't work well on hidden inputs
-                const questionContainer = input.closest('.question-container');
-                if (questionContainer) {
-                    let errorElement = questionContainer.querySelector('.rating-error-message');
-                    if (!errorElement) {
-                        errorElement = document.createElement('div');
-                        errorElement.className = 'slds-form-element__help slds-text-color_error rating-error-message';
-                        input.parentNode.appendChild(errorElement);
-                    }
-                    errorElement.textContent = 'Please select a rating.';
+        let allValid = true;
+        let errorMessage = '';
+        
+        // Check all required questions
+        for (const question of this.surveyData.questions) {
+            if (question.Is_Required__c) {
+                const response = this.responses[question.Id];
+                
+                if (!response) {
+                    // No response for this required question
+                    allValid = false;
+                    errorMessage = 'Please answer all required questions before submitting.';
+                    
+                    // Mark the question as invalid in the UI
+                    // This depends on how you're managing validation in the template
+                    this.updateRatingValidation(question.Id, null);
+                    
+                    // Find any lightning-input, lightning-textarea, etc. related to this question
+                    const inputElements = this.template.querySelectorAll(`[data-id="${question.Id}"]`);
+                    inputElements.forEach(input => {
+                        if (input.reportValidity) {
+                            input.reportValidity();
+                        }
+                    });
                 }
-                isValid = false;
-            } else {
-                 const questionContainer = input.closest('.question-container');
-                 if (questionContainer) {
-                    const errorElement = questionContainer.querySelector('.rating-error-message');
-                    if(errorElement) errorElement.remove();
-                 }
             }
-        });
-
-        return isValid;
+        }
+        
+        return { 
+            isValid: allValid, 
+            errorMessage: errorMessage || 'Please correct the errors before submitting.' 
+        };
     }
 
     /**
-     * @description Handles the submission of the survey responses.
+     * @description Handles the form submission and sends responses to the server.
      */
     handleSubmit() {
-        this.submitError = null; // Clear previous errors
+        // Check if the user has already submitted this survey
+        if (!this.allowMultipleSubmissions && this.hasPreviouslySubmitted) {
+            this.submitError = 'You have already submitted a response to this survey.';
+            return;
+        }
 
-        if (!this.validateResponses()) {
-            this.submitError = 'Please answer all required questions before submitting.';
+        // Validate responses
+        const { isValid, errorMessage } = this.validateResponses();
+        if (!isValid) {
+            this.submitError = errorMessage;
             return;
         }
 
         this.isSubmitting = true;
+        this.submitError = null;
 
-        // Prepare the data to send to Apex
-        const responseDataJson = JSON.stringify(this.responses);
+        // Prepare the response data
+        const responseData = JSON.stringify(this.responses);
 
-        submitSurveyResponse({ responseId: this.surveyResponseRecordId, responseDataJson: responseDataJson })
+        // Submit the survey response
+        submitSurveyResponse({ 
+            responseId: this.surveyResponseRecordId, 
+            responseDataJson: responseData,
+            surveyId: this._surveyId // Pass the survey ID for new response creation
+        })
             .then(result => {
-                console.log('Submission successful:', result);
-                this.isCompleted = true;
                 this.isSubmitting = false;
-                // Optionally scroll to top or show thank you message prominently
-                window.scrollTo(0, 0);
+                this.isCompleted = true;
+                
+                // Record this submission to prevent duplicates
+                this.recordSubmission();
+                this.hasPreviouslySubmitted = true;
+                
+                // Dispatch a custom event that other components could listen for
+                this.dispatchEvent(new CustomEvent('surveysubmit', {
+                    detail: {
+                        success: true,
+                        message: result
+                    }
+                }));
             })
             .catch(error => {
-                console.error('Error submitting survey:', error);
-                this.submitError = this.reduceErrors(error).join(', ') || 'An unknown error occurred while submitting.';
                 this.isSubmitting = false;
+                console.error('Error submitting survey:', error);
+                this.submitError = this.reduceErrors(error).join(', ') || 'An unknown error occurred while submitting the survey.';
+                
+                this.dispatchEvent(new CustomEvent('surveysubmit', {
+                    detail: {
+                        success: false,
+                        message: this.submitError
+                    }
+                }));
             });
     }
 
-    // --- Utility Functions ---
-
     /**
-     * Reduces Salesforce Apex errors into a readable string array.
-     * @param {object} errors - The error object from a wire or imperative Apex call.
-     * @returns {string[]} An array of error messages.
+     * @description Utility function to extract error messages from complex error objects.
      */
     reduceErrors(errors) {
         if (!Array.isArray(errors)) {
@@ -330,20 +513,45 @@ export default class SurveyResponder extends LightningElement {
 
         return (
             errors
-                .filter((error) => !!error)
-                .map((error) => {
+                // Remove null/undefined items
+                .filter(error => !!error)
+                // Extract an error message
+                .map(error => {
+                    // UI API read errors
                     if (Array.isArray(error.body)) {
-                        return error.body.map((e) => e.message);
+                        return error.body.map(e => e.message);
                     }
-                    else if (error?.body?.message) {
+                    // UI API DML, Apex and network errors
+                    else if (error.body && typeof error.body.message === 'string') {
                         return error.body.message;
                     }
-                    else if (error?.message) {
+                    // JS errors
+                    else if (typeof error.message === 'string') {
                         return error.message;
                     }
-                    return 'Unknown error';
+                    // Unknown error shape so try HTTP status text
+                    return error.statusText;
                 })
-                .flat()
+                // Flatten
+                .reduce((prev, curr) => prev.concat(curr), [])
+                // Remove empty strings
+                .filter(message => !!message)
         );
+    }
+
+    /**
+     * Utility function to convert hex color to RGB.
+     */
+    hexToRgb(hex) {
+        // Remove the hash if it exists
+        hex = hex.replace(/^#/, '');
+        
+        // Parse the hex color
+        const bigint = parseInt(hex, 16);
+        const r = (bigint >> 16) & 255;
+        const g = (bigint >> 8) & 255;
+        const b = bigint & 255;
+        
+        return `${r}, ${g}, ${b}`;
     }
 } 

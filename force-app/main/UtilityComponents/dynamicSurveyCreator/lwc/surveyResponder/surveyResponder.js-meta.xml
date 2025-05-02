@@ -15,19 +15,21 @@
     </targets>
     <targetConfigs>
         <targetConfig targets="lightningCommunity__Default">
-            <property name="responseId" type="String" label="Response ID" description="The unique response ID from the URL (e.g., {!responseId}). Use a URL parameter binding."/>
+            <property name="surveyId" type="String" label="Survey ID" description="The Survey ID from the URL (e.g., {!id}). Use a URL parameter binding."/>
             <property name="primaryColor" type="String" default="#22BDC1" label="Primary Color" description="Primary color for theme styling."/>
             <property name="accentColor" type="String" default="#D5DF23" label="Accent Color" description="Accent color for highlights."/>
             <property name="textColor" type="String" default="#1d1d1f" label="Text Color" description="Default text color."/>
             <property name="backgroundColor" type="String" default="#ffffff" label="Background Color" description="Component background color."/>
+            <property name="allowMultipleSubmissions" type="Boolean" default="false" label="Allow Multiple Submissions" description="If false, prevents users from submitting the same survey multiple times from the same browser."/>
         </targetConfig>
         <!-- Optional: Target config for internal pages if you want to test with a hardcoded ID -->
          <targetConfig targets="lightning__AppPage, lightning__HomePage, lightning__RecordPage">
-            <property name="responseId" type="String" label="Response ID (for Testing)" description="Manually enter a Unique_Response_ID__c for testing purposes."/>
-             <property name="primaryColor" type="String" default="#22BDC1" label="Primary Color"/>
+            <property name="surveyId" type="String" label="Survey ID" description="Enter the Survey ID copied from the Survey Creator."/>
+            <property name="primaryColor" type="String" default="#22BDC1" label="Primary Color"/>
             <property name="accentColor" type="String" default="#D5DF23" label="Accent Color"/>
             <property name="textColor" type="String" default="#1d1d1f" label="Text Color"/>
             <property name="backgroundColor" type="String" default="#ffffff" label="Background Color"/>
+            <property name="allowMultipleSubmissions" type="Boolean" default="false" label="Allow Multiple Submissions" description="If false, prevents users from submitting the same survey multiple times from the same browser."/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle> 
