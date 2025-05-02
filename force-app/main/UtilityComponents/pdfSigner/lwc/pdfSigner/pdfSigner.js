@@ -1896,6 +1896,8 @@ export default class PdfSigner extends LightningElement {
             const pathItems = this.template.querySelectorAll('.custom-path-item');
             pathItems.forEach((item) => {
                 const indicator = item.querySelector('.custom-path-indicator');
+                const number = item.querySelector('.custom-path-number');
+                
                 if (!indicator) return;
                 
                 const itemStep = parseInt(item.dataset.step, 10);
@@ -1906,10 +1908,31 @@ export default class PdfSigner extends LightningElement {
                 // Set aria-label to indicate status (completed, current, or future)
                 if (itemStep < this.currentStep) {
                     indicator.setAttribute('aria-label', 'Completed step');
+                    
+                    // Add checkmark for completed steps
+                    if (number) {
+                        number.innerHTML = '✓';
+                        number.classList.add('checkmark');
+                        number.style.fontSize = '1.2em';
+                    }
+                    
                 } else if (itemStep === this.currentStep) {
                     indicator.setAttribute('aria-label', 'Current step');
+                    
+                    // Reset number for current step (in case we go back)
+                    if (number) {
+                        number.innerHTML = (itemStep + 1).toString();
+                        number.style.fontSize = '';
+                    }
+                    
                 } else {
                     indicator.setAttribute('aria-label', 'Future step');
+                    
+                    // Reset number for future steps
+                    if (number) {
+                        number.innerHTML = (itemStep + 1).toString();
+                        number.style.fontSize = '';
+                    }
                 }
             });
             

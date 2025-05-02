@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>59.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Natural Language to SOQL</masterLabel>
+    <description>Allows users to query Salesforce data using natural language, which is automatically converted to SOQL</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage,lightning__HomePage,lightningCommunity__Default">
+            <property 
+                name="objectApiNames" 
+                type="String" 
+                label="Object API Names (comma-separated)" 
+                description="Enter the API names of the Salesforce objects to query, separated by commas (e.g., Account,Contact,Opportunity). The AI will try to use these objects based on your query."
+                default="Account"
+            />
+            <property 
+                name="llmConfigName" 
+                type="String" 
+                label="LLM Configuration Name"
+                description="The Developer Name of the active LLM_Configuration__mdt record to use for generating SOQL."
+                default="OpenAI_GPT4_1_Mini"
+            />
+            <property 
+                name="primaryColor" 
+                type="String" 
+                label="Primary Color" 
+                description="Primary color for the component theme"
+                default="#22BDC1" />
+            <property 
+                name="accentColor" 
+                type="String" 
+                label="Accent Color" 
+                description="Accent color for the component theme"
+                default="#D5DF23" />
+            <property 
+                name="recordLimit" 
+                type="Integer" 
+                label="Record Limit" 
+                description="Maximum number of records to return"
+                default="50"
+                min="1"
+                max="200" />
+            <property 
+                name="enableQueryHistory" 
+                type="Boolean" 
+                label="Enable Query History" 
+                description="Save recent queries in browser storage"
+                default="false" />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle> 

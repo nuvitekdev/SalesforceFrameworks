@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Public_URL__c</fullName>
+    <label>Public URL</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Url</type>
+    <externalId>false</externalId>
+    <inlineHelpText>Base URL for the public survey (e.g., https://your-site.com/s/survey). Not automatically populated.</inlineHelpText>
+</CustomField> 
