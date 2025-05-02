@@ -29,7 +29,7 @@ public with sharing class LLMController {
             if (String.isNotBlank(recordId)) {
                 context = getRecordContext(recordId, relatedObjects);
                 
-                attachments = config.Supports_Files__c ? getAttachmentsBase64(recordId) : '';
+                attachments = config.Supports_Files__c ? getAttachmentsText(recordId) : '';
             }
             
             String fullPrompt = buildFullPrompt(operation, context, attachments, prompt);
@@ -977,7 +977,7 @@ public with sharing class LLMController {
         return info;
     }
     
-    private static String getAttachmentsBase64(String recordId) {
+    private static String getAttachmentsText(String recordId) {
         // Set maximum total base64 content length (approximately 15k tokens = ~60k characters)
         Integer MAX_TOTAL_LENGTH = 60000;
         
@@ -1042,7 +1042,7 @@ public with sharing class LLMController {
             return attachments;
             
         } catch (Exception e) {
-            System.debug('ERROR in getAttachmentsBase64: ' + e.getMessage());
+            System.debug('ERROR in getAttachmentsText: ' + e.getMessage());
             System.debug('Stack trace: ' + e.getStackTraceString());
             throw new AuraHandledException('Failed to process attachments: ' + e.getMessage());
         }
@@ -1831,6 +1831,182 @@ public with sharing class LLMController {
             System.debug('ERROR in saveAnalysisToField: ' + e.getMessage());
             System.debug('Stack trace: ' + e.getStackTraceString());
             throw new AuraHandledException('Error saving analysis: ' + e.getMessage());
+        }
+    }
+
+    /**
+     * Processes images attached to a record using OpenAI's Vision API
+     * @param recordId - The record ID to get the attachments from
+     * @param prompt - The text prompt to send along with the images
+     * @return String - The response from OpenAI's Vision API
+     */
+    @AuraEnabled
+    public static String processImagesWithAI(String recordId, String prompt) {
+        try {
+            // Get base64 encoded attachments
+            List<Map<String, String>> attachments = getAttachmentsBase64(recordId);
+            if (attachments == null || attachments.isEmpty()) {
+                return 'No attachments found for this record.';
+            }
+            
+            // Get API Key from custom metadata
+            List<LLM_Configuration__mdt> configs = [SELECT Id, API_Key__c, Model_Name__c, Base_URL__c 
+                                                   FROM LLM_Configuration__mdt 
+                                                   WHERE DeveloperName = 'OpenAI_GPT4_Vision'];
+            
+            if (configs.isEmpty()) {
+                return 'OpenAI GPT4 Vision configuration not found. Please configure it in custom metadata.';
+            }
+            
+            LLM_Configuration__mdt config = configs[0];
+            String apiKey = config.API_Key__c;
+            String model = config.Model_Name__c;
+            String endpoint = config.Base_URL__c;
+            
+            // Prepare request body with images
+            Map<String, Object> requestBody = new Map<String, Object>();
+            requestBody.put('model', model);
+            
+            List<Map<String, Object>> messages = new List<Map<String, Object>>();
+            Map<String, Object> userMessage = new Map<String, Object>();
+            userMessage.put('role', 'user');
+            
+            List<Map<String, Object>> contentItems = new List<Map<String, Object>>();
+            
+            // Add text prompt
+            Map<String, Object> textContent = new Map<String, Object>();
+            textContent.put('type', 'text');
+            textContent.put('text', prompt);
+            contentItems.add(textContent);
+            
+            // Add images
+            for (Map<String, String> attachment : attachments) {
+                String base64Data = attachment.get('base64');
+                String fileName = attachment.get('fileName');
+                String contentType = attachment.get('contentType');
+                
+                // Only process image types
+                if (contentType.startsWith('image/')) {
+                    Map<String, Object> imageContent = new Map<String, Object>();
+                    imageContent.put('type', 'image_url');
+                    
+                    Map<String, String> imageUrl = new Map<String, String>();
+                    imageUrl.put('url', 'data:' + contentType + ';base64,' + base64Data);
+                    
+                    imageContent.put('image_url', imageUrl);
+                    contentItems.add(imageContent);
+                }
+            }
+            
+            userMessage.put('content', contentItems);
+            messages.add(userMessage);
+            requestBody.put('messages', messages);
+            
+            // Additional options
+            requestBody.put('max_tokens', 1000);
+            
+            // Call OpenAI API
+            Http http = new Http();
+            HttpRequest request = new HttpRequest();
+            request.setEndpoint(endpoint);
+            request.setMethod('POST');
+            request.setHeader('Content-Type', 'application/json');
+            request.setHeader('Authorization', 'Bearer ' + apiKey);
+            request.setBody(JSON.serialize(requestBody));
+            request.setTimeout(120000); // 2-minute timeout
+            
+            HttpResponse response = http.send(request);
+            
+            if (response.getStatusCode() == 200) {
+                Map<String, Object> responseMap = (Map<String, Object>)JSON.deserializeUntyped(response.getBody());
+                List<Object> choices = (List<Object>)responseMap.get('choices');
+                
+                if (choices != null && !choices.isEmpty()) {
+                    Map<String, Object> choice = (Map<String, Object>)choices[0];
+                    Map<String, Object> message = (Map<String, Object>)choice.get('message');
+                    String contentText = (String)message.get('content');
+                    return contentText;
+                }
+            }
+            
+            return 'Error processing images: ' + response.getStatusCode() + ' ' + response.getStatus() + '\n' + response.getBody();
+        } catch (Exception e) {
+            return 'Error processing images: ' + e.getMessage() + '\n' + e.getStackTraceString();
+        }
+    }
+
+    /**
+     * Gets base64-encoded attachments from a record for image processing
+     * @param recordId The ID of the record to get attachments from
+     * @return List<Map<String, String>> A list of maps containing attachment data (base64, fileName, contentType)
+     */
+    public static List<Map<String, String>> getAttachmentsBase64(String recordId) {
+        try {
+            List<ContentDocumentLink> links = [SELECT ContentDocumentId 
+                                              FROM ContentDocumentLink 
+                                              WHERE LinkedEntityId = :recordId
+                                              LIMIT 10];
+            
+            if (links.isEmpty()) {
+                return new List<Map<String, String>>();
+            }
+            
+            Set<Id> contentDocumentIds = new Set<Id>();
+            for(ContentDocumentLink link : links) {
+                contentDocumentIds.add(link.ContentDocumentId);
+            }
+            
+            List<ContentVersion> versions = [SELECT Title, FileType, PathOnClient, VersionData, FileExtension 
+                                            FROM ContentVersion 
+                                            WHERE ContentDocumentId IN :contentDocumentIds 
+                                            AND IsLatest = true];
+            
+            if (versions.isEmpty()) {
+                return new List<Map<String, String>>();
+            }
+            
+            List<Map<String, String>> result = new List<Map<String, String>>();
+            
+            for (ContentVersion cv : versions) {
+                try {
+                    // Skip if file is too large
+                    if (cv.VersionData.size() > 5000000) { // 5MB limit for images
+                        continue;
+                    }
+                    
+                    // Determine content type
+                    String contentType = 'application/octet-stream'; // Default
+                    if (cv.FileExtension != null) {
+                        String ext = cv.FileExtension.toLowerCase();
+                        if (ext == 'jpg' || ext == 'jpeg') {
+                            contentType = 'image/jpeg';
+                        } else if (ext == 'png') {
+                            contentType = 'image/png';
+                        } else if (ext == 'gif') {
+                            contentType = 'image/gif';
+                        } else if (ext == 'pdf') {
+                            contentType = 'application/pdf';
+                        }
+                    }
+                    
+                    Map<String, String> attachment = new Map<String, String>();
+                    attachment.put('fileName', cv.Title);
+                    attachment.put('contentType', contentType);
+                    attachment.put('base64', EncodingUtil.base64Encode(cv.VersionData));
+                    
+                    result.add(attachment);
+                    
+                } catch (Exception e) {
+                    System.debug('ERROR processing file ' + cv.Title + ': ' + e.getMessage());
+                }
+            }
+            
+            return result;
+            
+        } catch (Exception e) {
+            System.debug('ERROR in getAttachmentsBase64: ' + e.getMessage());
+            System.debug('Stack trace: ' + e.getStackTraceString());
+            throw new AuraHandledException('Failed to process attachments: ' + e.getMessage());
         }
     }
 }

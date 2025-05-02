@@ -102,7 +102,7 @@
     bottom: -30%;
     width: 50%;
     height: 200%;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(var(--accent-color-rgb), 0.2);
     border-radius: 50%;
     transform: rotate(25deg);
     pointer-events: none;
@@ -173,10 +173,10 @@
 }
 
 .example-query-pill:hover {
-    background-color: rgba(var(--primary-color-rgb), 0.1);
-    border-color: var(--primary-color);
+    background-color: rgba(var(--accent-color-rgb), 0.15);
+    border-color: var(--accent-color);
     transform: translateY(-1px);
-    box-shadow: 0 2px 5px rgba(var(--primary-color-rgb), 0.2);
+    box-shadow: 0 2px 5px rgba(var(--accent-color-rgb), 0.2);
 }
 
 .action-buttons {
@@ -200,7 +200,7 @@
 }
 
 .soql-header {
-    background-color: rgba(var(--primary-color-rgb), 0.1);
+    background-color: rgba(var(--accent-color-rgb), 0.1);
     padding: var(--spacing-xs) var(--spacing-sm);
     border-bottom: 1px solid var(--border-subtle);
 }
@@ -208,7 +208,7 @@
 .soql-title {
     font-size: var(--font-size-md);
     font-weight: 500;
-    color: var(--primary-color);
+    color: var(--accent-color);
 }
 
 .soql-content {
@@ -267,7 +267,7 @@
 }
 
 .empty-container {
-    border-left: 4px solid var(--primary-color);
+    border-left: 4px solid var(--accent-color);
 }
 
 .error-icon,
@@ -367,6 +367,18 @@
     --sds-c-button-brand-color-background: var(--primary-color);
     --sds-c-button-brand-color-background-hover: var(--primary-dark);
     --sds-c-button-brand-color-background-active: var(--primary-dark);
+}
+
+.clear-button {
+    --sds-c-button-neutral-color-border: var(--accent-color);
+    --sds-c-button-text-color: var(--accent-color);
+    --sds-c-button-neutral-color-background-hover: rgba(var(--accent-color-rgb), 0.1);
+}
+
+.refine-button {
+    --sds-c-button-neutral-color-border: var(--accent-color);
+    --sds-c-button-text-color: var(--accent-color);
+    --sds-c-button-neutral-color-background-hover: rgba(var(--accent-color-rgb), 0.1);
 }
 
 /* ===== RESPONSIVE STYLES ===== */

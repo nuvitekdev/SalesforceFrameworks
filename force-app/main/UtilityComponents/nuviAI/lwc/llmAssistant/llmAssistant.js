@@ -5,6 +5,7 @@ import getLLMConfigurations from '@salesforce/apex/LLMController.getLLMConfigura
 import handleRequest from '@salesforce/apex/LLMController.handleRequest';
 import checkRecordForAnomalies from '@salesforce/apex/LLMController.checkRecordForAnomalies';
 import saveAnalysisToField from '@salesforce/apex/LLMController.saveAnalysisToField';
+import processImagesWithAI from '@salesforce/apex/LLMController.processImagesWithAI';
 import { getRecord } from 'lightning/uiRecordApi';
 import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 import ID_FIELD from '@salesforce/schema/Account.Id';
@@ -97,6 +98,11 @@ export default class LLMAssistant extends LightningElement {
     // Check if "Analyze Record" button should be shown
     get showAnalyzeButton() {
         return !!this.recordId;
+    }
+    
+    // Check if "Analyze Images" button should be shown
+    get showImageAnalysisButton() {
+        return !!this.recordId && this.enableImageValidation;
     }
     
     // Check if related objects are configured
@@ -561,6 +567,59 @@ SUMMARY:`;
 
     handleSummarize() {
         this.handleLLMRequest('summarize');
+    }
+
+    /**
+     * @description Handles the click on the "Analyze Images" button to process image files attached to the record
+     */
+    handleAnalyzeImages() {
+        if (!this.recordId) {
+            this.showError('Record ID is required to analyze images.');
+            return;
+        }
+        
+        this.isLoading = true;
+        this.clearErrors();
+        
+        const prompt = this.userPrompt || 'Analyze these images and describe what you see in detail. For any text visible in the images, transcribe it accurately.';
+        
+        processImagesWithAI({ 
+            recordId: this.recordId, 
+            prompt: prompt
+        })
+        .then(result => {
+            // Store response and update UI
+            this.response = result;
+            
+            // Add to conversation history
+            this.addMessageToHistory({
+                id: this.generateMessageId(),
+                sender: 'You',
+                isUser: true,
+                content: 'Analyze images: ' + prompt,
+                formattedContent: this.getFormattedMessageContent('Analyze images: ' + prompt),
+                timestamp: this.getFormattedTimestamp()
+            });
+            
+            this.addMessageToHistory({
+                id: this.generateMessageId(),
+                sender: 'AI Assistant',
+                isUser: false,
+                content: result,
+                formattedContent: this.getFormattedMessageContent(result),
+                timestamp: this.getFormattedTimestamp(),
+                model: this.selectedLLMLabel
+            });
+            
+            // Scroll to the response
+            this.scrollToBottom();
+        })
+        .catch(error => {
+            this.showError('Error analyzing images: ' + this.getErrorMessage(error));
+        })
+        .finally(() => {
+            this.isLoading = false;
+        });
     }
 
     // Replace your existing handleLLMRequest method with this version
@@ -1312,5 +1371,10 @@ SUMMARY:`;
         const id = this.recordId || this.getRecordIdFromPageRef() || this.getRecordIdFromUrl();
         console.log('Effective Record ID:', id);
         return id;
+    }
+
+    // Check if message ID already exists
+    generateMessageId() {
+        return 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
     }
 }

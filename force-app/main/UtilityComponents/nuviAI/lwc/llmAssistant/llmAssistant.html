@@ -103,6 +103,21 @@
                         <span class="button-label">Analyze Record</span>
                     </button>
                     
+                    <!-- Custom Analyze Images button -->
+                    <button 
+                        if:true={showImageAnalysisButton}
+                        class="custom-button secondary-button" 
+                        onclick={handleAnalyzeImages} 
+                        disabled={isLoading}
+                    >
+                        <span class="button-icon">
+                            <svg width="16" height="16" viewBox="0 0 52 52">
+                                <path d="M10 2h32c2.2 0 4 1.8 4 4v40c0 2.2-1.8 4-4 4H10c-2.2 0-4-1.8-4-4V6c0-2.2 1.8-4 4-4zm2 4v18l7.5-5 7.5 5V6H12zm12 18c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm8 12c0-4.4-3.6-8-8-8s-8 3.6-8 8v4h16v-4z"/>
+                            </svg>
+                        </span>
+                        <span class="button-label">Analyze Images</span>
+                    </button>
+                    
                     <!-- Custom Clear button -->
                     <button 
                         class="custom-button secondary-button" 
