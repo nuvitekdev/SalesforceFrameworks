@@ -157,6 +157,22 @@ This component provides two different ways to analyze document content:
 
 This dual approach gives you flexibility - use "Analyze Images" when you only want to focus on visual content, and use "Analyze Record" when you want a complete analysis of all record data including all attached documents.
 
+**Assistant Context:**
+
+Both methods of analysis (Record Analysis and Image Analysis) use the assistant context configured in the component:
+
+1. **Assistant Context Configuration:**
+   - Set the "Assistant Context" field in the component configuration to provide a consistent purpose or role for the AI
+   - Examples: "You are a document validation specialist" or "You are a financial analyst who examines images and text"
+   - This context is included in every prompt sent to the AI
+
+2. **How It's Applied:**
+   - For regular analysis: The context is included at the beginning of the prompt
+   - For image analysis: The context is added to your prompt along with image metadata
+   - The AI will maintain this context for all interactions, providing consistent behavior
+
+This ensures your AI assistant maintains the specialized role and expertise you've configured for it, regardless of which analysis method is used.
+
 ## Technical Details
 
 ### Component Structure

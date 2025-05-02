@@ -581,11 +581,17 @@ SUMMARY:`;
         this.isLoading = true;
         this.clearErrors();
         
-        const prompt = this.userPrompt || 'Analyze these images and describe what you see in detail. For any text visible in the images, transcribe it accurately.';
+        // Include assistant context in the prompt if available
+        let fullPrompt = this.userPrompt || 'Analyze these images and describe what you see in detail. For any text visible in the images, transcribe it accurately.';
+        
+        // Add assistant context if available
+        if (this.contextPrompt) {
+            fullPrompt = `ASSISTANT CONTEXT: ${this.contextPrompt}\n\n${fullPrompt}`;
+        }
         
         processImagesWithAI({ 
             recordId: this.recordId, 
-            prompt: prompt
+            prompt: fullPrompt
         })
         .then(result => {
             // Store response and update UI
@@ -596,8 +602,8 @@ SUMMARY:`;
                 id: this.generateMessageId(),
                 sender: 'You',
                 isUser: true,
-                content: 'Analyze images: ' + prompt,
-                formattedContent: this.getFormattedMessageContent('Analyze images: ' + prompt),
+                content: 'Analyze images: ' + this.userPrompt,
+                formattedContent: this.getFormattedMessageContent('Analyze images: ' + this.userPrompt),
                 timestamp: this.getFormattedTimestamp()
             });
             
