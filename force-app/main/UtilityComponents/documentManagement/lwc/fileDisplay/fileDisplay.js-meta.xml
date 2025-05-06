@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>63.0</apiVersion>
+    <isExposed>true</isExposed>
+    <description>Display files related to the current record with options to control upload and delete functionality.</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage">
+            <property name="allowUpload" type="Boolean" default="false" label="Allow Upload" description="Whether to allow file upload functionality" />
+            <property name="allowDelete" type="Boolean" default="false" label="Allow Delete" description="Whether to allow users to delete files" />
+            <property name="maxFilesToShow" type="Integer" default="10" label="Max Files to Show" description="Maximum number of files to display in the scrollable table" />
+            <property name="primaryColor" type="String" default="#22BDC1" label="Primary Color" description="Primary accent color for buttons, icons and interactive elements" />
+            <property name="accentColor" type="String" default="#D5DF23" label="Accent Color" description="Secondary accent color for highlights and decorations" />
+        </targetConfig>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="allowUpload" type="Boolean" default="false" label="Allow Upload" description="Whether to allow file upload functionality" />
+            <property name="allowDelete" type="Boolean" default="false" label="Allow Delete" description="Whether to allow users to delete files" />
+            <property name="recordId" type="String" required="true" label="Record ID" description="The record ID to associate files with (required for Experience Cloud)" />
+            <property name="maxFilesToShow" type="Integer" default="10" label="Max Files to Show" description="Maximum number of files to display in the scrollable table" />
+            <property name="primaryColor" type="String" default="#22BDC1" label="Primary Color" description="Primary accent color for buttons, icons and interactive elements" />
+            <property name="accentColor" type="String" default="#D5DF23" label="Accent Color" description="Secondary accent color for highlights and decorations" />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle> 

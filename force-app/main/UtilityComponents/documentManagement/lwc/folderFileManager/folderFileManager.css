@@ -1,0 +1,579 @@
+/* Custom Document Management component - folderFileManager styling
+   Uses modern Apple Human Interface Guideline inspired design with animations */
+
+:host {
+    /* Core theme variables with fallbacks */
+    --primary-color: var(--primary-color, #22BDC1);
+    --primary-rgb: 34, 189, 193;
+    --primary-dark: var(--primary-dark, #1a9599);
+    --primary-light: var(--primary-light, #63d1d4);
+    --accent-color: var(--accent-color, #D5DF23);
+    --accent-rgb: 213, 223, 35;
+    --accent-dark: var(--accent-dark, #b8c11e);
+    --accent-light: var(--accent-light, #e1e95c);
+    --text-color: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #a1a1a6;
+    --background: #ffffff;
+    --background-alt: #f5f5f7;
+    --background-elevated: #fbfbfd;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-subtle: rgba(0, 0, 0, 0.05);
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.15);
+    
+    /* Border radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-full: 9999px;
+    
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-slow: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+    
+    /* Typography */
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Main Container */
+.folder-manager-container {
+    width: 100%;
+    position: relative;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.folder-manager-styles {
+    display: none;
+}
+
+/* Card Styling */
+.folder-manager-card {
+    background-color: var(--background);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: box-shadow var(--transition-medium), transform var(--transition-medium);
+    border: none !important;
+    overflow: hidden;
+    position: relative;
+}
+
+.folder-manager-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+/* Card Header */
+.folder-manager-card .slds-card__header {
+    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.15) 0%, rgba(var(--accent-rgb), 0.15) 100%);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 1.25rem 1.5rem !important;
+}
+
+.folder-manager-card .slds-card__header-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-color);
+    letter-spacing: -0.01em;
+}
+
+/* Header Icons */
+.folder-manager-card .slds-media__figure .slds-icon {
+    --sds-c-icon-color-foreground: var(--primary-color);
+    --sds-c-icon-color-foreground-default: var(--primary-color);
+}
+
+/* Breadcrumbs */
+.breadcrumb-container {
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+    border-top: 1px solid var(--border-subtle);
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Remove default SLDS breadcrumb separators */
+.slds-breadcrumb .slds-list__item:before,
+.slds-breadcrumb__item:before {
+    content: none !important;
+}
+
+.slds-breadcrumb__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Single centered arrow between items */
+.slds-breadcrumb__item:not(:last-child):after {
+    content: '›';
+    margin: 0 0.5rem;
+    color: var(--text-tertiary);
+    font-size: 1.2rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.75rem;
+    text-align: center;
+    position: relative;
+    top: 0.05rem;
+}
+
+.slds-breadcrumb__item a {
+    color: var(--text-secondary);
+    font-size: 14px;
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.slds-breadcrumb__item a:hover {
+    color: var(--primary-color);
+    background-color: rgba(var(--primary-rgb), 0.05);
+}
+
+.breadcrumb-current {
+    color: var(--primary-color) !important;
+    font-weight: 500;
+    position: relative;
+}
+
+.breadcrumb-current:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0.5rem;
+    right: 0.5rem;
+    height: 2px;
+    background-color: var(--primary-color);
+    border-radius: var(--radius-full);
+    opacity: 0.5;
+}
+
+/* Search Box */
+.search-input {
+    min-width: 250px;
+    max-width: 400px;
+    transition: all var(--transition-medium);
+}
+
+.search-input .slds-input {
+    border-radius: var(--radius-full);
+    height: 40px;
+    padding-left: 2.75rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-alt);
+    color: var(--text-color);
+    font-size: 14px;
+    transition: all var(--transition-fast);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.search-input .slds-input:focus {
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+    border-color: var(--primary-color);
+    background-color: var(--background);
+    transform: translateY(-1px);
+}
+
+.search-input .slds-form-element__label {
+    display: none;
+}
+
+.search-input .slds-input__icon {
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    --sds-c-icon-color-foreground: var(--text-tertiary);
+}
+
+/* Buttons */
+.folder-manager-container .slds-button {
+    border-radius: var(--radius-full);
+    height: 40px;
+    padding: 0 1.25rem;
+    transition: all var(--transition-medium);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    font-size: 14px;
+}
+
+.folder-manager-container .slds-button_brand {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.folder-manager-container .slds-button_brand:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+}
+
+.folder-manager-container .slds-button_icon {
+    --sds-c-button-color-background: transparent;
+    --sds-c-button-color-border: var(--border-color);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-medium);
+}
+
+.folder-manager-container .slds-button_icon:hover {
+    --sds-c-button-color-background: rgba(var(--primary-rgb), 0.1);
+    --sds-c-button-color-border: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.upload-button {
+    margin-left: 12px;
+}
+
+/* Datatable Styling */
+.scrollable-container {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-subtle);
+    animation: slideIn 0.4s ease-out;
+}
+
+.datatable-body-padding {
+    padding: 1.25rem;
+}
+
+/* Target the slds-table from datatable */
+.folder-manager-container .slds-table {
+    --slds-c-table-text-color: var(--text-color);
+    --slds-c-table-text-color-default: var(--text-color);
+    --slds-c-table-sizing-border: 0;
+    --slds-c-table-cell-spacing-block-start: 0.75rem;
+    --slds-c-table-cell-spacing-block-end: 0.75rem;
+    border: none;
+}
+
+/* Table headers */
+.folder-manager-container .slds-table th {
+    background-color: var(--background-alt);
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+}
+
+/* Table rows */
+.folder-manager-container .slds-table tr {
+    transition: background-color var(--transition-fast);
+}
+
+.folder-manager-container .slds-table tr:hover > td {
+    background-color: rgba(var(--primary-rgb), 0.05);
+}
+
+/* Table cells */
+.folder-manager-container .slds-table td {
+    border-top: none;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 14px;
+    padding: 0.75rem 0.5rem;
+}
+
+/* Last row cells */
+.folder-manager-container .slds-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Row actions */
+.folder-manager-container .slds-button_icon-border-filled {
+    border-radius: var(--radius-full);
+    --sds-c-button-color-background: transparent;
+    --sds-c-button-color-border: var(--border-color);
+    transition: all var(--transition-medium);
+}
+
+.folder-manager-container .slds-button_icon-border-filled:hover {
+    --sds-c-button-color-background: rgba(var(--primary-rgb), 0.1);
+    --sds-c-button-color-border: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+/* Empty state */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    background-color: var(--background-alt);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    animation: fadeIn 0.4s ease-out;
+}
+
+.empty-state-icon {
+    --sds-c-icon-color-foreground: var(--primary-color);
+    --sds-c-icon-color-foreground-default: var(--primary-color);
+    margin-bottom: 1rem;
+    height: 3rem;
+    width: 3rem;
+}
+
+/* Upload Modal styling */
+.folder-manager-container .slds-modal__container {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    animation: modalFadeIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.folder-manager-container .slds-modal__header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    border-bottom: none;
+    color: white;
+}
+
+.folder-manager-container .slds-modal__title {
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+}
+
+.folder-manager-container .slds-modal__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: white;
+}
+
+.folder-manager-container .slds-modal__content {
+    padding: 1.5rem;
+}
+
+.folder-manager-container .slds-modal__footer {
+    border-top: 1px solid var(--border-subtle);
+    padding: 1rem 1.5rem;
+}
+
+/* File input styling */
+.file-input {
+    margin-top: 0.5rem;
+}
+
+.file-input .slds-form-element__label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.file-input .slds-file-selector__dropzone {
+    border: 2px dashed var(--accent-color);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    background-color: rgba(var(--accent-rgb), 0.05);
+    transition: all var(--transition-fast);
+}
+
+.file-input .slds-file-selector__dropzone:hover {
+    background-color: rgba(var(--accent-rgb), 0.1);
+    transform: translateY(-2px);
+}
+
+.file-input .slds-file-selector__button {
+    background-color: var(--primary-color);
+    border-radius: var(--radius-full);
+    color: white;
+    padding: 0.5rem 1.25rem;
+    font-weight: 500;
+    border: none;
+    transition: all var(--transition-fast);
+}
+
+.file-input .slds-file-selector__button:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.file-input .slds-file-selector__text {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Selected file display */
+.selected-file {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: var(--background-alt);
+    border-radius: var(--radius-md);
+    margin-top: 1rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.selected-file lightning-icon {
+    --sds-c-icon-color-foreground: var(--primary-color);
+    --sds-c-icon-color-foreground-default: var(--primary-color);
+}
+
+/* Modal buttons */
+.modal-confirm-button {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    animation: pulseButton 2s infinite;
+}
+
+.modal-confirm-button:hover:not(:disabled) {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(var(--primary-rgb), 0.2);
+}
+
+.modal-confirm-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    animation: none;
+}
+
+/* Spinner */
+.spinner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Search section headers */
+.search-section-header {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 1.5rem 0 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+}
+
+.search-section-header lightning-icon {
+    --sds-c-icon-color-foreground: var(--primary-color);
+    --sds-c-icon-color-foreground-default: var(--primary-color);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes modalFadeIn {
+    from {
+        transform: translateY(20px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes pulseButton {
+    0%, 100% {
+        box-shadow: 0 0 0 rgba(var(--primary-rgb), 0);
+    }
+    50% {
+        box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.5);
+    }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .folder-manager-card .slds-card__header {
+        padding: 1rem !important;
+        flex-direction: column !important;
+    }
+    
+    .folder-manager-card .slds-grid_align-spread {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    
+    .header-actions {
+        margin-top: 0.75rem;
+        justify-content: flex-start;
+    }
+    
+    .search-input {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 0.75rem;
+    }
+    
+    .upload-button {
+        width: 100%;
+        margin: 0.75rem 0 0 0 !important;
+    }
+    
+    .datatable-body-padding {
+        padding: 1rem;
+    }
+    
+    .breadcrumb-container {
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .folder-manager-card .slds-card__header-title {
+        font-size: 18px;
+    }
+    
+    .folder-manager-container .slds-modal__content {
+        padding: 1rem;
+    }
+    
+    .folder-manager-container .slds-modal__footer {
+        padding: 0.75rem 1rem;
+    }
+} 
