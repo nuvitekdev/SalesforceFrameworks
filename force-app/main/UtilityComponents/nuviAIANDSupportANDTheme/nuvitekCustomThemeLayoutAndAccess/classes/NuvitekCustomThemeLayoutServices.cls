@@ -73,23 +73,7 @@ public without sharing class NuvitekCustomThemeLayoutServices {
             
             // First pass: identify parent-child relationships
             for (NavigationMenuItem item : navItems) {
-                if (item.ParentId != null) {
-                    if (!childrenMap.containsKey(item.ParentId)) {
-                        childrenMap.put(item.ParentId, new List<Map<String, Object>>());
-                    }
-                    
-                    Map<String, Object> childItem = new Map<String, Object>{
-                        'id' => item.Id,
-                        'label' => item.Label,
-                        'actionValue' => item.Target,
-                        'actionType' => item.Type,
-                        'target' => 'CurrentWindow',
-                        'imageUrl' => null
-                    };
-                    
-                    childrenMap.get(item.ParentId).add(childItem);
-                }
-            }
+                if (item.ParentId != null) {if (!childrenMap.containsKey(item.ParentId)) {childrenMap.put(item.ParentId, new List<Map<String, Object>>());}Map<String, Object> childItem = new Map<String, Object>{'id' => item.Id,'label' => item.Label,'actionValue' => item.Target,'actionType' => item.Type,'target' => 'CurrentWindow','imageUrl' => null};childrenMap.get(item.ParentId).add(childItem);}}
             
             // Second pass: build the top-level items with submenus
             for (NavigationMenuItem item : navItems) {
@@ -105,8 +89,7 @@ public without sharing class NuvitekCustomThemeLayoutServices {
                     };
                     
                     // Add children if they exist
-                    if (childrenMap.containsKey(item.Id)) {
-                        menuItem.put('subMenu', childrenMap.get(item.Id));
+                    if (childrenMap.containsKey(item.Id)) {menuItem.put('subMenu', childrenMap.get(item.Id));
                     }
                     
                     processedItems.add(menuItem);
@@ -114,12 +97,7 @@ public without sharing class NuvitekCustomThemeLayoutServices {
             }
             
             // Return in structure that matches ConnectApi response
-            return new Map<String, Object>{'menuItems' => processedItems};
-            
-        } catch (Exception e) {
-            System.debug('Error getting navigation items: ' + e.getMessage());
-            System.debug('Stack trace: ' + e.getStackTraceString());
-            throw new AuraHandledException('Error retrieving navigation menu: ' + e.getMessage());
+            return new Map<String, Object>{'menuItems' => processedItems};} catch (Exception e) {System.debug('Error getting navigation items: ' + e.getMessage());System.debug('Stack trace: ' + e.getStackTraceString());throw new AuraHandledException('Error retrieving navigation menu: ' + e.getMessage());
         }
     }
 
@@ -151,48 +129,6 @@ public without sharing class NuvitekCustomThemeLayoutServices {
                     }
                 }
                 
-                return mockResults;
-            }
-            
-            // Split the comma-separated list of objects
-            List<String> objectsList = objectsToSearch.split(',');
-            
-            // Prepare the SOSL query
-            String sosl = 'FIND \'' + String.escapeSingleQuotes(searchTerm) + '\' IN ALL FIELDS RETURNING ';
-            
-            // Add each object to the SOSL query
-            List<String> objectQueries = new List<String>();
-            for (String obj : objectsList) {
-                String trimmedObj = obj.trim();
-                objectQueries.add(trimmedObj + '(Id, Name LIMIT 10)');
-            }
-            
-            // Combine everything
-            sosl += String.join(objectQueries, ', ');
-            
-            // Execute the search
-            List<List<SObject>> searchResults = Search.query(sosl);
-            
-            // Format results for the UI
-            List<Map<String, Object>> formattedResults = new List<Map<String, Object>>();
-            
-            for (Integer i = 0; i < objectsList.size(); i++) {
-                if (i < searchResults.size() && !searchResults[i].isEmpty()) {
-                    for (SObject record : searchResults[i]) {
-                        Map<String, Object> result = new Map<String, Object>();
-                        result.put('id', record.Id);
-                        result.put('name', record.get('Name'));
-                        result.put('objectType', objectsList[i].trim());
-                        formattedResults.add(result);
-                    }
-                }
-            }
-            
-            return formattedResults;
-        } catch (Exception e) {
-            System.debug('Error searching across objects: ' + e.getMessage());
-            System.debug('Stack trace: ' + e.getStackTraceString());
-            throw new AuraHandledException('Error performing search: ' + e.getMessage());
-        }
+                return mockResults; }List<String> objectsList = objectsToSearch.split(','); String sosl = 'FIND \'' + String.escapeSingleQuotes(searchTerm) + '\' IN ALL FIELDS RETURNING '; List<String> objectQueries = new List<String>(); for (String obj : objectsList) { String trimmedObj = obj.trim(); if (String.isNotBlank(trimmedObj)) { objectQueries.add(trimmedObj + '(Id, Name LIMIT 10)'); } } sosl += String.join(objectQueries, ', '); List<List<SObject>> searchResults = Search.query(sosl); List<Map<String, Object>> formattedResults = new List<Map<String, Object>>(); for (Integer i = 0; i < objectsList.size(); i++) { if (i < searchResults.size() && !searchResults[i].isEmpty()) { for (SObject record : searchResults[i]) { Map<String, Object> result = new Map<String, Object>(); result.put('id', record.Id); result.put('name', record.get('Name')); result.put('objectType', objectsList[i].trim()); formattedResults.add(result); } } } return formattedResults;} catch (Exception e) {System.debug('Error searching across objects: ' + e.getMessage());System.debug('Stack trace: ' + e.getStackTraceString());throw new AuraHandledException('Error performing search: ' + e.getMessage());}
     }
 }

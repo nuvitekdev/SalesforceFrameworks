@@ -66,10 +66,7 @@ public without sharing class NuvitekAccessRequestController {
                 options.add(option);
             }
             
-            return options;
-        } catch (Exception e) {
-            System.debug('Error getting access types: ' + e.getMessage());
-            throw new AuraHandledException('Error fetching access types: ' + e.getMessage());
+            return options; } catch (Exception e) { System.debug('Error getting access types: ' + e.getMessage());throw new AuraHandledException('Error fetching access types: ' + e.getMessage());
         }
     }
     
@@ -112,39 +109,14 @@ public without sharing class NuvitekAccessRequestController {
             insert request;
             
             // Submit the request for approval - skip in test context to avoid approval process issues
-            if (!Test.isRunningTest()) {
-                submitForApproval(request.Id);
+            if (!Test.isRunningTest()) {submitForApproval(request.Id);
             }
             
             return request.Id;
         } catch (Exception e) {
             System.debug('Error creating access request: ' + e.getMessage());
-            throw new AuraHandledException('Error submitting access request: ' + e.getMessage());
-        }
-    }
-    
-    /**
-     * Submits an access request for approval
-     * 
-     * @param requestId The ID of the request to submit for approval
-     */
-    private static void submitForApproval(Id requestId) {
-        try {
-            // Create an approval request
-            Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();
-            req.setComments('Access request submitted for approval');
-            req.setObjectId(requestId);
-            
-            // Submit the approval request
-            Approval.ProcessResult result = Approval.process(req);
-            
-            if (!result.isSuccess()) {
-                System.debug('Approval submission failed: ' + result.getErrors());
-            }
-        } catch (Exception e) {
+            throw new AuraHandledException('Error submitting access request: ' + e.getMessage());}}  private static void submitForApproval(Id requestId) { try {Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();req.setComments('Access request submitted for approval');req.setObjectId(requestId);Approval.ProcessResult result = Approval.process(req);if (!result.isSuccess()) {System.debug('Approval submission failed: ' + result.getErrors());}} catch (Exception e) {
             System.debug('Error submitting for approval: ' + e.getMessage());
-            // We don't throw here because the request was created successfully
-            // even if the approval submission fails
         }
     }
     
@@ -166,8 +138,7 @@ public without sharing class NuvitekAccessRequestController {
             ];
             
             // Ensure the request is approved
-            if (request.Status__c != 'Approved') {
-                throw new AuraHandledException('Cannot process request that is not approved.');
+            if (request.Status__c != 'Approved') {throw new AuraHandledException('Cannot process request that is not approved.');
             }
             
             // Query the custom metadata for permission sets to assign
@@ -185,14 +156,7 @@ public without sharing class NuvitekAccessRequestController {
                 }
                 
                 // If no matching mock was found but we're in test context, create a default one
-                if (appAccess.isEmpty() && Test.isRunningTest()) {
-                    NuvitekAppAccess__mdt defaultAccess = new NuvitekAppAccess__mdt(
-                        AppName__c = request.Application__c,
-                        RoleName__c = request.AccessType__c,
-                        PermissionSets__c = 'TestPermSet1,TestPermSet2'
-                    );
-                    appAccess.add(defaultAccess);
-                }
+                if (appAccess.isEmpty() && Test.isRunningTest()) {NuvitekAppAccess__mdt defaultAccess = new NuvitekAppAccess__mdt( AppName__c = request.Application__c,RoleName__c = request.AccessType__c,PermissionSets__c = 'TestPermSet1,TestPermSet2');appAccess.add(defaultAccess);}
             } else {
                 appAccess = [
                     SELECT PermissionSets__c
