@@ -2,15 +2,15 @@
    Uses modern Apple Human Interface Guideline inspired design with animations */
 
 :host {
-    /* Core theme variables with fallbacks */
-    --primary-color: var(--primary-color, #22BDC1);
-    --primary-rgb: 34, 189, 193;
-    --primary-dark: var(--primary-dark, #1a9599);
-    --primary-light: var(--primary-light, #63d1d4);
-    --accent-color: var(--accent-color, #D5DF23);
-    --accent-rgb: 213, 223, 35;
-    --accent-dark: var(--accent-dark, #b8c11e);
-    --accent-light: var(--accent-light, #e1e95c);
+    /* Core theme variables with fallbacks - darkened by 3x to match folderFileManager */
+    --primary-color: var(--primary-color, #0c666a); /* Darkened 3x from #22BDC1 */
+    --primary-rgb: 12, 102, 106; /* Darkened RGB values */
+    --primary-dark: var(--primary-dark, #084d50); /* Darkened */
+    --primary-light: var(--primary-light, #1a8e93); /* Darkened */
+    --accent-color: var(--accent-color, #656809); /* Darkened 3x from #D5DF23 */
+    --accent-rgb: 101, 104, 9; /* Darkened RGB values */
+    --accent-dark: var(--accent-dark, #4a4c07); /* Darkened */
+    --accent-light: var(--accent-light, #7f831e); /* Darkened */
     --text-color: #1d1d1f;
     --text-secondary: #6e6e73;
     --text-tertiary: #a1a1a6;
@@ -53,6 +53,9 @@
     transition: box-shadow var(--transition-medium), transform var(--transition-medium);
     animation: fadeIn 0.4s ease-out;
     overflow: hidden;
+    max-height: 600px; /* Add a max height to the card */
+    display: flex;
+    flex-direction: column;
 }
 
 .slds-card:hover {
@@ -81,11 +84,11 @@
     width: 100%;
 }
 
-/* Custom header styling with gradient background */
+/* Custom header styling with darker gradient background */
 .files-header {
     padding: 1.25rem 1.5rem;
     margin: 0;
-    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.15) 0%, rgba(var(--accent-rgb), 0.15) 100%);
+    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.3) 0%, rgba(var(--accent-rgb), 0.3) 100%); /* Increased opacity for darker gradient */
     border-bottom: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     width: 100%;
@@ -122,6 +125,7 @@
     overflow-x: auto;
     width: 100%;
     animation: slideIn 0.4s ease-out;
+    flex: 1;
 }
 
 /* Datatable styling using custom properties */
@@ -232,9 +236,10 @@ lightning-datatable .slds-table td {
 }
 
 .slds-card__body {
-    padding: 0;
-    background-color: var(--background);
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Remove bottom margin from the last row */

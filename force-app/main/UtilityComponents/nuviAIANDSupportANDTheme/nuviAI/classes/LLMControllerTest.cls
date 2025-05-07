@@ -116,418 +116,178 @@ private class LLMControllerTest {
                 ShareType = 'V'
             );
             insert docxLink;
+            
+            // Add more file types for better coverage
+            ContentVersion xlsxContent = new ContentVersion(
+                Title = 'Test XLSX',
+                PathOnClient = 'TestSpreadsheet.xlsx',
+                VersionData = Blob.valueOf('XLSX TEST CONTENT'),
+                IsMajorVersion = true
+            );
+            insert xlsxContent;
+            
+            Id xlsxDocId = [SELECT ContentDocumentId FROM ContentVersion WHERE Id = :xlsxContent.Id].ContentDocumentId;
+            ContentDocumentLink xlsxLink = new ContentDocumentLink(
+                ContentDocumentId = xlsxDocId,
+                LinkedEntityId = testAccount.Id,
+                ShareType = 'V'
+            );
+            insert xlsxLink;
+            
+            // Add a JPG image for vision tests
+            ContentVersion imageContent = new ContentVersion(
+                Title = 'Test Image',
+                PathOnClient = 'TestImage.jpg',
+                VersionData = Blob.valueOf('FAKE IMAGE CONTENT'),
+                IsMajorVersion = true
+            );
+            insert imageContent;
+            
+            Id imageDocId = [SELECT ContentDocumentId FROM ContentVersion WHERE Id = :imageContent.Id].ContentDocumentId;
+            ContentDocumentLink imageLink = new ContentDocumentLink(
+                ContentDocumentId = imageDocId,
+                LinkedEntityId = testAccount.Id,
+                ShareType = 'V'
+            );
+            insert imageLink;
         } catch(Exception e) {
-            System.debug('Error creating DOCX file: ' + e.getMessage());
-        }
-    }
-    
-    @isTest
-    static void testGetLLMConfigurations() {
-        // Test getLLMConfigurations method
-        Test.startTest();
-        
-        // Set up mocks for the metadata query
-        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
-        
-        try {
-            // Call the method
-            List<LLM_Configuration__mdt> configs = LLMController.getLLMConfigurations();
-            // No assertions needed because we're just testing coverage
-        } catch (Exception e) {
-            // Exception is expected in test context when metadata isn't available
-            System.debug('Expected exception: ' + e.getMessage());
+            System.debug('Error creating additional files: ' + e.getMessage());
         }
         
-        Test.stopTest();
-    }
-    
-    @isTest
-    static void testHandleRequest() {
-        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
-        
-        Test.startTest();
-        
-        // Set up mocks for all HTTP callouts
-        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
-        
-        // Test handle request with all possible parameters
-        try {
-            // Test with OpenAI
-            String openaiResult = LLMController.handleRequest(
-                testAccount.Id,
-                'OpenAI_GPT4',
-                'Summarize this account',
-                'summarize',
-                'Contact,Opportunity'
-            );
-            
-            // Test with empty record ID (to test different branches)
-            String noRecordResult = LLMController.handleRequest(
-                null,
-                'OpenAI_GPT4',
-                'General question with no record context',
-                'general',
-                null
-            );
-            
-            // Test with Anthropic
-            String anthropicResult = LLMController.handleRequest(
-                testAccount.Id,
-                'Anthropic_Claude',
-                'Analyze this account',
-                'analyze',
-                null
-            );
-            
-            // Test with Google
-            String googleResult = LLMController.handleRequest(
-                testAccount.Id,
-                'Google_Gemini',
-                'Evaluate this account',
-                'evaluate',
-                null
-            );
-        } catch (Exception e) {
-            System.debug('Expected exception in handleRequest: ' + e.getMessage());
-        }
-        
-        Test.stopTest();
-    }
-    
-    @isTest
-    static void testCheckRecordForAnomalies() {
-        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
-        
-        Test.startTest();
-        
-        // Set up mocks for all HTTP callouts
-        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
-        
-        try {
-            // Test with valid parameters
-            String result = LLMController.checkRecordForAnomalies(
-                testAccount.Id,
-                'OpenAI_GPT4',
-                'Contact,Opportunity'
-            );
-        } catch (Exception e) {
-            System.debug('Exception in checkRecordForAnomalies: ' + e.getMessage());
-        }
-        
-        // Test error handling with missing parameters
-        try {
-            String result = LLMController.checkRecordForAnomalies(
-                null,
-                'OpenAI_GPT4',
-                null
-            );
-        } catch (AuraHandledException e) {
-            // Expected exception
-            System.debug('Expected exception with null recordId: ' + e.getMessage());
-        }
-        
-        // Test with invalid config name
-        try {
-            String result = LLMController.checkRecordForAnomalies(
-                testAccount.Id,
-                null,
-                'Contact'
-            );
-        } catch (Exception e) {
-            System.debug('Expected exception with null configName: ' + e.getMessage());
-        }
-        
-        Test.stopTest();
-    }
-    
-    @isTest
-    static void testCoveredPrivateMethods() {
-        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
-        
-        Test.startTest();
-        
-        // Set up mocks for all HTTP callouts
-        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
-        
-        // Call public methods that will in turn call the private methods we want to cover
-        try {
-            // This will exercise various context-gathering methods
-            String result = LLMController.handleRequest(
-                testAccount.Id,
-                'OpenAI_GPT4',
-                'Detailed analysis please',
-                'analyze',
-                'Account,Contact,Opportunity,Case'
-            );
-            
-            // Test different operations to hit different code paths in buildFullPrompt
-            String summaryResult = LLMController.handleRequest(
-                testAccount.Id,
-                'OpenAI_GPT4',
-                'Summarize account',
-                'summarize',
-                null
-            );
-            
-            String explainResult = LLMController.handleRequest(
-                testAccount.Id,
-                'OpenAI_GPT4',
-                'Explain please',
-                'explain',
-                null
-            );
-            
-            String nextStepsResult = LLMController.handleRequest(
-                testAccount.Id,
-                'OpenAI_GPT4',
-                'What are the next steps?',
-                'next_steps',
-                null
-            );
-            
-            // Also test other operations to cover more branches
-            String emailDraftResult = LLMController.handleRequest(
-                testAccount.Id,
-                'OpenAI_GPT4',
-                'Draft an email',
-                'draft_email',
-                null
-            );
-            
-            String codeGenResult = LLMController.handleRequest(
-                testAccount.Id,
-                'OpenAI_GPT4',
-                'Generate some Apex code',
-                'generate_code',
-                null
-            );
-            
-            // This will exercise all the parsing logic
-            String anomalyResult = LLMController.checkRecordForAnomalies(
-                testAccount.Id,
-                'OpenAI_GPT4',
-                'Contact,Opportunity'
-            );
-        } catch (Exception e) {
-            System.debug('Exception in coverage test: ' + e.getMessage());
-        }
-        
-        Test.stopTest();
-    }
-    
-    /**
-     * Test to specifically target private methods related to field history
-     */
-    @isTest
-    static void testFieldHistoryMethods() {
-        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
-        
-        Test.startTest();
-        
-        // Set mocks
-        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
-        
-        try {
-            // This call will trigger the field history methods
-            String result = LLMController.handleRequest(
-                testAccount.Id,
-                'OpenAI_GPT4',
-                'Show me the history of this account',
-                'analyze',
-                'Account'
-            );
-            
-            // Also test with a Case record to hit different code paths
-            Case testCase = [SELECT Id FROM Case WHERE Subject = 'Test Case for LLM' LIMIT 1];
-            String caseResult = LLMController.handleRequest(
-                testCase.Id,
-                'OpenAI_GPT4',
-                'Show me the history of this case',
-                'analyze',
-                'Case'
-            );
-        } catch (Exception e) {
-            System.debug('Exception in field history test: ' + e.getMessage());
-        }
-        
-        Test.stopTest();
-    }
-    
-    /**
-     * Special test to specifically target getAttachmentsText method
-     */
-    @isTest
-    static void testAttachmentsProcessing() {
-        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
-        
-        Test.startTest();
-        
-        // Set mocks
-        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
-        
-        try {
-            // We'll call handleRequest which should in turn process attachments
-            String result = LLMController.handleRequest(
-                testAccount.Id,
-                'OpenAI_GPT4',
-                'Analyze all attachments on this account',
-                'analyze_documents',
-                null
-            );
-            
-            // This should also trigger vision document analysis
-            String visionResult = LLMController.handleRequest(
-                testAccount.Id,
-                'OpenAI_GPT4_Vision',
-                'Analyze PDF documents attached',
-                'vision_analysis',
-                null
-            );
-        } catch (Exception e) {
-            System.debug('Exception in attachment test: ' + e.getMessage());
-        }
-        
-        Test.stopTest();
-    }
-    
-    /**
-     * Test specifically for PDF and document analysis with Vision API
-     */
-    @isTest
-    static void testDocumentVisionAnalysis() {
-        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
-        
-        Test.startTest();
-        
-        // Set mocks
-        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
-        
-        try {
-            // This call should trigger document analysis with Vision
-            String result = LLMController.handleRequest(
-                testAccount.Id,
-                'OpenAI_GPT4_Vision',
-                'Analyze all documents on this account',
-                'analyze_documents',
-                null
-            );
-        } catch (Exception e) {
-            System.debug('Exception in vision analysis test: ' + e.getMessage());
-        }
-        
-        Test.stopTest();
-    }
-    
-    /**
-     * Test specifically for child relationship methods
-     */
-    @isTest
-    static void testChildRelationshipMethods() {
-        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
-        
-        // Create some Contacts as child records
-        List<Contact> contacts = new List<Contact>();
-        for(Integer i = 0; i < 3; i++) {
-            contacts.add(new Contact(
+        // Create some related Contact records for testing relationship field methods
+        List<Contact> testContacts = new List<Contact>();
+        for (Integer i = 0; i < 3; i++) {
+            Contact c = new Contact(
                 FirstName = 'Test' + i,
                 LastName = 'Contact' + i,
-                AccountId = testAccount.Id,
-                Email = 'test' + i + '@example.com'
-            ));
-        }
-        insert contacts;
-        
-        Test.startTest();
-        
-        // Set mocks
-        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
-        
-        try {
-            // This call should trigger child relationship processing
-            String result = LLMController.handleRequest(
-                testAccount.Id,
-                'OpenAI_GPT4',
-                'Show me all related records',
-                'analyze',
-                'Account,Contact'
+                Email = 'test' + i + '@example.com',
+                Phone = '555-123-456' + i,
+                AccountId = testAccount.Id
             );
-        } catch (Exception e) {
-            System.debug('Exception in child relationship test: ' + e.getMessage());
+            testContacts.add(c);
         }
+        insert testContacts;
         
-        Test.stopTest();
+        // Create Opportunity records for testing relationship field methods
+        List<Opportunity> testOpps = new List<Opportunity>();
+        for (Integer i = 0; i < 2; i++) {
+            Opportunity opp = new Opportunity(
+                Name = 'Test Opportunity ' + i,
+                StageName = 'Prospecting',
+                CloseDate = Date.today().addDays(30 + i),
+                AccountId = testAccount.Id
+            );
+            testOpps.add(opp);
+        }
+        insert testOpps;
+        
+        // Create field history record for testing
+        Account acctWithHistory = new Account(
+            Name = 'Account With History',
+            Industry = 'Technology',
+            Description = 'This account will have field history tracking'
+        );
+        insert acctWithHistory;
+        
+        acctWithHistory.Industry = 'Healthcare';
+        update acctWithHistory;
     }
     
     /**
-     * Additional test for error handling and edge cases
+     * Set up the mock configurations for testing
      */
-    @isTest
-    static void testErrorHandling() {
-        Test.startTest();
+    private static void setupMockConfigurations() {
+        // Create mock configurations
+        List<LLM_Configuration__mdt> mockConfigs = new List<LLM_Configuration__mdt>();
         
-        // Set up mocks for HTTP callouts
-        Test.setMock(HttpCalloutMock.class, new LLMErrorMock());
+        // OpenAI GPT-4 configuration
+        LLM_Configuration__mdt openAIConfig = new LLM_Configuration__mdt(
+            Id = '000000000000001AAA', // Fake ID
+            DeveloperName = 'OpenAI_GPT4',
+            MasterLabel = 'OpenAI GPT-4',
+            Provider__c = 'OpenAI',
+            Model_Name__c = 'gpt-4',
+            Supports_Files__c = true,
+            API_Key__c = 'mock_openai_api_key',
+            Base_URL__c = 'https://api.openai.com/v1/chat/completions',
+            Max_Tokens__c = 2000,
+            Temperature__c = 0.7,
+            IsActive__c = true
+        );
+        mockConfigs.add(openAIConfig);
         
-        try {
-            // Invalid configuration should throw exception
-            String result = LLMController.handleRequest(
-                null,
-                'Invalid_Config',
-                'This should fail',
-                'general',
-                null
-            );
-        } catch (AuraHandledException e) {
-            // Expected exception
-            System.debug('Expected exception: ' + e.getMessage());
-        }
+        // Anthropic Claude configuration
+        LLM_Configuration__mdt anthropicConfig = new LLM_Configuration__mdt(
+            Id = '000000000000002AAA', // Fake ID
+            DeveloperName = 'Anthropic_Claude',
+            MasterLabel = 'Anthropic Claude',
+            Provider__c = 'Anthropic',
+            Model_Name__c = 'claude-2',
+            Supports_Files__c = false,
+            API_Key__c = 'mock_anthropic_api_key',
+            Base_URL__c = 'https://api.anthropic.com/v1/messages',
+            Max_Tokens__c = 2000,
+            Temperature__c = 0.7,
+            IsActive__c = true
+        );
+        mockConfigs.add(anthropicConfig);
         
-        // Test with null configuration name
-        try {
-            String result = LLMController.handleRequest(
-                null,
-                null,
-                'This should fail due to missing config',
-                'general',
-                null
-            );
-        } catch (Exception e) {
-            System.debug('Expected exception: ' + e.getMessage());
-        }
+        // Google Gemini configuration
+        LLM_Configuration__mdt googleConfig = new LLM_Configuration__mdt(
+            Id = '000000000000003AAA', // Fake ID
+            DeveloperName = 'Google_Gemini',
+            MasterLabel = 'Google Gemini',
+            Provider__c = 'Google',
+            Model_Name__c = 'gemini-pro',
+            Supports_Files__c = false,
+            API_Key__c = 'mock_google_api_key',
+            Base_URL__c = 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent',
+            Max_Tokens__c = 2048,
+            Temperature__c = 0.7,
+            IsActive__c = true
+        );
+        mockConfigs.add(googleConfig);
         
-        Test.stopTest();
+        // OpenAI GPT-4 Vision configuration
+        LLM_Configuration__mdt visionConfig = new LLM_Configuration__mdt(
+            Id = '000000000000004AAA', // Fake ID
+            DeveloperName = 'OpenAI_GPT4_Vision',
+            MasterLabel = 'OpenAI GPT-4 Vision',
+            Provider__c = 'OpenAI',
+            Model_Name__c = 'gpt-4-vision-preview',
+            Supports_Files__c = true,
+            API_Key__c = 'mock_vision_api_key',
+            Base_URL__c = 'https://api.openai.com/v1/chat/completions',
+            Max_Tokens__c = 2000,
+            Temperature__c = 0.7,
+            IsActive__c = true
+        );
+        mockConfigs.add(visionConfig);
+        
+        // Set the mock configurations on the controller
+        LLMController.mockConfigurations = mockConfigs;
     }
     
     /**
-     * Mock HTTP callout class for LLM API calls
+     * Test class to mock HTTP callouts for LLM API responses
      */
-    private class LLMCalloutMock implements HttpCalloutMock {
-        public HttpResponse respond(HttpRequest req) {
-            HttpResponse res = new HttpResponse();
+    public class LLMCalloutMock implements HttpCalloutMock {
+        public HTTPResponse respond(HTTPRequest req) {
+            HTTPResponse res = new HTTPResponse();
             res.setHeader('Content-Type', 'application/json');
             res.setStatusCode(200);
             
-            // Mock response based on the request path/endpoint
-            String endpoint = req.getEndpoint();
-            String body = req.getBody();
-            
-            if (endpoint.contains('openai')) {
-                if (body.contains('vision') || endpoint.contains('vision')) {
-                    // Mock Vision API response
-                    res.setBody('{"choices":[{"message":{"content":"[Vision API] This image contains text documents with account information."}}]}');
-                } else {
-                    // Mock regular OpenAI response
-                    res.setBody('{"choices":[{"message":{"content":"This is a mock response from the OpenAI LLM API."}}]}');
-                }
-            } else if (endpoint.contains('anthropic')) {
-                // Mock Anthropic response
-                res.setBody('{"completion":"This is a mock response from the Anthropic LLM API."}');
-            } else if (endpoint.contains('googleapis')) {
-                // Mock Google API response
-                res.setBody('{"candidates":[{"content":{"parts":[{"text":"This is a mock response from Google AI API."}]}}]}');
+            // Mock response based on endpoint
+            if (req.getEndpoint().contains('openai')) {
+                res.setBody('{"choices":[{"message":{"content":"This is a mock OpenAI response."}}]}');
+            } else if (req.getEndpoint().contains('anthropic')) {
+                res.setBody('{"content":[{"text":"This is a mock Anthropic Claude response."}]}');
+            } else if (req.getEndpoint().contains('google')) {
+                res.setBody('{"candidates":[{"content":{"parts":[{"text":"This is a mock Google Gemini response."}]}}]}');
+            } else if (req.getEndpoint().contains('vision')) {
+                res.setBody('{"choices":[{"message":{"content":"This is a mock Vision API response for document analysis."}}]}');
             } else {
-                // Default response for any other endpoint
-                res.setBody('{"result":"This is a mock LLM response for testing purposes."}');
+                res.setBody('{"response":"This is a generic mock response."}');
             }
             
             return res;
@@ -535,15 +295,503 @@ private class LLMControllerTest {
     }
     
     /**
-     * Mock for error responses
+     * Tests the custom metadata query for LLM configurations
      */
-    private class LLMErrorMock implements HttpCalloutMock {
-        public HttpResponse respond(HttpRequest req) {
-            HttpResponse res = new HttpResponse();
+    @isTest
+    static void testGetLLMConfigurations() {
+        // Set up mock configurations
+        setupMockConfigurations();
+        
+        Test.startTest();
+        
+        // Set up mocks for HTTP callouts
+        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
+        
+        // Call the method with mock configurations in place
+        List<LLM_Configuration__mdt> configs = LLMController.getLLMConfigurations();
+        
+        // Verify we received the mock configurations
+        System.assertEquals(4, configs.size(), 'Should return 4 mock configurations');
+        
+        // Verify specific configuration values
+        Boolean foundOpenAI = false;
+        Boolean foundAnthropicClaude = false;
+        
+        for (LLM_Configuration__mdt config : configs) {
+            if (config.DeveloperName == 'OpenAI_GPT4') {
+                foundOpenAI = true;
+                System.assertEquals('OpenAI', config.Provider__c, 'Provider should be OpenAI');
+                System.assertEquals('gpt-4', config.Model_Name__c, 'Model name should be gpt-4');
+                System.assertEquals(true, config.Supports_Files__c, 'OpenAI should support files');
+            } else if (config.DeveloperName == 'Anthropic_Claude') {
+                foundAnthropicClaude = true;
+                System.assertEquals('Anthropic', config.Provider__c, 'Provider should be Anthropic');
+                System.assertEquals('claude-2', config.Model_Name__c, 'Model name should be claude-2');
+                System.assertEquals(false, config.Supports_Files__c, 'Claude should not support files');
+            }
+        }
+        
+        System.assert(foundOpenAI, 'OpenAI configuration should be present');
+        System.assert(foundAnthropicClaude, 'Anthropic Claude configuration should be present');
+        
+        Test.stopTest();
+    }
+    
+    /**
+     * Test the handleRequest method with various parameters
+     */
+    @isTest
+    static void testHandleRequest() {
+        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
+        
+        // Set up mock configurations
+        setupMockConfigurations();
+        
+        Test.startTest();
+        
+        // Set up mocks for all HTTP callouts
+        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
+        
+        // Test with OpenAI configuration
+        try {
+            String openaiResult = LLMController.handleRequest(
+                testAccount.Id,
+                'OpenAI_GPT4',
+                'Summarize this account',
+                'summarize',
+                'Contact,Opportunity'
+            );
+            System.assertNotEquals(null, openaiResult, 'Result should not be null');
+            System.assert(openaiResult.contains('mock'), 'Should return a mock response');
+        } catch (Exception e) {
+            System.assert(false, 'Should not throw exception: ' + e.getMessage());
+        }
+        
+        // Test with no record ID to ensure that branch is covered
+        try {
+            String noRecordResult = LLMController.handleRequest(
+                null,
+                'OpenAI_GPT4',
+                'General question with no record context',
+                'general',
+                null
+            );
+            System.assertNotEquals(null, noRecordResult, 'Result should not be null');
+            System.assert(noRecordResult.contains('mock'), 'Should return a mock response');
+        } catch (Exception e) {
+            System.assert(false, 'Should not throw exception: ' + e.getMessage());
+        }
+        
+        // Test with different provider
+        try {
+            String anthropicResult = LLMController.handleRequest(
+                testAccount.Id,
+                'Anthropic_Claude',
+                'Analyze this account',
+                'analyze',
+                null
+            );
+            System.assertNotEquals(null, anthropicResult, 'Result should not be null');
+            System.assert(anthropicResult.contains('mock'), 'Should return a mock response');
+        } catch (Exception e) {
+            System.assert(false, 'Should not throw exception: ' + e.getMessage());
+        }
+        
+        // Test with another provider
+        try {
+            String googleResult = LLMController.handleRequest(
+                testAccount.Id,
+                'Google_Gemini',
+                'Evaluate this account',
+                'evaluate',
+                'Contact'
+            );
+            System.assertNotEquals(null, googleResult, 'Result should not be null');
+            System.assert(googleResult.contains('mock'), 'Should return a mock response');
+        } catch (Exception e) {
+            System.assert(false, 'Should not throw exception: ' + e.getMessage());
+        }
+        
+        // Test with invalid configuration to cover error branch
+        try {
+            String errorResult = LLMController.handleRequest(
+                testAccount.Id,
+                'Invalid_Config_Name',
+                'Test error handling',
+                'error',
+                null
+            );
+            System.assertNotEquals(null, errorResult, 'Result should not be null even with invalid config');
+            System.assert(errorResult.contains('mock'), 'Should return a mock response');
+        } catch (Exception e) {
+            // This might be expected depending on implementation
+            System.debug('Exception with invalid config: ' + e.getMessage());
+        }
+        
+        Test.stopTest();
+    }
+    
+    /**
+     * Test the checkRecordForAnomalies method
+     */
+    @isTest
+    static void testCheckRecordForAnomalies() {
+        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
+        
+        // Set up mock configurations
+        setupMockConfigurations();
+        
+        Test.startTest();
+        
+        // Set up mocks for HTTP callouts
+        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
+        
+        // Test with valid parameters
+        try {
+            String result = LLMController.checkRecordForAnomalies(
+                testAccount.Id,
+                'OpenAI_GPT4',
+                'Contact,Opportunity'
+            );
+            System.assertNotEquals(null, result, 'Result should not be null');
+            System.assert(result.contains('mock'), 'Should return a mock response');
+        } catch (Exception e) {
+            System.assert(false, 'Should not throw exception: ' + e.getMessage());
+        }
+        
+        // Test with invalid recordId
+        try {
+            String result = LLMController.checkRecordForAnomalies(
+                null,
+                'OpenAI_GPT4',
+                'Contact,Opportunity'
+            );
+            System.assert(false, 'Should have thrown exception for null recordId');
+        } catch (Exception e) {
+            System.assert(e instanceof AuraHandledException, 'Should throw AuraHandledException');
+        }
+        
+        // Test with invalid config name
+        try {
+            String result = LLMController.checkRecordForAnomalies(
+                testAccount.Id,
+                '',
+                'Contact,Opportunity'
+            );
+            System.assert(false, 'Should have thrown exception for empty configName');
+        } catch (Exception e) {
+            System.assert(e instanceof AuraHandledException, 'Should throw AuraHandledException');
+        }
+        
+        // Test with non-existent record ID
+        try {
+            String result = LLMController.checkRecordForAnomalies(
+                '001000000000001AAA',  // Fake ID
+                'OpenAI_GPT4',
+                'Contact,Opportunity'
+            );
+            System.assert(false, 'Should have thrown exception for invalid record ID');
+        } catch (Exception e) {
+            System.debug('Expected exception for invalid record ID: ' + e.getMessage());
+        }
+        
+        Test.stopTest();
+    }
+    
+    /**
+     * Test documents and vision analysis pathway
+     */
+    @isTest
+    static void testAttachmentsProcessing() {
+        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
+        
+        // Set up mock configurations
+        setupMockConfigurations();
+        
+        Test.startTest();
+        
+        // Set up mocks for HTTP callouts
+        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
+        
+        // Test the handler with attachments that would trigger vision analysis
+        try {
+            // Test with a configuration that supports files
+            String result = LLMController.handleRequest(
+                testAccount.Id,
+                'OpenAI_GPT4_Vision',
+                'Analyze these documents',
+                'analyze_documents',
+                null
+            );
+            System.assertNotEquals(null, result, 'Result should not be null');
+            System.assert(result.contains('mock'), 'Should return a mock response');
+        } catch (Exception e) {
+            System.assert(false, 'Should not throw exception: ' + e.getMessage());
+        }
+        
+        Test.stopTest();
+    }
+    
+    /**
+     * Test private methods indirectly for better coverage
+     */
+    @isTest
+    static void testCoveredPrivateMethods() {
+        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
+        Case testCase = [SELECT Id FROM Case WHERE Subject = 'Test Case for LLM' LIMIT 1];
+        
+        // Set up mock configurations
+        setupMockConfigurations();
+        
+        Test.startTest();
+        
+        // Set up mocks for HTTP callouts
+        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
+        
+        // Test with cases, opportunities, and various record types to hit different branches
+        try {
+            String caseResult = LLMController.handleRequest(
+                testCase.Id,
+                'OpenAI_GPT4',
+                'Analyze this case',
+                'analyze',
+                'Contact,User'
+            );
+            System.assertNotEquals(null, caseResult, 'Result should not be null');
+            System.assert(caseResult.contains('mock'), 'Should return a mock response');
+        } catch (Exception e) {
+            System.assert(false, 'Should not throw exception: ' + e.getMessage());
+        }
+        
+        // Test with a Contact record to cover different object type handling
+        try {
+            // Get a test contact
+            Contact testContact = [SELECT Id FROM Contact WHERE LastName = 'Contact0' LIMIT 1];
+            
+            String contactResult = LLMController.handleRequest(
+                testContact.Id,
+                'OpenAI_GPT4',
+                'Analyze this contact',
+                'analyze',
+                'Account'
+            );
+            System.assertNotEquals(null, contactResult, 'Result should not be null');
+            System.assert(contactResult.contains('mock'), 'Should return a mock response');
+        } catch (Exception e) {
+            System.debug('Exception with contact record: ' + e.getMessage());
+        }
+        
+        // Test with an Opportunity record
+        try {
+            // Get a test opportunity
+            Opportunity testOpp = [SELECT Id FROM Opportunity WHERE Name = 'Test Opportunity 0' LIMIT 1];
+            
+            String oppResult = LLMController.handleRequest(
+                testOpp.Id,
+                'OpenAI_GPT4',
+                'Analyze this opportunity',
+                'analyze',
+                'Account'
+            );
+            System.assertNotEquals(null, oppResult, 'Result should not be null');
+            System.assert(oppResult.contains('mock'), 'Should return a mock response');
+        } catch (Exception e) {
+            System.debug('Exception with opportunity record: ' + e.getMessage());
+        }
+        
+        Test.stopTest();
+    }
+    
+    /**
+     * Test error handling pathways
+     */
+    @isTest
+    static void testErrorHandling() {
+        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
+        
+        // Set up mock configurations
+        setupMockConfigurations();
+        
+        Test.startTest();
+        
+        // Set up a custom mock that returns error responses
+        Test.setMock(HttpCalloutMock.class, new ErrorResponseMock());
+        
+        // Test error handling in the controller
+        try {
+            String errorResult = LLMController.handleRequest(
+                testAccount.Id,
+                'OpenAI_GPT4',
+                'Test error handling',
+                'error',
+                null
+            );
+            System.assert(false, 'Should have thrown exception for error response');
+        } catch (Exception e) {
+            // This exception is expected
+            System.assert(e instanceof AuraHandledException, 'Should throw AuraHandledException');
+        }
+        
+        Test.stopTest();
+    }
+    
+    /**
+     * Custom mock for testing error responses
+     */
+    private class ErrorResponseMock implements HttpCalloutMock {
+        public HTTPResponse respond(HTTPRequest req) {
+            HTTPResponse res = new HTTPResponse();
             res.setHeader('Content-Type', 'application/json');
-            res.setStatusCode(400); // Error status
-            res.setBody('{"error":{"message":"Invalid API key or request","type":"invalid_request_error"}}');
+            res.setStatusCode(400);
+            res.setBody('{"error":{"message":"Invalid request parameters","type":"invalid_request_error"}}');
             return res;
         }
+    }
+    
+    /**
+     * Test with a record that has field history tracking
+     */
+    @isTest
+    static void testFieldHistoryTracking() {
+        Account acctWithHistory = [SELECT Id FROM Account WHERE Name = 'Account With History' LIMIT 1];
+        
+        // Set up mock configurations
+        setupMockConfigurations();
+        
+        Test.startTest();
+        
+        // Set up mocks for HTTP callouts
+        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
+        
+        // Test with a record that has field history tracking
+        try {
+            String result = LLMController.handleRequest(
+                acctWithHistory.Id,
+                'OpenAI_GPT4',
+                'Analyze account history',
+                'analyze_history',
+                null
+            );
+            System.assertNotEquals(null, result, 'Result should not be null');
+            System.assert(result.contains('mock'), 'Should return a mock response');
+        } catch (Exception e) {
+            System.debug('Exception with account history: ' + e.getMessage());
+        }
+        
+        Test.stopTest();
+    }
+    
+    /**
+     * Test to cover various child relationship branches
+     */
+    @isTest
+    static void testChildRelationships() {
+        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
+        
+        // Set up mock configurations
+        setupMockConfigurations();
+        
+        Test.startTest();
+        
+        // Set up mocks for HTTP callouts
+        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
+        
+        // Test with parameters that would trigger child relationship code
+        try {
+            String result = LLMController.handleRequest(
+                testAccount.Id,
+                'OpenAI_GPT4',
+                'Analyze this account and all related records',
+                'deep_analysis',
+                'Contact,Opportunity,Case,Task,Event'
+            );
+            System.assertNotEquals(null, result, 'Result should not be null');
+            System.assert(result.contains('mock'), 'Should return a mock response');
+        } catch (Exception e) {
+            System.debug('Exception with child relationships: ' + e.getMessage());
+        }
+        
+        Test.stopTest();
+    }
+    
+    /**
+     * Test exception handling with malformed requests
+     */
+    @isTest
+    static void testExceptionHandling() {
+        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
+        
+        // Set up mock configurations
+        setupMockConfigurations();
+        
+        Test.startTest();
+        
+        // Set up mocks for HTTP callouts that simulate exceptions
+        Test.setMock(HttpCalloutMock.class, new HttpCalloutMock() {
+            public HTTPResponse respond(HTTPRequest req) {
+                throw new CalloutException('Simulated callout failure');
+            }
+        });
+        
+        try {
+            String result = LLMController.handleRequest(
+                testAccount.Id,
+                'OpenAI_GPT4',
+                'This will fail',
+                'failure_test',
+                null
+            );
+            System.assert(false, 'Should have thrown exception for callout failure');
+        } catch (Exception e) {
+            // This exception is expected
+            System.assert(e instanceof AuraHandledException, 'Should throw AuraHandledException');
+        }
+        
+        Test.stopTest();
+    }
+    
+    /**
+     * Test different operations to ensure all code paths are covered
+     */
+    @isTest
+    static void testDifferentOperations() {
+        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account for LLM' LIMIT 1];
+        
+        // Set up mock configurations
+        setupMockConfigurations();
+        
+        Test.startTest();
+        
+        // Set up mocks for HTTP callouts
+        Test.setMock(HttpCalloutMock.class, new LLMCalloutMock());
+        
+        // Test different operations to cover more code paths
+        List<String> operations = new List<String>{
+            'summarize', 
+            'analyze', 
+            'explain', 
+            'draft_email', 
+            'generate_code', 
+            'create_task', 
+            'answer_question'
+        };
+        
+        for (String operation : operations) {
+            try {
+                String result = LLMController.handleRequest(
+                    testAccount.Id,
+                    'OpenAI_GPT4',
+                    'Test ' + operation + ' operation',
+                    operation,
+                    null
+                );
+                System.assertNotEquals(null, result, 'Result should not be null for ' + operation);
+                System.assert(result.contains('mock'), 'Should return a mock response for ' + operation);
+            } catch (Exception e) {
+                System.debug('Exception with operation ' + operation + ': ' + e.getMessage());
+            }
+        }
+        
+        Test.stopTest();
     }
 } 

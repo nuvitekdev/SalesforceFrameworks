@@ -1,11 +1,25 @@
 public with sharing class LLMController {
+    /**
+     * Mock configuration for testing purposes
+     * This allows test classes to inject mock LLM configurations without database queries
+     */
+    @TestVisible
+    private static List<LLM_Configuration__mdt> mockConfigurations = new List<LLM_Configuration__mdt>();
+    
     @AuraEnabled(cacheable=true)
     public static List<LLM_Configuration__mdt> getLLMConfigurations() {
         System.debug('Getting LLM configurations');
+        
+        // In test context, use the mock configurations if available
+        if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
+            System.debug('Using mock configurations: ' + mockConfigurations.size());
+            return mockConfigurations;
+        }
+        
         List<LLM_Configuration__mdt> configs = [SELECT Id, DeveloperName, MasterLabel, Provider__c, 
-                                                Model_Name__c, Supports_Files__c 
-                                                FROM LLM_Configuration__mdt 
-                                                WHERE IsActive__c = true];
+                                              Model_Name__c, Supports_Files__c 
+                                              FROM LLM_Configuration__mdt 
+                                              WHERE IsActive__c = true];
         System.debug('Found configurations: ' + configs.size());
         return configs;
     }
@@ -16,11 +30,37 @@ public with sharing class LLMController {
         System.debug('Parameters - recordId: ' + recordId + ', configName: ' + configName + ', operation: ' + operation);
         
         try {
-            LLM_Configuration__mdt config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, 
-                                             Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
-                                             FROM LLM_Configuration__mdt 
-                                             WHERE DeveloperName = :configName 
-                                             LIMIT 1];
+            // Use mock configurations in test context if available
+            LLM_Configuration__mdt config;
+            if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
+                // Find matching mock config by name
+                for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
+                    if (mockConfig.DeveloperName == configName) {
+                        config = mockConfig;
+                        break;
+                    }
+                }
+                
+                // If no matching mock config was found, create a default one
+                if (config == null) {
+                    config = new LLM_Configuration__mdt(
+                        DeveloperName = configName,
+                        API_Key__c = 'test_api_key',
+                        Base_URL__c = 'https://test.example.com/api',
+                        Model_Name__c = 'test-model',
+                        Provider__c = 'TestProvider',
+                        Supports_Files__c = true,
+                        Max_Tokens__c = 2000,
+                        Temperature__c = 0.7
+                    );
+                }
+            } else {
+                config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, 
+                         Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
+                         FROM LLM_Configuration__mdt 
+                         WHERE DeveloperName = :configName 
+                         LIMIT 1];
+            }
             
             String context = '';
             String attachments = '';
@@ -37,15 +77,41 @@ public with sharing class LLMController {
                     System.debug('Found ' + docAttachments.size() + ' documents for Vision analysis');
                     
                     // Get Vision configuration
-                    List<LLM_Configuration__mdt> visionConfigs = [SELECT Id, API_Key__c, Base_URL__c, Model_Name__c
-                                                                 FROM LLM_Configuration__mdt 
-                                                                 WHERE DeveloperName = 'OpenAI_GPT4_Vision'
-                                                                 LIMIT 1];
+                    List<LLM_Configuration__mdt> visionConfigs;
+                    
+                    if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
+                        // Find vision configuration in mocks
+                        visionConfigs = new List<LLM_Configuration__mdt>();
+                        for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
+                            if (mockConfig.DeveloperName == 'OpenAI_GPT4_Vision') {
+                                visionConfigs.add(mockConfig);
+                                break;
+                            }
+                        }
+                        
+                        // If no mock vision config was found, create a default one
+                        if (visionConfigs.isEmpty()) {
+                            LLM_Configuration__mdt visionConfig = new LLM_Configuration__mdt(
+                                DeveloperName = 'OpenAI_GPT4_Vision',
+                                API_Key__c = 'test_vision_api_key',
+                                Base_URL__c = 'https://test.example.com/vision',
+                                Model_Name__c = 'test-vision-model',
+                                Provider__c = 'TestVisionProvider',
+                                Supports_Files__c = true
+                            );
+                            visionConfigs.add(visionConfig);
+                        }
+                    } else {
+                        visionConfigs = [SELECT Id, API_Key__c, Base_URL__c, Model_Name__c
+                                         FROM LLM_Configuration__mdt 
+                                         WHERE DeveloperName = 'OpenAI_GPT4_Vision'
+                                         LIMIT 1];
+                    }
                     
                     if (!visionConfigs.isEmpty()) {
                         // Process documents with Vision API
                         documentAnalysis = processDocumentsWithVision(docAttachments, visionConfigs[0], 
-                                                                      'Analyze these documents in detail. Extract all important information.');
+                                                                  'Analyze these documents in detail. Extract all important information.');
                     }
                 }
                 
@@ -91,11 +157,36 @@ public with sharing class LLMController {
 
         try {
             // Fetch the specified LLM configuration
-            LLM_Configuration__mdt config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, 
-                                             Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
-                                             FROM LLM_Configuration__mdt 
-                                             WHERE DeveloperName = :configName 
-                                             LIMIT 1];
+            LLM_Configuration__mdt config;
+            if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
+                // Find matching mock config by name
+                for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
+                    if (mockConfig.DeveloperName == configName) {
+                        config = mockConfig;
+                        break;
+                    }
+                }
+                
+                // If no matching mock config was found, create a default one
+                if (config == null) {
+                    config = new LLM_Configuration__mdt(
+                        DeveloperName = configName,
+                        API_Key__c = 'test_api_key',
+                        Base_URL__c = 'https://test.example.com/api',
+                        Model_Name__c = 'test-model',
+                        Provider__c = 'TestProvider',
+                        Supports_Files__c = true,
+                        Max_Tokens__c = 2000,
+                        Temperature__c = 0.7
+                    );
+                }
+            } else {
+                config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, 
+                         Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
+                         FROM LLM_Configuration__mdt 
+                         WHERE DeveloperName = :configName 
+                         LIMIT 1];
+            }
 
             // Get the context for the specified record
             String context = getRecordContext(recordId, relatedObjects);

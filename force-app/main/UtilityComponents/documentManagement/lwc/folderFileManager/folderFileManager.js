@@ -44,7 +44,7 @@ const folderColumns = [
         type: 'number',
         sortable: true,
         initialWidth: 100,
-        cellAttributes: { alignment: 'center' }
+        cellAttributes: { alignment: 'left' }
     }
 ];
 
@@ -56,7 +56,6 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
     @api recordId; // Record ID to associate files with
     @api primaryColor = "#22BDC1";
     @api accentColor = "#D5DF23";
-    @api standaloneMode = false; // Whether to operate in standalone mode without a record ID
     
     // Internal property to store the folder structure
     @track folderStructure = [];
@@ -70,8 +69,8 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
     @track searchTerm = '';
     @track isLoading = false;
     @track showUploadFileModal = false;
-    @track sortedBy = 'displayName';
-    @track sortDirection = 'asc';
+    @track sortedBy = 'ContentModifiedDate';
+    @track sortDirection = 'desc';
     @track breadcrumbs = [];
     @track noFoldersMessage = false;
     @track noFilesMessage = false;
@@ -81,16 +80,52 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
     wiredFilesResult;
     
     // For file upload
-    fileData;
-    fileName = '';
+    @track selectedFiles = [];
+    @track isFileUploading = false;
     acceptedFormats = '.pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv';
+    maxFilesLimit = 10;
+    
+    /**
+     * Returns a readable version of the accepted formats
+     * @return {String} Display-friendly version of file formats
+     */
+    get acceptedFormatsDisplay() {
+        return this.acceptedFormats
+            .split(',')
+            .map(format => format.replace('.', '').toUpperCase())
+            .join(', ');
+    }
+    
+    /**
+     * Returns whether any files are selected
+     * @return {Boolean} True if files are selected
+     */
+    get hasSelectedFiles() {
+        return this.selectedFiles.length > 0;
+    }
+    
+    /**
+     * Returns the count of selected files
+     * @return {Number} Number of selected files
+     */
+    get selectedFilesCount() {
+        return this.selectedFiles.length;
+    }
+    
+    /**
+     * Returns whether the files limit warning should be shown
+     * @return {Boolean} True if the warning should be shown
+     */
+    get showFilesLimitWarning() {
+        return this.selectedFiles.length >= this.maxFilesLimit;
+    }
     
     /**
      * Returns whether the upload button should be disabled
      * @return {Boolean} True if file upload should be disabled
      */
     get isUploadDisabled() {
-        return !this.fileData;
+        return this.selectedFiles.length === 0;
     }
     
     /**
@@ -116,13 +151,13 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
      * @return {Boolean} True if upload button should be shown
      */
     get showUploadButton() {
-        // Only show upload button when:
-        // 1. We're viewing files (not folders) OR in standalone mode at the root level
+        // Show upload button when:
+        // 1. We're viewing files (not folders)
         // 2. We're not in search mode
-        // 3. We're in a specific folder (or Default) OR in standalone mode at the root level
-        return (this.showFiles || (this.standaloneMode && this.showFolders)) && 
-               !this.searchTerm && 
-               (this.currentFolderPath !== '' || (this.standaloneMode && this.showFolders));
+        // 3. We're in a specific folder OR viewing the main folder area
+        return this.showFiles && 
+               !this.searchTerm;
+        // Removed the currentFolderPath !== '' condition to allow uploads in main folder area
     }
     
     /**
@@ -155,7 +190,17 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
                 hideDefaultActions: true,
                 wrapText: false,
                 initialWidth: 100,
-                cellAttributes: { alignment: 'center' }
+                cellAttributes: { alignment: 'left' }
+            },
+            {
+                label: 'Size',
+                fieldName: 'ContentSizeFormatted',
+                type: 'text',
+                sortable: true,
+                hideDefaultActions: true,
+                wrapText: false,
+                initialWidth: 100,
+                cellAttributes: { alignment: 'left' }
             },
             {
                 label: 'Last Modified',
@@ -170,16 +215,31 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
                     minute: '2-digit'
                 },
                 hideDefaultActions: true,
-                wrapText: false
+                wrapText: false,
+                cellAttributes: { alignment: 'left' }
             }
         ];
         
-        // Add actions column (Delete only)
+        // Add actions column
         if (this.allowDelete) {
             columns.push({
                 type: 'action',
                 typeAttributes: {
-                    rowActions: [{ label: 'Delete', name: 'delete' }],
+                    rowActions: [
+                        { label: 'Download', name: 'download' },
+                        { label: 'Delete', name: 'delete' }
+                    ],
+                    menuAlignment: 'right'
+                },
+                initialWidth: 80
+            });
+        } else {
+            columns.push({
+                type: 'action',
+                typeAttributes: {
+                    rowActions: [
+                        { label: 'Download', name: 'download' }
+                    ],
                     menuAlignment: 'right'
                 },
                 initialWidth: 80
@@ -187,17 +247,6 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
         }
         
         return columns;
-    }
-    
-    /**
-     * Returns the effective record ID to use for queries
-     * @return {String} The record ID or 'standalone' if in standalone mode
-     */
-    get effectiveRecordId() {
-        if (this.standaloneMode) {
-            return 'standalone';
-        }
-        return this.recordId || this.getRecordIdFromUrl();
     }
     
     /**
@@ -227,10 +276,8 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
                 );
             }
             
-            console.log('Detected Record ID:', recordId);
             return recordId || '';
         } catch (error) {
-            console.error('Error getting record ID from URL:', error);
             return '';
         }
     }
@@ -242,28 +289,21 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
         this.isLoading = true;
         
         try {
-            // If not in standalone mode, validate record ID
-            if (!this.standaloneMode) {
-                // Get recordId from API property or URL
-                const detectedRecordId = this.recordId || this.getRecordIdFromUrl();
-                
-                // Store the effective record ID
-                this.recordId = detectedRecordId;
-                
-                // Log the source of the record ID
-                if (detectedRecordId) {
-                    console.log('Using record ID:', detectedRecordId);
-                }
-                
-                // Validate that we have a record ID
-                if (!this.recordId) {
-                    console.error('Record ID is missing. This component can only be used on record pages or with a specified record ID, or in standalone mode.');
-                    this.showNoRecordError = true;
-                    this.isLoading = false;
-                    return;
-                }
-            } else {
-                console.log('Operating in standalone mode without a record ID');
+            // Get recordId from API property or URL
+            const effectiveRecordId = this.recordId || this.getRecordIdFromUrl();
+            
+            // Store the effective record ID
+            this.recordId = effectiveRecordId;
+            
+            // Set default sort to ContentModifiedDate descending
+            this.sortedBy = 'ContentModifiedDate';
+            this.sortDirection = 'desc';
+            
+            // Validate that we have a record ID
+            if (!this.recordId) {
+                this.showNoRecordError = true;
+                this.isLoading = false;
+                return;
             }
             
             // Apply custom styling based on the configured colors
@@ -271,7 +311,6 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
             
             this.initializeComponent();
         } catch (error) {
-            console.error('Error initializing component:', error);
             this.isLoading = false;
         }
     }
@@ -304,7 +343,6 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
                 this.template.host.appendChild(style);
             }
         } catch (error) {
-            console.error('Error applying custom styling:', error);
             // Silently continue if there's an error with the styling
         }
     }
@@ -370,7 +408,6 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
                 return this.folderStructure;
             })
             .catch(error => {
-                console.error('Error loading folder structure:', error);
                 throw error;
             });
     }
@@ -447,7 +484,7 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
         this.updateBreadcrumbs('');
         
         // Get top-level folders
-        getFolders({ recordId: this.effectiveRecordId })
+        getFolders({ recordId: this.recordId })
             .then(result => {
                 // Merge folder counts from the result with our predefined folders
                 const folderCounts = {};
@@ -492,7 +529,7 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
         this.updateBreadcrumbs(folderPath);
         
         // Get files for the folder
-        getFolderFiles({ recordId: this.effectiveRecordId, folderName: folderPath })
+        getFolderFiles({ recordId: this.recordId, folderName: folderPath })
             .then(result => {
                 const processedFiles = this.processFilesResult(result);
                 this.files = processedFiles;
@@ -608,13 +645,26 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
      * @param {Object} file The file to download
      */
     downloadFile(file) {
-        generateUrl({
-            recordId: file.Id
-        }).then(url => {
-            window.open(url, '_blank');
-        }).catch(error => {
-            this.displayToast('Error', 'Error generating download URL: ' + this.getErrorMessage(error), 'error');
-        });
+        try {
+            // Check if file has ContentDocumentId or Id
+            const fileId = file.ContentDocumentId || file.Id;
+            
+            if (!fileId) {
+                this.displayToast('Error', 'File ID is missing. Cannot download file.', 'error');
+                return;
+            }
+            
+            // Use a different approach for download that doesn't rely on substring
+            // Create a link and trigger a download directly
+            this[NavigationMixin.Navigate]({
+                type: 'standard__webPage',
+                attributes: {
+                    url: '/sfc/servlet.shepherd/document/download/' + fileId
+                }
+            });
+        } catch (error) {
+            this.displayToast('Error', 'Error downloading file: ' + this.getErrorMessage(error), 'error');
+        }
     }
     
     /**
@@ -642,14 +692,8 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
      * Handles upload file button click
      */
     handleUploadFile() {
-        if (this.standaloneMode && this.showFolders) {
-            // In standalone mode when showing folders, upload to Default folder
-            this.currentFolderPath = 'Default';
-        }
-        
         this.showUploadFileModal = true;
-        this.fileData = null;
-        this.fileName = '';
+        this.selectedFiles = [];
     }
     
     /**
@@ -684,28 +728,191 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
     }
     
     /**
-     * Performs search for files
+     * Handles refresh button click
      */
-    performSearch() {
+    handleRefresh() {
+        // Show loading spinner first
         this.isLoading = true;
         
-        // Extract files from all folders
-        getFolderFiles({ recordId: this.effectiveRecordId, folderName: '' })
+        // Display a toast message to indicate refresh is in progress
+        this.displayToast('Refreshing', 'Refreshing content...', 'success');
+        
+        // Use the forceDataRefresh method to ensure we get fresh data
+        this.forceDataRefresh();
+    }
+    
+    /**
+     * Performs search for files and folders
+     */
+    performSearch() {
+        if (!this.searchTerm || this.searchTerm.trim() === '') {
+            return;
+        }
+
+        this.isLoading = true;
+        const searchTermLower = this.searchTerm.toLowerCase();
+
+        // Promise for searching files - get all files regardless of folder
+        const searchFilesPromise = getFolderFiles({ recordId: this.recordId, folderName: '' })
             .then(result => {
                 // Process results
-                const allFiles = this.processFilesResult(result);
+                const allFiles = this.processFilesResult(result || []);
+                
+                // Sort files by modified date descending by default
+                allFiles.sort((a, b) => {
+                    if (a.ContentModifiedDate && b.ContentModifiedDate) {
+                        return new Date(b.ContentModifiedDate) - new Date(a.ContentModifiedDate);
+                    }
+                    return 0;
+                });
                 
                 // Filter files by search term (case insensitive)
-                const searchTermLower = this.searchTerm.toLowerCase();
-                const filteredFiles = allFiles.filter(file => 
-                    file.Title.toLowerCase().includes(searchTermLower)
+                return allFiles.filter(file => 
+                    (file.Title && file.Title.toLowerCase().includes(searchTermLower)) ||
+                    (file.FileType && file.FileType.toLowerCase().includes(searchTermLower))
+                );
+            })
+            .catch(error => {
+                this.displayToast('Error', 'Error searching files: ' + this.getErrorMessage(error), 'error');
+                return [];
+            });
+        
+        // Promise for searching all folders in the hierarchy (pre-defined)
+        const folderHierarchySearch = () => {
+            // Perform local search on all available folders in hierarchy with strict filtering
+            return this.folderHierarchy.filter(folder => {
+                // Only include folders with valid names that contain the search term
+                return folder && 
+                    folder.name && 
+                    typeof folder.name === 'string' &&
+                    folder.name.trim() !== '' && 
+                    folder.name.toLowerCase().includes(searchTermLower);
+            });
+        };
+
+        // Promise for searching folders from the server
+        const searchFoldersPromise = getFolders({ recordId: this.recordId })
+            .then(result => {
+                try {
+                    // First, filter matching folders without modifying them
+                    const serverMatchingFolders = (result || []).filter(folder => {
+                        // Check if folder has a valid name property
+                        return folder && 
+                            folder.name && 
+                            typeof folder.name === 'string' &&
+                            folder.name.trim() !== '' && 
+                            folder.name.toLowerCase().includes(searchTermLower);
+                    })
+                    .map(folder => {
+                        // Create fresh objects instead of modifying proxy objects
+                        return {
+                            id: folder.id || '',
+                            name: folder.name || '',
+                            fullPath: folder.fullPath || folder.name || '',
+                            displayName: folder.displayName || folder.name || '',
+                            fileCount: folder.fileCount || 0,
+                            parent: folder.parent || null,
+                            isExpanded: false
+                        };
+                    });
+                    
+                    // Then, get all matching folders from our pre-defined hierarchy
+                    const hierarchyMatchingFolders = folderHierarchySearch().map(folder => {
+                        // Create fresh objects instead of modifying proxy objects
+                        return {
+                            id: folder.id || '',
+                            name: folder.name || '',
+                            fullPath: folder.fullPath || folder.name || '',
+                            displayName: folder.displayName || folder.name || '',
+                            fileCount: folder.fileCount || 0,
+                            parent: folder.parent || null,
+                            isExpanded: folder.isExpanded || false
+                        };
+                    });
+                    
+                    // Merge both sets, using a Map to avoid duplicates
+                    const folderMap = new Map();
+                    
+                    // Add server folders
+                    serverMatchingFolders.forEach(folder => {
+                        if (folder && folder.name && folder.name.trim() !== '') {
+                            folderMap.set(folder.id || folder.fullPath || folder.name, folder);
+                        }
+                    });
+                    
+                    // Add hierarchy folders, but don't override existing ones
+                    hierarchyMatchingFolders.forEach(folder => {
+                        if (folder && folder.name && folder.name.trim() !== '' && 
+                            !folderMap.has(folder.id || folder.fullPath || folder.name)) {
+                            folderMap.set(folder.id || folder.fullPath || folder.name, folder);
+                        }
+                    });
+                    
+                    // Convert map back to array
+                    const filteredFolders = Array.from(folderMap.values());
+                    
+                    return filteredFolders;
+                } catch (error) {
+                    return folderHierarchySearch().map(folder => {
+                        // Create fresh objects instead of modifying proxy objects
+                        return {
+                            id: folder.id || '',
+                            name: folder.name || '',
+                            fullPath: folder.fullPath || folder.name || '',
+                            displayName: folder.displayName || folder.name || '',
+                            fileCount: folder.fileCount || 0,
+                            parent: folder.parent || null,
+                            isExpanded: folder.isExpanded || false
+                        };
+                    });
+                }
+            })
+            .catch(error => {
+                this.displayToast('Error', 'Error searching folders: ' + this.getErrorMessage(error), 'error');
+                // Fall back to searching just the hierarchy
+                return folderHierarchySearch().map(folder => {
+                    // Create fresh objects instead of modifying proxy objects
+                    return {
+                        id: folder.id || '',
+                        name: folder.name || '',
+                        fullPath: folder.fullPath || folder.name || '',
+                        displayName: folder.displayName || folder.name || '',
+                        fileCount: folder.fileCount || 0,
+                        parent: folder.parent || null,
+                        isExpanded: folder.isExpanded || false
+                    };
+                });
+            });
+        
+        // Process all search promises
+        Promise.all([searchFilesPromise, searchFoldersPromise])
+            .then(([filteredFiles, filteredFolders]) => {
+                // Final check for valid folders
+                const validFolders = filteredFolders.filter(folder => 
+                    folder && 
+                    folder.name && 
+                    typeof folder.name === 'string' &&
+                    folder.name.trim() !== '' &&
+                    folder.displayName && 
+                    typeof folder.displayName === 'string'
                 );
                 
-                // Update UI for search results
-                this.showFolders = false;
+                // Determine what content to show based on search results
+                const hasFiles = filteredFiles.length > 0;
+                const hasFolders = validFolders.length > 0;
+                
+                // ALWAYS show both sections in search mode, regardless of whether there are results
+                // This ensures consistent UI when searching and guarantees the folder table gets displayed
+                this.showFolders = true;
                 this.showFiles = true;
+                
+                // Update the data
                 this.files = filteredFiles;
-                this.noFilesMessage = this.files.length === 0;
+                this.folders = validFolders; // Use the extra-filtered folders
+                
+                // Set empty state messages
+                this.noFilesMessage = !hasFiles;
+                this.noFoldersMessage = !hasFolders;
                 
                 // Update breadcrumbs to show search
                 this.updateBreadcrumbs('', true, this.searchTerm);
@@ -713,38 +920,18 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
                 this.isLoading = false;
             })
             .catch(error => {
-                this.displayToast('Error', 'Error searching files: ' + this.getErrorMessage(error), 'error');
+                this.displayToast('Error', 'Error searching: ' + this.getErrorMessage(error), 'error');
                 this.isLoading = false;
             });
     }
     
     /**
-     * Handles refresh button click
-     */
-    handleRefresh() {
-        // If showing folders, refresh folder view
-        if (this.showFolders) {
-            this.showTopLevelFolders();
-        } 
-        // If showing files, refresh current folder
-        else if (this.showFiles) {
-            if (this.searchTerm) {
-                this.performSearch();
-            } else {
-                this.loadFolderFiles(this.currentFolderPath);
-            }
-        }
-    }
-    
-    /**
-     * Processes file results to add file type icons
-     * @param {Array} result The files result from Apex
-     * @return {Array} Processed file results with icons
+     * Processes file results and sort by most recent by default
      */
     processFilesResult(result) {
         if (!result) return [];
         
-        return result.map(file => {
+        const processedFiles = result.map(file => {
             const fileType = file.FileType ? file.FileType.toLowerCase() : '';
             let iconName = 'doctype:unknown';
             
@@ -765,29 +952,211 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
                 iconName = 'doctype:zip';
             }
             
-            return { ...file, iconName };
+            // Format the content size if available
+            let formattedSize = '';
+            if (file.ContentSize) {
+                formattedSize = this.formatBytes(file.ContentSize);
+            }
+            
+            return { 
+                ...file, 
+                iconName,
+                ContentSizeFormatted: formattedSize 
+            };
+        });
+        
+        // Sort files by modified date descending by default (newest first)
+        processedFiles.sort((a, b) => {
+            if (a.ContentModifiedDate && b.ContentModifiedDate) {
+                return new Date(b.ContentModifiedDate) - new Date(a.ContentModifiedDate);
+            }
+            return 0;
+        });
+        
+        return processedFiles;
+    }
+    
+    /**
+     * Handles the drag over event for file drop
+     * @param {Event} event - The drag over event
+     */
+    handleDragOver(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const uploadContainer = this.template.querySelector('.file-upload-container');
+        if (uploadContainer && !uploadContainer.classList.contains('dragover')) {
+            uploadContainer.classList.add('dragover');
+        }
+    }
+    
+    /**
+     * Handles the drag leave event for file drop
+     * @param {Event} event - The drag leave event
+     */
+    handleDragLeave(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const uploadContainer = this.template.querySelector('.file-upload-container');
+        if (uploadContainer && uploadContainer.classList.contains('dragover')) {
+            uploadContainer.classList.remove('dragover');
+        }
+    }
+    
+    /**
+     * Handles the file drop event
+     * @param {Event} event - The file drop event
+     */
+    handleFileDrop(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const uploadContainer = this.template.querySelector('.file-upload-container');
+        if (uploadContainer && uploadContainer.classList.contains('dragover')) {
+            uploadContainer.classList.remove('dragover');
+        }
+        
+        // Get the dropped files
+        const files = event.dataTransfer.files;
+        if (files.length > 0) {
+            this.processMultipleFiles(files);
+        }
+    }
+    
+    /**
+     * Processes multiple files for upload
+     * @param {FileList} fileList - The list of files to process
+     */
+    processMultipleFiles(fileList) {
+        // Check how many more files we can accept
+        const remainingSlots = this.maxFilesLimit - this.selectedFiles.length;
+        
+        if (remainingSlots <= 0) {
+            this.displayToast('Warning', `You can only upload up to ${this.maxFilesLimit} files at once.`, 'warning');
+            return;
+        }
+        
+        // Convert FileList to Array to be able to slice
+        const filesArray = Array.from(fileList);
+        
+        // Only take the first N files where N is the remaining slots
+        const filesToProcess = filesArray.slice(0, remainingSlots);
+        
+        // If we had to truncate, show a warning
+        if (filesArray.length > remainingSlots) {
+            this.displayToast('Warning', `Only the first ${remainingSlots} files were selected due to the ${this.maxFilesLimit} file limit.`, 'warning');
+        }
+        
+        // Process each file
+        filesToProcess.forEach(file => {
+            this.processFile(file);
         });
     }
     
     /**
-     * Handles file change in the upload modal
-     * @param {Event} event The file input change event
+     * Processes a file for upload
+     * @param {File} file - The file to process
      */
-    handleFileChange(event) {
-        const file = event.target.files[0];
+    processFile(file) {
         if (file) {
+            this.isFileUploading = true;
+            
             const reader = new FileReader();
-            this.fileName = file.name;
             
             reader.onload = () => {
                 const base64 = reader.result.split(',')[1];
-                this.fileData = {
+                
+                // Generate a unique ID for this file
+                const fileId = 'file_' + Date.now() + '_' + Math.round(Math.random() * 1000);
+                
+                // Determine file type icon
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                let iconName = 'doctype:attachment';
+                
+                // Set appropriate icon based on file type
+                if (['pdf'].includes(fileExtension)) {
+                    iconName = 'doctype:pdf';
+                } else if (['doc', 'docx'].includes(fileExtension)) {
+                    iconName = 'doctype:word';
+                } else if (['xls', 'xlsx', 'csv'].includes(fileExtension)) {
+                    iconName = 'doctype:excel';
+                } else if (['ppt', 'pptx'].includes(fileExtension)) {
+                    iconName = 'doctype:ppt';
+                } else if (['txt', 'rtf'].includes(fileExtension)) {
+                    iconName = 'doctype:txt';
+                } else if (['png', 'jpg', 'jpeg', 'gif'].includes(fileExtension)) {
+                    iconName = 'doctype:image';
+                } else if (['zip', 'rar', '7z'].includes(fileExtension)) {
+                    iconName = 'doctype:zip';
+                }
+                
+                // Add file to selected files
+                this.selectedFiles.push({
+                    id: fileId,
                     filename: file.name,
                     base64: base64,
-                    contentType: file.type
-                };
+                    contentType: file.type,
+                    iconName: iconName,
+                    size: file.size
+                });
+                
+                this.isFileUploading = false;
             };
+            
+            reader.onerror = (error) => {
+                this.displayToast('Error', 'Error reading file: ' + error, 'error');
+                this.isFileUploading = false;
+            };
+            
             reader.readAsDataURL(file);
+        }
+    }
+    
+    /**
+     * Handles file change from input element
+     * @param {Event} event - The file input change event
+     */
+    handleFileChange(event) {
+        try {
+            const files = event.target.files;
+            if (files && files.length > 0) {
+                this.processMultipleFiles(files);
+            }
+        } catch (error) {
+            this.displayToast('Error', 'Error selecting files: ' + this.getErrorMessage(error), 'error');
+        }
+    }
+    
+    /**
+     * Removes a file from the selected files
+     * @param {Event} event - The click event
+     */
+    removeFile(event) {
+        const index = parseInt(event.currentTarget.dataset.index, 10);
+        if (!isNaN(index) && index >= 0 && index < this.selectedFiles.length) {
+            // Create a new array without the file at the specified index
+            this.selectedFiles = [
+                ...this.selectedFiles.slice(0, index),
+                ...this.selectedFiles.slice(index + 1)
+            ];
+        }
+    }
+    
+    /**
+     * Clears all selected files
+     */
+    clearSelectedFiles() {
+        this.selectedFiles = [];
+    }
+    
+    /**
+     * Triggers the native file input click event
+     */
+    triggerFileInput() {
+        const fileInput = this.template.querySelector('.file-input-hidden');
+        if (fileInput) {
+            fileInput.click();
         }
     }
     
@@ -796,46 +1165,181 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
      */
     handleCancelUpload() {
         this.showUploadFileModal = false;
-        this.fileData = null;
-        this.fileName = '';
+        this.selectedFiles = [];
     }
     
     /**
      * Handles save button click in the upload modal
      */
     handleSaveUpload() {
-        if (!this.fileData) {
-            this.displayToast('Error', 'Please select a file to upload', 'error');
+        if (this.selectedFiles.length === 0) {
+            this.displayToast('Error', 'Please select at least one file to upload', 'error');
             return;
         }
         
         this.isLoading = true;
         
-        uploadFileToFolder({
-            recordId: this.effectiveRecordId,
-            folderName: this.currentFolderPath,
-            fileName: this.fileData.filename,
-            base64Data: this.fileData.base64,
-            contentType: this.fileData.contentType
-        })
-            .then(() => {
+        // Create a queue of files to upload
+        const uploadQueue = [...this.selectedFiles];
+        const totalFiles = uploadQueue.length;
+        let uploadedCount = 0;
+        let failedCount = 0;
+        
+        // Process files one by one
+        const processNext = () => {
+            if (uploadQueue.length === 0) {
+                // All files have been processed
                 this.showUploadFileModal = false;
-                this.displayToast('Success', 'File uploaded successfully', 'success');
-                this.fileData = null;
-                this.fileName = '';
                 
-                // If we're at the root in standalone mode, refresh the folders view
-                if (this.standaloneMode && this.showFolders) {
-                    this.showTopLevelFolders();
+                // Show summary toast
+                if (failedCount === 0) {
+                    this.displayToast(
+                        'Success', 
+                        `Successfully uploaded ${uploadedCount} file${uploadedCount !== 1 ? 's' : ''}.`, 
+                        'success'
+                    );
                 } else {
-                    // Otherwise refresh the current folder view
-                    this.loadFolderFiles(this.currentFolderPath);
+                    this.displayToast(
+                        'Warning', 
+                        `Uploaded ${uploadedCount} file${uploadedCount !== 1 ? 's' : ''}, but ${failedCount} file${failedCount !== 1 ? 's' : ''} failed.`, 
+                        'warning'
+                    );
                 }
+                
+                this.selectedFiles = [];
+                
+                // Force a complete refresh to show newly uploaded files
+                // Use a direct server fetch instead of relying on cache
+                this.forceDataRefresh();
+                
+                return;
+            }
+            
+            // Get the next file to upload
+            const fileToUpload = uploadQueue.shift();
+            
+            // Upload the file
+            uploadFileToFolder({
+                recordId: this.recordId,
+                folderName: this.currentFolderPath,
+                fileName: fileToUpload.filename,
+                base64Data: fileToUpload.base64,
+                contentType: fileToUpload.contentType
             })
-            .catch(error => {
-                this.displayToast('Error', 'Error uploading file: ' + this.getErrorMessage(error), 'error');
-                this.isLoading = false;
-            });
+                .then(() => {
+                    // Increment uploaded count
+                    uploadedCount++;
+                    
+                    // Update progress message
+                    this.displayToast(
+                        'In Progress', 
+                        `Uploading file ${uploadedCount + failedCount} of ${totalFiles}`, 
+                        'info'
+                    );
+                    
+                    // Process the next file
+                    processNext();
+                })
+                .catch(error => {
+                    console.error('Error uploading file:', fileToUpload.filename, error);
+                    
+                    // Increment failed count
+                    failedCount++;
+                    
+                    // Display error for this file
+                    this.displayToast(
+                        'Error', 
+                        `Failed to upload ${fileToUpload.filename}: ${this.getErrorMessage(error)}`, 
+                        'error'
+                    );
+                    
+                    // Continue with the next file
+                    processNext();
+                });
+        };
+        
+        // Start processing the queue
+        processNext();
+    }
+    
+    /**
+     * Forces a complete data refresh by fetching directly from server
+     * This ensures we see newly uploaded files without cache issues
+     */
+    forceDataRefresh() {
+        this.isLoading = true;
+        
+        // Clear any cached data
+        this.wiredFilesResult = undefined;
+        this.wiredFoldersResult = undefined;
+        
+        // For search results, run the search again
+        if (this.searchTerm) {
+            this.performSearch();
+            return;
+        }
+        
+        // Wait to ensure server has processed the uploads
+        setTimeout(() => {
+            if (this.currentFolderPath) {
+                // If we're in a folder, fetch directly from server with a timestamp to bypass cache
+                getFolderFiles({ 
+                    recordId: this.recordId, 
+                    folderName: this.currentFolderPath,
+                    timestamp: Date.now() // Add timestamp to bypass cache
+                })
+                .then(result => {
+                    const processedFiles = this.processFilesResult(result);
+                    this.files = processedFiles;
+                    this.noFilesMessage = this.files.length === 0;
+                    this.isLoading = false;
+                })
+                .catch(error => {
+                    this.displayToast('Error', 'Unable to refresh files: ' + this.getErrorMessage(error), 'error');
+                    this.isLoading = false;
+                    
+                    // As a last resort, reload the page
+                    window.location.reload();
+                });
+            } else {
+                // If we're at the root, refresh the top-level folders with timestamp to bypass cache
+                getFolders({ 
+                    recordId: this.recordId,
+                    timestamp: Date.now() // Add timestamp to bypass cache
+                })
+                .then(result => {
+                    // Process folder results and refresh UI
+                    const folderCounts = {};
+                    
+                    // First, build a map of folder names to counts
+                    result.forEach(folder => {
+                        folderCounts[folder.name] = folder.fileCount || 0;
+                    });
+                    
+                    // Identify top-level folders
+                    const topLevelFolders = this.folderHierarchy.filter(folder => !folder.parent);
+                    
+                    // Update folder counts from real data
+                    topLevelFolders.forEach(folder => {
+                        folder.fileCount = folderCounts[folder.name] || 0;
+                    });
+                    
+                    // Sort folders by name
+                    topLevelFolders.sort((a, b) => a.name.localeCompare(b.name));
+                    
+                    this.folders = topLevelFolders;
+                    this.noFoldersMessage = this.folders.length === 0;
+                    this.isLoading = false;
+                })
+                .catch(error => {
+                    this.displayToast('Error', 'Unable to refresh folders: ' + this.getErrorMessage(error), 'error');
+                    this.isLoading = false;
+                    
+                    // As a last resort, reload the page
+                    window.location.reload();
+                });
+            }
+        }, 1000); // Longer delay to ensure uploads are fully processed on the server
     }
     
     /**

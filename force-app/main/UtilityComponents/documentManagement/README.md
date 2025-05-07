@@ -1,59 +1,6 @@
 # Document Management Component
 
-This README provides information about the Document Management component package, which includes folderFileManager and fileDisplay components.
-
-## Features
-
-- **folderFileManager**: A component that provides folder-based file management for records
-- **fileDisplay**: A simpler component that displays files related to a record
-
-## Recent Updates
-
-- Added standalone mode to folderFileManager to allow using it without a record ID
-- Improved header styling with darker gradient background
-- Fixed breadcrumb carrot alignment
-- Added ability to upload files from the main folder area in standalone mode
-
-## How to Use Standalone Mode
-
-The folderFileManager component now supports a "standalone mode" that allows uploading and managing files without associating them with a record. This is useful for:
-
-- App pages where no record context is available
-- Community pages that need general file management
-- Collecting files that don't need to be tied to specific records
-
-To use standalone mode:
-
-1. When adding the component to an App Page or Home Page, the "Standalone Mode" property will be set to true by default
-2. When adding to a Community Page, set the "Standalone Mode" property to true and leave "Record ID" empty
-3. Files uploaded in standalone mode will be owned by the current user but not linked to any records
-
-In standalone mode, the component still uses the same folder structure but stores files without record association.
-
-## Component Properties
-
-### folderFileManager
-
-| Property | Type | Description |
-|----------|------|-------------|
-| title | String | The title to display for the component |
-| allowDelete | Boolean | Whether users can delete files |
-| folderStructureMetadata | String | The developer name of the Custom Metadata record that defines the folder structure |
-| recordId | String | The record ID to associate files with (not required in standalone mode) |
-| standaloneMode | Boolean | Whether to operate in standalone mode without a record ID |
-| primaryColor | String | Primary accent color for buttons, icons and interactive elements |
-| accentColor | String | Secondary accent color for gradients and decorations |
-
-### fileDisplay
-
-| Property | Type | Description |
-|----------|------|-------------|
-| allowUpload | Boolean | Whether to allow file upload functionality |
-| allowDelete | Boolean | Whether to allow users to delete files |
-| recordId | String | The record ID to associate files with |
-| maxFilesToShow | Integer | Maximum number of files to display in the scrollable table |
-| primaryColor | String | Primary accent color for buttons, icons and interactive elements |
-| accentColor | String | Secondary accent color for highlights and decorations |
+A powerful and elegantly designed document management solution for Salesforce that provides structured file organization, uploads, downloads, and management capabilities. This component eliminates the need for external document management systems by providing a complete solution within Salesforce.
 
 ## Overview
 

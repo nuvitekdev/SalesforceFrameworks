@@ -23,19 +23,22 @@ const getColumns = (allowDelete) => {
             },
             sortable: true,
             hideDefaultActions: true,
-            wrapText: false
+            wrapText: false,
+            cellAttributes: { alignment: 'left' }
         },
         {
             label: "Type",
             fieldName: "FileType",
             hideDefaultActions: true,
-            wrapText: false
+            wrapText: false,
+            cellAttributes: { alignment: 'left' }
         },
         {
             label: "Size",
             fieldName: "ContentSize",
             hideDefaultActions: true,
-            wrapText: false
+            wrapText: false,
+            cellAttributes: { alignment: 'left' }
         },
         {
             label: "Last Modified",
@@ -43,7 +46,8 @@ const getColumns = (allowDelete) => {
             type: "date",
             sortable: true,
             hideDefaultActions: true,
-            wrapText: false
+            wrapText: false,
+            cellAttributes: { alignment: 'left' }
         }
     ];
 

@@ -1,20 +1,19 @@
 public with sharing class FolderFilesController {
     
-    // Flag to indicate whether to use standalone mode (no record ID)
-    private static Boolean isStandaloneMode(String recordId) {
-        return String.isBlank(recordId) || recordId == 'standalone';
-    }
-    
     /**
      * Retrieves all folders for a given record
-     * @param recordId The ID of the record to get folders for (optional - use 'standalone' for library mode)
+     * @param recordId The ID of the record to get folders for
      * @return List of folder wrappers containing folder name and file count
      */
     @AuraEnabled(cacheable=true)
     public static List<FolderWrapper> getFolders(String recordId) {
         List<FolderWrapper> folders = new List<FolderWrapper>();
         
-        // Get all files for the record or library
+        if (String.isBlank(recordId)) {
+            return folders;
+        }
+        
+        // Get all files for the record
         List<FileWrapper> files = getRecordFiles(recordId);
         
         // Get the predefined folder structure from custom metadata
@@ -66,13 +65,17 @@ public with sharing class FolderFilesController {
     
     /**
      * Retrieves all files within a specified folder for a record
-     * @param recordId The ID of the record (optional - use 'standalone' for library mode)
+     * @param recordId The ID of the record
      * @param folderName The name of the folder to retrieve files from
      * @return List of file wrappers for the specified folder
      */
     @AuraEnabled(cacheable=true)
     public static List<FileWrapper> getFolderFiles(String recordId, String folderName) {
-        // Get all files for the record or from library
+        if (String.isBlank(recordId)) {
+            return new List<FileWrapper>();
+        }
+        
+        // Get all files for the record
         List<FileWrapper> allFiles = getRecordFiles(recordId);
         List<FileWrapper> folderFiles = new List<FileWrapper>();
         
@@ -125,16 +128,17 @@ public with sharing class FolderFilesController {
     }
     
     /**
-     * Retrieves all files for a record or from the library in standalone mode
-     * @param recordId The ID of the record to get files for (optional - use 'standalone' for library mode)
-     * @return List of file wrappers for the record or library
+     * Retrieves all files for a record
+     * @param recordId The ID of the record to get files for
+     * @return List of file wrappers for the record
      */
     @AuraEnabled(cacheable=true)
     public static List<FileWrapper> getRecordFiles(String recordId) {
         List<FileWrapper> fileWrappers = new List<FileWrapper>();
         
-        // Check if running in standalone mode
-        Boolean standaloneMode = isStandaloneMode(recordId);
+        if (String.isBlank(recordId)) {
+            return fileWrappers;
+        }
         
         // Check if running in portal context
         Boolean isPortalUser = UserInfo.getUserType() == 'PowerCustomerSuccess' 
@@ -142,84 +146,30 @@ public with sharing class FolderFilesController {
                             || UserInfo.getUserType() == 'CustomerSuccess' 
                             || UserInfo.getUserType() == 'CspLitePortal';
         
-        Set<Id> contentDocIds = new Set<Id>();
+        List<ContentDocumentLink> links;
         
-        if (standaloneMode) {
-            // In standalone mode, get files that belong to the current user or are shared with them
-            // but aren't linked to any record
-            List<ContentDocument> docs;
-            
-            if (isPortalUser) {
-                // For portal users, more restricted query
-                docs = [
-                    SELECT Id
-                    FROM ContentDocument
-                    WHERE OwnerId = :UserInfo.getUserId() 
-                    ORDER BY LastModifiedDate DESC
-                    LIMIT 1000
-                ];
-            } else {
-                // For internal users
-                docs = [
-                    SELECT Id
-                    FROM ContentDocument
-                    WHERE (OwnerId = :UserInfo.getUserId() OR CreatedById = :UserInfo.getUserId())
-                    ORDER BY LastModifiedDate DESC
-                    LIMIT 1000
-                ];
-            }
-            
-            for (ContentDocument doc : docs) {
-                contentDocIds.add(doc.Id);
-            }
-            
-            // For standalone mode, we also need to filter out files that are linked to records
-            if (!contentDocIds.isEmpty()) {
-                // Find all content documents that are linked to records
-                List<ContentDocumentLink> linkedDocs = [
-                    SELECT ContentDocumentId
-                    FROM ContentDocumentLink
-                    WHERE ContentDocumentId IN :contentDocIds
-                    AND LinkedEntityId != NULL
-                ];
-                
-                // Create a set of linked document IDs
-                Set<Id> linkedDocIds = new Set<Id>();
-                for (ContentDocumentLink link : linkedDocs) {
-                    linkedDocIds.add(link.ContentDocumentId);
-                }
-                
-                // Remove linked documents from our content IDs set
-                for (Id docId : linkedDocIds) {
-                    contentDocIds.remove(docId);
-                }
-            }
+        // For portal users, we need to ensure visibility
+        if (isPortalUser) {
+            // Query with ShareType and Visibility filters appropriate for external users
+            links = [
+                SELECT ContentDocumentId, LinkedEntityId, ShareType, Visibility
+                FROM ContentDocumentLink 
+                WHERE LinkedEntityId = :recordId
+                AND (ShareType = 'V' OR ShareType = 'C') // V=Viewer, C=Collaborator
+                AND Visibility = 'AllUsers' // Only files visible to all users
+            ];
         } else {
-            // Standard record mode - get files linked to this record
-            List<ContentDocumentLink> links;
-            
-            // For portal users, we need to ensure visibility
-            if (isPortalUser) {
-                // Query with ShareType and Visibility filters appropriate for external users
-                links = [
-                    SELECT ContentDocumentId, LinkedEntityId, ShareType, Visibility
-                    FROM ContentDocumentLink 
-                    WHERE LinkedEntityId = :recordId
-                    AND (ShareType = 'V' OR ShareType = 'C') // V=Viewer, C=Collaborator
-                    AND Visibility = 'AllUsers' // Only files visible to all users
-                ];
-            } else {
-                // For internal users, we can use standard query
-                links = [
-                    SELECT ContentDocumentId, LinkedEntityId, ShareType, Visibility
-                    FROM ContentDocumentLink 
-                    WHERE LinkedEntityId = :recordId
-                ];
-            }
-            
-            for (ContentDocumentLink link : links) {
-                contentDocIds.add(link.ContentDocumentId);
-            }
+            // For internal users, we can use standard query
+            links = [
+                SELECT ContentDocumentId, LinkedEntityId, ShareType, Visibility
+                FROM ContentDocumentLink 
+                WHERE LinkedEntityId = :recordId
+            ];
+        }
+        
+        Set<Id> contentDocIds = new Set<Id>();
+        for (ContentDocumentLink link : links) {
+            contentDocIds.add(link.ContentDocumentId);
         }
         
         if (contentDocIds.isEmpty()) {
@@ -251,7 +201,7 @@ public with sharing class FolderFilesController {
     
     /**
      * Uploads a file to a specific folder
-     * @param recordId The ID of the record to attach the file to (optional - use 'standalone' for library mode)
+     * @param recordId The ID of the record to attach the file to
      * @param folderName The folder to place the file in
      * @param fileName The name of the file
      * @param base64Data The file content encoded in base64
@@ -259,8 +209,8 @@ public with sharing class FolderFilesController {
      */
     @AuraEnabled
     public static void uploadFileToFolder(String recordId, String folderName, String fileName, String base64Data, String contentType) {
-        if (String.isBlank(fileName)) {
-            throw new AuraHandledException('File name is required');
+        if (String.isBlank(recordId) || String.isBlank(fileName)) {
+            throw new AuraHandledException('Record ID and file name are required');
         }
         
         try {
@@ -280,22 +230,15 @@ public with sharing class FolderFilesController {
             cv.VersionData = EncodingUtil.base64Decode(base64Data);
             cv.Title = fullFileName;
             cv.PathOnClient = fileName; // Keep original filename for download
-            
-            // Set FirstPublishLocationId only for record context, not for standalone mode
-            if (!isStandaloneMode(recordId)) {
-                cv.FirstPublishLocationId = recordId;
-            }
+            cv.FirstPublishLocationId = recordId;
             
             insert cv;
             
             // Get the ContentDocumentId
             cv = [SELECT Id, ContentDocumentId FROM ContentVersion WHERE Id = :cv.Id LIMIT 1];
             
-            // For standalone mode, we don't need to create a ContentDocumentLink
-            // For record mode, ensure sharing with portal users if needed
-            if (!isStandaloneMode(recordId)) {
-                shareFileWithPortal(cv.ContentDocumentId, recordId);
-            }
+            // Share file with portal users if needed
+            shareFileWithPortal(cv.ContentDocumentId, recordId);
             
         } catch (Exception e) {
             throw new AuraHandledException('Error uploading file: ' + e.getMessage());

@@ -19,7 +19,7 @@
             <div class="slds-card folder-manager-card">
                 <!-- Loading Spinner Overlay -->
                 <div if:true={isLoading} class="spinner-overlay">
-                    <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+                    <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
                 </div>
 
                 <!-- Card Header -->
@@ -79,12 +79,12 @@
                             <ol class="slds-breadcrumb slds-list_horizontal slds-wrap">
                                 <template for:each={breadcrumbs} for:item="crumb" for:index="index">
                                     <li key={crumb.key} class="slds-breadcrumb__item">
-                                        <a href="javascript:void(0);" 
-                                           onclick={handleBreadcrumbClick} 
-                                           data-path={crumb.name} 
-                                           class={crumb.computedClass}>
+                                        <button 
+                                            onclick={handleBreadcrumbClick} 
+                                            data-path={crumb.name} 
+                                            class={crumb.computedClass}>
                                             {crumb.label}
-                                        </a>
+                                        </button>
                                     </li>
                                 </template>
                             </ol>
@@ -176,19 +176,61 @@
                                 <p class="slds-text-body_regular slds-m-bottom_small">
                                     Upload to: <strong>{currentFolderPath}</strong>
                                 </p>
-                                <lightning-input 
-                                    type="file" 
-                                    label="Select File" 
-                                    accept={acceptedFormats}
-                                    onchange={handleFileChange} 
-                                    required 
-                                    class="file-input">
-                                </lightning-input>
-                                <!-- Show selected file name -->
-                                <template if:true={fileName}>
-                                    <div class="slds-m-top_small slds-text-body_small selected-file">
-                                        <lightning-icon icon-name="doctype:unknown" size="small" class="slds-m-right_x-small"></lightning-icon>
-                                        {fileName}
+                                
+                                <!-- Drag and Drop File Upload Area -->
+                                <div class="file-upload-container" 
+                                    onclick={triggerFileInput}
+                                    ondragover={handleDragOver}
+                                    ondragleave={handleDragLeave}
+                                    ondrop={handleFileDrop}>
+                                    
+                                    <!-- Loading spinner that shows only when a file is uploading -->
+                                    <div if:true={isFileUploading} class="upload-spinner-container">
+                                        <lightning-spinner alternative-text="Loading" size="small" variant="brand"></lightning-spinner>
+                                    </div>
+                                    
+                                    <!-- Visual elements (icon and text) -->
+                                    <div class="file-upload-icon">
+                                        <lightning-icon icon-name="doctype:attachment" size="large" alternative-text="Upload File"></lightning-icon>
+                                    </div>
+                                    
+                                    <div class="file-upload-text">
+                                        <h3 class="slds-text-heading_small slds-m-bottom_x-small">Drag your file here or click to browse</h3>
+                                        <p class="slds-text-body_small">Supported formats: {acceptedFormatsDisplay}</p>
+                                    </div>
+                                    
+                                    <!-- Hidden file input - Use native input for reliability -->
+                                    <input 
+                                        type="file" 
+                                        accept={acceptedFormats}
+                                        onchange={handleFileChange}
+                                        class="file-input-hidden"
+                                        id="nativeFileInput" 
+                                        multiple />
+                                </div>
+                                
+                                <!-- Show selected files -->
+                                <template if:true={hasSelectedFiles}>
+                                    <div class="selected-files-container">
+                                        <div class="selected-files-header">
+                                            <h3 class="slds-text-heading_small">{selectedFilesCount} File(s) Selected</h3>
+                                            <button class="slds-button slds-button_text" onclick={clearSelectedFiles}>Clear All</button>
+                                        </div>
+                                        <ul class="selected-files-list">
+                                            <template for:each={selectedFiles} for:item="file" for:index="index">
+                                                <li key={file.id} class="selected-file">
+                                                    <lightning-icon icon-name={file.iconName} size="small" class="slds-m-right_x-small"></lightning-icon>
+                                                    <span class="file-name">{file.filename}</span>
+                                                    <button class="remove-file-button" onclick={removeFile} data-index={index} title="Remove file">
+                                                        <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                                                    </button>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                        <div if:true={showFilesLimitWarning} class="files-limit-warning">
+                                            <lightning-icon icon-name="utility:warning" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                                            Maximum 10 files can be uploaded at once.
+                                        </div>
                                     </div>
                                 </template>
                             </div>

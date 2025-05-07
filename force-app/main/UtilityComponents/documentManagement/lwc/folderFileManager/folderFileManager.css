@@ -2,15 +2,15 @@
    Uses modern Apple Human Interface Guideline inspired design with animations */
 
 :host {
-    /* Core theme variables with fallbacks */
-    --primary-color: var(--primary-color, #22BDC1);
-    --primary-rgb: 34, 189, 193;
-    --primary-dark: var(--primary-dark, #1a9599);
-    --primary-light: var(--primary-light, #63d1d4);
-    --accent-color: var(--accent-color, #D5DF23);
-    --accent-rgb: 213, 223, 35;
-    --accent-dark: var(--accent-dark, #b8c11e);
-    --accent-light: var(--accent-light, #e1e95c);
+    /* Core theme variables with fallbacks - darkened by 3x */
+    --primary-color: var(--primary-color, #0c666a); /* Darkened 3x from #22BDC1 */
+    --primary-rgb: 12, 102, 106; /* Darkened RGB values */
+    --primary-dark: var(--primary-dark, #084d50); /* Darkened */
+    --primary-light: var(--primary-light, #1a8e93); /* Darkened */
+    --accent-color: var(--accent-color, #656809); /* Darkened 3x from #D5DF23 */
+    --accent-rgb: 101, 104, 9; /* Darkened RGB values */
+    --accent-dark: var(--accent-dark, #4a4c07); /* Darkened */
+    --accent-light: var(--accent-light, #7f831e); /* Darkened */
     --text-color: #1d1d1f;
     --text-secondary: #6e6e73;
     --text-tertiary: #a1a1a6;
@@ -46,9 +46,11 @@
 
 /* Main Container */
 .folder-manager-container {
-    width: 100%;
+    max-width: 100%; /* Ensure it doesn't overflow small screens */
     position: relative;
     animation: fadeIn 0.4s ease-out;
+    margin: 0 auto; /* Center the component */
+    /* No max-height constraint to allow container to grow as needed */
 }
 
 .folder-manager-styles {
@@ -64,6 +66,8 @@
     border: none !important;
     overflow: hidden;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .folder-manager-card:hover {
@@ -71,9 +75,9 @@
     transform: translateY(-2px);
 }
 
-/* Card Header */
+/* Card Header - Darker gradient */
 .folder-manager-card .slds-card__header {
-    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.15) 0%, rgba(var(--accent-rgb), 0.15) 100%);
+    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.3) 0%, rgba(var(--accent-rgb), 0.3) 100%); /* Increased opacity for darker gradient */
     border-bottom: 1px solid var(--border-subtle);
     padding: 1.25rem 1.5rem !important;
 }
@@ -111,7 +115,7 @@
     align-items: center;
 }
 
-/* Single centered arrow between items */
+/* Single centered arrow between items - right-aligned */
 .slds-breadcrumb__item:not(:last-child):after {
     content: '›';
     margin: 0 0.5rem;
@@ -125,9 +129,10 @@
     text-align: center;
     position: relative;
     top: 0.05rem;
+    right: 0; /* Align to the right */
 }
 
-.slds-breadcrumb__item a {
+.slds-breadcrumb__item button {
     color: var(--text-secondary);
     font-size: 14px;
     text-decoration: none;
@@ -138,11 +143,23 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 200px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    appearance: none;
+    font-family: inherit;
+    outline: none;
 }
 
-.slds-breadcrumb__item a:hover {
+.slds-breadcrumb__item button:hover {
     color: var(--primary-color);
     background-color: rgba(var(--primary-rgb), 0.05);
+}
+
+.slds-breadcrumb__item button:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px var(--primary-color);
 }
 
 .breadcrumb-current {
@@ -247,14 +264,57 @@
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-subtle);
     animation: slideIn 0.4s ease-out;
+    max-height: 600px; /* Set max height for tables to 600px */
+    overflow-y: auto; /* Keep the container scrollable */
+}
+
+/* When both folder and file tables are shown in search results, make them balanced */
+.folder-table.scrollable-container,
+.file-table.scrollable-container {
+    min-height: 300px; /* Equal minimum height for both tables */
+    max-height: 600px; /* Maximum height for tables */
+}
+
+/* When in search mode and both sections are visible, adjust heights */
+.search-section-header + .folder-table,
+.search-section-header + .file-table {
+    min-height: 300px; /* Equal minimum height in search mode */
+    max-height: 600px; /* Maximum height for tables in search mode */
 }
 
 .datatable-body-padding {
     padding: 1.25rem;
+    flex: 1; /* Take up remaining space */
+    overflow: hidden; /* Hide overflow */
+    display: flex;
+    flex-direction: column;
+    /* No max-height constraint for the content area, let tables handle scrolling */
 }
 
-/* Target the slds-table from datatable */
+/* Card Body - Make it flex to allow content to scroll */
+.folder-manager-card .slds-card__body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.folder-manager-card .slds-card__body_inner {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Target the datatable's internal structure for better alignment */
+:host lightning-datatable {
+    --sds-c-table-column-widths: "6fr 1fr 1fr 2fr 1fr";
+}
+
+/* Make the table take full width */
 .folder-manager-container .slds-table {
+    width: 100% !important;
+    table-layout: fixed !important;
     --slds-c-table-text-color: var(--text-color);
     --slds-c-table-text-color-default: var(--text-color);
     --slds-c-table-sizing-border: 0;
@@ -273,6 +333,88 @@
     text-transform: uppercase;
     font-size: 12px;
     letter-spacing: 0.03em;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    white-space: nowrap;
+    text-align: left;
+}
+
+/* Direct targeting of table cells for better column alignment */
+.folder-manager-container .slds-table th:first-child, 
+.folder-manager-container .slds-table td:first-child {
+    width: 65% !important;
+    text-align: left;
+}
+
+.folder-manager-container .slds-table th:nth-child(2), 
+.folder-manager-container .slds-table td:nth-child(2) {
+    width: 18% !important;
+    text-align: left;
+}
+
+.folder-manager-container .slds-table th:nth-child(3), 
+.folder-manager-container .slds-table td:nth-child(3) {
+    width: 10% !important;
+    text-align: center;
+}
+
+.folder-manager-container .slds-table th:nth-child(4), 
+.folder-manager-container .slds-table td:nth-child(4) {
+    width: 12% !important;
+    text-align: left;
+}
+
+.folder-manager-container .slds-table th:last-child, 
+.folder-manager-container .slds-table td:last-child {
+    width: 5% !important;
+    text-align: center;
+}
+
+/* Fix for file table column alignment */
+.file-table .slds-table th,
+.file-table .slds-table td {
+    text-align: left;
+}
+
+/* Ensure Type and Size columns are left-aligned */
+.file-table .slds-table th:nth-child(2),
+.file-table .slds-table td:nth-child(2),
+.file-table .slds-table th:nth-child(3),
+.file-table .slds-table td:nth-child(3) {
+    text-align: left;
+}
+
+/* Center specific column content when needed */
+.folder-table .slds-table th:nth-child(3),
+.folder-table .slds-table td:nth-child(3) {
+    text-align: center;
+}
+
+/* For action columns that need centering */
+.folder-manager-container .slds-table th:last-child, 
+.folder-manager-container .slds-table td:last-child {
+    width: 5% !important;
+    text-align: center;
+}
+
+/* Ensure consistent text alignment in all cell content */
+.folder-manager-container .slds-table td[data-label="Type"],
+.folder-manager-container .slds-table td[data-label="Size"],
+.folder-manager-container .slds-table th[scope="col"][title="Type"],
+.folder-manager-container .slds-table th[scope="col"][title="Size"] {
+    text-align: left !important;
+}
+
+/* Ensure cell content alignment is consistently left */
+.folder-manager-container .slds-table td .slds-truncate {
+    max-width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: left;
 }
 
 /* Table rows */
@@ -290,6 +432,18 @@
     border-bottom: 1px solid var(--border-subtle);
     font-size: 14px;
     padding: 0.75rem 0.5rem;
+    vertical-align: middle;
+}
+
+/* Fix for datatable icons */
+.folder-manager-container .slds-icon_container {
+    margin-right: 0.5rem;
+}
+
+/* Force vertical alignment for cells with buttons */
+.folder-name-cell,
+.folder-name-cell .slds-button {
+    vertical-align: middle !important;
 }
 
 /* Last row cells */
@@ -333,35 +487,66 @@
     width: 3rem;
 }
 
-/* Upload Modal styling */
+/* Upload Modal - Contained within LWC */
 .folder-manager-container .slds-modal__container {
-    border-radius: var(--radius-lg);
+    width: 90%;
+    position: relative; /* Important for positioning */
+    margin: 0 auto;
+    border-radius: var(--radius-md);
     overflow: hidden;
-    box-shadow: var(--shadow-xl);
-    animation: modalFadeIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
+/* Keep modal within the component boundaries */
+.folder-manager-container .slds-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9000;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.folder-manager-container .slds-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 8000;
+}
+
+/* Modal styling for a clean, modern look */
 .folder-manager-container .slds-modal__header {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    background-color: var(--primary-color);
     border-bottom: none;
     color: white;
+    padding: 1rem 1.5rem;
 }
 
 .folder-manager-container .slds-modal__title {
-    font-size: 20px;
-    font-weight: 600;
     color: white;
+    font-size: 1.25rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
 }
 
 .folder-manager-container .slds-modal__close {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
+    color: white;
+    top: 0.75rem;
+    right: 0.75rem;
+}
+
+.folder-manager-container .slds-modal__close .slds-button_icon {
     color: white;
 }
 
 .folder-manager-container .slds-modal__content {
     padding: 1.5rem;
+    background-color: var(--background);
 }
 
 .folder-manager-container .slds-modal__footer {
@@ -372,6 +557,7 @@
 /* File input styling */
 .file-input {
     margin-top: 0.5rem;
+    display: block !important; /* Ensure file input is visible */
 }
 
 .file-input .slds-form-element__label {
@@ -379,6 +565,7 @@
     font-weight: 500;
     color: var(--text-color);
     margin-bottom: 0.5rem;
+    display: block !important; /* Ensure label is visible */
 }
 
 .file-input .slds-file-selector__dropzone {
@@ -387,6 +574,9 @@
     padding: 1.5rem;
     background-color: rgba(var(--accent-rgb), 0.05);
     transition: all var(--transition-fast);
+    display: flex !important; /* Ensure dropzone is visible */
+    align-items: center;
+    justify-content: center;
 }
 
 .file-input .slds-file-selector__dropzone:hover {
@@ -402,6 +592,7 @@
     font-weight: 500;
     border: none;
     transition: all var(--transition-fast);
+    display: inline-block !important; /* Ensure button is visible */
 }
 
 .file-input .slds-file-selector__button:hover {
@@ -481,6 +672,11 @@
 .search-section-header lightning-icon {
     --sds-c-icon-color-foreground: var(--primary-color);
     --sds-c-icon-color-foreground-default: var(--primary-color);
+}
+
+/* Add spacing between search sections */
+.search-section-header:not(:first-child) {
+    margin-top: 2rem; /* Add more space between folder and file sections */
 }
 
 /* Animations */
@@ -576,4 +772,266 @@
     .folder-manager-container .slds-modal__footer {
         padding: 0.75rem 1rem;
     }
+}
+
+.file-upload-instructions {
+    background-color: rgba(var(--primary-rgb), 0.1);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: var(--primary-color);
+}
+
+.file-upload-instructions lightning-icon {
+    --sds-c-icon-color-foreground: var(--primary-color);
+}
+
+/* File Upload Container with Drag & Drop */
+.file-upload-container {
+    border: 2px dashed var(--accent-color);
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    text-align: center;
+    background-color: rgba(var(--accent-rgb), 0.05);
+    transition: all var(--transition-fast);
+    margin: 1rem 0;
+    cursor: pointer;
+    position: relative;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.file-upload-container:hover {
+    background-color: rgba(var(--accent-rgb), 0.1);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.file-upload-container.dragover {
+    background-color: rgba(var(--primary-rgb), 0.1);
+    border-color: var(--primary-color);
+    border-style: solid;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.file-input-hidden {
+    position: absolute;
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.file-upload-icon {
+    margin-bottom: 1rem;
+}
+
+.file-upload-icon lightning-icon {
+    --sds-c-icon-color-foreground: var(--primary-color);
+    --sds-c-icon-color-foreground-default: var(--primary-color);
+}
+
+.file-upload-text {
+    margin-bottom: 1rem;
+}
+
+.upload-spinner-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: var(--radius-md);
+    z-index: 10;
+}
+
+/* Selected Files Container */
+.selected-files-container {
+    background-color: var(--background-alt);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-top: 1rem;
+    animation: fadeIn 0.3s ease-out;
+    box-shadow: var(--shadow-sm);
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.selected-files-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 0.5rem;
+}
+
+.selected-files-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.selected-files-header button {
+    color: var(--primary-color);
+    font-size: 12px;
+    padding: 0.25rem;
+    transition: all var(--transition-fast);
+}
+
+.selected-files-header button:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+.selected-files-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.selected-file {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    background-color: var(--background);
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.5rem;
+    transition: all var(--transition-fast);
+    position: relative;
+    border-left: 3px solid var(--primary-color);
+}
+
+.selected-file:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.selected-file .file-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+.remove-file-button {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    transition: all var(--transition-fast);
+}
+
+.remove-file-button:hover {
+    color: #f44336;
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+.files-limit-warning {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: #e65100;
+    background-color: rgba(230, 81, 0, 0.05);
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    margin-top: 0.5rem;
+}
+
+/* Force button alignment in name column */
+.folder-manager-container .slds-button_reset {
+    text-align: left;
+    justify-content: flex-start;
+}
+
+/* Ensure cell content alignment is consistently left */
+.folder-manager-container .slds-table td .slds-truncate {
+    max-width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: left;
+}
+
+/* Make sure all table cells content are left-aligned */
+.folder-manager-container .slds-table td, 
+.folder-manager-container .slds-table th {
+    text-align: left !important;
+}
+
+.folder-manager-container .slds-table td .slds-truncate,
+.folder-manager-container .slds-table th .slds-truncate {
+    text-align: left !important;
+}
+
+/* Override specific column styles */
+.folder-manager-container .slds-cell-fixed, 
+.folder-manager-container .slds-cell-buffer_left, 
+.folder-manager-container .slds-cell-buffer_right {
+    text-align: left !important;
+}
+
+/* Fix for file table column alignment */
+.file-table .slds-table th,
+.file-table .slds-table td {
+    text-align: left !important;
+}
+
+/* Type and Size column fixes */
+.folder-manager-container .slds-table td[data-label="Type"],
+.folder-manager-container .slds-table td[data-label="Size"],
+.folder-manager-container .slds-table th[scope="col"][title="Type"],
+.folder-manager-container .slds-table th[scope="col"][title="Size"] {
+    text-align: left !important;
+}
+
+/* Override any lightning-datatable styling */
+.folder-manager-container lightning-datatable .slds-is-sortable__icon,
+.folder-manager-container lightning-datatable .slds-button__icon {
+    margin-left: 0.25rem;
+}
+
+/* Force left alignment on button content */
+.folder-manager-container .slds-button_reset {
+    text-align: left !important;
+    justify-content: flex-start !important;
+}
+
+/* Target specific table cells */
+.folder-manager-container .slds-table th:nth-child(2), 
+.folder-manager-container .slds-table td:nth-child(2),
+.folder-manager-container .slds-table th:nth-child(3), 
+.folder-manager-container .slds-table td:nth-child(3) {
+    text-align: left !important;
+}
+
+/* Remove any center alignment overrides */
+.folder-table .slds-table th:nth-child(3),
+.folder-table .slds-table td:nth-child(3) {
+    text-align: left !important;
+}
+
+/* Only keep action icons centered */
+.folder-manager-container .slds-table th:last-child, 
+.folder-manager-container .slds-table td:last-child {
+    width: 5% !important;
 } 
