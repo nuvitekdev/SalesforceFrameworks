@@ -1,0 +1,154 @@
+<aura:component implements="forceCommunity:themeLayout" description="Nuvitek Custom Theme Layout for Aura" access="global">
+    <!-- Standard Aura theme layout attributes -->
+    <aura:attribute name="search" type="Aura.Component[]" required="false" description="Search region" />
+    <aura:attribute name="profileMenu" type="Aura.Component[]" required="false" description="Profile menu region" />
+    <aura:attribute name="navBar" type="Aura.Component[]" required="false" description="Navigation bar region" />
+    <aura:attribute name="newHeader" type="Aura.Component[]" required="false" description="New header region" />
+    
+    <!-- Theme appearance -->
+    <aura:attribute name="primaryColor" type="String" default="#22BDC1" description="Primary accent color" />
+    <aura:attribute name="accentColor" type="String" default="#D5DF23" description="Secondary accent color" />
+    <aura:attribute name="textColor" type="String" default="#1d1d1f" description="Main text color" />
+    <aura:attribute name="themeName" type="String" default="light" description="Theme mode (light/dark)" />
+    <aura:attribute name="applyThemeToSlots" type="Boolean" default="true" description="Apply theme to slotted content" />
+    <aura:attribute name="globalThemeOverride" type="Boolean" default="true" description="Apply theme to OOTB components" />
+
+    <!-- Header configuration -->
+    <aura:attribute name="useDefaultHeader" type="Boolean" default="true" description="Use built-in header instead of custom component" />
+    <aura:attribute name="headerContainerWidth" type="Integer" default="100" description="Width of header container %" />
+    <aura:attribute name="headerVariant" type="String" default="standard" description="Header variant style" />
+    <aura:attribute name="headerSticky" type="Boolean" default="false" description="Sticky header" />
+
+    <!-- Logo configuration -->
+    <aura:attribute name="logoUrl" type="String" description="URL to custom logo image" />
+    <aura:attribute name="logoAltText" type="String" default="Nuvitek" description="Alt text for logo" />
+
+    <!-- Navigation configuration -->
+    <aura:attribute name="headerNavigationMenuName" type="String" description="Name of navigation menu for header" />
+    <aura:attribute name="ensureHomeNavItem" type="Boolean" default="false" description="Add Home item to navigation" />
+    <aura:attribute name="showSearchInHeader" type="Boolean" default="false" description="Show search box in header" />
+    <aura:attribute name="searchObjects" type="String" default="Account,Contact" description="Objects to search" />
+    <aura:attribute name="showProfileIcon" type="Boolean" default="false" description="Show profile icon" />
+    <aura:attribute name="profilePageUrl" type="String" default="/profile" description="URL to profile page" />
+
+    <!-- Hero section configuration -->
+    <aura:attribute name="showHeroSection" type="Boolean" default="false" description="Show hero banner section" />
+    <aura:attribute name="heroLayout" type="String" default="fullwidth" description="Hero layout style" />
+    <aura:attribute name="heroBackgroundImage" type="String" description="Hero background image URL" />
+    <aura:attribute name="heroTitle" type="String" default="Experience the Future Today" description="Hero headline" />
+    <aura:attribute name="heroSubtitle" type="String" default="Discover innovative solutions designed with you in mind" description="Hero supporting text" />
+    <aura:attribute name="heroCTAPrimaryLabel" type="String" default="Get Started" description="Primary CTA text" />
+    <aura:attribute name="heroCTAPrimaryUrl" type="String" description="Primary CTA URL" />
+    <aura:attribute name="heroCTASecondaryLabel" type="String" default="Learn More" description="Secondary CTA text" />
+    <aura:attribute name="heroCTASecondaryUrl" type="String" description="Secondary CTA URL" />
+
+    <!-- Video background properties -->
+    <aura:attribute name="showBackgroundVideo" type="Boolean" default="false" description="Show video in hero" />
+    <aura:attribute name="heroBackgroundDarkness" type="Integer" default="30" description="Hero overlay darkness" />
+    <aura:attribute name="backgroundVideoUrl" type="String" description="Background video URL" />
+    <aura:attribute name="backgroundVideoFallbackUrl" type="String" description="Video fallback image" />
+    <aura:attribute name="backgroundVideoDarkness" type="Integer" default="35" description="Video darkness %" />
+
+    <!-- Visual elements -->
+    <aura:attribute name="showFab" type="Boolean" default="false" description="Show floating action button" />
+    <aura:attribute name="fabUrl" type="String" description="FAB action URL" />
+    <aura:attribute name="fabOptions" type="String" default="both" description="FAB menu options" />
+    <aura:attribute name="helpFormLabel" type="String" default="Help Request" description="Help form label" />
+    <aura:attribute name="aiAssistantLabel" type="String" default="AI Assistant" description="AI assistant label" />
+    <aura:attribute name="helpFormIcon" type="String" default="utility:chat" description="Help form icon" />
+    <aura:attribute name="aiAssistantIcon" type="String" default="utility:einstein" description="AI assistant icon" />
+
+    <!-- Footer configuration -->
+    <aura:attribute name="useDefaultFooter" type="Boolean" default="true" description="Use built-in footer" />
+    <aura:attribute name="footerNavigationMenuName" type="String" description="Footer navigation menu name" />
+    <aura:attribute name="footerStyle" type="String" default="standard" description="Footer style variant" />
+    <aura:attribute name="companyName" type="String" default="Nuvitek" description="Company name in footer" />
+    <aura:attribute name="footerTagline" type="String" default="Delivering innovative solutions since 2012" description="Footer tagline" />
+    <aura:attribute name="footerLegalText" type="String" default="All rights reserved. Terms and conditions apply." description="Legal text" />
+
+    <!-- Dynamic Footer Columns -->
+    <aura:attribute name="footerColumnCount" type="Integer" default="3" description="Footer column count" />
+    <aura:attribute name="footerColumnTitles" type="String" default="Products, Resources, Company" description="Footer column titles" />
+    <aura:attribute name="footerColumnMenus" type="String" description="Footer column menu names" />
+
+    <!-- Social media links -->
+    <aura:attribute name="socialLinksCount" type="Integer" default="0" description="Number of social links" />
+    <aura:attribute name="socialLinkTitles" type="String" default="Facebook, Twitter, LinkedIn, Instagram" description="Social media names" />
+    <aura:attribute name="socialLinkUrls" type="String" description="Social media URLs" />
+    
+    <!-- Initialize the component -->
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    <aura:handler name="change" value="{!v.themeName}" action="{!c.handleAttributeChange}" />
+    
+    <!-- Theme Layout Structure -->
+    <div class="nuvitek-theme-layout">
+        <!-- Simply wrap the existing LWC theme layout -->
+        <c:nuvitekCustomThemeLayout
+            primaryColor="{!v.primaryColor}"
+            accentColor="{!v.accentColor}" 
+            textColor="{!v.textColor}"
+            themeName="{!v.themeName}"
+            applyThemeToSlots="{!v.applyThemeToSlots}"
+            globalThemeOverride="{!v.globalThemeOverride}"
+            
+            useDefaultHeader="{!v.useDefaultHeader}"
+            headerContainerWidth="{!v.headerContainerWidth}"
+            headerVariant="{!v.headerVariant}"
+            headerSticky="{!v.headerSticky}"
+            
+            logoUrl="{!v.logoUrl}"
+            logoAltText="{!v.logoAltText}"
+            
+            headerNavigationMenuName="{!v.headerNavigationMenuName}"
+            ensureHomeNavItem="{!v.ensureHomeNavItem}"
+            showSearchInHeader="{!v.showSearchInHeader}"
+            searchObjects="{!v.searchObjects}"
+            showProfileIcon="{!v.showProfileIcon}"
+            profilePageUrl="{!v.profilePageUrl}"
+            
+            showHeroSection="{!v.showHeroSection}"
+            heroLayout="{!v.heroLayout}"
+            heroBackgroundImage="{!v.heroBackgroundImage}"
+            heroTitle="{!v.heroTitle}"
+            heroSubtitle="{!v.heroSubtitle}"
+            heroCTAPrimaryLabel="{!v.heroCTAPrimaryLabel}"
+            heroCTAPrimaryUrl="{!v.heroCTAPrimaryUrl}"
+            heroCTASecondaryLabel="{!v.heroCTASecondaryLabel}"
+            heroCTASecondaryUrl="{!v.heroCTASecondaryUrl}"
+            
+            showBackgroundVideo="{!v.showBackgroundVideo}"
+            heroBackgroundDarkness="{!v.heroBackgroundDarkness}"
+            backgroundVideoUrl="{!v.backgroundVideoUrl}"
+            backgroundVideoFallbackUrl="{!v.backgroundVideoFallbackUrl}"
+            backgroundVideoDarkness="{!v.backgroundVideoDarkness}"
+            
+            showFab="{!v.showFab}"
+            fabUrl="{!v.fabUrl}"
+            fabOptions="{!v.fabOptions}"
+            helpFormLabel="{!v.helpFormLabel}"
+            aiAssistantLabel="{!v.aiAssistantLabel}"
+            helpFormIcon="{!v.helpFormIcon}"
+            aiAssistantIcon="{!v.aiAssistantIcon}"
+            
+            useDefaultFooter="{!v.useDefaultFooter}"
+            footerNavigationMenuName="{!v.footerNavigationMenuName}"
+            footerStyle="{!v.footerStyle}"
+            companyName="{!v.companyName}"
+            footerTagline="{!v.footerTagline}"
+            footerLegalText="{!v.footerLegalText}"
+            
+            footerColumnCount="{!v.footerColumnCount}"
+            footerColumnTitles="{!v.footerColumnTitles}"
+            footerColumnMenus="{!v.footerColumnMenus}"
+            
+            socialLinksCount="{!v.socialLinksCount}"
+            socialLinkTitles="{!v.socialLinkTitles}"
+            socialLinkUrls="{!v.socialLinkUrls}">
+            
+            <!-- Pass the body content to the LWC's content slot -->
+            <div slot="content">
+                {!v.body}
+            </div>
+        </c:nuvitekCustomThemeLayout>
+    </div>
+</aura:component> 
