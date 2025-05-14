@@ -340,6 +340,25 @@ lightning-spinner {
     word-break: break-word;
 }
 
+/* --- MODIFICATION: Further reduce whitespace within AI-generated rich text content --- */
+.response-text p,
+.response-text ul,
+.response-text ol {
+    margin-top: 0.15rem;    /* Minimal top margin */
+    margin-bottom: 0.20rem;  /* Minimal bottom margin to keep sections tight */
+}
+
+.response-text li {
+    margin-bottom: 0.1rem;   /* Very tight list items */
+}
+
+.response-text hr {
+    margin-top: 0.5rem;      /* Reasonably tight separation between documents */
+    margin-bottom: 0.5rem;   /* Reasonably tight separation between documents */
+    border-top: 1px solid var(--border-subtle);
+}
+/* --- END MODIFICATION --- */
+
 /* Copy buttons */
 .copy-button, .copy-message-button {
     position: relative;

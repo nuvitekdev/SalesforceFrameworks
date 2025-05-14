@@ -598,9 +598,21 @@ SUMMARY:`;
         
         // Show loading state
         this.isLoading = true;
+
+        // --- MODIFICATION: Get context prompt for image analysis ---
+        let imageAnalysisUserPrompt = 'Analyze the content of this image in detail, describing its key features, objects, and any text present.'; // Default prompt
+        if (this.contextPrompt && this.contextPrompt.trim() !== '') {
+            imageAnalysisUserPrompt = this.contextPrompt; 
+            console.log('Using custom context prompt for image analysis:', imageAnalysisUserPrompt);
+        }
+        // --- END MODIFICATION ---
         
         // Call the Apex controller to process images
-        processImagesWithAI({ recordId: this.effectiveRecordId })
+        // --- MODIFICATION: Pass the imageAnalysisUserPrompt to Apex --- 
+        processImagesWithAI({ 
+            recordId: this.effectiveRecordId,
+            prompt: imageAnalysisUserPrompt // Pass the determined prompt
+        })
             .then(result => {
                 // Handle the result - first, clear loading state
                 this.isLoading = false;
@@ -1458,8 +1470,14 @@ SUMMARY:`;
         this.addMessageToHistory(userInitiatedActionMessage);
         this.scrollToBottom();
 
-        // --- MODIFICATION: User prompt for multiple documents --- 
-        const analysisPrompt = `Please perform a comprehensive analysis of the ${pdfIdsToAnalyze.length} attached PDF document(s). For each document, extract all key information, provide a concise summary of its content, and identify any actionable items, important figures, dates, or conclusions. Present the analysis clearly, ensuring each document's analysis is distinct and follows the specified formatting guidelines.`;
+        // --- MODIFICATION: User prompt for multiple documents, incorporating contextPrompt ---
+        let basePdfAnalysisPrompt = `Please perform a comprehensive analysis of the ${pdfIdsToAnalyze.length} attached PDF document(s). For each document, extract all key information, provide a concise summary of its content, and identify any actionable items, important figures, dates, or conclusions. Present the analysis clearly, ensuring each document's analysis is distinct and follows the specified formatting guidelines.`;
+        
+        let analysisPrompt = basePdfAnalysisPrompt;
+        if (this.contextPrompt && this.contextPrompt.trim() !== '') {
+            analysisPrompt = `${this.contextPrompt}\n\n${basePdfAnalysisPrompt}`;
+            console.log('Using custom context prompt for PDF analysis:', this.contextPrompt);
+        }
         // --- END MODIFICATION ---
 
         try {

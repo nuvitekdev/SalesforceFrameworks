@@ -1161,7 +1161,7 @@ public with sharing class LLMController {
      * @return String - The response from OpenAI's Vision API
      */
     @AuraEnabled
-    public static String processImagesWithAI(String recordId, String prompt) {
+    public static String processImagesWithAI(String recordId, String userSuppliedPrompt) { // Renamed parameter
         try {
             // Get base64 encoded attachments - ONLY include image types (not PDFs or other documents)
             List<Map<String, String>> attachments = getDocumentsForVisionAnalysis(recordId, false);
@@ -1183,21 +1183,26 @@ public with sharing class LLMController {
             String model = config.Model_Name__c;
             String endpoint = config.Base_URL__c;
             
-            // Enhance the prompt with metadata and formatting instructions
-            String enhancedPrompt = prompt + '\n\n';
+            // --- MODIFICATION: Incorporate userSuppliedPrompt ---
+            // Start with the user-supplied specific task prompt.
+            String enhancedPrompt = String.isNotBlank(userSuppliedPrompt) ? userSuppliedPrompt : 'Analyze these images in detail.';
+            enhancedPrompt += '\n\n'; // Add separation
             
             // Add formatting instructions to make output similar to anomaly detection
-            enhancedPrompt += 'IMPORTANT FORMATTING INSTRUCTIONS:\n' +
-                '- For EACH image, provide a detailed analysis with the following structure:\n' +
-                '  - Use <b> tags to highlight image titles (e.g., <b>Image 1: Filename</b>)\n' +
-                '  - For each image, create a section titled <b>Description</b> with detailed observations\n' +
-                '  - Include a <b>Content Analysis</b> section detailing text, objects, people, or other elements identified\n' +
-                '  - End with a <b>Suitability Assessment</b> that evaluates if the image is appropriate, useful, and relevant\n' +
-                '  - Use <ul> and <li> for listing features or elements found in each image\n' +
-                '  - Use <ol> and <li> for any sequential instructions or steps visible in the image\n' +
-                '  - Use <br> for line breaks where appropriate\n\n';
-            
-            enhancedPrompt += 'Image Information:\n';
+            enhancedPrompt += 'IMAGE ANALYSIS FORMATTING INSTRUCTIONS FOR EACH IMAGE:\n' +
+                '- **DO NOT** include any introductory or concluding conversational phrases, apologies, or offers for further assistance.\n' +
+                '- **ONLY** provide the structured analysis for each image as specified below.\n' +
+                '- Start each image\'s analysis *immediately* with its title using <b> tags (e.g., <b>Image 1: Filename.jpg</b>). NO text before this title.\n' +
+                '- For each image, create the following main sections using <b> tags for their titles: <b>Executive Summary:</b>, <b>In-Depth Analysis:</b>, and <b>Key Observations & Relevance:</b>.\n' +
+                '- In the <b>Executive Summary:</b> section, provide a concise, high-level overview of the image, its primary subject, and its most apparent visual characteristics or purpose.\n' +
+                '- In the <b>In-Depth Analysis:</b> section, provide a THOROUGH, COMPREHENSIVE, AND VERY DETAILED examination of the image. Describe all visual elements, subjects, the setting, composition, colors, lighting, potential context or meaning, any text visible, and any other notable features. Extract as much specific visual information as possible. Use well-structured paragraphs and, where appropriate for clarity, <ul><li>bullet points</li></ul> for lists of specific visual details or identified objects. Aim for a flowing, detailed narrative rather than many small sub-headings.\n' +
+                '- In the <b>Key Observations & Relevance:</b> section, highlight the most important visual takeaways, assess the image\'s relevance based on the initial user-supplied prompt (if one was provided beyond general analysis), and note any critical observations (e.g., if checking for passport photo suitability, state if it meets criteria or not, and why specifically).\n' +
+                '- **DO NOT USE MARKDOWN** for any formatting. Use HTML tags exclusively as specified (<b>, <ul>, <li>, <br>, <hr>).\n' +
+                '- Use <ul> and <li> tags for all bulleted lists. Each <li> item should represent a distinct point.\n' +
+                '- Use a single <br> tag for line breaks if needed for readability within paragraphs. Avoid excessive <br> tags.\n' +
+                '- Ensure a clear visual separation (e.g., a single <hr> tag) between the full analysis of one image and the start of the next image\'s title if multiple images are analyzed. NO text after the final image analysis.\n';
+
+            enhancedPrompt += '\nImage Information Provided by System (for your reference during analysis):\n';
             Integer imageIndex = 1;
             
             for (Map<String, String> attachment : attachments) {
@@ -1234,7 +1239,7 @@ public with sharing class LLMController {
             // Add enhanced text prompt
             Map<String, Object> textContent = new Map<String, Object>();
             textContent.put('type', 'text');
-            textContent.put('text', enhancedPrompt);
+            textContent.put('text', enhancedPrompt); // Use the fully enhanced prompt
             contentItems.add(textContent);
             
             // Add images
@@ -1662,17 +1667,27 @@ public with sharing class LLMController {
                  return 'No valid PDF documents were found to analyze. Please check attachment types and sizes.';
             }
 
-            detailedPrompt += '\n\nIMPORTANT FORMATTING INSTRUCTIONS FOR EACH DOCUMENT ANALYSIS:\n' +
-                '- Start each document\'s analysis with its title using <b> tags (e.g., <b>Document 1: ' + (fileTitlesForPrompt.isEmpty() ? 'Example.pdf' : fileTitlesForPrompt[0]) + '</b>).\n' +
-                '- For each document, create a main section titled <b>Description</b>, <b>Content Analysis</b>, <b>Suitability Assessment</b>, and <b>Summary</b> using <b> tags for these titles.\n' +
-                '- WITHIN these main sections (like <b>Content Analysis</b>), if you use sub-headings (e.g., \'Key Sections\', \'Important Figures/Dates\', \'Actionable Items\'), THESE SUB-HEADINGS MUST ALSO BE WRAPPED IN <b> TAGS. For example: <b>Key Sections</b>, <b>Important Figures/Dates</b>.\n' +
-                '- Use <ul> and <li> for listing features or elements found in each document. Do not use markdown asterisks or hyphens for list items.\n' +
-                '- Use <ol> and <li> for any sequential instructions or steps visible.\n' +
-                '- Use <br> for line breaks where appropriate. Do NOT use markdown for lists or line breaks.\n' +
-                '- If extracting specific data points (e.g., names, dates, figures), present them clearly, possibly in a list format under a <b> sub-heading.\n' +
-                '- Provide a concise overall <b>Summary</b> of each document as a main section.\n' +
-                '- Ensure a clear visual separation (e.g., a horizontal rule <hr> or extra line breaks) between the analysis of one document and the next if multiple documents are analyzed.\n' +
-                '- VERY IMPORTANT: Do NOT include any introductory phrases, disclaimers about accessing files, or concluding conversational remarks. Output ONLY the direct analysis of the documents starting with the first document\'s title and ending after the last document\'s analysis. Do not say things like \"I can analyze the content based on the provided text\" or \"If you need further analysis...\". Just provide the structured analysis content directly.\n';
+            // --- Revised Prompt Instructions ---
+            detailedPrompt = userPrompt + // Keep the original user prompt if it contains specific questions about the docs
+                '\n\nYOU ARE AN AI DOCUMENT ANALYZER. PROVIDE A DETAILED ANALYSIS FOR EACH OF THE ' + fileTitlesForPrompt.size() + ' PDF DOCUMENT(S) LISTED BELOW. FOLLOW THESE INSTRUCTIONS EXACTLY:\n';
+            
+            for(Integer i = 0; i < fileTitlesForPrompt.size(); i++){
+                detailedPrompt += 'DOCUMENT ' + (i+1) + ': "' + fileTitlesForPrompt[i] + '"\n';
+            }
+
+            detailedPrompt += '\n\nSTRICT FORMATTING AND CONTENT RULES FOR EACH DOCUMENT ANALYSIS:\n' +
+                '- **DO NOT** include any introductory or concluding conversational phrases, apologies, or offers for further assistance (e.g., do not say \'I am unable to...\' or \'If you need further analysis...\').\n' +
+                '- **ONLY** provide the structured analysis for each document as specified below.\n' +
+                '- Start each document\'s analysis *immediately* with its title using <b> tags (e.g., <b>Document 1: ' + (fileTitlesForPrompt.isEmpty() ? 'Example.pdf' : fileTitlesForPrompt[0]) + '</b>). NO text before this title.\n' +
+                '- For each document, create the following main sections using <b> tags for their titles: <b>Executive Summary:</b>, <b>In-Depth Analysis:</b>, and <b>Key Takeaways & Actionable Insights:</b>.\n' +
+                '- In the <b>Executive Summary:</b> section, provide a concise, high-level overview of the document, its primary purpose, and its most critical aspects.\n' +
+                '- In the <b>In-Depth Analysis:</b> section, provide a THOROUGH, COMPREHENSIVE, AND VERY DETAILED examination of the document. Cover all relevant aspects of the content, including (but not limited to) a detailed breakdown of its content, key arguments or information presented, data, methodologies (if any), important figures, names, dates, textual nuances, and overall structure. Extract as much specific information as possible. Use well-structured paragraphs and, where appropriate for clarity, <ul><li>bullet points</li></ul> for lists of specific details. Avoid overly breaking down this section into many small sub-headings; aim for a flowing, detailed narrative.\n' +
+                '- In the <b>Key Takeaways & Actionable Insights:</b> section, highlight the most important conclusions, actionable items, or critical observations that a user should focus on after reviewing the document.\n' +
+                '- **DO NOT USE MARKDOWN** for any formatting (no asterisks for bolding or lists, no hyphens for lists). Use HTML tags exclusively as specified.\n' +
+                '- Use <ul> and <li> tags for all bulleted lists. Each <li> item should represent a distinct point. \n' +
+                '- Use <ol> and <li> tags for all numbered lists if a sequence is truly necessary. Each <li> item should represent a distinct step or point.\n' +
+                '- Use a single <br> tag for a single line break where necessary for readability within paragraphs or after headings if needed. Avoid using multiple <br> tags together to create large empty spaces. \n' +
+                '- Ensure a clear visual separation (e.g., by using a single <hr> tag) between the full analysis of one document and the start of the next document\'s title. NO text or extra <br> tags after the final document analysis is complete.\n';
 
             // Add the text prompt to the beginning of the content items list
             Map<String, Object> textContent = new Map<String, Object>();
