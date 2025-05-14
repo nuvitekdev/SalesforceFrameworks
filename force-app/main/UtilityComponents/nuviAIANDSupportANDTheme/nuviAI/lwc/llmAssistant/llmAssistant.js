@@ -1423,10 +1423,10 @@ SUMMARY:`;
     }
 
     async handleAnalyzeDocumentClick() {
-        if (!this.firstPdfToAnalyze || !this.firstPdfToAnalyze.id) {
-            this.pdfProcessingError = 'No PDF document selected or available for analysis.';
-            this.showErrorToast('No PDF Available', this.pdfProcessingError, 'error');
-            console.warn('Analyze document clicked but no firstPdfToAnalyze.id found.');
+        if (!this.pdfDocuments || this.pdfDocuments.length === 0) {
+            this.pdfProcessingError = 'No PDF documents are attached to this record for analysis.';
+            this.showErrorToast('No PDFs Available', this.pdfProcessingError, 'error');
+            console.warn('Analyze document clicked but no PDF documents found.');
             return;
         }
 
@@ -1440,32 +1440,37 @@ SUMMARY:`;
         this.pdfProcessingError = null;
         this.response = ''; // Clear previous main response area
 
-        const pdfToAnalyze = this.firstPdfToAnalyze;
-        const pdfId = pdfToAnalyze.id;
-        const pdfTitle = pdfToAnalyze.title || 'the document';
+        // --- MODIFICATION: Collect all PDF document IDs ---
+        const pdfIdsToAnalyze = this.pdfDocuments.map(doc => doc.id);
+        const documentTitles = this.pdfDocuments.map(doc => doc.title || 'Untitled Document');
+        // --- END MODIFICATION ---
         
         // Add a user-like message to history indicating what's being done
         const userInitiatedActionMessage = {
             id: this.generateMessageId(),
-            content: `Attempting to analyze PDF: "${pdfTitle}"`,
-            formattedContent: `Attempting to analyze PDF: "<em>${pdfTitle}</em>"`,
-            sender: 'System', // Or 'User Action'
+            content: `Attempting to analyze ${pdfIdsToAnalyze.length} PDF document(s): ${documentTitles.join(', ')}`,
+            formattedContent: `Attempting to analyze <strong>${pdfIdsToAnalyze.length} PDF document(s):</strong> <em>${documentTitles.join(', ')}</em>`,
+            sender: 'System Action',
             timestamp: this.getFormattedTimestamp(),
-            isUser: true, // Displayed like a user message for flow
-            isSystem: true // Custom flag for styling or filtering if needed
+            isUser: true, 
+            isSystem: true 
         };
         this.addMessageToHistory(userInitiatedActionMessage);
         this.scrollToBottom();
 
-        const analysisPrompt = `Please perform a comprehensive analysis of the attached PDF document titled "${pdfTitle}". Extract all key information, provide a concise summary of its content, and identify any actionable items, important figures, dates, or conclusions. Present the analysis clearly.`;
+        // --- MODIFICATION: User prompt for multiple documents --- 
+        const analysisPrompt = `Please perform a comprehensive analysis of the ${pdfIdsToAnalyze.length} attached PDF document(s). For each document, extract all key information, provide a concise summary of its content, and identify any actionable items, important figures, dates, or conclusions. Present the analysis clearly, ensuring each document's analysis is distinct and follows the specified formatting guidelines.`;
+        // --- END MODIFICATION ---
 
         try {
-            console.log(`Calling processPdfDocumentWithAI for record: ${this.effectiveRecordId}, docId: ${pdfId}`);
+            console.log(`Calling processPdfDocumentWithAI for record: ${this.effectiveRecordId}, docIds: ${pdfIdsToAnalyze.join(', ')}`);
+            // --- MODIFICATION: Pass list of IDs --- 
             const result = await processPdfDocumentWithAI({
                 recordId: this.effectiveRecordId,
-                contentDocumentId: pdfId,
+                contentDocumentIds: pdfIdsToAnalyze, // Pass the list of IDs
                 userPrompt: analysisPrompt
             });
+            // --- END MODIFICATION ---
 
             this.response = result; // Display in the main response area too
 
@@ -1476,33 +1481,32 @@ SUMMARY:`;
                 sender: 'AI Assistant',
                 timestamp: this.getFormattedTimestamp(),
                 isUser: false,
-                model: this.selectedLLMLabel || 'Document Analysis' // Fallback model label
+                model: this.selectedLLMLabel || 'Document Analysis'
             };
             this.addMessageToHistory(aiMessageObj);
 
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'PDF Analysis Complete',
-                    message: `"${pdfTitle}" has been analyzed.`,
+                    message: `${pdfIdsToAnalyze.length} document(s) have been analyzed.`, // Updated message
                     variant: 'success'
                 })
             );
             this.scrollToBottom();
 
         } catch (error) {
-            this.pdfProcessingError = 'AI analysis of PDF failed: ' + this.getErrorMessage(error);
+            this.pdfProcessingError = 'AI analysis of PDF(s) failed: ' + this.getErrorMessage(error);
             console.error('Error during PDF analysis call:', error);
             this.showErrorToast('PDF Analysis Failed', this.pdfProcessingError, 'error');
 
-            // Add error message to history
             const aiErrorMessageObj = {
                 id: this.generateMessageId(),
-                content: `Error analyzing PDF "${pdfTitle}": ${this.pdfProcessingError}`,
-                formattedContent: `Error analyzing PDF "<em>${pdfTitle}</em>": <span style="color:red;">${this.pdfProcessingError}</span>`,
+                content: `Error analyzing PDF(s): ${this.pdfProcessingError}`,
+                formattedContent: `Error analyzing PDF(s): <span style="color:red;">${this.pdfProcessingError}</span>`,
                 sender: 'AI Assistant',
                 timestamp: this.getFormattedTimestamp(),
                 isUser: false,
-                isError: true, // Custom flag for styling
+                isError: true,
                 model: this.selectedLLMLabel || 'Document Analysis'
             };
             this.addMessageToHistory(aiErrorMessageObj);
@@ -1532,26 +1536,19 @@ SUMMARY:`;
         return this.pdfDocuments && this.pdfDocuments.length > 0;
     }
 
-    get firstPdfToAnalyze() {
-        if (this.pdfDocuments && this.pdfDocuments.length > 0) {
-            // This ensures _firstPdfIdToAnalyze is set if not already, or updated if the first document changes.
-            // It's okay for this to be just the object, the ID is accessed in the handler.
-            return this.pdfDocuments[0];
-        }
-        return null;
-    }
-
     get showAnalyzeDocumentButton() {
         // Show button if there are PDFs, feature is enabled, and no other major operations are in progress
-        return this.enableDocumentAnalysis && // Check the new design attribute
+        return this.enableDocumentAnalysis && 
                this.hasPdfDocuments && 
-               !this.isLoading && // General LLM request loading
-               !this.isProcessingPdf && // PDF specific loading
-               !this.anomalyCheckLoading; // Anomaly check loading
+               !this.isLoading && 
+               !this.isProcessingPdf && 
+               !this.anomalyCheckLoading; 
     }
 
     get analyzeDocumentButtonLabel() {
-        return 'Analyze Attached Documents'; // Updated label
+        // --- MODIFICATION: Update button label ---
+        return this.pdfDocuments.length > 1 ? 'Analyze All Attached Documents' : 'Analyze Attached Document';
+        // --- END MODIFICATION ---
     }
 
     // New getter for Analyze Images button label

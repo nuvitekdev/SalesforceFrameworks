@@ -1556,127 +1556,154 @@ public with sharing class LLMController {
      * @throws AuraHandledException if an error occurs during processing.
      */
     @AuraEnabled
-    public static String processPdfDocumentWithAI(String recordId, String contentDocumentId, String userPrompt) {
-        System.debug('Starting PDF processing for ContentDocumentId: ' + contentDocumentId + ' with prompt: ' + userPrompt);
+    public static String processPdfDocumentWithAI(String recordId, List<String> contentDocumentIds, String userPrompt) {
+        System.debug('Starting PDF processing for ' + contentDocumentIds.size() + ' documents. User prompt: ' + userPrompt);
 
-        if (String.isBlank(contentDocumentId) || String.isBlank(userPrompt)) {
-            System.debug('Error: Missing ContentDocumentId or user prompt.');
-            throw new AuraHandledException('Error: PDF Document ID and a prompt are required.');
+        if (contentDocumentIds == null || contentDocumentIds.isEmpty() || String.isBlank(userPrompt)) {
+            System.debug('Error: Missing ContentDocumentIds or user prompt.');
+            throw new AuraHandledException('Error: PDF Document IDs and a prompt are required.');
         }
 
-        try {
-            // Step 1: Get the ContentVersion (the actual PDF file)
-            ContentVersion cv = [
-                SELECT Id, Title, FileExtension, VersionData
-                FROM ContentVersion
-                WHERE ContentDocumentId = :contentDocumentId AND IsLatest = true AND FileExtension = 'pdf'
+        // Get API Configuration for GPT-4o (assuming 'OpenAI_GPT4_Vision' is configured for gpt-4o)
+        LLM_Configuration__mdt config;
+        String visionConfigName = 'OpenAI_GPT4_Vision'; // As indicated by user
+
+        if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
+            for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
+                if (mockConfig.DeveloperName == visionConfigName) {
+                    config = mockConfig;
+                    break;
+                }
+            }
+            if (config == null) { 
+                config = new LLM_Configuration__mdt(
+                    DeveloperName = visionConfigName, 
+                    API_Key__c = 'test_vision_api_key', 
+                    Base_URL__c = 'https://api.openai.com/v1/chat/completions', 
+                    Model_Name__c = 'gpt-4o', 
+                    Provider__c = 'OpenAI', 
+                    Supports_Files__c = true,
+                    Max_Tokens__c = 4000, // Default max tokens for mock
+                    Temperature__c = 0.5 // Default temperature for mock
+                );
+            }
+        } else {
+            List<LLM_Configuration__mdt> configs = [
+                SELECT Id, API_Key__c, Base_URL__c, Model_Name__c, Provider__c, Max_Tokens__c, Temperature__c
+                FROM LLM_Configuration__mdt 
+                WHERE DeveloperName = :visionConfigName
                 LIMIT 1
             ];
-
-            if (cv == null) {
-                System.debug('Error: PDF ContentVersion not found for ContentDocumentId: ' + contentDocumentId);
-                throw new AuraHandledException('Error: PDF file not found or the specified document is not a PDF.');
+            if (configs.isEmpty()) {
+                System.debug('Error: LLM Configuration not found for: ' + visionConfigName);
+                throw new AuraHandledException('Error: AI Model configuration for PDF analysis (' + visionConfigName + ') not found or inactive.');
             }
+            config = configs[0];
+        }
+
+        try { // TRY BLOCK STARTS HERE
+            // --- Master list for all content items (text prompt + all files) ---
+            List<Map<String, Object>> allContentItems = new List<Map<String, Object>>();
             
-            // Check file size (OpenAI has limits, e.g., 512MB, but Salesforce also has heap limits)
-            // Let's set a practical limit, e.g., 20MB for base64 processing.
-            // GPT-4o supports up to 20MB for images, PDF limits might be similar or tied to overall token limits.
-            // The user's example uses 'file' type which might have different constraints than 'image_url'.
-            // Let's use 10MB as a safe starting point to avoid Salesforce heap issues with Base64.
-            Integer MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; 
-            if (cv.VersionData.size() > MAX_FILE_SIZE_BYTES) {
-                System.debug('Error: PDF file size exceeds limit. Size: ' + cv.VersionData.size());
-                throw new AuraHandledException('Error: PDF file size is too large. Maximum allowed size is 10MB.');
-            }
+            // --- Build the detailed prompt for the AI ---
+            String detailedPrompt = userPrompt + 
+                '\n\nYou are analyzing ' + contentDocumentIds.size() + ' PDF document(s). '+
+                'For EACH document, please provide a detailed analysis with the following structure. Ensure each document\'s analysis is clearly separated: \n\n';
 
-            // Step 2: Convert to Base64 with proper MIME type prefix
-            String base64Data = EncodingUtil.base64Encode(cv.VersionData);
-            String base64WithPrefix = 'data:application/pdf;base64,' + base64Data;
+            List<String> fileTitlesForPrompt = new List<String>();
+            Integer fileIndex = 1;
 
-            // Step 3: Get API Configuration for GPT-4o (assuming 'OpenAI_GPT4_Vision' is configured for gpt-4o)
-            LLM_Configuration__mdt config;
-            String visionConfigName = 'OpenAI_GPT4_Vision'; // As indicated by user
-
-            if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
-                for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
-                    if (mockConfig.DeveloperName == visionConfigName) {
-                        config = mockConfig;
-                        break;
-                    }
-                }
-                if (config == null) { 
-                    config = new LLM_Configuration__mdt(
-                        DeveloperName = visionConfigName, 
-                        API_Key__c = 'test_vision_api_key', 
-                        Base_URL__c = 'https://api.openai.com/v1/chat/completions', 
-                        Model_Name__c = 'gpt-4o', // Default to gpt-4o if mock not specific
-                        Provider__c = 'OpenAI', 
-                        Supports_Files__c = true
-                    );
-                }
-            } else {
-                List<LLM_Configuration__mdt> configs = [
-                    SELECT Id, API_Key__c, Base_URL__c, Model_Name__c, Provider__c 
-                    FROM LLM_Configuration__mdt 
-                    WHERE DeveloperName = :visionConfigName
+            // --- Prepare file data and update prompt with file details ---
+            for (String docId : contentDocumentIds) {
+                ContentVersion cv = [
+                    SELECT Id, Title, FileExtension, VersionData
+                    FROM ContentVersion
+                    WHERE ContentDocumentId = :docId AND IsLatest = true AND FileExtension = 'pdf'
                     LIMIT 1
                 ];
-                if (configs.isEmpty()) {
-                    System.debug('Error: LLM Configuration not found for: ' + visionConfigName);
-                    throw new AuraHandledException('Error: AI Model configuration for PDF analysis (OpenAI_GPT4_Vision) not found or inactive.');
+
+                if (cv == null) {
+                    System.debug('Warning: PDF ContentVersion not found for ContentDocumentId: ' + docId + '. Skipping this document.');
+                    detailedPrompt += 'Document ID ' + docId + ' (Not Found or Not a PDF) - SKIPPED\n';
+                    continue; // Skip to the next document
                 }
-                config = configs[0];
+
+                Integer MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+                if (cv.VersionData.size() > MAX_FILE_SIZE_BYTES) {
+                    System.debug('Warning: PDF file size exceeds limit for ' + cv.Title + '. Size: ' + cv.VersionData.size() + '. Skipping this document.');
+                    detailedPrompt += cv.Title + ' (File Size Exceeds Limit) - SKIPPED\n';
+                    continue; // Skip to the next document
+                }
+                
+                String base64Data = EncodingUtil.base64Encode(cv.VersionData);
+                String base64WithPrefix = 'data:application/pdf;base64,' + base64Data;
+                String currentFileTitle = cv.Title + (cv.Title.toLowerCase().endsWith('.pdf') ? '' : '.pdf');
+                fileTitlesForPrompt.add(currentFileTitle);
+
+                // Add to detailed prompt
+                detailedPrompt += 'DOCUMENT ' + fileIndex + ': "' + currentFileTitle + '"\n';
+                
+                // Prepare file content for API request
+                Map<String, Object> fileContent = new Map<String, Object>();
+                fileContent.put('type', 'file'); // Using 'file' type based on assumption it's supported by gpt-4o for PDFs
+                
+                Map<String, String> fileDataMap = new Map<String, String>();
+                fileDataMap.put('filename', currentFileTitle);
+                fileDataMap.put('file_data', base64WithPrefix); // Assuming this is the correct way to pass file data
+                
+                fileContent.put('file', fileDataMap);
+                allContentItems.add(fileContent);
+                fileIndex++;
+            }
+            
+            // Check if any valid files were found
+            if (allContentItems.isEmpty()) {
+                 System.debug('No valid PDF documents found or all were skipped.');
+                 return 'No valid PDF documents were found to analyze. Please check attachment types and sizes.';
             }
 
-            // Step 4: Prepare the HTTP request body for GPT-4o file input
+            detailedPrompt += '\n\nIMPORTANT FORMATTING INSTRUCTIONS FOR EACH DOCUMENT ANALYSIS:\n' +
+                '- Start each document\'s analysis with its title using <b> tags (e.g., <b>Document 1: ' + (fileTitlesForPrompt.isEmpty() ? 'Example.pdf' : fileTitlesForPrompt[0]) + '</b>).\n' +
+                '- For each document, create a main section titled <b>Description</b>, <b>Content Analysis</b>, <b>Suitability Assessment</b>, and <b>Summary</b> using <b> tags for these titles.\n' +
+                '- WITHIN these main sections (like <b>Content Analysis</b>), if you use sub-headings (e.g., \'Key Sections\', \'Important Figures/Dates\', \'Actionable Items\'), THESE SUB-HEADINGS MUST ALSO BE WRAPPED IN <b> TAGS. For example: <b>Key Sections</b>, <b>Important Figures/Dates</b>.\n' +
+                '- Use <ul> and <li> for listing features or elements found in each document. Do not use markdown asterisks or hyphens for list items.\n' +
+                '- Use <ol> and <li> for any sequential instructions or steps visible.\n' +
+                '- Use <br> for line breaks where appropriate. Do NOT use markdown for lists or line breaks.\n' +
+                '- If extracting specific data points (e.g., names, dates, figures), present them clearly, possibly in a list format under a <b> sub-heading.\n' +
+                '- Provide a concise overall <b>Summary</b> of each document as a main section.\n' +
+                '- Ensure a clear visual separation (e.g., a horizontal rule <hr> or extra line breaks) between the analysis of one document and the next if multiple documents are analyzed.\n' +
+                '- VERY IMPORTANT: Do NOT include any introductory phrases, disclaimers about accessing files, or concluding conversational remarks. Output ONLY the direct analysis of the documents starting with the first document\'s title and ending after the last document\'s analysis. Do not say things like \"I can analyze the content based on the provided text\" or \"If you need further analysis...\". Just provide the structured analysis content directly.\n';
+
+            // Add the text prompt to the beginning of the content items list
+            Map<String, Object> textContent = new Map<String, Object>();
+            textContent.put('type', 'text');
+            textContent.put('text', detailedPrompt);
+            allContentItems.add(0, textContent); // Insert text prompt at the beginning
+
+            // Prepare the HTTP request body for GPT-4o
             Map<String, Object> requestBody = new Map<String, Object>();
             requestBody.put('model', config.Model_Name__c); // e.g., "gpt-4o"
 
             Map<String, Object> userMessageDetails = new Map<String, Object>();
             userMessageDetails.put('role', 'user');
-
-            // --- MODIFICATION: Add formatting instructions to the userPrompt --- 
-            String formattedUserPrompt = userPrompt + '\n\nIMPORTANT FORMATTING INSTRUCTIONS:\n' +
-                '- Structure your analysis clearly with headings and subheadings using <b> tags (e.g., <b>Key Findings</b>, <b>Summary of Content</b>).\n' +
-                '- Use <ul> and <li> for bulleted lists of important points, data, or action items.\n' +
-                '- Use <ol> and <li> for any numbered lists or sequential information.\n' +
-                '- Use <br> for line breaks to ensure readability. Do NOT use markdown for lists.\n' +
-                '- If extracting specific data points (e.g., names, dates, figures), present them clearly, possibly in a list format.\n' +
-                '- Provide a concise overall <b>Summary</b> of the document at the beginning or end of your analysis.\n' +
-                '- If the document contains tables, try to represent the key information from the tables in a structured list or summary format.\n';
-            // --- END MODIFICATION ---
-
-            List<Map<String, Object>> contentItems = new List<Map<String, Object>>();
-            
-            // Text part
-            Map<String, Object> textContent = new Map<String, Object>();
-            textContent.put('type', 'text');
-            textContent.put('text', formattedUserPrompt); // Use the modified prompt
-            contentItems.add(textContent);
-
-            // File part
-            Map<String, Object> fileContent = new Map<String, Object>();
-            fileContent.put('type', 'file');
-            
-            Map<String, String> fileDataMap = new Map<String, String>();
-            fileDataMap.put('filename', cv.Title + (cv.Title.toLowerCase().endsWith('.pdf') ? '' : '.pdf') );
-            fileDataMap.put('file_data', base64WithPrefix);
-            
-            fileContent.put('file', fileDataMap);
-            contentItems.add(fileContent);
-            
-            userMessageDetails.put('content', contentItems);
+            userMessageDetails.put('content', allContentItems);
 
             List<Map<String, Object>> messages = new List<Map<String, Object>>{userMessageDetails};
             requestBody.put('messages', messages);
             
-            // Optional: Add max_tokens if needed, similar to other calls.
-            // requestBody.put('max_tokens', 2000); // Example
+            if(config.Max_Tokens__c != null){
+                 requestBody.put('max_tokens', Integer.valueOf(config.Max_Tokens__c));
+            } else {
+                requestBody.put('max_tokens', 4000); // Default fallback if not set in config
+            }
+            if(config.Temperature__c != null){
+                requestBody.put('temperature', config.Temperature__c);
+            }
 
-            System.debug('Request body being sent to OpenAI: ' + JSON.serialize(requestBody).left(1000) + '...');
 
+            System.debug('Request body being sent to OpenAI (first 1000 chars): ' + JSON.serialize(requestBody).left(1000) + '...');
 
-            // Step 5: Make the callout
+            // Make the callout
             Http http = new Http();
             HttpRequest req = new HttpRequest();
             req.setEndpoint(config.Base_URL__c);
@@ -1688,7 +1715,7 @@ public with sharing class LLMController {
 
             HttpResponse res = http.send(req);
 
-            // Step 6: Process the response
+            // Process the response
             if (res.getStatusCode() == 200) {
                 Map<String, Object> responseMap = (Map<String, Object>)JSON.deserializeUntyped(res.getBody());
                 if (responseMap.containsKey('choices')) {
@@ -1699,11 +1726,7 @@ public with sharing class LLMController {
                             Map<String, Object> message = (Map<String, Object>)choice.get('message');
                             if (message.containsKey('content')) {
                                 String content = (String)message.get('content');
-                                System.debug('Successfully received PDF analysis from AI: ' + content.left(500) + '...');
-                                
-                                // Optional: Save response to record if needed, similar to user's example
-                                // saveResponseToRecord(recordId, content); 
-                                // For now, just returning the content.
+                                System.debug('Successfully received PDF analysis from AI (first 500 chars): ' + content.left(500) + '...');
                                 return content;
                             }
                         }
@@ -1712,15 +1735,28 @@ public with sharing class LLMController {
                 System.debug('Error: AI response format unexpected. Body: ' + res.getBody());
                 throw new AuraHandledException('Error: AI response format was not as expected.');
             } else {
-                System.debug('Error from AI Service: ' + res.getStatusCode() + ' ' + res.getStatus() + '. Body: ' + res.getBody());
-                throw new AuraHandledException('Error from AI Service: ' + res.getStatusCode() + ' - ' + res.getStatus() + '. Details: ' + res.getBody());
+                String errorBody = res.getBody();
+                System.debug('Error from AI Service: ' + res.getStatusCode() + ' ' + res.getStatus() + '. Body: ' + errorBody);
+                // Try to parse error for more details
+                try {
+                    Map<String, Object> errorMap = (Map<String, Object>)JSON.deserializeUntyped(errorBody);
+                    if(errorMap.containsKey('error') && errorMap.get('error') instanceof Map<String,Object>){
+                        Map<String,Object> errorDetails = (Map<String,Object>)errorMap.get('error');
+                        if(errorDetails.containsKey('message')){
+                            errorBody = (String)errorDetails.get('message');
+                        }
+                    }
+                } catch(Exception e){
+                    // Ignore if error body is not JSON
+                }
+                throw new AuraHandledException('Error from AI Service: ' + res.getStatusCode() + ' - ' + res.getStatus() + '. Details: ' + errorBody);
             }
 
-        } catch (Exception e) {
-            System.debug('ERROR in processPdfDocumentWithAI: ' + e.getMessage() + ' at line ' + e.getLineNumber());
-            System.debug('Stack trace: ' + e.getStackTraceString());
-            throw new AuraHandledException('Failed to process PDF document with AI: ' + e.getMessage());
-        }
+            } catch (Exception e) {
+                System.debug('ERROR in processPdfDocumentWithAI: ' + e.getMessage() + ' at line ' + e.getLineNumber());
+                System.debug('Stack trace: ' + e.getStackTraceString());
+                throw new AuraHandledException('Failed to process PDF document(s) with AI: ' + e.getMessage());
+            }
     }
 
     /**
