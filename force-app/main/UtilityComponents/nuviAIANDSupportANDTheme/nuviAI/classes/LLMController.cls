@@ -45,43 +45,54 @@ public with sharing class LLMController {
             if (String.isNotBlank(recordId)) {
                 context = getRecordContext(recordId, relatedObjects);
                 
-                // Check for PDFs and documents that would benefit from Vision analysis
-                // Include all attachment types for regular analysis
-                List<Map<String, String>> docAttachments = getDocumentsForVisionAnalysis(recordId, true);
-                if (!docAttachments.isEmpty()) {
-                    System.debug('Found ' + docAttachments.size() + ' documents for Vision analysis');
-                    
-                    // Get Vision configuration
-                    List<LLM_Configuration__mdt> visionConfigs;
-                    
-                    if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
-                        // Find vision configuration in mocks
-                        visionConfigs = new List<LLM_Configuration__mdt>();
-                        for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
-                            if (mockConfig.DeveloperName == 'OpenAI_GPT4_Vision') {
-                                visionConfigs.add(mockConfig);
-                                break;
+                // --- MODIFICATION FOR 'SUMMARIZE' OPERATION ---
+                // For 'summarize' (Analyze Record), we do not perform deep analysis of document contents here.
+                // Listing of attachments is handled within getRecordContext.
+                // Dedicated buttons will handle deep PDF/Image analysis.
+                if (!'summarize'.equalsIgnoreCase(operation)) {
+                    // Check for PDFs and documents that would benefit from Vision analysis
+                    // Include all attachment types for regular analysis
+                    List<Map<String, String>> docAttachments = getDocumentsForVisionAnalysis(recordId, true);
+                    if (!docAttachments.isEmpty()) {
+                        System.debug('Found ' + docAttachments.size() + ' documents for Vision analysis');
+                        
+                        // Get Vision configuration
+                        List<LLM_Configuration__mdt> visionConfigs;
+                        
+                        if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
+                            // Find vision configuration in mocks
+                            visionConfigs = new List<LLM_Configuration__mdt>();
+                            for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
+                                if (mockConfig.DeveloperName == 'OpenAI_GPT4_Vision') {
+                                    visionConfigs.add(mockConfig);
+                                    break;
+                                }
                             }
+                            
+                            // If no mock vision config was found, create a default one
+                            if (visionConfigs.isEmpty()) { LLM_Configuration__mdt visionConfig = new LLM_Configuration__mdt(DeveloperName = 'OpenAI_GPT4_Vision', API_Key__c = 'test_vision_api_key', Base_URL__c = 'https://test.example.com/vision', Model_Name__c = 'test-vision-model', Provider__c = 'TestVisionProvider', Supports_Files__c = true); visionConfigs.add(visionConfig); }
+                        } else {
+                            visionConfigs = [SELECT Id, API_Key__c, Base_URL__c, Model_Name__c
+                                             FROM LLM_Configuration__mdt 
+                                             WHERE DeveloperName = 'OpenAI_GPT4_Vision' AND IsActive__c = true // Ensure active for consistency
+                                             LIMIT 1];
                         }
                         
-                        // If no mock vision config was found, create a default one
-                        if (visionConfigs.isEmpty()) { LLM_Configuration__mdt visionConfig = new LLM_Configuration__mdt(DeveloperName = 'OpenAI_GPT4_Vision', API_Key__c = 'test_vision_api_key', Base_URL__c = 'https://test.example.com/vision', Model_Name__c = 'test-vision-model', Provider__c = 'TestVisionProvider', Supports_Files__c = true); visionConfigs.add(visionConfig); }
-                    } else {
-                        visionConfigs = [SELECT Id, API_Key__c, Base_URL__c, Model_Name__c
-                                         FROM LLM_Configuration__mdt 
-                                         WHERE DeveloperName = 'OpenAI_GPT4_Vision'
-                                         LIMIT 1];
+                        if (!visionConfigs.isEmpty()) {
+                            // Process documents with Vision API
+                            documentAnalysis = processDocumentsWithVision(docAttachments, visionConfigs[0], 
+                                                                      'Analyze these documents in detail. Extract all important information.');
+                        }
                     }
                     
-                    if (!visionConfigs.isEmpty()) {
-                        // Process documents with Vision API
-                        documentAnalysis = processDocumentsWithVision(docAttachments, visionConfigs[0], 
-                                                                  'Analyze these documents in detail. Extract all important information.');
-                    }
+                    // Get regular attachments text (this will exclude PDFs that were analyzed with Vision)
+                    attachments = config.Supports_Files__c ? getAttachmentsText(recordId) : '';
+                } else {
+                    // Ensure these are empty for 'summarize' operation
+                    documentAnalysis = '';
+                    attachments = '';
+                    System.debug('Summarize operation: Skipping deep document/attachment content analysis in handleRequest.');
                 }
-                
-                // Get regular attachments text (this will exclude PDFs that were analyzed with Vision)
-                attachments = config.Supports_Files__c ? getAttachmentsText(recordId) : '';
             }
             
             // Include document analysis in the prompt if available
@@ -305,33 +316,71 @@ public with sharing class LLMController {
             // Get any Notes related to the record
             try {
                 // First, get ContentDocumentLink records
-                List<ContentDocumentLink> contentLinks = [
+                List<ContentDocumentLink> contentLinksForNotes = [ // Renamed to avoid conflict
                     SELECT ContentDocumentId 
                     FROM ContentDocumentLink 
                     WHERE LinkedEntityId = :recordId
                 ];
                 
-                if (!contentLinks.isEmpty()) {
+                if (!contentLinksForNotes.isEmpty()) {
                     // Extract ContentDocumentIds
-                    Set<Id> contentDocIds = new Set<Id>();
-                    for (ContentDocumentLink link : contentLinks) {
-                        contentDocIds.add(link.ContentDocumentId);
+                    Set<Id> contentDocIdsForNotes = new Set<Id>(); // Renamed
+                    for (ContentDocumentLink link : contentLinksForNotes) {
+                        contentDocIdsForNotes.add(link.ContentDocumentId);
                     }
                     
                     // Then query for ContentNote records
                     List<ContentNote> notes = [
                         SELECT Id, Title, Content, CreatedDate, CreatedBy.Name
                         FROM ContentNote
-                        WHERE Id IN :contentDocIds
+                        WHERE Id IN :contentDocIdsForNotes // Use renamed set
                         ORDER BY CreatedDate DESC
                         LIMIT 5
                     ];
                     
-                    if (!notes.isEmpty()) { context += '\nNOTES:\n'; for (ContentNote note : notes) { context += '• ' + note.Title + ' (Created by ' + note.CreatedBy.Name + ' on ' + note.CreatedDate.format() + ')\n'; if (note.Content != null) { String noteBody = note.Content.toString(); if (noteBody.length() > 300) { noteBody = noteBody.substring(0, 297) + '...'; } context += '  ' + noteBody.replaceAll('\n', '\n  ') + '\n'; } } }
+                    if (!notes.isEmpty()) { 
+                        context += '\\nNOTES:\\n'; 
+                        for (ContentNote note : notes) { 
+                            context += '• ' + note.Title + ' (Created by ' + note.CreatedBy.Name + ' on ' + note.CreatedDate.format() + ')\\n'; 
+                            if (note.Content != null) { 
+                                String noteBody = note.Content.toString(); 
+                                if (noteBody.length() > 300) { 
+                                    noteBody = noteBody.substring(0, 297) + '...'; 
+                                } 
+                                context += '  ' + noteBody.replaceAll('\\n', '\\n  ') + '\\n'; 
+                            } 
+                        } 
+                    }
                 }
             } catch (Exception e) {
                 System.debug('Error fetching notes: ' + e.getMessage());
             }
+            
+            // --- NEW SECTION: LIST GENERAL FILE ATTACHMENTS ---
+            try {
+                List<ContentDocumentLink> fileLinks = [
+                    SELECT ContentDocument.Id, ContentDocument.Title, ContentDocument.FileType, ContentDocument.FileExtension 
+                    FROM ContentDocumentLink 
+                    WHERE LinkedEntityId = :recordId 
+                    AND ContentDocument.FileType != 'SNOTE' // Exclude ContentNotes as they are handled above
+                    LIMIT 10 // Limit to a reasonable number for context
+                ];
+
+                if (!fileLinks.isEmpty()) {
+                    context += '\\nATTACHED FILES:\\n';
+                    Set<String> listedFileTitles = new Set<String>(); // To avoid listing same file multiple times if linked oddly
+                    for (ContentDocumentLink link : fileLinks) {
+                        if(!listedFileTitles.contains(link.ContentDocument.Title)){
+                            context += '• ' + link.ContentDocument.Title + 
+                                       ' (' + (String.isNotBlank(link.ContentDocument.FileExtension) ? link.ContentDocument.FileExtension.toUpperCase() : link.ContentDocument.FileType) + ')\\n';
+                            listedFileTitles.add(link.ContentDocument.Title);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.debug('Error fetching general file attachments: ' + e.getMessage());
+            }
+            // --- END NEW SECTION ---
             
             // Get collaboration activity (works for feed-enabled objects)
             try {
@@ -1496,5 +1545,292 @@ public with sharing class LLMController {
                 List<Object> choices = (List<Object>)responseMap.get('choices');
                 
                 if (choices != null && !choices.isEmpty()) { Map<String, Object> choice = (Map<String, Object>)choices[0]; Map<String, Object> message = (Map<String, Object>)choice.get('message'); String contentText = (String)message.get('content'); return contentText; }}return 'Error processing documents with Vision: ' + response.getStatusCode() + ' ' + response.getStatus();} catch (Exception e) { System.debug('ERROR in processDocumentsWithVision: ' + e.getMessage()); System.debug('Stack trace: ' + e.getStackTraceString()); return 'Error analyzing documents with Vision: ' + e.getMessage(); }
+    }
+
+    /**
+     * @description Processes a specific PDF document attached to a record using an AI model (specifically GPT-4o with file input).
+     * @param recordId The Id of the Salesforce record (used for context or future enhancements, currently not used for query).
+     * @param contentDocumentId The Id of the ContentDocument representing the PDF.
+     * @param userPrompt The prompt to send to the AI regarding the PDF.
+     * @return String The AI's analysis of the PDF.
+     * @throws AuraHandledException if an error occurs during processing.
+     */
+    @AuraEnabled
+    public static String processPdfDocumentWithAI(String recordId, String contentDocumentId, String userPrompt) {
+        System.debug('Starting PDF processing for ContentDocumentId: ' + contentDocumentId + ' with prompt: ' + userPrompt);
+
+        if (String.isBlank(contentDocumentId) || String.isBlank(userPrompt)) {
+            System.debug('Error: Missing ContentDocumentId or user prompt.');
+            throw new AuraHandledException('Error: PDF Document ID and a prompt are required.');
+        }
+
+        try {
+            // Step 1: Get the ContentVersion (the actual PDF file)
+            ContentVersion cv = [
+                SELECT Id, Title, FileExtension, VersionData
+                FROM ContentVersion
+                WHERE ContentDocumentId = :contentDocumentId AND IsLatest = true AND FileExtension = 'pdf'
+                LIMIT 1
+            ];
+
+            if (cv == null) {
+                System.debug('Error: PDF ContentVersion not found for ContentDocumentId: ' + contentDocumentId);
+                throw new AuraHandledException('Error: PDF file not found or the specified document is not a PDF.');
+            }
+            
+            // Check file size (OpenAI has limits, e.g., 512MB, but Salesforce also has heap limits)
+            // Let's set a practical limit, e.g., 20MB for base64 processing.
+            // GPT-4o supports up to 20MB for images, PDF limits might be similar or tied to overall token limits.
+            // The user's example uses 'file' type which might have different constraints than 'image_url'.
+            // Let's use 10MB as a safe starting point to avoid Salesforce heap issues with Base64.
+            Integer MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; 
+            if (cv.VersionData.size() > MAX_FILE_SIZE_BYTES) {
+                System.debug('Error: PDF file size exceeds limit. Size: ' + cv.VersionData.size());
+                throw new AuraHandledException('Error: PDF file size is too large. Maximum allowed size is 10MB.');
+            }
+
+            // Step 2: Convert to Base64 with proper MIME type prefix
+            String base64Data = EncodingUtil.base64Encode(cv.VersionData);
+            String base64WithPrefix = 'data:application/pdf;base64,' + base64Data;
+
+            // Step 3: Get API Configuration for GPT-4o (assuming 'OpenAI_GPT4_Vision' is configured for gpt-4o)
+            LLM_Configuration__mdt config;
+            String visionConfigName = 'OpenAI_GPT4_Vision'; // As indicated by user
+
+            if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
+                for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
+                    if (mockConfig.DeveloperName == visionConfigName) {
+                        config = mockConfig;
+                        break;
+                    }
+                }
+                if (config == null) { 
+                    config = new LLM_Configuration__mdt(
+                        DeveloperName = visionConfigName, 
+                        API_Key__c = 'test_vision_api_key', 
+                        Base_URL__c = 'https://api.openai.com/v1/chat/completions', 
+                        Model_Name__c = 'gpt-4o', // Default to gpt-4o if mock not specific
+                        Provider__c = 'OpenAI', 
+                        Supports_Files__c = true
+                    );
+                }
+            } else {
+                List<LLM_Configuration__mdt> configs = [
+                    SELECT Id, API_Key__c, Base_URL__c, Model_Name__c, Provider__c 
+                    FROM LLM_Configuration__mdt 
+                    WHERE DeveloperName = :visionConfigName
+                    LIMIT 1
+                ];
+                if (configs.isEmpty()) {
+                    System.debug('Error: LLM Configuration not found for: ' + visionConfigName);
+                    throw new AuraHandledException('Error: AI Model configuration for PDF analysis (OpenAI_GPT4_Vision) not found or inactive.');
+                }
+                config = configs[0];
+            }
+
+            // Step 4: Prepare the HTTP request body for GPT-4o file input
+            Map<String, Object> requestBody = new Map<String, Object>();
+            requestBody.put('model', config.Model_Name__c); // e.g., "gpt-4o"
+
+            Map<String, Object> userMessageDetails = new Map<String, Object>();
+            userMessageDetails.put('role', 'user');
+
+            // --- MODIFICATION: Add formatting instructions to the userPrompt --- 
+            String formattedUserPrompt = userPrompt + '\n\nIMPORTANT FORMATTING INSTRUCTIONS:\n' +
+                '- Structure your analysis clearly with headings and subheadings using <b> tags (e.g., <b>Key Findings</b>, <b>Summary of Content</b>).\n' +
+                '- Use <ul> and <li> for bulleted lists of important points, data, or action items.\n' +
+                '- Use <ol> and <li> for any numbered lists or sequential information.\n' +
+                '- Use <br> for line breaks to ensure readability. Do NOT use markdown for lists.\n' +
+                '- If extracting specific data points (e.g., names, dates, figures), present them clearly, possibly in a list format.\n' +
+                '- Provide a concise overall <b>Summary</b> of the document at the beginning or end of your analysis.\n' +
+                '- If the document contains tables, try to represent the key information from the tables in a structured list or summary format.\n';
+            // --- END MODIFICATION ---
+
+            List<Map<String, Object>> contentItems = new List<Map<String, Object>>();
+            
+            // Text part
+            Map<String, Object> textContent = new Map<String, Object>();
+            textContent.put('type', 'text');
+            textContent.put('text', formattedUserPrompt); // Use the modified prompt
+            contentItems.add(textContent);
+
+            // File part
+            Map<String, Object> fileContent = new Map<String, Object>();
+            fileContent.put('type', 'file');
+            
+            Map<String, String> fileDataMap = new Map<String, String>();
+            fileDataMap.put('filename', cv.Title + (cv.Title.toLowerCase().endsWith('.pdf') ? '' : '.pdf') );
+            fileDataMap.put('file_data', base64WithPrefix);
+            
+            fileContent.put('file', fileDataMap);
+            contentItems.add(fileContent);
+            
+            userMessageDetails.put('content', contentItems);
+
+            List<Map<String, Object>> messages = new List<Map<String, Object>>{userMessageDetails};
+            requestBody.put('messages', messages);
+            
+            // Optional: Add max_tokens if needed, similar to other calls.
+            // requestBody.put('max_tokens', 2000); // Example
+
+            System.debug('Request body being sent to OpenAI: ' + JSON.serialize(requestBody).left(1000) + '...');
+
+
+            // Step 5: Make the callout
+            Http http = new Http();
+            HttpRequest req = new HttpRequest();
+            req.setEndpoint(config.Base_URL__c);
+            req.setMethod('POST');
+            req.setHeader('Content-Type', 'application/json;charset=UTF-8');
+            req.setHeader('Authorization', 'Bearer ' + config.API_Key__c);
+            req.setBody(JSON.serialize(requestBody));
+            req.setTimeout(120000); // 2 minutes timeout
+
+            HttpResponse res = http.send(req);
+
+            // Step 6: Process the response
+            if (res.getStatusCode() == 200) {
+                Map<String, Object> responseMap = (Map<String, Object>)JSON.deserializeUntyped(res.getBody());
+                if (responseMap.containsKey('choices')) {
+                    List<Object> choices = (List<Object>)responseMap.get('choices');
+                    if (choices != null && !choices.isEmpty()) {
+                        Map<String, Object> choice = (Map<String, Object>)choices[0];
+                        if (choice.containsKey('message')) {
+                            Map<String, Object> message = (Map<String, Object>)choice.get('message');
+                            if (message.containsKey('content')) {
+                                String content = (String)message.get('content');
+                                System.debug('Successfully received PDF analysis from AI: ' + content.left(500) + '...');
+                                
+                                // Optional: Save response to record if needed, similar to user's example
+                                // saveResponseToRecord(recordId, content); 
+                                // For now, just returning the content.
+                                return content;
+                            }
+                        }
+                    }
+                }
+                System.debug('Error: AI response format unexpected. Body: ' + res.getBody());
+                throw new AuraHandledException('Error: AI response format was not as expected.');
+            } else {
+                System.debug('Error from AI Service: ' + res.getStatusCode() + ' ' + res.getStatus() + '. Body: ' + res.getBody());
+                throw new AuraHandledException('Error from AI Service: ' + res.getStatusCode() + ' - ' + res.getStatus() + '. Details: ' + res.getBody());
+            }
+
+        } catch (Exception e) {
+            System.debug('ERROR in processPdfDocumentWithAI: ' + e.getMessage() + ' at line ' + e.getLineNumber());
+            System.debug('Stack trace: ' + e.getStackTraceString());
+            throw new AuraHandledException('Failed to process PDF document with AI: ' + e.getMessage());
+        }
+    }
+
+    /**
+     * @description Retrieves a list of PDF attachments for a given record.
+     * @param recordId The ID of the record to check for PDF attachments.
+     * @return List<Map<String, String>> A list of maps, where each map contains 'id' (ContentDocumentId) and 'title' of a PDF.
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<Map<String, String>> getPdfAttachmentsForRecord(String recordId) {
+        if (String.isBlank(recordId)) {
+            return new List<Map<String, String>>();
+        }
+
+        List<Map<String, String>> pdfs = new List<Map<String, String>>();
+        try {
+            List<ContentDocumentLink> links = [SELECT ContentDocumentId 
+                                               FROM ContentDocumentLink 
+                                               WHERE LinkedEntityId = :recordId];
+            
+            if (links.isEmpty()) {
+                return pdfs;
+            }
+
+            Set<Id> contentDocumentIds = new Set<Id>();
+            for(ContentDocumentLink link : links) {
+                contentDocumentIds.add(link.ContentDocumentId);
+            }
+
+            List<ContentVersion> versions = [SELECT ContentDocumentId, Title, FileExtension
+                                             FROM ContentVersion 
+                                             WHERE ContentDocumentId IN :contentDocumentIds 
+                                             AND IsLatest = true 
+                                             AND FileExtension = 'pdf'];
+            
+            // Use a set to ensure we only add each ContentDocumentId once, even if it had multiple versions (though IsLatest should handle this)
+            Set<Id> processedDocIds = new Set<Id>();
+            for (ContentVersion cv : versions) {
+                if (!processedDocIds.contains(cv.ContentDocumentId)) {
+                    Map<String, String> pdfInfo = new Map<String, String>();
+                    pdfInfo.put('id', cv.ContentDocumentId);
+                    pdfInfo.put('title', cv.Title);
+                    pdfs.add(pdfInfo);
+                    processedDocIds.add(cv.ContentDocumentId);
+                }
+            }
+        } catch (Exception e) {
+            System.debug('Error in getPdfAttachmentsForRecord: ' + e.getMessage());
+            // Optionally, throw AuraHandledException or return empty list
+        }
+        return pdfs;
+    }
+
+    /**
+     * @description Gets metadata for the object type of the specified record Id 
+     * Uses server-side permissions instead of client-side, avoiding potential permission issues
+     * @param recordId The Id of the record to get object metadata for
+     * @return Map<String, Object> Object metadata information
+     */
+    @AuraEnabled
+    public static Map<String, Object> getObjectMetadataFromId(String recordId) {
+        try {
+            // Ensure we have a valid ID
+            if (String.isBlank(recordId)) {
+                throw new AuraHandledException('Record ID is required');
+            }
+            
+            Id recordIdValue = Id.valueOf(recordId);
+            Schema.SObjectType objectType = recordIdValue.getSObjectType();
+            Schema.DescribeSObjectResult objDescribe = objectType.getDescribe();
+            
+            // Prepare the result map
+            Map<String, Object> result = new Map<String, Object>();
+            result.put('objectApiName', objDescribe.getName());
+            result.put('objectLabel', objDescribe.getLabel());
+            result.put('objectLabelPlural', objDescribe.getLabelPlural());
+            result.put('isCustom', objDescribe.isCustom());
+            
+            // Get field info
+            Map<String, Object> fieldsInfo = new Map<String, Object>();
+            Map<String, Schema.SObjectField> fieldMap = objDescribe.fields.getMap();
+            
+            for (String fieldName : fieldMap.keySet()) {
+                Schema.DescribeFieldResult field = fieldMap.get(fieldName).getDescribe();
+                if (field.isAccessible()) {
+                    Map<String, Object> fieldInfo = new Map<String, Object>();
+                    fieldInfo.put('label', field.getLabel());
+                    fieldInfo.put('apiName', field.getName());
+                    fieldInfo.put('type', field.getType().name());
+                    fieldInfo.put('isRequired', field.isNillable() == false && field.isCreateable());
+                    fieldInfo.put('isEditable', field.isUpdateable());
+                    
+                    // Handle reference fields (lookups/master-detail)
+                    if (field.getType() == Schema.DisplayType.REFERENCE) {
+                        List<String> referenceTo = new List<String>();
+                        for (Schema.SObjectType refType : field.getReferenceTo()) {
+                            referenceTo.add(refType.getDescribe().getName());
+                        }
+                        fieldInfo.put('referenceTo', referenceTo);
+                    }
+                    
+                    fieldsInfo.put(fieldName, fieldInfo);
+                }
+            }
+            
+            result.put('fields', fieldsInfo);
+            return result;
+            
+        } catch (Exception e) {
+            System.debug('Error getting object metadata: ' + e.getMessage());
+            throw new AuraHandledException('Error retrieving object metadata: ' + e.getMessage());
+        }
     }
 }

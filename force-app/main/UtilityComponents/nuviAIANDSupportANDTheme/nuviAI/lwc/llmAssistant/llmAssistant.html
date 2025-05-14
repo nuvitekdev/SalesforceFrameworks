@@ -63,6 +63,20 @@
                     </lightning-combobox>
                 </template>
 
+                <!-- PDF Processing Spinner and Error -->
+                <template if:true={isProcessingPdf}>
+                    <div class="loading-container slds-m-vertical_medium slds-text-align_center">
+                        <lightning-spinner alternative-text="Analyzing PDF..." size="medium"></lightning-spinner>
+                        <p class="loading-text slds-m-top_small">Analyzing PDF, please wait...</p>
+                    </div>
+                </template>
+                <template if:true={pdfProcessingError}>
+                    <div class="error-container slds-text-color_error slds-m-vertical_small slds-p-around_small slds-border_left slds-border_red slds-border_left-4" role="alert">
+                        <lightning-icon icon-name="utility:error" alternative-text="Error" size="small" class="slds-m-right_small"></lightning-icon>
+                        <strong>PDF Analysis Error:</strong> {pdfProcessingError}
+                    </div>
+                </template>
+
                 <!-- Text area remains the same -->
                 <lightning-textarea
                     label="Your Question"
@@ -115,7 +129,23 @@
                                 <path d="M10 2h32c2.2 0 4 1.8 4 4v40c0 2.2-1.8 4-4 4H10c-2.2 0-4-1.8-4-4V6c0-2.2 1.8-4 4-4zm2 4v18l7.5-5 7.5 5V6H12zm12 18c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm8 12c0-4.4-3.6-8-8-8s-8 3.6-8 8v4h16v-4z"/>
                             </svg>
                         </span>
-                        <span class="button-label">Analyze Images</span>
+                        <span class="button-label">{analyzeImagesButtonLabel}</span>
+                    </button>
+                    
+                    <!-- *NEW* Analyze Document Button -->
+                    <button 
+                        if:true={showAnalyzeDocumentButton}
+                        class="custom-button secondary-button" 
+                        onclick={handleAnalyzeDocumentClick}
+                        disabled={isProcessingPdf} 
+                        title={analyzeDocumentButtonLabel} 
+                    >
+                        <span class="button-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-2v-2h2v2zm0-4h-2v-2h2v2zm-2-4H8V8h2v2z"/>
+                            </svg>
+                        </span>
+                        <span class="button-label">{analyzeDocumentButtonLabel}</span>
                     </button>
                     
                     <!-- Custom Clear button -->

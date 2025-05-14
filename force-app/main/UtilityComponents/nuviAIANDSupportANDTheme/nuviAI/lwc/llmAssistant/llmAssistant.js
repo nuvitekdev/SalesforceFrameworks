@@ -7,9 +7,11 @@ import checkRecordForAnomalies from '@salesforce/apex/LLMController.checkRecordF
 import saveAnalysisToField from '@salesforce/apex/LLMController.saveAnalysisToField';
 import processImagesWithAI from '@salesforce/apex/LLMController.processImagesWithAI';
 import { getRecord } from 'lightning/uiRecordApi';
-import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 import ID_FIELD from '@salesforce/schema/Account.Id';
 import { CurrentPageReference } from 'lightning/navigation';
+import getPdfAttachmentsForRecord from '@salesforce/apex/LLMController.getPdfAttachmentsForRecord';
+import processPdfDocumentWithAI from '@salesforce/apex/LLMController.processPdfDocumentWithAI';
+import getObjectMetadataFromId from '@salesforce/apex/LLMController.getObjectMetadataFromId';
 
 // Constants
 const MAX_HISTORY_MESSAGES = 50; // Maximum number of messages to keep in history
@@ -29,6 +31,9 @@ export default class LLMAssistant extends LightningElement {
     @api enableImageValidation = false; // Kept for backward compatibility/external dependencies
     @api relatedObjects = '';      // Comma-separated list of object API names to search across for related data
     @api analysisFieldApiName = ''; // API name of field to save analysis summary
+    
+    // New design attribute for enabling document analysis
+    @api enableDocumentAnalysis = false;
     
     @track llmOptions = [];
     @track selectedLLM;
@@ -52,6 +57,13 @@ export default class LLMAssistant extends LightningElement {
     @track currentAnalysis = '';
     @track analysisSummary = '';
     @track analysisSummaryCharCount = 0;
+    
+    // --- New properties for PDF Analysis ---
+    @track pdfDocuments = [];
+    @track isProcessingPdf = false;
+    @track pdfProcessingError = null;
+    _firstPdfIdToAnalyze = null; // Internal state for the ID of the first PDF
+    // --- End PDF Analysis properties ---
     
     // --- New properties for Anomaly Check ---
     @track anomalyCheckResult = ''; // Store the full result text from the AI
@@ -393,6 +405,12 @@ SUMMARY:`;
         console.log('LLM Assistant connected');
         // Preload LLM configurations when connected
         this.loadLLMConfigurations();
+        // Load object metadata when component is connected
+        this.loadObjectMetadata();
+        // Load PDF attachments if on a record page
+        if (this.effectiveRecordId) {
+            this.loadPdfAttachments();
+        }
         
         // Setup debounced handlers
         this.debouncedPromptChange = this.debounce((event) => {
@@ -568,64 +586,66 @@ SUMMARY:`;
     handleSummarize() {
         this.handleLLMRequest('summarize');
     }
-
-    /**
-     * @description Handles the click on the "Analyze Images" button to process image files attached to the record
-     */
+    
     handleAnalyzeImages() {
         if (!this.recordId) {
-            this.showError('Record ID is required to analyze images.');
+            this.showError('Record ID is required to analyze images');
             return;
         }
         
-        this.isLoading = true;
+        // Clear any prior errors
         this.clearErrors();
         
-        // Include assistant context in the prompt if available
-        let fullPrompt = this.userPrompt || 'Analyze these images and describe what you see in detail. For any text visible in the images, transcribe it accurately.';
+        // Show loading state
+        this.isLoading = true;
         
-        // Add assistant context if available
-        if (this.contextPrompt) {
-            fullPrompt = `ASSISTANT CONTEXT: ${this.contextPrompt}\n\n${fullPrompt}`;
-        }
-        
-        processImagesWithAI({ 
-            recordId: this.recordId, 
-            prompt: fullPrompt
-        })
-        .then(result => {
-            // Store response and update UI
-            this.response = result;
-            
-            // Add to conversation history
-            this.addMessageToHistory({
-                id: this.generateMessageId(),
-                sender: 'You',
-                isUser: true,
-                content: 'Analyze images: ' + this.userPrompt,
-                formattedContent: this.getFormattedMessageContent('Analyze images: ' + this.userPrompt),
-                timestamp: this.getFormattedTimestamp()
+        // Call the Apex controller to process images
+        processImagesWithAI({ recordId: this.effectiveRecordId })
+            .then(result => {
+                // Handle the result - first, clear loading state
+                this.isLoading = false;
+                
+                if (result) {
+                    // Format the response
+                    this.response = result;
+                    
+                    // Add to conversation history
+                    this.addMessageToHistory({
+                        id: this.generateMessageId(),
+                        content: 'Please analyze images attached to this record.',
+                        formattedContent: 'Please analyze images attached to this record.',
+                        sender: 'User',
+                        model: '',
+                        timestamp: this.getFormattedTimestamp(),
+                        isUser: true
+                    });
+                    
+                    this.addMessageToHistory({
+                        id: this.generateMessageId(),
+                        content: result,
+                        formattedContent: result,
+                        sender: 'AI',
+                        model: this.selectedLLMLabel,
+                        timestamp: this.getFormattedTimestamp(),
+                        isUser: false
+                    });
+                    
+                    // If an analysis field is configured and the result is non-empty, 
+                    // offer to save the analysis
+                    if (this.analysisFieldApiName) {
+                        this.prepareSynopsisModal(result);
+                    }
+                    
+                    // Scroll to the bottom to show new message
+                    this.scrollToBottom();
+                } else {
+                    this.showError('No response received from AI');
+                }
+            })
+            .catch(error => {
+                this.isLoading = false;
+                this.showError(`Error during image analysis: ${this.getErrorMessage(error)}`);
             });
-            
-            this.addMessageToHistory({
-                id: this.generateMessageId(),
-                sender: 'AI Assistant',
-                isUser: false,
-                content: result,
-                formattedContent: this.getFormattedMessageContent(result),
-                timestamp: this.getFormattedTimestamp(),
-                model: 'OpenAI GPT4o Vision'
-            });
-            
-            // Scroll to the response
-            this.scrollToBottom();
-        })
-        .catch(error => {
-            this.showError('Error analyzing images: ' + this.getErrorMessage(error));
-        })
-        .finally(() => {
-            this.isLoading = false;
-        });
     }
 
     // Replace your existing handleLLMRequest method with this version
@@ -1097,95 +1117,75 @@ SUMMARY:`;
     @wire(getRecord, { recordId: '$effectiveRecordId', fields: [ID_FIELD] })
     wiredRecord({ error, data }) {
         if (data) {
-            // Extract the object API name from the record data
-            this.objectApiName = data.apiName;
-            console.log('Record loaded. Object API Name:', this.objectApiName);
-        } else if (error) {
-            console.error('Error loading record:', error);
-        }
-    }
-
-    // Wire to get object info once we have the object API name
-    @wire(getObjectInfo, { objectApiName: '$objectApiName' })
-    wiredObjectInfo({ error, data }) {
-        if (data) {
-            console.log('Object info loaded:', data.apiName);
-            console.log('Field exists check will run when analyzing record');
+            // If recordId changes or becomes available, reload PDF attachments
+            this.loadPdfAttachments(); 
             
-            // If the field was configured, check if it exists
-            if (this.analysisFieldApiName) {
-                const fieldExists = Object.keys(data.fields).includes(this.analysisFieldApiName);
-                console.log(`Field ${this.analysisFieldApiName} exists:`, fieldExists);
-                
-                if (!fieldExists) {
-                    console.warn(`WARNING: Field '${this.analysisFieldApiName}' does not exist on ${data.apiName}`);
+            // Original logic for objectApiName and anomaly check
+            if (this.effectiveRecordId) {
+                this.objectApiName = this.effectiveRecordId.substring(0, 3);
+                console.log('Record ID updated:', this.effectiveRecordId);
+                console.log('Object API Name key prefix:', this.objectApiName);
+                if (this.llmOptions.length > 0 && this.selectedLLM && this.enableAnomalyDetection && !this.anomalyCheckResult && !this.anomalyCheckLoading) {
+                    console.log('Record data loaded, triggering initial anomaly check from wiredRecord.');
+                    this.performInitialAnomalyCheck();
                 }
             }
         } else if (error) {
-            console.error('Error loading object info:', error);
+            console.error('Error loading record data:', this.getErrorMessage(error));
+            // Potentially clear PDF documents if record context is lost/errored
+            this.pdfDocuments = [];
+            this._firstPdfIdToAnalyze = null;
+        }
+    }
+
+    // New method to fetch object metadata using Apex
+    loadObjectMetadata() {
+        if (this.effectiveRecordId) {
+            // Show loading state if needed
+            
+            getObjectMetadataFromId({ recordId: this.effectiveRecordId })
+                .then(result => {
+                    if (result) {
+                        // Store the object API name
+                        this.objectApiName = result.objectApiName;
+                        
+                        // Store field metadata
+                        if (this.analysisFieldApiName && result.fields) {
+                            const fieldData = result.fields[this.analysisFieldApiName];
+                            if (fieldData) {
+                                this.fieldLabel = fieldData.label;
+                            } else {
+                                console.error('Field API name not found in object metadata:', this.analysisFieldApiName);
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    // Handle error silently - don't disrupt user experience for metadata loading
+                    console.error('Error loading object metadata from Apex:', this.getErrorMessage(error));
+                });
         }
     }
 
     // New method to prepare synopsis modal that returns a Promise
     prepareSynopsisModal(analysis) {
-        return new Promise((resolve, reject) => {
-            console.log('Preparing synopsis modal for field:', this.analysisFieldApiName);
+        // If an analysis field name is configured, offer to save the summary
+        if (this.analysisFieldApiName) {
+            // Track the full analysis for context
+            this.currentAnalysis = analysis;
             
-            // Make sure we have a recordId and analysis field name
-            if (!this.effectiveRecordId || !this.analysisFieldApiName) {
-                console.error('Missing recordId or analysisFieldApiName');
-                resolve(); // Resolve anyway to continue the flow
-                return;
+            // Prepare a summary that emphasizes key information and fits within field limits
+            this.prepareSynopsisSummary(analysis);
+            
+            // Use the field label retrieved from getObjectMetadataFromId
+            // If not available, default to the field API name
+            if (!this.fieldLabel) {
+                this.fieldLabel = this.analysisFieldApiName;
             }
             
-            // Get the current object info from our wired property
-            const objectInfo = this.template.querySelector('lightning-record-edit-form')?.getObjectInfo() || 
-                             (this.wiredObjectInfo && this.wiredObjectInfo.data);
-            
-            // If we don't have object info yet, try to get it through the wire service
-            if (!objectInfo) {
-                console.log('Object info not available yet - checking directly with apex');
-                
-                // Use apex to check field existence
-                saveAnalysisToField({
-                    recordId: this.effectiveRecordId,
-                    fieldApiName: this.analysisFieldApiName,
-                    analysisText: 'FIELD_CHECK_ONLY'
-                })
-                .then(() => {
-                    console.log('Field exists check passed via Apex');
-                    // Set a default field label if we couldn't get it from object info
-                    this.fieldLabel = this.analysisFieldApiName;
-                    console.log('Setting default field label:', this.fieldLabel);
-                    this.prepareSynopsisSummary(analysis)
-                        .then(() => resolve())
-                        .catch(error => reject(error));
-                })
-                .catch(error => {
-                    console.error('Field check failed:', error);
-                    this.showError(`Field '${this.analysisFieldApiName}' does not exist or is not accessible. Please check the component configuration.`);
-                    resolve(); // Resolve anyway to continue the flow
-                });
-                return;
-            }
-            
-            // Check if the field exists on the object
-            console.log('Checking if field exists in object info');
-            const fieldExists = objectInfo.fields && Object.keys(objectInfo.fields).includes(this.analysisFieldApiName);
-            console.log(`Field ${this.analysisFieldApiName} exists:`, fieldExists);
-            
-            if (fieldExists) {
-                // Get the field label for display in the modal
-                this.fieldLabel = objectInfo.fields[this.analysisFieldApiName].label || this.analysisFieldApiName;
-                console.log('Field label:', this.fieldLabel);
-                this.prepareSynopsisSummary(analysis)
-                    .then(() => resolve())
-                    .catch(error => reject(error));
-            } else {
-                this.showError(`Field '${this.analysisFieldApiName}' does not exist on this object. Please check the component configuration.`);
-                resolve(); // Resolve anyway to continue the flow
-            }
-        });
+            // Show the modal for user confirmation
+            this.showSaveAnalysisModal = true;
+        }
     }
 
     // Helper method to prepare synopsis summary that returns a Promise
@@ -1374,13 +1374,199 @@ SUMMARY:`;
     
     // Get the effective record ID from all possible sources
     get effectiveRecordId() {
-        const id = this.recordId || this.getRecordIdFromPageRef() || this.getRecordIdFromUrl();
-        console.log('Effective Record ID:', id);
-        return id;
+        const recordId = this.recordId || this.getRecordIdFromPageRef() || this.getRecordIdFromUrl();
+        if (recordId && recordId !== this._lastRecordId) {
+            this._lastRecordId = recordId;
+            console.log('Record ID updated:', recordId);
+            
+            // Re-load object metadata if record ID changes
+            this.loadObjectMetadata();
+            
+            // Load PDF attachments if enabled
+            if (this.enableDocumentAnalysis) {
+                this.loadPdfAttachments();
+            }
+        }
+        return recordId;
     }
 
     // Check if message ID already exists
     generateMessageId() {
         return 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    }
+
+    // --- New Methods for PDF Analysis ---
+    async loadPdfAttachments() {
+        if (!this.effectiveRecordId) {
+            this.pdfDocuments = []; // Clear if no recordId
+            this._firstPdfIdToAnalyze = null;
+            return;
+        }
+
+        this.pdfProcessingError = null; // Clear previous errors
+        try {
+            console.log('Loading PDF attachments for record:', this.effectiveRecordId);
+            const result = await getPdfAttachmentsForRecord({ recordId: this.effectiveRecordId });
+            this.pdfDocuments = result || [];
+            this._firstPdfIdToAnalyze = (this.pdfDocuments.length > 0) ? this.pdfDocuments[0].id : null;
+            console.log('PDF attachments loaded: ', this.pdfDocuments.length);
+            if (this.pdfDocuments.length > 0) {
+                console.log('First PDF to analyze: ', this.pdfDocuments[0].title, 'ID:', this._firstPdfIdToAnalyze);
+            }
+        } catch (error) {
+            this.pdfProcessingError = 'Error loading PDF attachments: ' + this.getErrorMessage(error);
+            this.pdfDocuments = [];
+            this._firstPdfIdToAnalyze = null;
+            console.error('Error loading PDF attachments:', error);
+            this.showErrorToast('Failed to load PDF attachments.', this.pdfProcessingError, 'error');
+        }
+    }
+
+    async handleAnalyzeDocumentClick() {
+        if (!this.firstPdfToAnalyze || !this.firstPdfToAnalyze.id) {
+            this.pdfProcessingError = 'No PDF document selected or available for analysis.';
+            this.showErrorToast('No PDF Available', this.pdfProcessingError, 'error');
+            console.warn('Analyze document clicked but no firstPdfToAnalyze.id found.');
+            return;
+        }
+
+        if (!this.selectedLLM) {
+            this.showError('Please select an AI model first for PDF analysis.');
+            this.showErrorToast('Model Not Selected', 'Please select an AI model from the dropdown before analyzing documents.', 'warning');
+            return;
+        }
+        
+        this.isProcessingPdf = true;
+        this.pdfProcessingError = null;
+        this.response = ''; // Clear previous main response area
+
+        const pdfToAnalyze = this.firstPdfToAnalyze;
+        const pdfId = pdfToAnalyze.id;
+        const pdfTitle = pdfToAnalyze.title || 'the document';
+        
+        // Add a user-like message to history indicating what's being done
+        const userInitiatedActionMessage = {
+            id: this.generateMessageId(),
+            content: `Attempting to analyze PDF: "${pdfTitle}"`,
+            formattedContent: `Attempting to analyze PDF: "<em>${pdfTitle}</em>"`,
+            sender: 'System', // Or 'User Action'
+            timestamp: this.getFormattedTimestamp(),
+            isUser: true, // Displayed like a user message for flow
+            isSystem: true // Custom flag for styling or filtering if needed
+        };
+        this.addMessageToHistory(userInitiatedActionMessage);
+        this.scrollToBottom();
+
+        const analysisPrompt = `Please perform a comprehensive analysis of the attached PDF document titled "${pdfTitle}". Extract all key information, provide a concise summary of its content, and identify any actionable items, important figures, dates, or conclusions. Present the analysis clearly.`;
+
+        try {
+            console.log(`Calling processPdfDocumentWithAI for record: ${this.effectiveRecordId}, docId: ${pdfId}`);
+            const result = await processPdfDocumentWithAI({
+                recordId: this.effectiveRecordId,
+                contentDocumentId: pdfId,
+                userPrompt: analysisPrompt
+            });
+
+            this.response = result; // Display in the main response area too
+
+            const aiMessageObj = {
+                id: this.generateMessageId(),
+                content: result,
+                formattedContent: this.getFormattedMessageContent(result),
+                sender: 'AI Assistant',
+                timestamp: this.getFormattedTimestamp(),
+                isUser: false,
+                model: this.selectedLLMLabel || 'Document Analysis' // Fallback model label
+            };
+            this.addMessageToHistory(aiMessageObj);
+
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'PDF Analysis Complete',
+                    message: `"${pdfTitle}" has been analyzed.`,
+                    variant: 'success'
+                })
+            );
+            this.scrollToBottom();
+
+        } catch (error) {
+            this.pdfProcessingError = 'AI analysis of PDF failed: ' + this.getErrorMessage(error);
+            console.error('Error during PDF analysis call:', error);
+            this.showErrorToast('PDF Analysis Failed', this.pdfProcessingError, 'error');
+
+            // Add error message to history
+            const aiErrorMessageObj = {
+                id: this.generateMessageId(),
+                content: `Error analyzing PDF "${pdfTitle}": ${this.pdfProcessingError}`,
+                formattedContent: `Error analyzing PDF "<em>${pdfTitle}</em>": <span style="color:red;">${this.pdfProcessingError}</span>`,
+                sender: 'AI Assistant',
+                timestamp: this.getFormattedTimestamp(),
+                isUser: false,
+                isError: true, // Custom flag for styling
+                model: this.selectedLLMLabel || 'Document Analysis'
+            };
+            this.addMessageToHistory(aiErrorMessageObj);
+            this.scrollToBottom();
+
+        } finally {
+            this.isProcessingPdf = false;
+        }
+    }
+    // --- End PDF Analysis Methods ---
+
+    // Getters for toggle button
+    get toggleIconName() {
+        return this.showConversationHistory ? 'utility:chevronup' : 'utility:chevrondown';
+    }
+    
+    get toggleAlternativeText() {
+        return this.showConversationHistory ? 'Hide conversation' : 'Show conversation';
+    }
+    
+    get toggleTitle() {
+        return this.showConversationHistory ? 'Hide conversation' : 'Show conversation';
+    }
+
+    // Getters for PDF Analysis
+    get hasPdfDocuments() {
+        return this.pdfDocuments && this.pdfDocuments.length > 0;
+    }
+
+    get firstPdfToAnalyze() {
+        if (this.pdfDocuments && this.pdfDocuments.length > 0) {
+            // This ensures _firstPdfIdToAnalyze is set if not already, or updated if the first document changes.
+            // It's okay for this to be just the object, the ID is accessed in the handler.
+            return this.pdfDocuments[0];
+        }
+        return null;
+    }
+
+    get showAnalyzeDocumentButton() {
+        // Show button if there are PDFs, feature is enabled, and no other major operations are in progress
+        return this.enableDocumentAnalysis && // Check the new design attribute
+               this.hasPdfDocuments && 
+               !this.isLoading && // General LLM request loading
+               !this.isProcessingPdf && // PDF specific loading
+               !this.anomalyCheckLoading; // Anomaly check loading
+    }
+
+    get analyzeDocumentButtonLabel() {
+        return 'Analyze Attached Documents'; // Updated label
+    }
+
+    // New getter for Analyze Images button label
+    get analyzeImagesButtonLabel() {
+        return 'Analyze Attached Images';
+    }
+
+    showErrorToast(title, message, variant = 'error') {
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: title,
+                message: message,
+                variant: variant,
+                mode: 'sticky' // Keep error messages until dismissed
+            })
+        );
     }
 }
