@@ -22,6 +22,7 @@
             <property name="enableDocumentAnalysis" type="Boolean" default="false" label="Enable Document Analysis" description="Enable the option to analyze attached PDF documents."/>
             <property name="relatedObjects" type="String" default="" label="Related Objects" description="Comma-separated list of object API names to search across for related data (e.g., 'Account,Contact,Opportunity')"/>
             <property name="analysisFieldApiName" type="String" default="" label="Analysis Field API Name" description="API name of a field on the current record to save the analysis summary (e.g., 'AI_Analysis__c')"/>
+            <property name="documentAnalysisFieldsApiNames" type="String" default="" label="Document Data Extraction Fields" description="Comma-separated list of field API names on the current record to populate from document analysis (e.g., 'Name,Birthdate__c,Passport_Number__c')"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

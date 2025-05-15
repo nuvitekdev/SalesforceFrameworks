@@ -74,7 +74,7 @@ public with sharing class LLMController {
                         } else {
                             visionConfigs = [SELECT Id, API_Key__c, Base_URL__c, Model_Name__c
                                              FROM LLM_Configuration__mdt 
-                                             WHERE DeveloperName = 'OpenAI_GPT4_Vision' AND IsActive__c = true // Ensure active for consistency
+                                             WHERE DeveloperName = 'OpenAI_GPT4_Vision' // Ensure active for consistency
                                              LIMIT 1];
                         }
                         
@@ -1201,7 +1201,7 @@ public with sharing class LLMController {
                 '- Use <ul> and <li> tags for all bulleted lists. Each <li> item should represent a distinct point.\n' +
                 '- Use a single <br> tag for line breaks if needed for readability within paragraphs. Avoid excessive <br> tags.\n' +
                 '- Ensure a clear visual separation (e.g., a single <hr> tag) between the full analysis of one image and the start of the next image\'s title if multiple images are analyzed. NO text after the final image analysis.\n';
-
+            
             enhancedPrompt += '\nImage Information Provided by System (for your reference during analysis):\n';
             Integer imageIndex = 1;
             
@@ -1570,41 +1570,41 @@ public with sharing class LLMController {
         }
 
         // Get API Configuration for GPT-4o (assuming 'OpenAI_GPT4_Vision' is configured for gpt-4o)
-        LLM_Configuration__mdt config;
-        String visionConfigName = 'OpenAI_GPT4_Vision'; // As indicated by user
+            LLM_Configuration__mdt config;
+            String visionConfigName = 'OpenAI_GPT4_Vision'; // As indicated by user
 
-        if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
-            for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
-                if (mockConfig.DeveloperName == visionConfigName) {
-                    config = mockConfig;
-                    break;
+            if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
+                for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
+                    if (mockConfig.DeveloperName == visionConfigName) {
+                        config = mockConfig;
+                        break;
+                    }
                 }
-            }
-            if (config == null) { 
-                config = new LLM_Configuration__mdt(
-                    DeveloperName = visionConfigName, 
-                    API_Key__c = 'test_vision_api_key', 
-                    Base_URL__c = 'https://api.openai.com/v1/chat/completions', 
+                if (config == null) { 
+                    config = new LLM_Configuration__mdt(
+                        DeveloperName = visionConfigName, 
+                        API_Key__c = 'test_vision_api_key', 
+                        Base_URL__c = 'https://api.openai.com/v1/chat/completions', 
                     Model_Name__c = 'gpt-4o', 
-                    Provider__c = 'OpenAI', 
+                        Provider__c = 'OpenAI', 
                     Supports_Files__c = true,
                     Max_Tokens__c = 4000, // Default max tokens for mock
                     Temperature__c = 0.5 // Default temperature for mock
-                );
-            }
-        } else {
-            List<LLM_Configuration__mdt> configs = [
+                    );
+                }
+            } else {
+                List<LLM_Configuration__mdt> configs = [
                 SELECT Id, API_Key__c, Base_URL__c, Model_Name__c, Provider__c, Max_Tokens__c, Temperature__c
-                FROM LLM_Configuration__mdt 
-                WHERE DeveloperName = :visionConfigName
-                LIMIT 1
-            ];
-            if (configs.isEmpty()) {
-                System.debug('Error: LLM Configuration not found for: ' + visionConfigName);
+                    FROM LLM_Configuration__mdt 
+                    WHERE DeveloperName = :visionConfigName
+                    LIMIT 1
+                ];
+                if (configs.isEmpty()) {
+                    System.debug('Error: LLM Configuration not found for: ' + visionConfigName);
                 throw new AuraHandledException('Error: AI Model configuration for PDF analysis (' + visionConfigName + ') not found or inactive.');
+                }
+                config = configs[0];
             }
-            config = configs[0];
-        }
 
         try { // TRY BLOCK STARTS HERE
             // --- Master list for all content items (text prompt + all files) ---
@@ -1647,16 +1647,16 @@ public with sharing class LLMController {
 
                 // Add to detailed prompt
                 detailedPrompt += 'DOCUMENT ' + fileIndex + ': "' + currentFileTitle + '"\n';
-                
+
                 // Prepare file content for API request
-                Map<String, Object> fileContent = new Map<String, Object>();
+            Map<String, Object> fileContent = new Map<String, Object>();
                 fileContent.put('type', 'file'); // Using 'file' type based on assumption it's supported by gpt-4o for PDFs
-                
-                Map<String, String> fileDataMap = new Map<String, String>();
+            
+            Map<String, String> fileDataMap = new Map<String, String>();
                 fileDataMap.put('filename', currentFileTitle);
                 fileDataMap.put('file_data', base64WithPrefix); // Assuming this is the correct way to pass file data
-                
-                fileContent.put('file', fileDataMap);
+            
+            fileContent.put('file', fileDataMap);
                 allContentItems.add(fileContent);
                 fileIndex++;
             }
@@ -1767,11 +1767,11 @@ public with sharing class LLMController {
                 throw new AuraHandledException('Error from AI Service: ' + res.getStatusCode() + ' - ' + res.getStatus() + '. Details: ' + errorBody);
             }
 
-            } catch (Exception e) {
-                System.debug('ERROR in processPdfDocumentWithAI: ' + e.getMessage() + ' at line ' + e.getLineNumber());
-                System.debug('Stack trace: ' + e.getStackTraceString());
+        } catch (Exception e) {
+            System.debug('ERROR in processPdfDocumentWithAI: ' + e.getMessage() + ' at line ' + e.getLineNumber());
+            System.debug('Stack trace: ' + e.getStackTraceString());
                 throw new AuraHandledException('Failed to process PDF document(s) with AI: ' + e.getMessage());
-            }
+        }
     }
 
     /**
@@ -1882,6 +1882,277 @@ public with sharing class LLMController {
         } catch (Exception e) {
             System.debug('Error getting object metadata: ' + e.getMessage());
             throw new AuraHandledException('Error retrieving object metadata: ' + e.getMessage());
+        }
+    }
+
+    /**
+     * @description Extracts potential field values from analyzed document content and gathers current record values and field metadata.
+     * @param recordId The Id of the Salesforce record.
+     * @param analyzedDocumentContents A list of strings, where each string is the AI-analyzed content of a document.
+     * @param targetFieldApiNames A list of field API names to extract values for.
+     * @param llmConfigName The DeveloperName of the LLM configuration to use for AI-powered data extraction.
+     * @return Map<String, Object> containing field metadata, current values, and AI-suggested values for each target field.
+     */
+    @AuraEnabled
+    public static Map<String, Object> extractFieldsFromDocuments(
+        String recordId, 
+        List<String> analyzedDocumentContents, 
+        List<String> targetFieldApiNames, 
+        String llmConfigName
+    ) {
+        System.debug(
+            'Starting extractFieldsFromDocuments. RecordId: ' + recordId + 
+            ', TargetFields: ' + String.join(targetFieldApiNames, ', ') + 
+            ', Config: ' + llmConfigName + 
+            ', Documents to process: ' + (analyzedDocumentContents != null ? String.valueOf(analyzedDocumentContents.size()) : '0')
+        );
+
+        if (String.isBlank(recordId) || 
+            analyzedDocumentContents == null || analyzedDocumentContents.isEmpty() || 
+            targetFieldApiNames == null || targetFieldApiNames.isEmpty() || 
+            String.isBlank(llmConfigName)) {
+            throw new AuraHandledException('Missing required parameters for field extraction.');
+        }
+
+        Map<String, Object> result = new Map<String, Object>();
+        Map<String, Map<String, Object>> fieldsData = new Map<String, Map<String, Object>>();
+
+        try {
+            // 1. Get Object Metadata (including field labels and types for all target fields)
+            Schema.SObjectType sObjectType = Id.valueOf(recordId).getSObjectType();
+            String objectApiName = sObjectType.getDescribe().getName();
+            Map<String, Schema.SObjectField> allFieldsMap = sObjectType.getDescribe().fields.getMap();
+            
+            List<String> fieldsToQueryForCurrentValues = new List<String>();
+            for (String fieldName : targetFieldApiNames) {
+                if (allFieldsMap.containsKey(fieldName)) {
+                    Schema.DescribeFieldResult dfr = allFieldsMap.get(fieldName).getDescribe();
+                    if (dfr.isAccessible()) {
+                        Map<String, Object> fieldInfo = new Map<String, Object>();
+                        fieldInfo.put('apiName', fieldName);
+                        fieldInfo.put('label', dfr.getLabel());
+                        fieldInfo.put('type', dfr.getType().name());
+                        fieldInfo.put('currentValue', null); // Initialize current value
+                        fieldInfo.put('suggestedValues', new List<String>());
+                        fieldsData.put(fieldName, fieldInfo);
+                        fieldsToQueryForCurrentValues.add(fieldName);
+                    } else {
+                        System.debug('Field not accessible: ' + fieldName);
+                    }
+                } else {
+                    System.debug('Field not found on object: ' + fieldName);
+                }
+            }
+
+            if (fieldsData.isEmpty()) {
+                throw new AuraHandledException('No accessible target fields found or specified.');
+            }
+
+            // 2. Get Current Values from the Record
+            if (!fieldsToQueryForCurrentValues.isEmpty()) {
+                String soqlQuery = 'SELECT ' + String.join(fieldsToQueryForCurrentValues, ',') + 
+                                   ' FROM ' + objectApiName + 
+                                   ' WHERE Id = :recordId LIMIT 1';
+                SObject currentRecord = Database.query(soqlQuery);
+                for (String fieldName : fieldsToQueryForCurrentValues) {
+                    if (fieldsData.containsKey(fieldName)) {
+                        ((Map<String, Object>)fieldsData.get(fieldName)).put('currentValue', currentRecord.get(fieldName));
+                    }
+                }
+            }
+
+            // 3. Prepare prompt for AI to extract values for target fields from document contents
+            String combinedDocumentText = String.join(analyzedDocumentContents, '\n\n--- END OF DOCUMENT --- \n\n');
+            
+            String extractionPrompt = 'You are an AI data extraction assistant. Based on the following combined text from one or more documents, and a list of requested field names, your task is to identify and extract potential values for each field.\n';
+            extractionPrompt += 'The document text is provided below, with document separations marked by "--- END OF DOCUMENT ---".\n';
+            extractionPrompt += 'Requested Fields to Extract (API Names): ' + String.join(targetFieldApiNames, ', ') + '\n\n';
+            extractionPrompt += 'Extraction Guidelines:\n';
+            extractionPrompt += '- For each requested field, find all potential distinct values mentioned in the document text.\n';
+            extractionPrompt += '- If a field might have multiple different values suggested across the documents (e.g., multiple different names or dates), list them all.\n';
+            extractionPrompt += '- If a field is not mentioned or no clear value can be extracted, indicate that (e.g., by an empty list or a specific note for that field).\n';
+            extractionPrompt += '- Consider the field type if known (e.g., a field named \'Birthdate__c\' likely expects a date). However, primarily focus on extracting text that seems to match the field\'s concept.\n';
+            extractionPrompt += '- Present your findings ONLY as a JSON object where keys are the exact field API names provided in the \'Requested Fields to Extract\' list.\n';
+            extractionPrompt += '- The value for each key (field API name) should be a JSON array of strings, representing the distinct potential values found for that field. Example: ["Value1", "Value2"].\n';
+            extractionPrompt += '- If no values are found for a field, provide an empty array: [].\n';
+            extractionPrompt += '- Do NOT include any conversational text, explanations, apologies, or any text outside of the single JSON object response.\n';
+            extractionPrompt += 'Example of expected JSON output format:\n';
+            extractionPrompt += '{\n'; // Start of JSON example
+            extractionPrompt += '  "FieldName1__c": ["Potential Value A for Field1", "Potential Value B for Field1"],\n';
+            extractionPrompt += '  "AnotherField__c": ["Single Value for AnotherField"],\n';
+            extractionPrompt += '  "DateField__c": ["2023-01-15", "15/01/2023"],\n';
+            extractionPrompt += '  "FieldWithNoValueFound__c": []\n';
+            extractionPrompt += '}\n\n'; // End of JSON example
+            extractionPrompt += 'DOCUMENT TEXT TO ANALYZE:\n';
+            extractionPrompt += combinedDocumentText;
+
+            // 4. Call LLM for extraction
+            LLM_Configuration__mdt llmConfig;
+            if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
+                 for (LLM_Configuration__mdt mock : mockConfigurations) { if (mock.DeveloperName == llmConfigName) { llmConfig = mock; break; } }
+                 if (llmConfig == null) { llmConfig = new LLM_Configuration__mdt(DeveloperName = llmConfigName, API_Key__c = 'test_key', Base_URL__c = 'test_url', Model_Name__c = 'test_model', Provider__c = 'OpenAI', Max_Tokens__c = 2000, Temperature__c = 0.2); }
+            } else {
+                List<LLM_Configuration__mdt> configs = [SELECT API_Key__c, Base_URL__c, Model_Name__c, Provider__c, Max_Tokens__c, Temperature__c FROM LLM_Configuration__mdt WHERE DeveloperName = :llmConfigName LIMIT 1]; // Removed IsActive__c = true
+                if (configs.isEmpty()) { throw new AuraHandledException('LLM Configuration \'' + llmConfigName + '\' not found.'); } // Updated error message
+                llmConfig = configs[0];
+            }
+            
+            // Use a low temperature for more deterministic extraction if supported, or default. Max tokens might need adjustment.
+            // The makeLLMCall method in this class is already quite generic. We might need to adjust its internal prompt engineering if it adds too much conversational fluff.
+            // For this extraction, we want as raw a JSON response as possible.
+            String extractionResultJson = makeLLMCall(llmConfig, extractionPrompt);
+            System.debug('LLMController.extractFieldsFromDocuments - AI Extraction Result (Raw JSON string): ' + extractionResultJson);
+
+            // --- MODIFICATION: Clean the JSON string before parsing ---
+            String cleanedJson = extractionResultJson;
+            if (cleanedJson != null) {
+                // Remove markdown code block fences if present
+                if (cleanedJson.startsWith('```json')) {
+                    cleanedJson = cleanedJson.substring('```json'.length());
+                    if (cleanedJson.endsWith('```')) {
+                        cleanedJson = cleanedJson.substring(0, cleanedJson.length() - '```'.length());
+                    }
+                } else if (cleanedJson.startsWith('```')) { // Handle if only ``` is present without 'json'
+                    cleanedJson = cleanedJson.substring('```'.length());
+                     if (cleanedJson.endsWith('```')) {
+                        cleanedJson = cleanedJson.substring(0, cleanedJson.length() - '```'.length());
+                    }
+                }
+                cleanedJson = cleanedJson.trim(); // Trim any leading/trailing whitespace
+            }
+            System.debug('LLMController.extractFieldsFromDocuments - Cleaned JSON string for parsing: ' + cleanedJson);
+            // --- END MODIFICATION ---
+
+            // 5. Parse AI response and populate suggestedValues
+            try {
+                Map<String, Object> aiSuggestions = (Map<String, Object>)JSON.deserializeUntyped(cleanedJson); // Use cleanedJson
+                System.debug('LLMController.extractFieldsFromDocuments - Parsed AI Suggestions Map: ' + JSON.serialize(aiSuggestions));
+
+                for (String fieldName : targetFieldApiNames) {
+                    if (fieldsData.containsKey(fieldName) && aiSuggestions.containsKey(fieldName)) {
+                        Object rawSuggestions = aiSuggestions.get(fieldName);
+                        if (rawSuggestions instanceof List<Object>) {
+                            List<String> suggestionsForField = new List<String>();
+                            for (Object sugg : (List<Object>)rawSuggestions) {
+                                if (sugg instanceof String) {
+                                    suggestionsForField.add((String)sugg);
+                                }
+                            }
+                            ((Map<String, Object>)fieldsData.get(fieldName)).put('suggestedValues', suggestionsForField);
+                            System.debug('LLMController.extractFieldsFromDocuments - Suggestions for field ' + fieldName + ': ' + JSON.serialize(suggestionsForField));
+                        }
+                    }
+                }
+            } catch (Exception jsonEx) {
+                System.debug('Error parsing AI JSON response for field extraction: ' + jsonEx.getMessage() + '. Response was: ' + extractionResultJson);
+                // Optionally, don't throw an error here, just proceed without AI suggestions or with an error flag per field.
+                // For now, we'll let it proceed and the LWC will see empty suggestions.
+            }
+
+            result.put('fields', fieldsData);
+            System.debug('LLMController.extractFieldsFromDocuments - Final data being returned to LWC: ' + JSON.serialize(result));
+            return result;
+
+        } catch (Exception e) {
+            System.debug('Error in extractFieldsFromDocuments: ' + e.getMessage() + ' Stack: ' + e.getStackTraceString());
+            throw new AuraHandledException('Error extracting field data from documents: ' + e.getMessage());
+        }
+    }
+
+    /**
+     * @description Saves multiple field values to a specified record.
+     * @param recordId The Id of the Salesforce record to update.
+     * @param fieldsToUpdate A Map where keys are field API names and values are the new values to save.
+     * @return void
+     * @throws AuraHandledException if an error occurs during processing.
+     */
+    @AuraEnabled
+    public static void updateRecordFields(String recordId, Map<String, Object> fieldsToUpdate) {
+        System.debug('Starting updateRecordFields. RecordId: ' + recordId + ', Fields to update count: ' + fieldsToUpdate.size());
+
+        if (String.isBlank(recordId) || fieldsToUpdate == null || fieldsToUpdate.isEmpty()) {
+            throw new AuraHandledException('Missing required parameters: recordId and fieldsToUpdate are required.');
+        }
+
+        try {
+            Schema.SObjectType sObjectType = Id.valueOf(recordId).getSObjectType();
+            SObject recordToUpdate = sObjectType.newSObject(recordId); // Creates an SObject for update with the given Id
+
+            Map<String, Schema.SObjectField> fieldMap = sObjectType.getDescribe().fields.getMap();
+
+            for (String fieldApiName : fieldsToUpdate.keySet()) {
+                if (fieldMap.containsKey(fieldApiName)) {
+                    Schema.DescribeFieldResult fieldDescribe = fieldMap.get(fieldApiName).getDescribe();
+                    if (!fieldDescribe.isUpdateable()) {
+                        // Soft error or skip? For now, log and skip.
+                        System.debug('Field ' + fieldApiName + ' is not updateable. Skipping this field.');
+                        continue;
+                    }
+                    
+                    Object valueToSave = fieldsToUpdate.get(fieldApiName);
+                    
+                    // Basic type coercion - can be expanded if needed
+                    Schema.DisplayType fieldType = fieldDescribe.getType();
+                    try {
+                        if (valueToSave == null) {
+                            recordToUpdate.put(fieldApiName, null);
+                        } else if (fieldType == Schema.DisplayType.DATE) {
+                            if (valueToSave instanceof String) {
+                                recordToUpdate.put(fieldApiName, Date.valueOf((String)valueToSave));
+                            } else if (valueToSave instanceof Date) {
+                                recordToUpdate.put(fieldApiName, (Date)valueToSave);
+                            } else if (valueToSave instanceof Datetime) {
+                                recordToUpdate.put(fieldApiName, ((Datetime)valueToSave).date());
+                            }
+                        } else if (fieldType == Schema.DisplayType.DATETIME) {
+                             if (valueToSave instanceof String) {
+                                recordToUpdate.put(fieldApiName, Datetime.valueOf((String)valueToSave));
+                            } else if (valueToSave instanceof Datetime) {
+                                recordToUpdate.put(fieldApiName, (Datetime)valueToSave);
+                            } else if (valueToSave instanceof Date) {
+                                recordToUpdate.put(fieldApiName, Datetime.newInstance((Date)valueToSave, Time.newInstance(0,0,0,0)));
+                            }
+                        } else if (fieldType == Schema.DisplayType.BOOLEAN) {
+                            if (valueToSave instanceof String) {
+                                recordToUpdate.put(fieldApiName, Boolean.valueOf((String)valueToSave));
+                            } else {
+                                recordToUpdate.put(fieldApiName, (Boolean)valueToSave);
+                            }
+                        } else if (fieldType == Schema.DisplayType.CURRENCY || fieldType == Schema.DisplayType.DOUBLE || fieldType == Schema.DisplayType.PERCENT) {
+                            if (valueToSave instanceof String) {
+                                recordToUpdate.put(fieldApiName, Decimal.valueOf((String)valueToSave));
+                            } else {
+                                recordToUpdate.put(fieldApiName, (Decimal)valueToSave);
+                            }
+                        } else if (fieldType == Schema.DisplayType.INTEGER) {
+                            if (valueToSave instanceof String) {
+                                recordToUpdate.put(fieldApiName, Integer.valueOf((String)valueToSave));
+                            } else {
+                                recordToUpdate.put(fieldApiName, (Integer)valueToSave);
+                            }
+                        } else {
+                            // For String, Picklist, Reference (Id), etc., direct assignment (or String.valueOf for safety)
+                            recordToUpdate.put(fieldApiName, String.valueOf(valueToSave)); 
+                        }
+                    } catch (Exception typeEx) {
+                        System.debug('Type conversion error for field ' + fieldApiName + ' with value ' + valueToSave + ': ' + typeEx.getMessage());
+                        throw new AuraHandledException('Invalid value format for field ' + fieldDescribe.getLabel() + '. Expected ' + fieldType.name() + '.');
+                    }
+                } else {
+                    System.debug('Field ' + fieldApiName + ' not found on object. Skipping this field.');
+                }
+            }
+
+            if (!recordToUpdate.getPopulatedFieldsAsMap().isEmpty()) {
+                update recordToUpdate;
+                System.debug('Record fields updated successfully.');
+            } else {
+                System.debug('No valid fields were available for update.');
+            }
+
+        } catch (Exception e) {
+            System.debug('Error in updateRecordFields: ' + e.getMessage() + ' Stack: ' + e.getStackTraceString());
+            throw new AuraHandledException('Error updating record fields: ' + e.getMessage());
         }
     }
 }

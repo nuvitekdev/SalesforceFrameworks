@@ -199,6 +199,56 @@
                 </div>
                 <!-- End Modal Container -->
 
+                <!-- New Modal for Extracting Fields from Documents -->
+                <div class="modal-wrapper" if:true={showExtractFieldsModal}>
+                    <section role="dialog" tabindex="-1" aria-labelledby="extract-modal-heading" aria-modal="true" aria-describedby="extract-modal-content" class="slds-modal slds-fade-in-open component-modal">
+                        <div class="slds-modal__container">
+                            <header class="slds-modal__header">
+                                <h2 id="extract-modal-heading" class="slds-text-heading_medium slds-hyphenate">Extract Data from Documents</h2>
+                                <lightning-button-icon icon-name="utility:close" alternative-text="Close" title="Close" onclick={handleExtractFieldsCancel} class="slds-modal__close"></lightning-button-icon>
+                            </header>
+                            <div class="slds-modal__content slds-p-around_medium" id="extract-modal-content">
+                                <p class="slds-m-bottom_medium">Review the data extracted from the analyzed documents. For each field, select the value you want to update on the record, or choose to keep the current value.</p>
+                                
+                                <div if:true={isExtractingFields} class="loading-container slds-m-vertical_medium">
+                                    <lightning-spinner alternative-text="Extracting field data..." size="medium"></lightning-spinner>
+                                    <p class="loading-text">AI is extracting data, please wait...</p>
+                                </div>
+
+                                <template if:false={isExtractingFields}>
+                                    <template for:each={extractedFieldsData} for:item="field">
+                                        <div key={field.id} class="slds-form-element slds-m-bottom_large">
+                                            <label class="slds-form-element__label" for={field.id}>{field.label} <span class="slds-text-body_small slds-text-color_weak">({field.apiName} - {field.type})</span></label>
+                                            <div class="slds-form-element__control slds-m-top_xx-small">
+                                                <lightning-combobox
+                                                    name={field.apiName}
+                                                    label={field.label} 
+                                                    variant="label-hidden" 
+                                                    value={field.selectedValue}
+                                                    options={field.options}
+                                                    onchange={handleExtractFieldChange}
+                                                    dropdown-alignment="auto"
+                                                    class="slds-combobox_responsive">
+                                                </lightning-combobox>
+                                            </div>
+                                            <div if:true={field.currentValue}
+                                                 class="slds-text-body_small slds-text-color_weak slds-m-top_xx-small">
+                                                Current Value on Record: {field.currentValue}
+                                            </div>
+                                        </div>
+                                    </template>
+                                </template>
+                            </div>
+                            <footer class="slds-modal__footer">
+                                <button class="slds-button slds-button_neutral" onclick={handleExtractFieldsCancel} disabled={isExtractingFields}>Cancel</button>
+                                <button class="slds-button slds-button_brand" onclick={handleExtractFieldsConfirm} disabled={isExtractingFields}>Confirm and Update Record</button>
+                            </footer>
+                        </div>
+                    </section>
+                    <div class="slds-backdrop slds-backdrop_open component-backdrop"></div>
+                </div>
+                <!-- End New Modal for Extracting Fields from Documents -->
+
                 <div if:true={isLoading} class="loading-container">
                     <lightning-spinner alternative-text="Processing" size="medium"></lightning-spinner>
                     <p class="loading-text">Analyzing data and generating response...</p>

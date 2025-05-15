@@ -12,6 +12,8 @@ import { CurrentPageReference } from 'lightning/navigation';
 import getPdfAttachmentsForRecord from '@salesforce/apex/LLMController.getPdfAttachmentsForRecord';
 import processPdfDocumentWithAI from '@salesforce/apex/LLMController.processPdfDocumentWithAI';
 import getObjectMetadataFromId from '@salesforce/apex/LLMController.getObjectMetadataFromId';
+import extractFieldsFromDocuments from '@salesforce/apex/LLMController.extractFieldsFromDocuments';
+import updateRecordFields from '@salesforce/apex/LLMController.updateRecordFields';
 
 // Constants
 const MAX_HISTORY_MESSAGES = 50; // Maximum number of messages to keep in history
@@ -34,6 +36,8 @@ export default class LLMAssistant extends LightningElement {
     
     // New design attribute for enabling document analysis
     @api enableDocumentAnalysis = false;
+    // New design attribute for comma-delimited field API names for document data extraction
+    @api documentAnalysisFieldsApiNames = '';
     
     @track llmOptions = [];
     @track selectedLLM;
@@ -64,6 +68,12 @@ export default class LLMAssistant extends LightningElement {
     @track pdfProcessingError = null;
     _firstPdfIdToAnalyze = null; // Internal state for the ID of the first PDF
     // --- End PDF Analysis properties ---
+    
+    // --- New properties for Document Field Extraction Modal ---
+    @track showExtractFieldsModal = false;
+    @track extractedFieldsData = []; // Will hold { apiName, label, type, currentValue, suggestedValues, selectedValue } for each field
+    @track isExtractingFields = false;
+    // --- End Document Field Extraction Modal properties ---
     
     // --- New properties for Anomaly Check ---
     @track anomalyCheckResult = ''; // Store the full result text from the AI
@@ -598,7 +608,7 @@ SUMMARY:`;
         
         // Show loading state
         this.isLoading = true;
-
+        
         // --- MODIFICATION: Get context prompt for image analysis ---
         let imageAnalysisUserPrompt = 'Analyze the content of this image in detail, describing its key features, objects, and any text present.'; // Default prompt
         if (this.contextPrompt && this.contextPrompt.trim() !== '') {
@@ -780,6 +790,52 @@ SUMMARY:`;
             
             // Auto-scroll to bottom of conversation
             this.scrollToBottom();
+
+            // --- MODIFICATION: After document analysis, trigger field extraction if configured ---
+            if (this.documentAnalysisFieldsApiNames && this.documentAnalysisFieldsApiNames.trim() !== '') {
+                this.isExtractingFields = true;
+                const fieldApiNames = this.documentAnalysisFieldsApiNames.split(',').map(name => name.trim()).filter(name => name);
+                // The 'result' from processPdfDocumentWithAI is the combined text of all analyzed documents.
+                // extractFieldsFromDocuments expects a List<String> for analyzedDocumentContents.
+                // For now, we pass the single combined string as a list with one element.
+                // This might need refinement in Apex if individual document context is crucial for field extraction.
+                extractFieldsFromDocuments({
+                    recordId: this.effectiveRecordId,
+                    analyzedDocumentContents: [result], // Pass the combined analysis text
+                    targetFieldApiNames: fieldApiNames,
+                    llmConfigName: 'OpenAI_GPT4_Vision' // MODIFICATION: Hardcode to use the powerful model for extraction
+                })
+                .then(extractionData => {
+                    console.log('LWC handleAnalyzeDocumentClick - Raw extractionData from Apex:', JSON.stringify(extractionData, null, 2)); // Log raw data
+                    if (extractionData && extractionData.fields) {
+                        // Transform data for the modal
+                        this.extractedFieldsData = Object.values(extractionData.fields).map(field => ({
+                            ...field,
+                            // Add a unique key for iteration in LWC template
+                            id: field.apiName, 
+                            // Prepare options for combobox, including current value and an option to keep it
+                            options: [
+                                { label: `Current: ${field.currentValue === null || field.currentValue === undefined ? '' : field.currentValue}`, value: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue }, 
+                                ...(field.suggestedValues || []).map(sugg => ({ label: sugg, value: sugg }))
+                            ],
+                            // Set initial selected value, defaulting to current if no suggestions or keep current
+                            selectedValue: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue 
+                        }));
+                        console.log('LWC handleAnalyzeDocumentClick - Transformed extractedFieldsData for modal:', JSON.stringify(this.extractedFieldsData, null, 2)); // Log transformed data
+                        this.showExtractFieldsModal = true;
+                    } else {
+                        this.showErrorToast('Field Extraction Failed', 'Could not retrieve structured field data from documents.', 'error');
+                    }
+                })
+                .catch(extractError => {
+                    this.showErrorToast('Field Extraction Error', `Error during field extraction: ${this.getErrorMessage(extractError)}`, 'error');
+                })
+                .finally(() => {
+                    this.isExtractingFields = false;
+                });
+            }
+            // --- END MODIFICATION ---
+
         })
         .catch(error => {
             if (error.body?.message?.includes('prompt is too long')) {
@@ -1506,11 +1562,56 @@ SUMMARY:`;
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'PDF Analysis Complete',
-                    message: `${pdfIdsToAnalyze.length} document(s) have been analyzed.`, // Updated message
+                    message: `${pdfIdsToAnalyze.length} document(s) have been analyzed.`,
                     variant: 'success'
                 })
             );
             this.scrollToBottom();
+
+            // --- MODIFICATION: After document analysis, trigger field extraction if configured ---
+            if (this.documentAnalysisFieldsApiNames && this.documentAnalysisFieldsApiNames.trim() !== '') {
+                this.isExtractingFields = true;
+                const fieldApiNames = this.documentAnalysisFieldsApiNames.split(',').map(name => name.trim()).filter(name => name);
+                // The 'result' from processPdfDocumentWithAI is the combined text of all analyzed documents.
+                // extractFieldsFromDocuments expects a List<String> for analyzedDocumentContents.
+                // For now, we pass the single combined string as a list with one element.
+                // This might need refinement in Apex if individual document context is crucial for field extraction.
+                extractFieldsFromDocuments({
+                    recordId: this.effectiveRecordId,
+                    analyzedDocumentContents: [result], // Pass the combined analysis text
+                    targetFieldApiNames: fieldApiNames,
+                    llmConfigName: 'OpenAI_GPT4_Vision' // MODIFICATION: Hardcode to use the powerful model for extraction
+                })
+                .then(extractionData => {
+                    console.log('LWC handleAnalyzeDocumentClick - Raw extractionData from Apex:', JSON.stringify(extractionData, null, 2)); // Log raw data
+                    if (extractionData && extractionData.fields) {
+                        // Transform data for the modal
+                        this.extractedFieldsData = Object.values(extractionData.fields).map(field => ({
+                            ...field,
+                            // Add a unique key for iteration in LWC template
+                            id: field.apiName, 
+                            // Prepare options for combobox, including current value and an option to keep it
+                            options: [
+                                { label: `Current: ${field.currentValue === null || field.currentValue === undefined ? '' : field.currentValue}`, value: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue }, 
+                                ...(field.suggestedValues || []).map(sugg => ({ label: sugg, value: sugg }))
+                            ],
+                            // Set initial selected value, defaulting to current if no suggestions or keep current
+                            selectedValue: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue 
+                        }));
+                        console.log('LWC handleAnalyzeDocumentClick - Transformed extractedFieldsData for modal:', JSON.stringify(this.extractedFieldsData, null, 2)); // Log transformed data
+                        this.showExtractFieldsModal = true;
+                    } else {
+                        this.showErrorToast('Field Extraction Failed', 'Could not retrieve structured field data from documents.', 'error');
+                    }
+                })
+                .catch(extractError => {
+                    this.showErrorToast('Field Extraction Error', `Error during field extraction: ${this.getErrorMessage(extractError)}`, 'error');
+                })
+                .finally(() => {
+                    this.isExtractingFields = false;
+                });
+            }
+            // --- END MODIFICATION ---
 
         } catch (error) {
             this.pdfProcessingError = 'AI analysis of PDF(s) failed: ' + this.getErrorMessage(error);
@@ -1584,4 +1685,72 @@ SUMMARY:`;
             })
         );
     }
+
+    // --- Handlers for Document Field Extraction Modal ---
+    handleExtractFieldsCancel() {
+        this.showExtractFieldsModal = false;
+        this.extractedFieldsData = []; // Clear data
+    }
+
+    handleExtractFieldChange(event) {
+        const fieldApiName = event.target.name;
+        const selectedValue = event.detail.value;
+
+        this.extractedFieldsData = this.extractedFieldsData.map(field => {
+            if (field.apiName === fieldApiName) {
+                return { ...field, selectedValue: selectedValue };
+            }
+            return field;
+        });
+    }
+
+    async handleExtractFieldsConfirm() {
+        this.isExtractingFields = true; // Reuse for loading state during save
+        const fieldsToUpdate = {};
+        let hasChanges = false;
+
+        this.extractedFieldsData.forEach(field => {
+            // Check if a new value is selected and it's different from the current value 
+            // or if the current value was null/undefined and a new value (not __KEEP_CURRENT__) is chosen.
+            // The value '__KEEP_CURRENT__' is used if the current value itself was null/undefined and the user selected to keep it.
+            if (field.selectedValue !== '__KEEP_CURRENT__' && field.selectedValue !== field.currentValue) {
+                fieldsToUpdate[field.apiName] = field.selectedValue;
+                hasChanges = true;
+            } else if (field.selectedValue !== '__KEEP_CURRENT__' && (field.currentValue === null || field.currentValue === undefined)){
+                // This covers cases where current value was empty and a new actual value is selected
+                fieldsToUpdate[field.apiName] = field.selectedValue;
+                hasChanges = true;
+            }
+            // If selectedValue is the actual current value (not the __KEEP_CURRENT__ marker for an empty field), 
+            // and it's different from what was originally there, it means user selected the current value from suggestions explicitly.
+            // This logic is mostly handled by the first condition. The key is that '__KEEP_CURRENT__' should not be sent to Apex.
+        });
+
+        if (!hasChanges) {
+            this.showErrorToast('No Changes', 'No new values were selected to update the record.', 'info');
+            this.isExtractingFields = false;
+            this.showExtractFieldsModal = false;
+            this.extractedFieldsData = [];
+            return;
+        }
+
+        try {
+            await updateRecordFields({ recordId: this.effectiveRecordId, fieldsToUpdate: fieldsToUpdate });
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Success',
+                    message: 'Record fields updated successfully from document data.',
+                    variant: 'success'
+                })
+            );
+            getRecordNotifyChange([{ recordId: this.effectiveRecordId }]); // Refresh record view
+        } catch (error) {
+            this.showErrorToast('Update Failed', `Error updating record fields: ${this.getErrorMessage(error)}`, 'error');
+        } finally {
+            this.isExtractingFields = false;
+            this.showExtractFieldsModal = false;
+            this.extractedFieldsData = [];
+        }
+    }
+    // --- End Handlers for Document Field Extraction Modal ---
 }

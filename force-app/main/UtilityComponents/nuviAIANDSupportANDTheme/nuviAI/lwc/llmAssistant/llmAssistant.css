@@ -746,6 +746,12 @@ lightning-button-icon .slds-button {
     /* Example: margin: 2rem; width: calc(90% - 4rem); */
 }
 
+/* --- MODIFICATION: Prevent horizontal scrollbar in modal content --- */
+.component-modal .slds-modal__content {
+    overflow-x: hidden; /* Hide horizontal scrollbar */
+}
+/* --- END MODIFICATION --- */
+
 /* Restyle backdrop to cover only the component */
 .component-backdrop {
     position: absolute; /* Cover the wrapper */
