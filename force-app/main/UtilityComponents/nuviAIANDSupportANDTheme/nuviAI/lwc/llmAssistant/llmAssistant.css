@@ -28,6 +28,25 @@
     display: none; /* Hide consecutive line breaks */
 }
 
+/* Flow-specific styles */
+[data-flow-context] {
+    --flow-padding: 0.5rem;
+}
+
+/* In flows, make the card more compact */
+[data-flow-context] lightning-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Style the footer for Flow contexts */
+[data-flow-context] lightning-card [slot="footer"] {
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+    border-top: 1px solid var(--border-subtle);
+    padding: var(--flow-padding);
+}
+
 /* Improve formatting for analysis results */
 :host .analysis-container {
     max-width: 100%;

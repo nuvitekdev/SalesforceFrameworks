@@ -8,6 +8,7 @@
         <target>lightning__RecordPage</target>
         <target>lightning__AppPage</target>
         <target>lightning__HomePage</target>
+        <target>lightning__FlowScreen</target>
     </targets>
     <targetConfigs>
         <targetConfig targets="lightning__RecordPage,lightning__AppPage,lightning__HomePage">
@@ -23,6 +24,19 @@
             <property name="relatedObjects" type="String" default="" label="Related Objects" description="Comma-separated list of object API names to search across for related data (e.g., 'Account,Contact,Opportunity')"/>
             <property name="analysisFieldApiName" type="String" default="" label="Analysis Field API Name" description="API name of a field on the current record to save the analysis summary (e.g., 'AI_Analysis__c')"/>
             <property name="documentAnalysisFieldsApiNames" type="String" default="" label="Document Data Extraction Fields" description="Comma-separated list of field API names on the current record to populate from document analysis (e.g., 'Name,Birthdate__c,Passport_Number__c')"/>
+        </targetConfig>
+        <targetConfig targets="lightning__FlowScreen">
+            <property name="cardTitle" type="String" default="AI Assistant" label="Component Title" description="The title displayed on the component card"/>
+            <property name="primaryColor" type="String" default="#22BDC1" label="Primary Color" description="Primary theme color for the component (hex format: #RRGGBB)"/>
+            <property name="accentColor" type="String" default="#D5DF23" label="Accent Color" description="Accent color for the component (hex format: #RRGGBB)"/>
+            <property name="defaultModelName" type="String" label="Default AI Model" description="DeveloperName of the default AI model to use (leave empty to allow user selection)"/>
+            <property name="hideModelSelector" type="Boolean" default="false" label="Hide Model Selector" description="Set to true to hide the model selector dropdown"/>
+            <property name="contextPrompt" type="String" label="Assistant Context" description="Custom context about where/how this assistant is being used"/>
+            <property name="recordId" type="String" label="Record ID" description="ID of the record to associate with this AI Assistant instance"/>
+            <property name="conversationOutput" type="String" label="Conversation Output" description="Output variable to store the conversation content"/>
+            <property name="enableAnomalyDetection" type="Boolean" default="false" label="Enable Anomaly Detection" description="Set to true to enable automatic anomaly detection for this record"/>
+            <property name="enableImageValidation" type="Boolean" default="false" label="Enable Image Analysis" description="Enable the option to analyze image attachments with OpenAI Vision"/>
+            <property name="enableDocumentAnalysis" type="Boolean" default="false" label="Enable Document Analysis" description="Enable the option to analyze attached PDF documents."/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

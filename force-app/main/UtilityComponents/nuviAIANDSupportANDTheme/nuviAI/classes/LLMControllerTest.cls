@@ -493,7 +493,9 @@ public class LLMControllerTest {
         String result = LLMController.checkRecordForAnomalies(
             testAccount.Id,
             'OpenAI_GPT4',
-            'Contact,Opportunity'
+            'Contact,Opportunity',
+            new List<String>(),
+            null
         );
         Test.stopTest();
     }
@@ -525,7 +527,9 @@ public class LLMControllerTest {
             String result = LLMController.checkRecordForAnomalies(
                 testAccount.Id,
                 'OpenAI_GPT4',
-                'Contact,Opportunity'
+                'Contact,Opportunity',
+                new List<String>(),
+                null
             );
         } catch (Exception e) {
             // Expected exception
@@ -541,10 +545,146 @@ public class LLMControllerTest {
             String result = LLMController.checkRecordForAnomalies(
                 null,
                 'OpenAI_GPT4',
-                'Contact'
+                'Contact',
+                new List<String>(),
+                null
             );
         } catch (Exception e) {
             // Expected exception
+        }
+        Test.stopTest();
+    }
+    
+    @isTest
+    static void testCheckRecordForAnomaliesWithDocuments() {
+        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account' LIMIT 1];
+        
+        // Create mock PDF attachment - ensure it's small enough to avoid size limitations
+        ContentVersion cv = new ContentVersion();
+        cv.Title = 'Test PDF';
+        cv.PathOnClient = 'test.pdf';
+        cv.VersionData = Blob.valueOf('TestPDFData'); // This is a very small test document
+        cv.IsMajorVersion = true;
+        insert cv;
+        
+        // Get the content document ID
+        Id contentDocumentId = [
+            SELECT ContentDocumentId FROM ContentVersion WHERE Id = :cv.Id
+        ].ContentDocumentId;
+        
+        // Create content document link
+        ContentDocumentLink cdl = new ContentDocumentLink();
+        cdl.ContentDocumentId = contentDocumentId;
+        cdl.LinkedEntityId = testAccount.Id;
+        cdl.ShareType = 'V';
+        insert cdl;
+        
+        // Create mock configurations
+        List<LLM_Configuration__mdt> mockConfigs = new List<LLM_Configuration__mdt>();
+        
+        // Vision config
+        LLM_Configuration__mdt visionConfig = new LLM_Configuration__mdt(
+            DeveloperName = 'OpenAI_GPT4_Vision',
+            MasterLabel = 'OpenAI GPT-4 Vision',
+            Provider__c = 'OpenAI',
+            Model_Name__c = 'gpt-4-vision-preview',
+            API_Key__c = 'test_vision_api_key',
+            Base_URL__c = 'https://api.openai.com/v1/chat/completions',
+            Supports_Files__c = true,
+            Max_Tokens__c = 2000,
+            Temperature__c = 0.7
+        );
+        mockConfigs.add(visionConfig);
+        
+        LLMController.mockConfigurations = mockConfigs;
+        
+        String mockResponse = '{"choices":[{"message":{"content":"YES - <b>Document Anomaly Detected</b><br>The attached document contains personal information for individuals not matching the record owner."}}]}';
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator(200, mockResponse));
+        
+        Test.startTest();
+        String result = LLMController.checkRecordForAnomalies(
+            testAccount.Id,
+            'OpenAI_GPT4_Vision',
+            'Contact,Opportunity',
+            new List<String>{ contentDocumentId },
+            'Look for personal information inconsistencies'
+        );
+        Test.stopTest();
+        
+        System.assert(result.contains('Document Anomaly Detected'), 'The result should contain the detected anomaly');
+    }
+    
+    @isTest
+    static void testCheckRecordForAnomaliesWithLargeDocuments() {
+        Account testAccount = [SELECT Id FROM Account WHERE Name = 'Test Account' LIMIT 1];
+        
+        // Create a mock PDF attachment that exceeds the size limit
+        ContentVersion cv = new ContentVersion();
+        cv.Title = 'Large Test PDF';
+        cv.PathOnClient = 'large_test.pdf';
+        
+        // Create a blob that's larger than our 3MB limit
+        // For test purposes, we can simulate this with a string
+        // but in reality, we'll just set the size that will trigger
+        // the size check in our code
+        Integer simulatedSize = 4 * 1024 * 1024; // 4MB
+        String largeContent = 'TestContent';
+        // Pad to required size
+        cv.VersionData = Blob.valueOf(largeContent.rightPad(simulatedSize));
+        cv.IsMajorVersion = true;
+        insert cv;
+        
+        // Get the content document ID
+        Id contentDocumentId = [
+            SELECT ContentDocumentId FROM ContentVersion WHERE Id = :cv.Id
+        ].ContentDocumentId;
+        
+        // Create content document link
+        ContentDocumentLink cdl = new ContentDocumentLink();
+        cdl.ContentDocumentId = contentDocumentId;
+        cdl.LinkedEntityId = testAccount.Id;
+        cdl.ShareType = 'V';
+        insert cdl;
+        
+        // Create mock configurations
+        List<LLM_Configuration__mdt> mockConfigs = new List<LLM_Configuration__mdt>();
+        
+        // Vision config
+        LLM_Configuration__mdt visionConfig = new LLM_Configuration__mdt(
+            DeveloperName = 'OpenAI_GPT4_Vision',
+            MasterLabel = 'OpenAI GPT-4 Vision',
+            Provider__c = 'OpenAI',
+            Model_Name__c = 'gpt-4-vision-preview',
+            API_Key__c = 'test_vision_api_key',
+            Base_URL__c = 'https://api.openai.com/v1/chat/completions',
+            Supports_Files__c = true,
+            Max_Tokens__c = 2000,
+            Temperature__c = 0.7
+        );
+        mockConfigs.add(visionConfig);
+        
+        LLMController.mockConfigurations = mockConfigs;
+        
+        // We expect a regular response here because the large document should be skipped
+        String mockResponse = '{"choices":[{"message":{"content":"NO - No anomalies detected."}}]}';
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator(200, mockResponse));
+        
+        Test.startTest();
+        try {
+            String result = LLMController.checkRecordForAnomalies(
+                testAccount.Id,
+                'OpenAI_GPT4_Vision',
+                'Contact,Opportunity',
+                new List<String>{ contentDocumentId },
+                'Look for personal information inconsistencies'
+            );
+            
+            // The document should be skipped due to size limit, and a regular call should be made
+            System.assert(result.equals('NO - No anomalies detected.'), 'The result should show no anomalies were detected');
+        } catch (Exception e) {
+            // If we get an exception due to size limitations in our test environment, that's also acceptable
+            System.assert(e.getMessage().contains('size') || e.getMessage().contains('limit'), 
+                         'If an exception occurs, it should be related to size limits');
         }
         Test.stopTest();
     }

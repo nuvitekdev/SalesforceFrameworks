@@ -39,6 +39,9 @@ export default class LLMAssistant extends LightningElement {
     // New design attribute for comma-delimited field API names for document data extraction
     @api documentAnalysisFieldsApiNames = '';
     
+    // Flow-specific attributes
+    @api conversationOutput;  // Output attribute to return conversation data to the Flow
+    
     @track llmOptions = [];
     @track selectedLLM;
     @track selectedLLMLabel;
@@ -91,6 +94,21 @@ export default class LLMAssistant extends LightningElement {
     styleCache = null;
     lastPrimaryColor = null;
     lastAccentColor = null;
+
+    // Flag to detect when running in Flow context
+    get isInFlowContext() {
+        return !!this.template.querySelector('c-llm-assistant[data-flow-context]');
+    }
+    
+    // Getter for detecting changes to conversation for Flow output
+    get conversationData() {
+        return {
+            history: this.conversationHistory,
+            summary: this.conversationSummary,
+            messageCount: this.messagesTotalCount,
+            lastResponse: this.response
+        };
+    }
 
     // Computed properties for text colors based on background brightness
     get primaryTextColor() {
@@ -308,46 +326,59 @@ export default class LLMAssistant extends LightningElement {
         }, 0);
     }
 
-    // Summarize conversation using the LLM
+    // Request a summary of the current conversation
     summarizeConversation() {
-        if (this.conversationHistory.length < 10) {
-            return; // Only summarize if there are enough messages to warrant it
+        // Only summarize if we have enough messages
+        if (this.conversationHistory.length < 3) {
+            console.log('Not enough messages to summarize');
+            this.conversationSummary = 'The conversation has just started.';
+            return;
         }
         
         // Don't summarize if already in progress
-        if (this.isSummarizing) return;
+        if (this.isSummarizing) {
+            console.log('Summarization already in progress');
+            return;
+        }
         
         this.isSummarizing = true;
         
-        // Prepare conversation text for summarization
-        const conversationText = this.conversationHistory.map(msg => {
-            const role = msg.isUser ? 'You' : 'AI';
-            return `${role}: ${msg.content}`;
-        }).join('\n\n');
+        // Prepare the summary request with basic parameters
+        const requestParams = {
+            llmConfigName: this.selectedLLM,
+            operation: 'summarize_conversation',
+            conversationSummary: this.conversationSummary // Include existing summary if available
+        };
         
-        // Create a summarization prompt
-        const summaryPrompt = `Please provide a concise summary of the following conversation, capturing key points, questions, and answers:
-
-${conversationText}
-
-SUMMARY:`;
+        // Add conversation history
+        if (this.conversationHistory && this.conversationHistory.length > 0) {
+            // Only send a simplified version of the conversation history
+            const simplifiedHistory = this.conversationHistory.map(msg => ({
+                content: msg.content,
+                isUser: msg.isUser
+            }));
+            requestParams.conversationHistory = JSON.stringify(simplifiedHistory);
+        }
         
-        // Call LLM to summarize
-        handleRequest({
-            recordId: null,
-            configName: this.selectedLLM,
-            prompt: summaryPrompt,
-            operation: 'ask'
-        })
-        .then(result => {
-            this.conversationSummary = result;
-        })
-        .catch(error => {
-            console.error('Error summarizing conversation:', error);
-        })
-        .finally(() => {
-            this.isSummarizing = false;
-        });
+        // Send request to generate summary
+        handleRequest(requestParams)
+            .then(result => {
+                this.conversationSummary = result;
+                console.log('Conversation summarized successfully');
+                
+                // If in Flow context, update the output attribute
+                if (this.conversationOutput !== undefined) {
+                    this.conversationOutput = JSON.stringify(this.conversationData);
+                }
+            })
+            .catch(error => {
+                console.error('Error summarizing conversation:', error);
+                // If error, create a basic summary instead
+                this.conversationSummary = `A conversation with ${this.conversationHistory.length} messages.`;
+            })
+            .finally(() => {
+                this.isSummarizing = false;
+            });
     }
 
     // Add a message to conversation history, maintaining the maximum limit
@@ -369,6 +400,11 @@ SUMMARY:`;
         if (this.conversationHistory.length >= 10 && 
             (!this.conversationSummary || this.conversationHistory.length % 10 === 0)) {
             this.summarizeConversation();
+        }
+        
+        // If running in Flow context, update the output attribute
+        if (this.conversationOutput !== undefined) {
+            this.conversationOutput = JSON.stringify(this.conversationData);
         }
     }
 
@@ -672,181 +708,125 @@ SUMMARY:`;
 
     // Replace your existing handleLLMRequest method with this version
     handleLLMRequest(operation) {
-        if (!this.validateInputs(operation)) return;
-        
-        this.isLoading = true;
+        console.log('handleLLMRequest - Operation:', operation);
+        if (!this.validateInputs(operation)) {
+            return;
+        }
+
+        // Clear any prior errors
         this.clearErrors();
-        this.response = '';
         
-        // Only get DOM information if we're on a record page
-        let domInfo = '';
-        if (this.effectiveRecordId) {
-            domInfo = this.truncateContent(this.getDOMInformation(), 10000);
+        // Set loading state
+        this.isLoading = true;
+
+        // Prepare basic request parameters
+        const requestParams = {
+            llmConfigName: this.selectedLLM,
+            userPrompt: this.userPrompt,
+            operation: operation
+        };
+
+        // Add recordId parameter if available and is not the 'ask' operation
+        if (this.effectiveRecordId && operation !== 'ask') {
+            requestParams.recordId = this.effectiveRecordId;
         }
         
-        // Add user's message to conversation history
-        let userMessage = this.userPrompt.trim();
-        
-        // For summarize operations, indicate it was an analysis request
-        if (operation === 'summarize') {
-            userMessage = 'Analyze this record: ' + userMessage;
+        // Add page components for context if available
+        if (this.pageComponents && this.pageComponents.length > 0) {
+            requestParams.pageComponents = JSON.stringify(this.pageComponents);
         }
         
-        // Add to conversation history
-        const userMessageObj = {
-            id: Date.now(),
-            content: userMessage,
-            formattedContent: userMessage.replace(/\n/g, '<br />'),
-            sender: 'User',
+        // Add conversation history if available and has enough messages
+        if (this.conversationHistory && this.conversationHistory.length > 0) {
+            // Only send a simplified version of the conversation history
+            // with just the essential data to reduce payload size
+            const simplifiedHistory = this.conversationHistory.map(msg => ({
+                content: msg.content,
+                isUser: msg.isUser
+            }));
+            requestParams.conversationHistory = JSON.stringify(simplifiedHistory);
+        }
+        
+        // Add conversation summary if available
+        if (this.conversationSummary) {
+            requestParams.conversationSummary = this.conversationSummary;
+        }
+        
+        // Add contextPrompt if specified in design attributes
+        if (this.contextPrompt && this.contextPrompt.trim() !== '') {
+            requestParams.contextPrompt = this.contextPrompt;
+        }
+        
+        // Add related objects if configured
+        if (this.hasRelatedObjects) {
+            requestParams.relatedObjects = this.relatedObjects;
+        }
+        
+        // Add message to history for user's message
+        const messageObj = {
+            id: this.generateMessageId(),
+            content: this.userPrompt,
+            formattedContent: this.getFormattedMessageContent(this.userPrompt),
+            sender: 'You',
             timestamp: this.getFormattedTimestamp(),
             isUser: true
         };
+        this.addMessageToHistory(messageObj);
+
+        console.log('LLM Request with params:', JSON.stringify(requestParams));
         
-        this.addMessageToHistory(userMessageObj);
+        // Note: truncateContent handles long prompt text to avoid hitting Apex limits
+        requestParams.userPrompt = this.truncateContent(requestParams.userPrompt);
         
-        // Include conversation history in the prompt
-        const conversationContext = this.getConversationSummary();
-        
-        // Combine and truncate the final prompt
-        let finalPrompt;
-        if (operation === 'summarize') {
-            if (!this.effectiveRecordId) {
-                this.showError('Cannot analyze record: No record is available');
-                this.isLoading = false;
-                return;
-            }
-            
-            // Add context about component placement/purpose if provided
-            const contextInfo = this.contextPrompt ? 
-                `ASSISTANT CONTEXT: ${this.contextPrompt}\n\n` : '';
+        // Submit the request to Apex controller
+        handleRequest(requestParams)
+            .then(result => {
+                console.log('LLM Response received, operation:', operation);
                 
-            finalPrompt = this.truncateContent(
-                `${contextInfo}${conversationContext}PAGE COMPONENT INFORMATION:\n${domInfo}\n\n${this.userPrompt}`
-            );
-        } else {
-            // Add context about component placement/purpose if provided
-            const contextInfo = this.contextPrompt ? 
-                `ASSISTANT CONTEXT: ${this.contextPrompt}\n\n` : '';
-                
-            finalPrompt = this.truncateContent(
-                `${contextInfo}${conversationContext}${this.userPrompt}`
-            );
-        }
-
-        // Variable to control when to show results
-        let shouldShowResultsImmediately = true;
-        let analysisResult = '';
-
-        // If this is analyze operation and we have a field to save to, we'll need to prepare modal first
-        if (operation === 'summarize' && this.effectiveRecordId && this.analysisFieldApiName && this.analysisFieldApiName.trim() !== '') {
-            shouldShowResultsImmediately = false;
-        }
-
-        handleRequest({
-            recordId: this.effectiveRecordId || null, // Use effectiveRecordId instead of recordId
-            configName: this.selectedLLM,
-            prompt: finalPrompt,
-            operation: operation,
-            relatedObjects: this.relatedObjects
-        })
-        .then(result => {
-            // Store the result but don't show it immediately if we need to prepare the modal
-            analysisResult = result;
-            
-            // If this is a summarize operation and we have a field to save to, prepare the modal
-            if (operation === 'summarize' && this.effectiveRecordId && this.analysisFieldApiName && this.analysisFieldApiName.trim() !== '') {
-                this.currentAnalysis = result;
-                return this.prepareSynopsisModal(result);
-            } else {
-                return Promise.resolve();
-            }
-        })
-        .then(() => {
-            // Now that modal is prepared (if needed), show the results
-            this.response = analysisResult;
-            
-            // Add AI response to conversation history
-            const aiMessageObj = {
-                id: Date.now(),
-                content: analysisResult,
-                formattedContent: analysisResult.replace(/\n/g, '<br />'),
-                sender: 'AI Assistant',
-                timestamp: this.getFormattedTimestamp(),
-                isUser: false,
-                model: this.selectedLLMLabel
-            };
-            
-            this.addMessageToHistory(aiMessageObj);
-            
-            // Clear input field after successful response
-            this.userPrompt = '';
-            
-            // Show success toast
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Response Generated',
-                message: operation === 'ask' ? 'Your question has been answered' : 'Record analysis complete',
-                variant: 'success'
-            }));
-            
-            // Auto-scroll to bottom of conversation
-            this.scrollToBottom();
-
-            // --- MODIFICATION: After document analysis, trigger field extraction if configured ---
-            if (this.documentAnalysisFieldsApiNames && this.documentAnalysisFieldsApiNames.trim() !== '') {
-                this.isExtractingFields = true;
-                const fieldApiNames = this.documentAnalysisFieldsApiNames.split(',').map(name => name.trim()).filter(name => name);
-                // The 'result' from processPdfDocumentWithAI is the combined text of all analyzed documents.
-                // extractFieldsFromDocuments expects a List<String> for analyzedDocumentContents.
-                // For now, we pass the single combined string as a list with one element.
-                // This might need refinement in Apex if individual document context is crucial for field extraction.
-                extractFieldsFromDocuments({
-                    recordId: this.effectiveRecordId,
-                    analyzedDocumentContents: [result], // Pass the combined analysis text
-                    targetFieldApiNames: fieldApiNames,
-                    llmConfigName: 'OpenAI_GPT4_Vision' // MODIFICATION: Hardcode to use the powerful model for extraction
-                })
-                .then(extractionData => {
-                    console.log('LWC handleAnalyzeDocumentClick - Raw extractionData from Apex:', JSON.stringify(extractionData, null, 2)); // Log raw data
-                    if (extractionData && extractionData.fields) {
-                        // Transform data for the modal
-                        this.extractedFieldsData = Object.values(extractionData.fields).map(field => ({
-                            ...field,
-                            // Add a unique key for iteration in LWC template
-                            id: field.apiName, 
-                            // Prepare options for combobox, including current value and an option to keep it
-                            options: [
-                                { label: `Current: ${field.currentValue === null || field.currentValue === undefined ? '' : field.currentValue}`, value: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue }, 
-                                ...(field.suggestedValues || []).map(sugg => ({ label: sugg, value: sugg }))
-                            ],
-                            // Set initial selected value, defaulting to current if no suggestions or keep current
-                            selectedValue: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue 
-                        }));
-                        console.log('LWC handleAnalyzeDocumentClick - Transformed extractedFieldsData for modal:', JSON.stringify(this.extractedFieldsData, null, 2)); // Log transformed data
-                        this.showExtractFieldsModal = true;
-                    } else {
-                        this.showErrorToast('Field Extraction Failed', 'Could not retrieve structured field data from documents.', 'error');
+                // For summarize operations, we open the analysis modal
+                if (operation === 'summarize' && this.analysisFieldApiName && this.analysisFieldApiName.trim() !== '') {
+                    this.prepareSynopsisModal(result);
+                } else {
+                    // Set the response and add to conversation history
+                    this.response = result;
+                    
+                    // Create message object for AI response
+                    const aiMessageObj = {
+                        id: this.generateMessageId(),
+                        content: result,
+                        formattedContent: this.getFormattedMessageContent(result),
+                        sender: 'AI Assistant',
+                        timestamp: this.getFormattedTimestamp(),
+                        isUser: false,
+                        model: this.selectedLLMLabel
+                    };
+                    this.addMessageToHistory(aiMessageObj);
+                    
+                    // Clear user input after successful response
+                    this.userPrompt = '';
+                    
+                    // If running in Flow context, update output variable
+                    if (this.conversationOutput !== undefined) {
+                        this.conversationOutput = JSON.stringify(this.conversationData);
                     }
-                })
-                .catch(extractError => {
-                    this.showErrorToast('Field Extraction Error', `Error during field extraction: ${this.getErrorMessage(extractError)}`, 'error');
-                })
-                .finally(() => {
-                    this.isExtractingFields = false;
-                });
-            }
-            // --- END MODIFICATION ---
-
-        })
-        .catch(error => {
-            if (error.body?.message?.includes('prompt is too long')) {
-                this.showError('Request contained too much information. Some details have been omitted.');
-            } else {
-                this.showError(error.body?.message || 'Error processing request');
-            }
-        })
-        .finally(() => {
-            this.isLoading = false;
-        });
+                    
+                    // Apply ripple effect for visual feedback
+                    const askButton = this.template.querySelector('.primary-button');
+                    if (askButton) {
+                        this.provideFeedback(askButton, 'Response received');
+                    }
+                }
+                
+                // Scroll to bottom of conversation
+                this.scrollToBottom();
+            })
+            .catch(error => {
+                console.error('Error in LLM request:', error);
+                this.showError(this.getErrorMessage(error));
+            })
+            .finally(() => {
+                this.isLoading = false;
+            });
     }
     
     // Helper to scroll to bottom of conversation
@@ -1124,11 +1104,49 @@ SUMMARY:`;
         this.anomalyCheckResult = '';   // Clear previous result
 
         try {
-            // Call the Apex method
+            // Check if document analysis is enabled and if there are PDF documents available
+            let pdfDocumentIds = [];
+            let modelToUse = this.selectedLLM;
+            
+            // If document analysis is enabled and we have PDFs, we'll send the PDF document IDs directly
+            if (this.enableDocumentAnalysis && this.hasPdfDocuments) {
+                console.log('Document analysis enabled for anomaly detection. Collecting document IDs...');
+                
+                // Apply document limits - sort documents by size if possible and take the first few
+                // For simplicity, we'll just limit the number of documents here to the first 3
+                const MAX_DOCUMENTS_TO_ANALYZE = 3;
+                
+                // Collect PDF document IDs to pass directly to the Apex method
+                pdfDocumentIds = this.pdfDocuments
+                    .slice(0, MAX_DOCUMENTS_TO_ANALYZE)
+                    .map(doc => doc.id);
+                
+                console.log(`Using ${pdfDocumentIds.length} of ${this.pdfDocuments.length} PDF document(s) for anomaly analysis (limit: ${MAX_DOCUMENTS_TO_ANALYZE})`);
+                
+                // Use Vision model for anomaly detection when documents are available
+                modelToUse = 'OpenAI_GPT4_Vision';
+                console.log('Using Vision model for anomaly detection: ' + modelToUse);
+                
+                // Display a warning if we had to limit documents
+                if (this.pdfDocuments.length > MAX_DOCUMENTS_TO_ANALYZE) {
+                    console.warn(`Limited analysis to ${MAX_DOCUMENTS_TO_ANALYZE} documents to avoid size limits.`);
+                }
+            }
+
+            // Prepare the base anomaly detection prompt
+            let anomalyPrompt = '';
+            if (this.contextPrompt && this.contextPrompt.trim() !== '') {
+                anomalyPrompt = this.contextPrompt + '\n\n';
+                console.log('Including context prompt in anomaly detection');
+            }
+            
+            // Call the Apex method directly with the PDF document IDs
             const result = await checkRecordForAnomalies({ 
                 recordId: this.effectiveRecordId, 
-                configName: this.selectedLLM,
-                relatedObjects: this.relatedObjects
+                configName: modelToUse,
+                relatedObjects: this.relatedObjects,
+                pdfDocumentIds: pdfDocumentIds,
+                customPrompt: anomalyPrompt || ''
             });
 
             console.log('Anomaly check result received:', result);
@@ -1150,16 +1168,33 @@ SUMMARY:`;
             }
 
         } catch (error) {
-            // Handle errors during the anomaly check (e.g., Apex error, network issue)
+            // Handle errors during the anomaly check
             console.error('Error during initial anomaly check:', error);
-            // Optionally show a toast or log the error, but maybe don't block the main UI
-            // We'll display a generic message in the banner spot for visibility
-            this.showAnomalyBanner = true;
-            this.anomalyBannerMessage = 'Could not perform automatic record analysis. Please proceed with caution or try analyzing manually.';
+            
+            let errorMessage = this.getErrorMessage(error);
+            console.error('Error details:', errorMessage);
+            
+            // Check for specific error messages related to document size
+            if (errorMessage && (
+                errorMessage.includes('size limits') || 
+                errorMessage.includes('heap size') || 
+                errorMessage.includes('limit') ||
+                errorMessage.includes('too large')
+            )) {
+                // This is a size-related error
+                this.showAnomalyBanner = true;
+                this.anomalyBannerMessage = 'The document analysis could not be completed due to file size limitations. Some documents may be too large for automatic analysis. Please try analyzing the record without document analysis or with fewer/smaller documents.';
+            } else {
+                // Generic error
+                this.showAnomalyBanner = true;
+                this.anomalyBannerMessage = 'Could not perform automatic record analysis. Please proceed with caution or try analyzing manually.';
+            }
+            
             // Automatically open the accordion when there is an error
             this.activeAccordionSections = ['anomalySection'];
-            // Consider adding a more specific error log for admins/devs
-            // this.showError('Failed to perform initial anomaly check: ' + this.getErrorMessage(error));
+            
+            // Show a toast for visibility
+            this.showErrorToast('Anomaly Check Error', errorMessage || 'Failed to perform anomaly check');
         } finally {
             // Ensure loading state is turned off
             this.anomalyCheckLoading = false;
@@ -1443,6 +1478,7 @@ SUMMARY:`;
     // Get the effective record ID from all possible sources
     get effectiveRecordId() {
         const recordId = this.recordId || this.getRecordIdFromPageRef() || this.getRecordIdFromUrl();
+        
         if (recordId && recordId !== this._lastRecordId) {
             this._lastRecordId = recordId;
             console.log('Record ID updated:', recordId);
@@ -1453,6 +1489,11 @@ SUMMARY:`;
             // Load PDF attachments if enabled
             if (this.enableDocumentAnalysis) {
                 this.loadPdfAttachments();
+            }
+            
+            // If in Flow context and we've received a record ID, perform any necessary setup
+            if (this.conversationOutput !== undefined) {
+                console.log('In Flow context with recordId:', recordId);
             }
         }
         return recordId;
@@ -1491,151 +1532,65 @@ SUMMARY:`;
     }
 
     async handleAnalyzeDocumentClick() {
-        if (!this.pdfDocuments || this.pdfDocuments.length === 0) {
-            this.pdfProcessingError = 'No PDF documents are attached to this record for analysis.';
-            this.showErrorToast('No PDFs Available', this.pdfProcessingError, 'error');
-            console.warn('Analyze document clicked but no PDF documents found.');
+        if (!this.hasPdfDocuments || this.isProcessingPdf) {
             return;
         }
 
-        if (!this.selectedLLM) {
-            this.showError('Please select an AI model first for PDF analysis.');
-            this.showErrorToast('Model Not Selected', 'Please select an AI model from the dropdown before analyzing documents.', 'warning');
-            return;
-        }
-        
         this.isProcessingPdf = true;
         this.pdfProcessingError = null;
-        this.response = ''; // Clear previous main response area
-
-        // --- MODIFICATION: Collect all PDF document IDs ---
-        const pdfIdsToAnalyze = this.pdfDocuments.map(doc => doc.id);
-        const documentTitles = this.pdfDocuments.map(doc => doc.title || 'Untitled Document');
-        // --- END MODIFICATION ---
+        this.response = null; // Clear current response
+        const userPrompt = this.userPrompt;
         
-        // Add a user-like message to history indicating what's being done
-        const userInitiatedActionMessage = {
-            id: this.generateMessageId(),
-            content: `Attempting to analyze ${pdfIdsToAnalyze.length} PDF document(s): ${documentTitles.join(', ')}`,
-            formattedContent: `Attempting to analyze <strong>${pdfIdsToAnalyze.length} PDF document(s):</strong> <em>${documentTitles.join(', ')}</em>`,
-            sender: 'System Action',
-            timestamp: this.getFormattedTimestamp(),
-            isUser: true, 
-            isSystem: true 
-        };
-        this.addMessageToHistory(userInitiatedActionMessage);
-        this.scrollToBottom();
-
-        // --- MODIFICATION: User prompt for multiple documents, incorporating contextPrompt ---
-        let basePdfAnalysisPrompt = `Please perform a comprehensive analysis of the ${pdfIdsToAnalyze.length} attached PDF document(s). For each document, extract all key information, provide a concise summary of its content, and identify any actionable items, important figures, dates, or conclusions. Present the analysis clearly, ensuring each document's analysis is distinct and follows the specified formatting guidelines.`;
-        
-        let analysisPrompt = basePdfAnalysisPrompt;
-        if (this.contextPrompt && this.contextPrompt.trim() !== '') {
-            analysisPrompt = `${this.contextPrompt}\n\n${basePdfAnalysisPrompt}`;
-            console.log('Using custom context prompt for PDF analysis:', this.contextPrompt);
-        }
-        // --- END MODIFICATION ---
-
         try {
-            console.log(`Calling processPdfDocumentWithAI for record: ${this.effectiveRecordId}, docIds: ${pdfIdsToAnalyze.join(', ')}`);
-            // --- MODIFICATION: Pass list of IDs --- 
+            const MAX_DOCUMENTS = 3; // Maximum number of documents to send
+            let docIdsToProcess = [];
+            
+            // If we have more than MAX_DOCUMENTS, warn the user and only process the first MAX_DOCUMENTS
+            if (this.pdfDocuments.length > MAX_DOCUMENTS) {
+                const warningMessage = `Note: Only analyzing the first ${MAX_DOCUMENTS} PDF documents due to size limitations.`;
+                this.showErrorToast('Document Limit', warningMessage, 'warning');
+                docIdsToProcess = this.pdfDocuments.slice(0, MAX_DOCUMENTS).map(doc => doc.id);
+                console.log(`Limiting PDF analysis to ${MAX_DOCUMENTS} documents out of ${this.pdfDocuments.length} total`);
+            } else {
+                docIdsToProcess = this.pdfDocuments.map(doc => doc.id);
+            }
+            
+            console.log('Calling processPdfDocumentWithAI for record: ' + this.effectiveRecordId + 
+                       ', docIds: ' + docIdsToProcess.join(', '));
+                       
             const result = await processPdfDocumentWithAI({
                 recordId: this.effectiveRecordId,
-                contentDocumentIds: pdfIdsToAnalyze, // Pass the list of IDs
-                userPrompt: analysisPrompt
+                contentDocumentIds: docIdsToProcess,
+                userPrompt: userPrompt || 'Analyze this document in detail and provide a comprehensive analysis.'
             });
-            // --- END MODIFICATION ---
-
-            this.response = result; // Display in the main response area too
-
-            const aiMessageObj = {
-                id: this.generateMessageId(),
-                content: result,
-                formattedContent: this.getFormattedMessageContent(result),
-                sender: 'AI Assistant',
-                timestamp: this.getFormattedTimestamp(),
-                isUser: false,
-                model: this.selectedLLMLabel || 'Document Analysis'
-            };
-            this.addMessageToHistory(aiMessageObj);
-
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: 'PDF Analysis Complete',
-                    message: `${pdfIdsToAnalyze.length} document(s) have been analyzed.`,
-                    variant: 'success'
-                })
-            );
-            this.scrollToBottom();
-
-            // --- MODIFICATION: After document analysis, trigger field extraction if configured ---
+            
+            this.response = result;
+            
+            // If field analysis is enabled and we have target fields to extract, show the extraction modal
             if (this.documentAnalysisFieldsApiNames && this.documentAnalysisFieldsApiNames.trim() !== '') {
-                this.isExtractingFields = true;
-                const fieldApiNames = this.documentAnalysisFieldsApiNames.split(',').map(name => name.trim()).filter(name => name);
-                // The 'result' from processPdfDocumentWithAI is the combined text of all analyzed documents.
-                // extractFieldsFromDocuments expects a List<String> for analyzedDocumentContents.
-                // For now, we pass the single combined string as a list with one element.
-                // This might need refinement in Apex if individual document context is crucial for field extraction.
-                extractFieldsFromDocuments({
-                    recordId: this.effectiveRecordId,
-                    analyzedDocumentContents: [result], // Pass the combined analysis text
-                    targetFieldApiNames: fieldApiNames,
-                    llmConfigName: 'OpenAI_GPT4_Vision' // MODIFICATION: Hardcode to use the powerful model for extraction
-                })
-                .then(extractionData => {
-                    console.log('LWC handleAnalyzeDocumentClick - Raw extractionData from Apex:', JSON.stringify(extractionData, null, 2)); // Log raw data
-                    if (extractionData && extractionData.fields) {
-                        // Transform data for the modal
-                        this.extractedFieldsData = Object.values(extractionData.fields).map(field => ({
-                            ...field,
-                            // Add a unique key for iteration in LWC template
-                            id: field.apiName, 
-                            // Prepare options for combobox, including current value and an option to keep it
-                            options: [
-                                { label: `Current: ${field.currentValue === null || field.currentValue === undefined ? '' : field.currentValue}`, value: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue }, 
-                                ...(field.suggestedValues || []).map(sugg => ({ label: sugg, value: sugg }))
-                            ],
-                            // Set initial selected value, defaulting to current if no suggestions or keep current
-                            selectedValue: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue 
-                        }));
-                        console.log('LWC handleAnalyzeDocumentClick - Transformed extractedFieldsData for modal:', JSON.stringify(this.extractedFieldsData, null, 2)); // Log transformed data
-                        this.showExtractFieldsModal = true;
-                    } else {
-                        this.showErrorToast('Field Extraction Failed', 'Could not retrieve structured field data from documents.', 'error');
-                    }
-                })
-                .catch(extractError => {
-                    this.showErrorToast('Field Extraction Error', `Error during field extraction: ${this.getErrorMessage(extractError)}`, 'error');
-                })
-                .finally(() => {
-                    this.isExtractingFields = false;
-                });
+                this.handleDataExtraction([result]);
             }
-            // --- END MODIFICATION ---
-
+            
         } catch (error) {
-            this.pdfProcessingError = 'AI analysis of PDF(s) failed: ' + this.getErrorMessage(error);
             console.error('Error during PDF analysis call:', error);
-            this.showErrorToast('PDF Analysis Failed', this.pdfProcessingError, 'error');
-
-            const aiErrorMessageObj = {
-                id: this.generateMessageId(),
-                content: `Error analyzing PDF(s): ${this.pdfProcessingError}`,
-                formattedContent: `Error analyzing PDF(s): <span style="color:red;">${this.pdfProcessingError}</span>`,
-                sender: 'AI Assistant',
-                timestamp: this.getFormattedTimestamp(),
-                isUser: false,
-                isError: true,
-                model: this.selectedLLMLabel || 'Document Analysis'
-            };
-            this.addMessageToHistory(aiErrorMessageObj);
-            this.scrollToBottom();
-
+            const errorMessage = this.getErrorMessage(error);
+            
+            // Check for heap size specific errors
+            if (errorMessage && (
+                errorMessage.includes('size limits') || 
+                errorMessage.includes('heap size') || 
+                errorMessage.includes('limit')
+            )) {
+                this.pdfProcessingError = 'The PDF documents exceed Salesforce size limits. Try analyzing fewer or smaller documents.';
+            } else {
+                this.pdfProcessingError = 'Error analyzing PDF document: ' + errorMessage;
+            }
+            
+            this.showErrorToast('PDF Analysis Error', this.pdfProcessingError);
         } finally {
             this.isProcessingPdf = false;
         }
     }
-    // --- End PDF Analysis Methods ---
 
     // Getters for toggle button
     get toggleIconName() {
@@ -1656,18 +1611,18 @@ SUMMARY:`;
     }
 
     get showAnalyzeDocumentButton() {
-        // Show button if there are PDFs, feature is enabled, and no other major operations are in progress
-        return this.enableDocumentAnalysis && 
-               this.hasPdfDocuments && 
-               !this.isLoading && 
-               !this.isProcessingPdf && 
-               !this.anomalyCheckLoading; 
+        return this.enableDocumentAnalysis && this.hasPdfDocuments && !this.isProcessingPdf;
     }
-
+    
+    // Add a new computed property to check if actions should be disabled
+    get areActionsDisabled() {
+        return this.anomalyCheckLoading || this.isLoading || this.isProcessingPdf;
+    }
+    
     get analyzeDocumentButtonLabel() {
-        // --- MODIFICATION: Update button label ---
-        return this.pdfDocuments.length > 1 ? 'Analyze All Attached Documents' : 'Analyze Attached Document';
-        // --- END MODIFICATION ---
+        return this.pdfDocuments.length === 1 ? 
+               'Analyze PDF Document' : 
+               'Analyze All Attached Documents';
     }
 
     // New getter for Analyze Images button label
@@ -1753,4 +1708,60 @@ SUMMARY:`;
         }
     }
     // --- End Handlers for Document Field Extraction Modal ---
+
+    // Helper method to handle data extraction from document analysis results
+    handleDataExtraction(documentAnalysisResults) {
+        if (!this.documentAnalysisFieldsApiNames || !documentAnalysisResults || documentAnalysisResults.length === 0) {
+            return;
+        }
+        
+        this.isExtractingFields = true;
+        const fieldApiNames = this.documentAnalysisFieldsApiNames.split(',')
+            .map(name => name.trim())
+            .filter(name => name);
+            
+        console.log('Extracting data for fields:', fieldApiNames.join(', '));
+        
+        // Call the Apex method to extract fields from the document analysis results
+        extractFieldsFromDocuments({
+            recordId: this.effectiveRecordId,
+            analyzedDocumentContents: documentAnalysisResults,
+            targetFieldApiNames: fieldApiNames,
+            llmConfigName: 'OpenAI_GPT4_Vision' // Use the powerful model for extraction
+        })
+        .then(extractionData => {
+            console.log('Field extraction data received:', JSON.stringify(extractionData, null, 2));
+            if (extractionData && extractionData.fields) {
+                // Transform data for the modal
+                this.extractedFieldsData = Object.values(extractionData.fields).map(field => ({
+                    ...field,
+                    id: field.apiName, 
+                    options: [
+                        { 
+                            label: `Current: ${field.currentValue === null || field.currentValue === undefined ? '(empty)' : field.currentValue}`, 
+                            value: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue 
+                        }, 
+                        ...(field.suggestedValues || []).map(sugg => ({ label: sugg, value: sugg }))
+                    ],
+                    selectedValue: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue 
+                }));
+                
+                // Only show the modal if we have fields with suggestions
+                if (this.extractedFieldsData.some(field => field.options.length > 1)) {
+                    this.showExtractFieldsModal = true;
+                } else {
+                    this.showErrorToast('No Field Data Found', 'No relevant field data could be extracted from the documents.', 'info');
+                }
+            } else {
+                this.showErrorToast('Field Extraction Failed', 'Could not retrieve structured field data from documents.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error extracting fields:', error);
+            this.showErrorToast('Field Extraction Error', 'Error during field extraction: ' + this.getErrorMessage(error), 'error');
+        })
+        .finally(() => {
+            this.isExtractingFields = false;
+        });
+    }
 }
