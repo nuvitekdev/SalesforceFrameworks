@@ -118,12 +118,21 @@ public with sharing class LLMController {
      * @param recordId The Id of the Salesforce record to analyze.
      * @param configName The DeveloperName of the LLM_Configuration__mdt to use.
      * @param relatedObjects Comma-separated list of object API names to search across for related data.
+     * @param pdfDocumentIds List of ContentDocument Ids for PDF documents to include in the analysis
+     * @param customPrompt Optional parameter containing a custom prompt to prepend to the default anomaly prompt
      * @return String The AI's assessment (e.g., "YES - Conflict of interest detected: Submitter and Investigator are the same." or "NO").
      * @throws AuraHandledException if an error occurs during processing.
      */
     @AuraEnabled
-    public static String checkRecordForAnomalies(String recordId, String configName, String relatedObjects) {
+    public static String checkRecordForAnomalies(String recordId, String configName, String relatedObjects, 
+                                              List<String> pdfDocumentIds, String customPrompt) {
+        // Handle missing optional parameters
+        pdfDocumentIds = pdfDocumentIds != null ? pdfDocumentIds : new List<String>();
+        customPrompt = customPrompt != null ? customPrompt : '';
+        
         System.debug('Anomaly check started for recordId: ' + recordId + ' using config: ' + configName);
+        System.debug('PDF documents included: ' + (!pdfDocumentIds.isEmpty() ? pdfDocumentIds.size() + ' documents' : 'None'));
+        System.debug('Custom prompt provided: ' + (String.isNotBlank(customPrompt) ? 'Yes' : 'No'));
 
         // Validate inputs
         if (String.isBlank(recordId) || String.isBlank(configName)) {
@@ -154,7 +163,7 @@ public with sharing class LLMController {
             String context = getRecordContext(recordId, relatedObjects);
             
             // Construct the prompt specifically for anomaly detection
-            String anomalyPrompt = 'Analyze the following Salesforce record data. Look specifically for potential issues such as: \n' + 
+            String baseAnomalyPrompt = 'Analyze the following Salesforce record data. Look specifically for potential issues such as: \n' + 
                                  '- Anomalies (e.g., unusual values, missing required information for the stage)\n' +
                                  '- Conflicts of Interest (e.g., the same person involved in conflicting roles like submitter and approver)\n' + 
                                  '- Inconsistencies (e.g., dates out of order, contradictory statements)\n' +
@@ -164,12 +173,177 @@ public with sharing class LLMController {
                                  '  - Use <b> tags to highlight main points or titles (e.g., <b>Conflict of Interest</b>).\n' +
                                  '  - Use <ol> and <li> for numbered lists of main findings.\n' +
                                  '  - Use <ul> and <li> for bullet points under each finding or for recommendations.\n' +
-                                 '  - Use <br> for line breaks where appropriate. Do NOT include the markdown `-` for bullets, use <li> instead.\n\n' +
-                                 'RECORD DATA:\n' + context;
-
-            // Call the LLM with the specific anomaly detection prompt
+                                 '  - Use <br> for line breaks where appropriate. Do NOT include the markdown `-` for bullets, use <li> instead.\n\n';
+            
+            // Prepend custom prompt if provided
+            String anomalyPrompt = String.isNotBlank(customPrompt) ? customPrompt + baseAnomalyPrompt : baseAnomalyPrompt;
+            
+            // Add record data section
+            anomalyPrompt += 'RECORD DATA:\n' + context;
+            
+            // If we're including PDF documents, use the Vision-based approach
+            if (pdfDocumentIds != null && !pdfDocumentIds.isEmpty() && configName == 'OpenAI_GPT4_Vision') {
+                System.debug('Processing ' + pdfDocumentIds.size() + ' PDF documents with Vision for anomaly detection');
+                
+                // Prepare a list to hold all content items (text + document files)
+                List<Map<String, Object>> allContentItems = new List<Map<String, Object>>();
+                
+                // First, add the text prompt
+                Map<String, Object> textContent = new Map<String, Object>();
+                textContent.put('type', 'text');
+                textContent.put('text', anomalyPrompt + '\n\nPlease also analyze the following PDF documents for anomalies, particularly any inconsistencies with the record data above. Look for any suspicious content, invalid information, or mismatches.');
+                allContentItems.add(textContent);
+                
+                // Set a maximum number of documents to process to avoid heap size issues
+                Integer MAX_DOCUMENTS = 3;
+                Integer documentCount = 0;
+                
+                // Process each PDF document with size limitations
+                for (String docId : pdfDocumentIds) {
+                    // Skip if we've reached our document limit
+                    if (documentCount >= MAX_DOCUMENTS) {
+                        System.debug('Skipping additional documents past the limit of ' + MAX_DOCUMENTS);
+                        break;
+                    }
+                    
+                    ContentVersion cv;
+                    try {
+                        cv = [
+                            SELECT Id, Title, FileExtension, VersionData
+                            FROM ContentVersion
+                            WHERE ContentDocumentId = :docId AND IsLatest = true AND FileExtension = 'pdf'
+                            LIMIT 1
+                        ];
+                    } catch (Exception e) {
+                        System.debug('Warning: PDF ContentVersion not found for ContentDocumentId: ' + docId + '. Skipping this document.');
+                        continue;
+                    }
+                    
+                    // Set a stricter size limit for PDFs to avoid heap issues
+                    Integer MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
+                    if (cv.VersionData.size() > MAX_FILE_SIZE_BYTES) {
+                        System.debug('Warning: PDF file size exceeds limit for ' + cv.Title + '. Size: ' + cv.VersionData.size() + ' bytes. Max allowed: ' + MAX_FILE_SIZE_BYTES + ' bytes. Skipping this document.');
+                        continue;
+                    }
+                    
+                    // Encode PDF as base64
+                    String base64Data = EncodingUtil.base64Encode(cv.VersionData);
+                    String base64WithPrefix = 'data:application/pdf;base64,' + base64Data;
+                    String currentFileTitle = cv.Title + (cv.Title.toLowerCase().endsWith('.pdf') ? '' : '.pdf');
+                    
+                    // Add PDF to content items
+                    Map<String, Object> fileContent = new Map<String, Object>();
+                    fileContent.put('type', 'file');
+                    
+                    Map<String, String> fileDataMap = new Map<String, String>();
+                    fileDataMap.put('filename', currentFileTitle);
+                    fileDataMap.put('file_data', base64WithPrefix);
+                    
+                    fileContent.put('file', fileDataMap);
+                    allContentItems.add(fileContent);
+                    
+                    documentCount++;
+                    System.debug('Added PDF to anomaly check: ' + currentFileTitle + ' (' + (cv.VersionData.size() / 1024) + ' KB)');
+                }
+                
+                // Monitor the heap size
+                Long heapSize = Limits.getHeapSize();
+                Long heapLimit = Limits.getLimitHeapSize();
+                System.debug('Current heap size: ' + heapSize + ' of ' + heapLimit + ' (' + (heapSize * 100 / heapLimit) + '%)');
+                
+                // If we successfully added content items, make the Vision API call
+                if (allContentItems.size() > 1) { // At least the text prompt + 1 file
+                    // Make a call to the Vision model with all content
+                    Map<String, Object> requestBody = new Map<String, Object>();
+                    requestBody.put('model', config.Model_Name__c); // Should be "gpt-4o" or similar Vision model
+                    
+                    Map<String, Object> userMessageDetails = new Map<String, Object>();
+                    userMessageDetails.put('role', 'user');
+                    userMessageDetails.put('content', allContentItems);
+                    
+                    List<Map<String, Object>> messages = new List<Map<String, Object>>{userMessageDetails};
+                    requestBody.put('messages', messages);
+                    
+                    if(config.Max_Tokens__c != null){
+                        requestBody.put('max_tokens', Integer.valueOf(config.Max_Tokens__c));
+                    } else {
+                        requestBody.put('max_tokens', 4000); // Default fallback if not set in config
+                    }
+                    if(config.Temperature__c != null){
+                        requestBody.put('temperature', config.Temperature__c);
+                    }
+                    
+                    System.debug('Making Vision API call for anomaly detection with ' + allContentItems.size() + ' items');
+                    
+                    // Check if payload exceeds heap size limit
+                    String requestBodyJson = '';
+                    try {
+                        requestBodyJson = JSON.serialize(requestBody);
+                        System.debug('Request body size: ' + requestBodyJson.length() + ' characters');
+                        
+                        if (requestBodyJson.length() > 3000000) { // Arbitrary large limit as warning
+                            System.debug('WARNING: Request body is very large (' + requestBodyJson.length() + ' characters)');
+                        }
+                    } catch (System.LimitException le) {
+                        System.debug('ERROR: Request body exceeds heap size limit.');
+                        throw new AuraHandledException('The document analysis exceeds Salesforce size limits. Please analyze fewer or smaller documents.');
+                    }
+                    
+                    // Make the API call
+                    Http http = new Http();
+                    HttpRequest req = new HttpRequest();
+                    req.setEndpoint(config.Base_URL__c);
+                    req.setMethod('POST');
+                    req.setHeader('Content-Type', 'application/json;charset=UTF-8');
+                    req.setHeader('Authorization', 'Bearer ' + config.API_Key__c);
+                    req.setBody(requestBodyJson);
+                    req.setTimeout(120000); // 2 minutes timeout
+                    
+                    HttpResponse res = http.send(req);
+                    
+                    // Process the response
+                    if (res.getStatusCode() == 200) {
+                        Map<String, Object> responseMap = (Map<String, Object>)JSON.deserializeUntyped(res.getBody());
+                        if (responseMap.containsKey('choices')) {
+                            List<Object> choices = (List<Object>)responseMap.get('choices');
+                            if (choices != null && !choices.isEmpty()) {
+                                Map<String, Object> choice = (Map<String, Object>)choices[0];
+                                if (choice.containsKey('message')) {
+                                    Map<String, Object> message = (Map<String, Object>)choice.get('message');
+                                    if (message.containsKey('content')) {
+                                        String content = (String)message.get('content');
+                                        System.debug('Successfully received anomaly check with Vision (first 200 chars): ' + content.left(200) + '...');
+                                        return content;
+                                    }
+                                }
+                            }
+                        }
+                        System.debug('Error: AI response format unexpected. Body: ' + res.getBody().left(500) + '...');
+                        throw new AuraHandledException('Error: AI response format was not as expected.');
+                    } else {
+                        String errorBody = res.getBody();
+                        System.debug('Error from AI Service: ' + res.getStatusCode() + ' ' + res.getStatus() + '. Body: ' + errorBody);
+                        // Try to extract error message
+                        try {
+                            Map<String, Object> errorMap = (Map<String, Object>)JSON.deserializeUntyped(errorBody);
+                            if(errorMap.containsKey('error') && errorMap.get('error') instanceof Map<String,Object>){
+                                Map<String,Object> errorDetails = (Map<String,Object>)errorMap.get('error');
+                                if(errorDetails.containsKey('message')){
+                                    String errorMessage = (String)errorDetails.get('message');
+                                    throw new AuraHandledException('AI service error: ' + errorMessage);
+                                }
+                            }
+                        } catch(Exception parseEx) {
+                            // If error parsing fails, throw the original error
+                            throw new AuraHandledException('Error from AI service: ' + res.getStatusCode() + ' ' + res.getStatus());
+                        }
+                    }
+                }
+            }
+            
+            // If we're not using Vision or if no PDFs were successfully processed, fall back to regular LLM call
             String assessment = makeLLMCall(config, anomalyPrompt);
-            System.debug('Anomaly check completed successfully');
+            System.debug('Anomaly check completed successfully using standard LLM call');
             
             // Return the raw assessment from the LLM
             return assessment;
@@ -182,6 +356,8 @@ public with sharing class LLMController {
             throw new AuraHandledException('Error performing AI anomaly check: ' + e.getMessage());
         }
     }
+    
+    // Legacy method removed to avoid AuraEnabled method overloading error
     
     private static String getRecordContext(String recordId, String relatedObjects) {
         try {
@@ -1618,25 +1794,38 @@ public with sharing class LLMController {
             List<String> fileTitlesForPrompt = new List<String>();
             Integer fileIndex = 1;
 
+            // Set a maximum number of documents to process to avoid heap size issues
+            Integer MAX_DOCUMENTS = 3;
+            Integer documentCount = 0;
+            
             // --- Prepare file data and update prompt with file details ---
             for (String docId : contentDocumentIds) {
-                ContentVersion cv = [
-                    SELECT Id, Title, FileExtension, VersionData
-                    FROM ContentVersion
-                    WHERE ContentDocumentId = :docId AND IsLatest = true AND FileExtension = 'pdf'
-                    LIMIT 1
-                ];
-
-                if (cv == null) {
+                // Skip if we've reached our document limit
+                if (documentCount >= MAX_DOCUMENTS) {
+                    System.debug('Skipping additional PDF documents past the limit of ' + MAX_DOCUMENTS);
+                    detailedPrompt += '(Additional documents beyond the ' + MAX_DOCUMENTS + ' document limit are not included in this analysis)\n';
+                    break;
+                }
+                
+                ContentVersion cv;
+                try {
+                    cv = [
+                        SELECT Id, Title, FileExtension, VersionData
+                        FROM ContentVersion
+                        WHERE ContentDocumentId = :docId AND IsLatest = true AND FileExtension = 'pdf'
+                        LIMIT 1
+                    ];
+                } catch (Exception e) {
                     System.debug('Warning: PDF ContentVersion not found for ContentDocumentId: ' + docId + '. Skipping this document.');
                     detailedPrompt += 'Document ID ' + docId + ' (Not Found or Not a PDF) - SKIPPED\n';
                     continue; // Skip to the next document
                 }
 
-                Integer MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+                // Set a stricter size limit for PDFs to avoid heap issues
+                Integer MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
                 if (cv.VersionData.size() > MAX_FILE_SIZE_BYTES) {
-                    System.debug('Warning: PDF file size exceeds limit for ' + cv.Title + '. Size: ' + cv.VersionData.size() + '. Skipping this document.');
-                    detailedPrompt += cv.Title + ' (File Size Exceeds Limit) - SKIPPED\n';
+                    System.debug('Warning: PDF file size exceeds limit for ' + cv.Title + '. Size: ' + cv.VersionData.size() + ' bytes. Max allowed: ' + MAX_FILE_SIZE_BYTES + ' bytes. Skipping this document.');
+                    detailedPrompt += cv.Title + ' (File Size Exceeds Limit: ' + (cv.VersionData.size() / (1024 * 1024)) + ' MB) - SKIPPED\n';
                     continue; // Skip to the next document
                 }
                 
@@ -1649,17 +1838,25 @@ public with sharing class LLMController {
                 detailedPrompt += 'DOCUMENT ' + fileIndex + ': "' + currentFileTitle + '"\n';
 
                 // Prepare file content for API request
-            Map<String, Object> fileContent = new Map<String, Object>();
+                Map<String, Object> fileContent = new Map<String, Object>();
                 fileContent.put('type', 'file'); // Using 'file' type based on assumption it's supported by gpt-4o for PDFs
             
-            Map<String, String> fileDataMap = new Map<String, String>();
+                Map<String, String> fileDataMap = new Map<String, String>();
                 fileDataMap.put('filename', currentFileTitle);
                 fileDataMap.put('file_data', base64WithPrefix); // Assuming this is the correct way to pass file data
             
-            fileContent.put('file', fileDataMap);
+                fileContent.put('file', fileDataMap);
                 allContentItems.add(fileContent);
+                documentCount++;
                 fileIndex++;
+                
+                System.debug('Added PDF for analysis: ' + currentFileTitle + ' (' + (cv.VersionData.size() / 1024) + ' KB)');
             }
+            
+            // Monitor the heap size
+            Long heapSize = Limits.getHeapSize();
+            Long heapLimit = Limits.getLimitHeapSize();
+            System.debug('Current heap size: ' + heapSize + ' of ' + heapLimit + ' (' + (heapSize * 100 / heapLimit) + '%)');
             
             // Check if any valid files were found
             if (allContentItems.isEmpty()) {
@@ -1715,8 +1912,19 @@ public with sharing class LLMController {
                 requestBody.put('temperature', config.Temperature__c);
             }
 
-
-            System.debug('Request body being sent to OpenAI (first 1000 chars): ' + JSON.serialize(requestBody).left(1000) + '...');
+            // Check if payload exceeds heap size limit
+            String requestBodyJson = '';
+            try {
+                requestBodyJson = JSON.serialize(requestBody);
+                System.debug('Request body size: ' + requestBodyJson.length() + ' characters');
+                
+                if (requestBodyJson.length() > 3000000) { // Arbitrary large limit as warning
+                    System.debug('WARNING: Request body is very large (' + requestBodyJson.length() + ' characters)');
+                }
+            } catch (System.LimitException le) {
+                System.debug('ERROR: Request body exceeds heap size limit.');
+                throw new AuraHandledException('The document analysis exceeds Salesforce size limits. Please analyze fewer or smaller documents.');
+            }
 
             // Make the callout
             Http http = new Http();
@@ -1725,7 +1933,7 @@ public with sharing class LLMController {
             req.setMethod('POST');
             req.setHeader('Content-Type', 'application/json;charset=UTF-8');
             req.setHeader('Authorization', 'Bearer ' + config.API_Key__c);
-            req.setBody(JSON.serialize(requestBody));
+            req.setBody(requestBodyJson);
             req.setTimeout(120000); // 2 minutes timeout
 
             HttpResponse res = http.send(req);

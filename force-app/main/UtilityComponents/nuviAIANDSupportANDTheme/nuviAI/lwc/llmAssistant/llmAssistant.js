@@ -1104,11 +1104,49 @@ export default class LLMAssistant extends LightningElement {
         this.anomalyCheckResult = '';   // Clear previous result
 
         try {
-            // Call the Apex method
+            // Check if document analysis is enabled and if there are PDF documents available
+            let pdfDocumentIds = [];
+            let modelToUse = this.selectedLLM;
+            
+            // If document analysis is enabled and we have PDFs, we'll send the PDF document IDs directly
+            if (this.enableDocumentAnalysis && this.hasPdfDocuments) {
+                console.log('Document analysis enabled for anomaly detection. Collecting document IDs...');
+                
+                // Apply document limits - sort documents by size if possible and take the first few
+                // For simplicity, we'll just limit the number of documents here to the first 3
+                const MAX_DOCUMENTS_TO_ANALYZE = 3;
+                
+                // Collect PDF document IDs to pass directly to the Apex method
+                pdfDocumentIds = this.pdfDocuments
+                    .slice(0, MAX_DOCUMENTS_TO_ANALYZE)
+                    .map(doc => doc.id);
+                
+                console.log(`Using ${pdfDocumentIds.length} of ${this.pdfDocuments.length} PDF document(s) for anomaly analysis (limit: ${MAX_DOCUMENTS_TO_ANALYZE})`);
+                
+                // Use Vision model for anomaly detection when documents are available
+                modelToUse = 'OpenAI_GPT4_Vision';
+                console.log('Using Vision model for anomaly detection: ' + modelToUse);
+                
+                // Display a warning if we had to limit documents
+                if (this.pdfDocuments.length > MAX_DOCUMENTS_TO_ANALYZE) {
+                    console.warn(`Limited analysis to ${MAX_DOCUMENTS_TO_ANALYZE} documents to avoid size limits.`);
+                }
+            }
+
+            // Prepare the base anomaly detection prompt
+            let anomalyPrompt = '';
+            if (this.contextPrompt && this.contextPrompt.trim() !== '') {
+                anomalyPrompt = this.contextPrompt + '\n\n';
+                console.log('Including context prompt in anomaly detection');
+            }
+            
+            // Call the Apex method directly with the PDF document IDs
             const result = await checkRecordForAnomalies({ 
                 recordId: this.effectiveRecordId, 
-                configName: this.selectedLLM,
-                relatedObjects: this.relatedObjects
+                configName: modelToUse,
+                relatedObjects: this.relatedObjects,
+                pdfDocumentIds: pdfDocumentIds,
+                customPrompt: anomalyPrompt || ''
             });
 
             console.log('Anomaly check result received:', result);
@@ -1130,16 +1168,33 @@ export default class LLMAssistant extends LightningElement {
             }
 
         } catch (error) {
-            // Handle errors during the anomaly check (e.g., Apex error, network issue)
+            // Handle errors during the anomaly check
             console.error('Error during initial anomaly check:', error);
-            // Optionally show a toast or log the error, but maybe don't block the main UI
-            // We'll display a generic message in the banner spot for visibility
-            this.showAnomalyBanner = true;
-            this.anomalyBannerMessage = 'Could not perform automatic record analysis. Please proceed with caution or try analyzing manually.';
+            
+            let errorMessage = this.getErrorMessage(error);
+            console.error('Error details:', errorMessage);
+            
+            // Check for specific error messages related to document size
+            if (errorMessage && (
+                errorMessage.includes('size limits') || 
+                errorMessage.includes('heap size') || 
+                errorMessage.includes('limit') ||
+                errorMessage.includes('too large')
+            )) {
+                // This is a size-related error
+                this.showAnomalyBanner = true;
+                this.anomalyBannerMessage = 'The document analysis could not be completed due to file size limitations. Some documents may be too large for automatic analysis. Please try analyzing the record without document analysis or with fewer/smaller documents.';
+            } else {
+                // Generic error
+                this.showAnomalyBanner = true;
+                this.anomalyBannerMessage = 'Could not perform automatic record analysis. Please proceed with caution or try analyzing manually.';
+            }
+            
             // Automatically open the accordion when there is an error
             this.activeAccordionSections = ['anomalySection'];
-            // Consider adding a more specific error log for admins/devs
-            // this.showError('Failed to perform initial anomaly check: ' + this.getErrorMessage(error));
+            
+            // Show a toast for visibility
+            this.showErrorToast('Anomaly Check Error', errorMessage || 'Failed to perform anomaly check');
         } finally {
             // Ensure loading state is turned off
             this.anomalyCheckLoading = false;
@@ -1477,151 +1532,65 @@ export default class LLMAssistant extends LightningElement {
     }
 
     async handleAnalyzeDocumentClick() {
-        if (!this.pdfDocuments || this.pdfDocuments.length === 0) {
-            this.pdfProcessingError = 'No PDF documents are attached to this record for analysis.';
-            this.showErrorToast('No PDFs Available', this.pdfProcessingError, 'error');
-            console.warn('Analyze document clicked but no PDF documents found.');
+        if (!this.hasPdfDocuments || this.isProcessingPdf) {
             return;
         }
 
-        if (!this.selectedLLM) {
-            this.showError('Please select an AI model first for PDF analysis.');
-            this.showErrorToast('Model Not Selected', 'Please select an AI model from the dropdown before analyzing documents.', 'warning');
-            return;
-        }
-        
         this.isProcessingPdf = true;
         this.pdfProcessingError = null;
-        this.response = ''; // Clear previous main response area
-
-        // --- MODIFICATION: Collect all PDF document IDs ---
-        const pdfIdsToAnalyze = this.pdfDocuments.map(doc => doc.id);
-        const documentTitles = this.pdfDocuments.map(doc => doc.title || 'Untitled Document');
-        // --- END MODIFICATION ---
+        this.response = null; // Clear current response
+        const userPrompt = this.userPrompt;
         
-        // Add a user-like message to history indicating what's being done
-        const userInitiatedActionMessage = {
-            id: this.generateMessageId(),
-            content: `Attempting to analyze ${pdfIdsToAnalyze.length} PDF document(s): ${documentTitles.join(', ')}`,
-            formattedContent: `Attempting to analyze <strong>${pdfIdsToAnalyze.length} PDF document(s):</strong> <em>${documentTitles.join(', ')}</em>`,
-            sender: 'System Action',
-            timestamp: this.getFormattedTimestamp(),
-            isUser: true, 
-            isSystem: true 
-        };
-        this.addMessageToHistory(userInitiatedActionMessage);
-        this.scrollToBottom();
-
-        // --- MODIFICATION: User prompt for multiple documents, incorporating contextPrompt ---
-        let basePdfAnalysisPrompt = `Please perform a comprehensive analysis of the ${pdfIdsToAnalyze.length} attached PDF document(s). For each document, extract all key information, provide a concise summary of its content, and identify any actionable items, important figures, dates, or conclusions. Present the analysis clearly, ensuring each document's analysis is distinct and follows the specified formatting guidelines.`;
-        
-        let analysisPrompt = basePdfAnalysisPrompt;
-        if (this.contextPrompt && this.contextPrompt.trim() !== '') {
-            analysisPrompt = `${this.contextPrompt}\n\n${basePdfAnalysisPrompt}`;
-            console.log('Using custom context prompt for PDF analysis:', this.contextPrompt);
-        }
-        // --- END MODIFICATION ---
-
         try {
-            console.log(`Calling processPdfDocumentWithAI for record: ${this.effectiveRecordId}, docIds: ${pdfIdsToAnalyze.join(', ')}`);
-            // --- MODIFICATION: Pass list of IDs --- 
+            const MAX_DOCUMENTS = 3; // Maximum number of documents to send
+            let docIdsToProcess = [];
+            
+            // If we have more than MAX_DOCUMENTS, warn the user and only process the first MAX_DOCUMENTS
+            if (this.pdfDocuments.length > MAX_DOCUMENTS) {
+                const warningMessage = `Note: Only analyzing the first ${MAX_DOCUMENTS} PDF documents due to size limitations.`;
+                this.showErrorToast('Document Limit', warningMessage, 'warning');
+                docIdsToProcess = this.pdfDocuments.slice(0, MAX_DOCUMENTS).map(doc => doc.id);
+                console.log(`Limiting PDF analysis to ${MAX_DOCUMENTS} documents out of ${this.pdfDocuments.length} total`);
+            } else {
+                docIdsToProcess = this.pdfDocuments.map(doc => doc.id);
+            }
+            
+            console.log('Calling processPdfDocumentWithAI for record: ' + this.effectiveRecordId + 
+                       ', docIds: ' + docIdsToProcess.join(', '));
+                       
             const result = await processPdfDocumentWithAI({
                 recordId: this.effectiveRecordId,
-                contentDocumentIds: pdfIdsToAnalyze, // Pass the list of IDs
-                userPrompt: analysisPrompt
+                contentDocumentIds: docIdsToProcess,
+                userPrompt: userPrompt || 'Analyze this document in detail and provide a comprehensive analysis.'
             });
-            // --- END MODIFICATION ---
-
-            this.response = result; // Display in the main response area too
-
-            const aiMessageObj = {
-                id: this.generateMessageId(),
-                content: result,
-                formattedContent: this.getFormattedMessageContent(result),
-                sender: 'AI Assistant',
-                timestamp: this.getFormattedTimestamp(),
-                isUser: false,
-                model: this.selectedLLMLabel || 'Document Analysis'
-            };
-            this.addMessageToHistory(aiMessageObj);
-
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: 'PDF Analysis Complete',
-                    message: `${pdfIdsToAnalyze.length} document(s) have been analyzed.`,
-                    variant: 'success'
-                })
-            );
-            this.scrollToBottom();
-
-            // --- MODIFICATION: After document analysis, trigger field extraction if configured ---
+            
+            this.response = result;
+            
+            // If field analysis is enabled and we have target fields to extract, show the extraction modal
             if (this.documentAnalysisFieldsApiNames && this.documentAnalysisFieldsApiNames.trim() !== '') {
-                this.isExtractingFields = true;
-                const fieldApiNames = this.documentAnalysisFieldsApiNames.split(',').map(name => name.trim()).filter(name => name);
-                // The 'result' from processPdfDocumentWithAI is the combined text of all analyzed documents.
-                // extractFieldsFromDocuments expects a List<String> for analyzedDocumentContents.
-                // For now, we pass the single combined string as a list with one element.
-                // This might need refinement in Apex if individual document context is crucial for field extraction.
-                extractFieldsFromDocuments({
-                    recordId: this.effectiveRecordId,
-                    analyzedDocumentContents: [result], // Pass the combined analysis text
-                    targetFieldApiNames: fieldApiNames,
-                    llmConfigName: 'OpenAI_GPT4_Vision' // MODIFICATION: Hardcode to use the powerful model for extraction
-                })
-                .then(extractionData => {
-                    console.log('LWC handleAnalyzeDocumentClick - Raw extractionData from Apex:', JSON.stringify(extractionData, null, 2)); // Log raw data
-                    if (extractionData && extractionData.fields) {
-                        // Transform data for the modal
-                        this.extractedFieldsData = Object.values(extractionData.fields).map(field => ({
-                            ...field,
-                            // Add a unique key for iteration in LWC template
-                            id: field.apiName, 
-                            // Prepare options for combobox, including current value and an option to keep it
-                            options: [
-                                { label: `Current: ${field.currentValue === null || field.currentValue === undefined ? '' : field.currentValue}`, value: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue }, 
-                                ...(field.suggestedValues || []).map(sugg => ({ label: sugg, value: sugg }))
-                            ],
-                            // Set initial selected value, defaulting to current if no suggestions or keep current
-                            selectedValue: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue 
-                        }));
-                        console.log('LWC handleAnalyzeDocumentClick - Transformed extractedFieldsData for modal:', JSON.stringify(this.extractedFieldsData, null, 2)); // Log transformed data
-                        this.showExtractFieldsModal = true;
-                    } else {
-                        this.showErrorToast('Field Extraction Failed', 'Could not retrieve structured field data from documents.', 'error');
-                    }
-                })
-                .catch(extractError => {
-                    this.showErrorToast('Field Extraction Error', `Error during field extraction: ${this.getErrorMessage(extractError)}`, 'error');
-                })
-                .finally(() => {
-                    this.isExtractingFields = false;
-                });
+                this.handleDataExtraction([result]);
             }
-            // --- END MODIFICATION ---
-
+            
         } catch (error) {
-            this.pdfProcessingError = 'AI analysis of PDF(s) failed: ' + this.getErrorMessage(error);
             console.error('Error during PDF analysis call:', error);
-            this.showErrorToast('PDF Analysis Failed', this.pdfProcessingError, 'error');
-
-            const aiErrorMessageObj = {
-                id: this.generateMessageId(),
-                content: `Error analyzing PDF(s): ${this.pdfProcessingError}`,
-                formattedContent: `Error analyzing PDF(s): <span style="color:red;">${this.pdfProcessingError}</span>`,
-                sender: 'AI Assistant',
-                timestamp: this.getFormattedTimestamp(),
-                isUser: false,
-                isError: true,
-                model: this.selectedLLMLabel || 'Document Analysis'
-            };
-            this.addMessageToHistory(aiErrorMessageObj);
-            this.scrollToBottom();
-
+            const errorMessage = this.getErrorMessage(error);
+            
+            // Check for heap size specific errors
+            if (errorMessage && (
+                errorMessage.includes('size limits') || 
+                errorMessage.includes('heap size') || 
+                errorMessage.includes('limit')
+            )) {
+                this.pdfProcessingError = 'The PDF documents exceed Salesforce size limits. Try analyzing fewer or smaller documents.';
+            } else {
+                this.pdfProcessingError = 'Error analyzing PDF document: ' + errorMessage;
+            }
+            
+            this.showErrorToast('PDF Analysis Error', this.pdfProcessingError);
         } finally {
             this.isProcessingPdf = false;
         }
     }
-    // --- End PDF Analysis Methods ---
 
     // Getters for toggle button
     get toggleIconName() {
@@ -1642,18 +1611,18 @@ export default class LLMAssistant extends LightningElement {
     }
 
     get showAnalyzeDocumentButton() {
-        // Show button if there are PDFs, feature is enabled, and no other major operations are in progress
-        return this.enableDocumentAnalysis && 
-               this.hasPdfDocuments && 
-               !this.isLoading && 
-               !this.isProcessingPdf && 
-               !this.anomalyCheckLoading; 
+        return this.enableDocumentAnalysis && this.hasPdfDocuments && !this.isProcessingPdf;
     }
-
+    
+    // Add a new computed property to check if actions should be disabled
+    get areActionsDisabled() {
+        return this.anomalyCheckLoading || this.isLoading || this.isProcessingPdf;
+    }
+    
     get analyzeDocumentButtonLabel() {
-        // --- MODIFICATION: Update button label ---
-        return this.pdfDocuments.length > 1 ? 'Analyze All Attached Documents' : 'Analyze Attached Document';
-        // --- END MODIFICATION ---
+        return this.pdfDocuments.length === 1 ? 
+               'Analyze PDF Document' : 
+               'Analyze All Attached Documents';
     }
 
     // New getter for Analyze Images button label
@@ -1739,4 +1708,60 @@ export default class LLMAssistant extends LightningElement {
         }
     }
     // --- End Handlers for Document Field Extraction Modal ---
+
+    // Helper method to handle data extraction from document analysis results
+    handleDataExtraction(documentAnalysisResults) {
+        if (!this.documentAnalysisFieldsApiNames || !documentAnalysisResults || documentAnalysisResults.length === 0) {
+            return;
+        }
+        
+        this.isExtractingFields = true;
+        const fieldApiNames = this.documentAnalysisFieldsApiNames.split(',')
+            .map(name => name.trim())
+            .filter(name => name);
+            
+        console.log('Extracting data for fields:', fieldApiNames.join(', '));
+        
+        // Call the Apex method to extract fields from the document analysis results
+        extractFieldsFromDocuments({
+            recordId: this.effectiveRecordId,
+            analyzedDocumentContents: documentAnalysisResults,
+            targetFieldApiNames: fieldApiNames,
+            llmConfigName: 'OpenAI_GPT4_Vision' // Use the powerful model for extraction
+        })
+        .then(extractionData => {
+            console.log('Field extraction data received:', JSON.stringify(extractionData, null, 2));
+            if (extractionData && extractionData.fields) {
+                // Transform data for the modal
+                this.extractedFieldsData = Object.values(extractionData.fields).map(field => ({
+                    ...field,
+                    id: field.apiName, 
+                    options: [
+                        { 
+                            label: `Current: ${field.currentValue === null || field.currentValue === undefined ? '(empty)' : field.currentValue}`, 
+                            value: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue 
+                        }, 
+                        ...(field.suggestedValues || []).map(sugg => ({ label: sugg, value: sugg }))
+                    ],
+                    selectedValue: field.currentValue === null || field.currentValue === undefined ? '__KEEP_CURRENT__' : field.currentValue 
+                }));
+                
+                // Only show the modal if we have fields with suggestions
+                if (this.extractedFieldsData.some(field => field.options.length > 1)) {
+                    this.showExtractFieldsModal = true;
+                } else {
+                    this.showErrorToast('No Field Data Found', 'No relevant field data could be extracted from the documents.', 'info');
+                }
+            } else {
+                this.showErrorToast('Field Extraction Failed', 'Could not retrieve structured field data from documents.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error extracting fields:', error);
+            this.showErrorToast('Field Extraction Error', 'Error during field extraction: ' + this.getErrorMessage(error), 'error');
+        })
+        .finally(() => {
+            this.isExtractingFields = false;
+        });
+    }
 }
