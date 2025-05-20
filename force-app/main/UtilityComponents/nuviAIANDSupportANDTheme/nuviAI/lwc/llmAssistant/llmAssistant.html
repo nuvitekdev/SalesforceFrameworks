@@ -59,6 +59,7 @@
                         options={llmOptions}
                         value={selectedLLM}
                         onchange={handleModelChange}
+                        disabled={isInputDisabled}
                         class="slds-m-bottom_small">
                     </lightning-combobox>
                 </template>
@@ -83,6 +84,7 @@
                     value={userPrompt}
                     onchange={handlePromptChange}
                     placeholder="Type your question here..."
+                    disabled={isInputDisabled}
                     class="slds-m-bottom_small question-input">
                 </lightning-textarea>
 
@@ -92,7 +94,7 @@
                     <button 
                         class="custom-button primary-button" 
                         onclick={handleAsk} 
-                        disabled={areActionsDisabled}
+                        disabled={isDisabled}
                     >
                         <span class="button-icon">
                             <svg width="16" height="16" viewBox="0 0 52 52">
@@ -107,7 +109,7 @@
                         if:true={showAnalyzeButton}
                         class="custom-button secondary-button" 
                         onclick={handleSummarize} 
-                        disabled={areActionsDisabled}
+                        disabled={isDisabled}
                     >
                         <span class="button-icon">
                             <svg width="16" height="16" viewBox="0 0 52 52">
@@ -122,7 +124,7 @@
                         if:true={showImageAnalysisButton}
                         class="custom-button secondary-button" 
                         onclick={handleAnalyzeImages} 
-                        disabled={areActionsDisabled}
+                        disabled={isDisabled}
                     >
                         <span class="button-icon">
                             <svg width="16" height="16" viewBox="0 0 52 52">
@@ -137,7 +139,7 @@
                         if:true={showAnalyzeDocumentButton}
                         class="custom-button secondary-button" 
                         onclick={handleAnalyzeDocumentClick}
-                        disabled={areActionsDisabled} 
+                        disabled={isDisabled}
                         title={analyzeDocumentButtonLabel} 
                     >
                         <span class="button-icon">
@@ -152,7 +154,7 @@
                     <button 
                         class="custom-button secondary-button" 
                         onclick={clearConversation} 
-                        disabled={areActionsDisabled}
+                        disabled={isDisabled}
                     >
                         <span class="button-icon">
                             <svg width="16" height="16" viewBox="0 0 52 52">
