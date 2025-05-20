@@ -150,16 +150,6 @@ export default class LLMAssistant extends LightningElement {
         return !!this.relatedObjects && this.relatedObjects.trim() !== '';
     }
 
-    // New property to disable inputs during anomaly check or processing
-    get isInputDisabled() {
-        return this.anomalyCheckLoading || this.isLoading || this.isProcessingPdf;
-    }
-
-    // Simpler property for HTML button disabled attribute to avoid LWC linting errors
-    get isDisabled() {
-        return this.anomalyCheckLoading || this.isLoading || this.isProcessingPdf;
-    }
-
     // Dynamically set CSS variables based on configured colors
     get componentStyle() {
         // Use cached style if colors haven't changed

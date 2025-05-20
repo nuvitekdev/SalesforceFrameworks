@@ -118,13 +118,11 @@ public with sharing class LLMController {
      * @param recordId The Id of the Salesforce record to analyze.
      * @param configName The DeveloperName of the LLM_Configuration__mdt to use.
      * @param relatedObjects Comma-separated list of object API names to search across for related data.
-     * @param param4 Optional fourth parameter (can be null)
-     * @param param5 Optional fifth parameter (can be null)
      * @return String The AI's assessment (e.g., "YES - Conflict of interest detected: Submitter and Investigator are the same." or "NO").
      * @throws AuraHandledException if an error occurs during processing.
      */
     @AuraEnabled
-    public static String checkRecordForAnomalies(String recordId, String configName, String relatedObjects, Object param4, Object param5) {
+    public static String checkRecordForAnomalies(String recordId, String configName, String relatedObjects) {
         System.debug('Anomaly check started for recordId: ' + recordId + ' using config: ' + configName);
 
         // Validate inputs

@@ -493,9 +493,7 @@ public class LLMControllerTest {
         String result = LLMController.checkRecordForAnomalies(
             testAccount.Id,
             'OpenAI_GPT4',
-            'Contact,Opportunity',
-            null,
-            null
+            'Contact,Opportunity'
         );
         Test.stopTest();
     }
@@ -527,9 +525,7 @@ public class LLMControllerTest {
             String result = LLMController.checkRecordForAnomalies(
                 testAccount.Id,
                 'OpenAI_GPT4',
-                'Contact,Opportunity',
-                null,
-                null
+                'Contact,Opportunity'
             );
         } catch (Exception e) {
             // Expected exception
@@ -545,9 +541,7 @@ public class LLMControllerTest {
             String result = LLMController.checkRecordForAnomalies(
                 null,
                 'OpenAI_GPT4',
-                'Contact',
-                null,
-                null
+                'Contact'
             );
         } catch (Exception e) {
             // Expected exception
