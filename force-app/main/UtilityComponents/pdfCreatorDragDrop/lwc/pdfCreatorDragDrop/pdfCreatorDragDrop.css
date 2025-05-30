@@ -1,0 +1,719 @@
+/* PDF Creator Component - Modern Nuvitek Style (Matching pdfSigner) */
+:host {
+    display: block;
+    /* Local Theme variable defaults (can be overridden by JS from target config) */
+    --theme-primary-color: #22BDC1;
+    --theme-accent-color: #D5DF23;
+    --theme-primary-color-rgb: 34, 189, 193;
+    --theme-accent-color-rgb: 213, 223, 35;
+    
+    /* Standard variables for component structure (using defaults) */
+    --primary-color: #22BDC1;
+    --primary-color-rgb: 34, 189, 193;
+    --primary-dark: #1a9599;
+    --primary-light: #63d1d4;
+    --accent-color: #D5DF23;
+    --accent-color-rgb: 213, 223, 35;
+    --accent-dark: #b8c11e;
+    --accent-light: #e1e95c;
+    --text-color: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #a1a1a6;
+    --background: #ffffff;
+    --background-alt: #f5f5f7;
+    --background-elevated: #fbfbfd;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-subtle: rgba(0, 0, 0, 0.05);
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.15);
+
+    /* Border radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-slow: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+    
+    /* Typography */
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 20px;
+    --font-size-xl: 24px;
+    --font-size-xxl: 32px;
+    
+    /* Spacing */
+    --spacing-xs: 8px;
+    --spacing-sm: 16px;
+    --spacing-md: 24px;
+    --spacing-lg: 48px;
+    --spacing-xl: 64px;
+}
+
+.pdf-creator-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Salesforce Sans', Arial, sans-serif;
+    color: var(--text-color);
+    background-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.5;
+    animation: fadeIn var(--transition-medium);
+    position: relative; /* Container for absolute positioned spinners - ensures they only cover the component */
+    overflow: visible; /* Allow dropdowns to show */
+    z-index: 1; /* Ensure proper stacking */
+}
+
+/* Step styling (uses local vars for structure) */
+.step-section {
+    background: var(--background-elevated);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    animation: fadeIn var(--transition-medium);
+    padding: var(--spacing-md);
+    transition: all var(--transition-medium);
+    margin-bottom: var(--spacing-md);
+    position: relative; /* Add positioning context */
+    overflow: visible; /* Allow dropdown to show but contain it */
+}
+
+.step-section:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+/* Custom Path Component Styling (copied from pdfSigner) */
+.custom-path-container {
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm) 0;
+    box-sizing: border-box;
+}
+
+.custom-path {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: relative;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.custom-path-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex-grow: 1;
+    flex-basis: 0;
+    z-index: 1;
+    text-align: center;
+}
+
+.custom-path-item:not(:first-child)::before {
+    content: '';
+    position: absolute;
+    height: 2px;
+    background-color: var(--border-color);
+    width: calc(100% - 44px);
+    top: 21px;
+    left: calc(-50% + 22px);
+    z-index: 0;
+    transition: background-color var(--transition-fast);
+}
+
+/* Change line color to primary when the step before it is completed */
+.step-1-mode .custom-path-item[data-step="1"]::before,
+.step-2-mode .custom-path-item[data-step="1"]::before,
+.step-2-mode .custom-path-item[data-step="2"]::before,
+.step-3-mode .custom-path-item[data-step="1"]::before,
+.step-3-mode .custom-path-item[data-step="2"]::before,
+.step-3-mode .custom-path-item[data-step="3"]::before { 
+    background-color: var(--theme-primary-color);
+}
+
+.custom-path-indicator {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background-color: var(--background-alt);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+    position: relative;
+    z-index: 1;
+    border: 1px solid var(--border-color);
+    font-weight: 500;
+    font-size: var(--font-size-md);
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+    cursor: default;
+}
+
+.custom-path-indicator:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.custom-path-number {
+    font-weight: 600;
+}
+
+.custom-path-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    text-align: center;
+    transition: color var(--transition-fast);
+    font-weight: 500;
+    margin-top: var(--spacing-xs);
+    padding: 0 4px;
+}
+
+/* Current step Indicator Styling (Accent Color) */
+.step-0-mode .custom-path-item[data-step="0"] .custom-path-indicator,
+.step-1-mode .custom-path-item[data-step="1"] .custom-path-indicator,
+.step-2-mode .custom-path-item[data-step="2"] .custom-path-indicator,
+.step-3-mode .custom-path-item[data-step="3"] .custom-path-indicator { 
+    background-color: var(--theme-accent-color);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 2px 12px rgba(var(--theme-accent-color-rgb), 0.4);
+}
+
+/* Current step Label Styling */
+.step-0-mode .custom-path-item[data-step="0"] .custom-path-label,
+.step-1-mode .custom-path-item[data-step="1"] .custom-path-label,
+.step-2-mode .custom-path-item[data-step="2"] .custom-path-label,
+.step-3-mode .custom-path-item[data-step="3"] .custom-path-label { 
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+/* Completed step Indicator Styling (Primary Color) */
+.step-1-mode .custom-path-item[data-step="0"] .custom-path-indicator,
+.step-2-mode .custom-path-item[data-step="0"] .custom-path-indicator,
+.step-2-mode .custom-path-item[data-step="1"] .custom-path-indicator,
+.step-3-mode .custom-path-item[data-step="0"] .custom-path-indicator,
+.step-3-mode .custom-path-item[data-step="1"] .custom-path-indicator,
+.step-3-mode .custom-path-item[data-step="2"] .custom-path-indicator { 
+    background-color: var(--theme-primary-color);
+    color: white;
+    border-color: transparent;
+    opacity: 0.9;
+    box-shadow: none;
+}
+
+/* Completed step Label Styling */
+.step-1-mode .custom-path-item[data-step="0"] .custom-path-label,
+.step-2-mode .custom-path-item[data-step="0"] .custom-path-label,
+.step-2-mode .custom-path-item[data-step="1"] .custom-path-label,
+.step-3-mode .custom-path-item[data-step="0"] .custom-path-label,
+.step-3-mode .custom-path-item[data-step="1"] .custom-path-label,
+.step-3-mode .custom-path-item[data-step="2"] .custom-path-label { 
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Loading & Save Spinners */
+.loading-spinner-container,
+.save-spinner-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn var(--transition-fast);
+    border-radius: var(--radius-lg); /* Match the step-section border radius */
+}
+
+.spinner-text {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Form styling */
+.form-group {
+    margin-bottom: var(--spacing-md);
+    position: relative; /* Contain dropdown positioning */
+}
+
+lightning-combobox {
+    --sds-c-input-radius-border: var(--radius-sm);
+    --sds-c-input-color-border: var(--border-color);
+    --sds-c-input-color-border-focus: var(--theme-primary-color);
+    --sds-c-input-shadow-focus: 0 0 0 1px var(--theme-primary-color);
+}
+
+/* Field Selection Step Styling */
+.field-filters {
+    background: var(--background-alt);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.field-counter {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background-color: var(--background-elevated);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    align-items: center;
+}
+
+.slds-checkbox_button {
+    margin-right: var(--spacing-xs);
+}
+
+.field-list-container {
+    background: var(--background);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.field-list-header {
+    background: var(--background-alt);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.field-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.field-item {
+    background: var(--background);
+    border-bottom: 1px solid var(--border-subtle);
+    transition: all var(--transition-fast);
+}
+
+.field-item:hover {
+    background: var(--background-alt);
+}
+
+.field-label {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.field-api-name {
+    color: var(--text-tertiary);
+}
+
+.field-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--background-alt);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+}
+
+.required-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #fef3e2;
+    color: #f2690d;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+}
+
+/* Design Step Styling */
+.design-section {
+    min-height: 600px;
+}
+
+.design-container {
+    min-height: 500px;
+}
+
+.field-palette {
+    background: var(--background);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    height: 100%;
+    max-height: 600px;
+}
+
+.draggable-fields-list {
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+.draggable-field {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--background-alt);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--spacing-xs);
+    cursor: grab;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.draggable-field:hover {
+    background: var(--background-elevated);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.draggable-field:active {
+    cursor: grabbing;
+    transform: scale(0.98);
+}
+
+.draggable-field.dragging {
+    opacity: 0.5;
+}
+
+.field-name {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+/* Page Controls */
+.page-controls {
+    background: var(--background);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.page-indicator {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background-color: var(--background-elevated);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-color);
+    box-shadow: var(--shadow-sm);
+}
+
+/* PDF Design Area */
+.pdf-design-area {
+    background: var(--background-alt);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    min-height: 600px;
+    position: relative;
+    box-shadow: var(--shadow-md);
+}
+
+.pdf-page {
+    background: white;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    margin: 0 auto;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+/* Default A4 portrait dimensions */
+.pdf-page {
+    width: 595px;
+    height: 842px;
+    max-width: 100%;
+}
+
+/* Responsive scaling */
+@media (max-width: 768px) {
+    .pdf-page {
+        transform: scale(0.6);
+        transform-origin: top center;
+    }
+}
+
+@media (max-width: 480px) {
+    .pdf-page {
+        transform: scale(0.4);
+        transform-origin: top center;
+    }
+}
+
+.pdf-page.hidden {
+    display: none;
+}
+
+.pdf-page.drag-over {
+    border: 2px dashed var(--theme-primary-color);
+    background: rgba(var(--theme-primary-color-rgb), 0.05);
+}
+
+/* Placed Fields */
+.placed-field {
+    position: absolute;
+    background: rgba(var(--theme-primary-color-rgb), 0.1);
+    border: 1px solid var(--theme-primary-color);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-xs);
+    cursor: move;
+    transition: all var(--transition-fast);
+    min-width: 50px;
+    min-height: 30px;
+}
+
+.placed-field:hover {
+    box-shadow: var(--shadow-md);
+    background: rgba(var(--theme-primary-color-rgb), 0.15);
+    z-index: 10;
+}
+
+.field-content {
+    pointer-events: none;
+}
+
+.field-content .field-label {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 2px;
+}
+
+.field-content .field-placeholder {
+    font-size: var(--font-size-xs);
+    color: var(--theme-primary-color);
+    font-family: monospace;
+}
+
+/* Field Controls */
+.field-controls {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    display: none;
+}
+
+.placed-field:hover .field-controls {
+    display: block;
+}
+
+.remove-field {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 18px;
+    cursor: pointer;
+    font-size: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.remove-field:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-md);
+}
+
+.resize-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: var(--theme-primary-color);
+    border: none;
+    border-radius: 50%;
+    cursor: se-resize;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.resize-se {
+    bottom: -5px;
+    right: -5px;
+}
+
+.resize-handle:hover {
+    transform: scale(1.2);
+    background: var(--theme-accent-color);
+}
+
+/* Template Info Section */
+.template-info-section {
+    background: var(--background);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+}
+
+/* Success Page */
+.success-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--spacing-lg) var(--spacing-md);
+    animation: fadeIn var(--transition-medium), slideIn var(--transition-medium);
+}
+
+.success-icon {
+    color: #4bca81;
+    background-color: rgba(75, 202, 129, 0.1);
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-md);
+    animation: pulse 2s infinite;
+}
+
+.success-title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: var(--spacing-sm);
+}
+
+.success-message {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+    max-width: 480px;
+}
+
+/* Button Styling */
+.next-btn button,
+.save-button button,
+.start-over-button button {
+    background-color: var(--theme-primary-color);
+    border-color: var(--theme-primary-color);
+    padding: 0 var(--spacing-md);
+    height: 44px;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    color: white;
+}
+
+.next-btn button:hover,
+.save-button button:hover,
+.start-over-button button:hover {
+    background-color: var(--theme-primary-color);
+    filter: brightness(90%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(var(--theme-primary-color-rgb), 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(var(--theme-primary-color-rgb), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--theme-primary-color-rgb), 0); }
+}
+
+/* Responsive styling */
+@media (max-width: 768px) {
+    .design-container {
+        flex-direction: column;
+    }
+    
+    .field-palette {
+        max-height: 200px;
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .custom-path-item:not(:first-child)::before {
+        width: calc(100% - 36px);
+        top: 17px;
+        left: calc(-50% + 18px);
+    }
+
+    .custom-path-indicator {
+        width: 36px;
+        height: 36px;
+        font-size: var(--font-size-sm);
+    }
+
+    .custom-path-label {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .custom-path-item:not(:first-child)::before {
+        width: calc(100% - 30px);
+        top: 14px;
+        left: calc(-50% + 15px);
+    }
+
+    .custom-path-indicator {
+        width: 30px;
+        height: 30px;
+        font-size: 11px;
+        border-radius: 6px;
+    }
+
+    .custom-path-label {
+        font-size: 9px;
+    }
+    
+    .field-item {
+        font-size: var(--font-size-sm);
+    }
+    
+    .field-list {
+        max-height: 300px;
+    }
+}
+
+/* Override SLDS dropdown positioning to stay within bounds */
+.step-section lightning-combobox .slds-dropdown {
+    max-height: 300px !important; /* Limit dropdown height */
+    overflow-y: auto !important; /* Add scroll if needed */
+}
+
+/* Additional dropdown containment for the object selection */
+.form-group lightning-combobox {
+    display: block;
+    position: relative;
+    z-index: 10; /* Ensure dropdown appears above other elements within component */
+}
+
+/* If dropdown still overflows, we can use a custom class to limit it */
+.step-section.step-0-mode {
+    min-height: 400px; /* Ensure enough space for dropdown when on step 0 */
+} 

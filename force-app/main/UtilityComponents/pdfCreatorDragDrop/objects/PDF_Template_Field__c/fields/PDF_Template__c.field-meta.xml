@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>PDF_Template__c</fullName>
+    <description>Master-detail relationship to PDF Template</description>
+    <externalId>false</externalId>
+    <label>PDF Template</label>
+    <referenceTo>PDF_Template__c</referenceTo>
+    <relationshipLabel>PDF Template Fields</relationshipLabel>
+    <relationshipName>PDF_Template_Fields</relationshipName>
+    <relationshipOrder>0</relationshipOrder>
+    <reparentableMasterDetail>false</reparentableMasterDetail>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>MasterDetail</type>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+</CustomField> 

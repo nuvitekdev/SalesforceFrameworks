@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>63.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>PDF Template Creator</masterLabel>
+    <description>Drag and drop Salesforce fields to create custom PDF templates</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightning__FlowScreen</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage,lightning__AppPage,lightning__HomePage,lightningCommunity__Default">
+            <!-- Theme Properties -->
+            <property name="primaryColor" type="String" label="Primary Color" default="#22BDC1" description="Primary color for theme elements (e.g., completed steps). Defaults to Nuvitek theme."/>
+            <property name="accentColor" type="String" label="Accent Color" default="#D5DF23" description="Accent color for highlights (e.g., current step). Defaults to Nuvitek theme."/>
+            <property name="primaryColorRgb" type="String" label="Primary Color RGB" default="34, 189, 193" description="RGB equivalent of Primary Color (e.g., '34, 189, 193') for use in rgba() shadows."/>
+            <property name="accentColorRgb" type="String" label="Accent Color RGB" default="213, 223, 35" description="RGB equivalent of Accent Color (e.g., '213, 223, 35') for use in rgba() shadows."/>
+        </targetConfig>
+        <targetConfig targets="lightning__FlowScreen">
+            <!-- Theme Properties (Repeat for FlowScreen context) -->
+            <property name="primaryColor" type="String" label="Primary Color" default="#22BDC1" description="Primary color for theme elements (e.g., completed steps). Defaults to Nuvitek theme."/>
+            <property name="accentColor" type="String" label="Accent Color" default="#D5DF23" description="Accent color for highlights (e.g., current step). Defaults to Nuvitek theme."/>
+            <property name="primaryColorRgb" type="String" label="Primary Color RGB" default="34, 189, 193" description="RGB equivalent of Primary Color (e.g., '34, 189, 193') for use in rgba() shadows."/>
+            <property name="accentColorRgb" type="String" label="Accent Color RGB" default="213, 223, 35" description="RGB equivalent of Accent Color (e.g., '213, 223, 35') for use in rgba() shadows."/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle> 
