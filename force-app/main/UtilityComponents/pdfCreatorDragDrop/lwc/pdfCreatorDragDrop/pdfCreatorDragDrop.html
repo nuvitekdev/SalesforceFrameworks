@@ -39,6 +39,13 @@
                     <div class="custom-path-indicator" data-step="3">
                         <span class="custom-path-number">4</span>
                     </div>
+                    <div class="custom-path-label">Preview</div>
+                </li>
+                <li class="custom-path-item" data-step="4">
+                    <div class="custom-path-line"></div>
+                    <div class="custom-path-indicator" data-step="4">
+                        <span class="custom-path-number">5</span>
+                    </div>
                     <div class="custom-path-label">Save</div>
                 </li>
             </ul>
@@ -513,6 +520,124 @@
                     </div>
                     <div class="slds-col">
                         <lightning-button
+                            label="Next: Preview Template"
+                            variant="brand"
+                            onclick={goToStep}
+                            data-step="3"
+                            class="next-btn">
+                        </lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Step 3: Preview -->
+        <template if:true={isStep3}>
+            <div class="step-section slds-p-around_medium">
+                <div class="slds-text-heading_medium slds-m-bottom_small">Preview Your Template</div>
+                <p class="slds-m-bottom_medium">
+                    Review your PDF template before saving. You can go back to make changes if needed.
+                </p>
+
+                <!-- Template Information Summary -->
+                <div class="template-summary-section slds-box slds-p-around_medium slds-m-bottom_medium">
+                    <h3 class="slds-text-heading_small slds-m-bottom_medium">Template Summary</h3>
+                    
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
+                            <dl class="slds-list_horizontal">
+                                <dt class="slds-item_label slds-text-color_weak">Template Name:</dt>
+                                <dd class="slds-item_detail">{templateName}</dd>
+                                <dt class="slds-item_label slds-text-color_weak">Object:</dt>
+                                <dd class="slds-item_detail">{selectedObject}</dd>
+                                <dt class="slds-item_label slds-text-color_weak">Page Count:</dt>
+                                <dd class="slds-item_detail">{pageSetup.pageCount}</dd>
+                            </dl>
+                        </div>
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
+                            <dl class="slds-list_horizontal">
+                                <dt class="slds-item_label slds-text-color_weak">Page Size:</dt>
+                                <dd class="slds-item_detail">{pageSetup.pageSize}</dd>
+                                <dt class="slds-item_label slds-text-color_weak">Orientation:</dt>
+                                <dd class="slds-item_detail">{pageSetup.orientation}</dd>
+                                <dt class="slds-item_label slds-text-color_weak">Fields Placed:</dt>
+                                <dd class="slds-item_detail">{placedFieldsCount}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                    
+                    <template if:true={templateDescription}>
+                        <div class="slds-m-top_small">
+                            <dt class="slds-item_label slds-text-color_weak">Description:</dt>
+                            <dd class="slds-item_detail">{templateDescription}</dd>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- PDF Preview -->
+                <div class="pdf-preview-section slds-box slds-p-around_medium slds-m-bottom_medium">
+                    <div class="slds-grid slds-gutters slds-m-bottom_small">
+                        <div class="slds-col slds-size_8-of-12">
+                            <h3 class="slds-text-heading_small">PDF Preview</h3>
+                            <p class="slds-text-body_small slds-text-color_weak">
+                                This shows how your template will appear when generated as a PDF.
+                            </p>
+                        </div>
+                        <div class="slds-col slds-size_4-of-12 slds-text-align_right">
+                            <lightning-button
+                                label="Generate Preview"
+                                icon-name="utility:refresh"
+                                onclick={handleGeneratePreview}
+                                disabled={isGeneratingPreview}
+                                variant="neutral"
+                                size="small">
+                            </lightning-button>
+                        </div>
+                    </div>
+
+                    <!-- Preview Loading -->
+                    <template if:true={isGeneratingPreview}>
+                        <div class="preview-loading slds-text-align_center slds-p-around_large">
+                            <lightning-spinner alternative-text="Generating preview..." size="medium"></lightning-spinner>
+                            <p class="slds-m-top_small slds-text-color_weak">Generating your PDF preview...</p>
+                        </div>
+                    </template>
+
+                    <!-- PDF Preview Display -->
+                    <template if:false={isGeneratingPreview}>
+                        <template if:true={previewUrl}>
+                            <div class="pdf-preview-container">
+                                <iframe
+                                    src={previewUrl}
+                                    class="pdf-preview-iframe"
+                                    title="PDF Template Preview">
+                                </iframe>
+                            </div>
+                        </template>
+                        
+                        <template if:false={previewUrl}>
+                            <div class="no-preview-message slds-text-align_center slds-p-around_large">
+                                <lightning-icon icon-name="utility:preview" size="large" alternative-text="No preview"></lightning-icon>
+                                <h4 class="slds-text-heading_small slds-m-top_small">No Preview Available</h4>
+                                <p class="slds-text-body_small slds-text-color_weak slds-m-top_small">
+                                    Click "Generate Preview" to see how your template will look.
+                                </p>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
+                <!-- Navigation -->
+                <div class="slds-m-top_medium slds-grid slds-grid_align-spread">
+                    <div class="slds-col">
+                        <lightning-button
+                            label="Back to Design"
+                            onclick={goToStep}
+                            data-step="2">
+                        </lightning-button>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-button
                             label="Save Template"
                             variant="brand"
                             onclick={handleSaveTemplate}
@@ -523,8 +648,8 @@
             </div>
         </template>
 
-        <!-- Step 3: Success -->
-        <template if:true={isStep3}>
+        <!-- Step 4: Success -->
+        <template if:true={isStep4}>
             <div class="step-section slds-p-around_medium">
                 <div class="success-container">
                     <div class="success-icon">

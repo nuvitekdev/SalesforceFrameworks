@@ -90,6 +90,10 @@ export default class PdfCreatorDragDrop extends LightningElement {
         console.log('isStep3 called, currentStep:', this.currentStep);
         return this.currentStep === 3; 
     }
+    get isStep4() { 
+        console.log('isStep4 called, currentStep:', this.currentStep);
+        return this.currentStep === 4; 
+    }
     
     // Getter for current step class
     get currentStepClass() {
@@ -190,6 +194,11 @@ export default class PdfCreatorDragDrop extends LightningElement {
     
     get hasExistingTemplates() {
         return this.existingTemplates && this.existingTemplates.length > 0;
+    }
+    
+    // Getter for placed fields count
+    get placedFieldsCount() {
+        return this.placedFields ? this.placedFields.length : 0;
     }
     
     // Get current page dimensions based on setup
@@ -1351,7 +1360,7 @@ export default class PdfCreatorDragDrop extends LightningElement {
             this.showToast('Success', 'Template saved successfully!', 'success');
             
             // Move to success step
-            this.currentStep = 3;
+            this.currentStep = 4;
             this.updatePathClasses();
             
         } catch (error) {
@@ -1359,6 +1368,326 @@ export default class PdfCreatorDragDrop extends LightningElement {
             this.showToast('Error', 'Failed to save template: ' + error.body?.message, 'error');
         } finally {
             this.isSaving = false;
+        }
+    }
+    
+    // Generate preview PDF
+    async handleGeneratePreview() {
+        console.log('handleGeneratePreview called');
+        
+        if (this.placedFields.length === 0) {
+            this.showToast('Warning', 'Please place at least one field on the template before generating preview', 'warning');
+            return;
+        }
+        
+        if (!this.PDFLib) {
+            this.showToast('Error', 'PDF library not loaded yet. Please try again.', 'error');
+            return;
+        }
+        
+        this.isGeneratingPreview = true;
+        
+        try {
+            console.log('Generating preview PDF...');
+            
+            // Generate the PDF bytes
+            const pdfBytes = await this.generatePreviewPdfBytes();
+            
+            // Convert to base64 for saving to Salesforce
+            const base64String = this.arrayBufferToBase64(pdfBytes);
+            
+            // Save as temporary PDF to Salesforce
+            console.log('Saving preview PDF to Salesforce...');
+            const contentVersionId = await this.savePdfToSalesforce(
+                base64String, 
+                `${this.templateName || 'Template'}_Preview.pdf`,
+                null, // no record association
+                true // temporary file
+            );
+            
+            this.previewContentVersionId = contentVersionId;
+            
+            // Get preview URL
+            const downloadUrl = await this.getDocumentDownloadUrl(contentVersionId);
+            this.previewUrl = downloadUrl;
+            
+            console.log('Preview generated successfully. URL:', this.previewUrl);
+            this.showToast('Success', 'Preview generated successfully!', 'success');
+            
+        } catch (error) {
+            console.error('Error generating preview:', error);
+            this.showToast('Error', 'Failed to generate preview: ' + error.message, 'error');
+        } finally {
+            this.isGeneratingPreview = false;
+        }
+    }
+    
+    // Generate preview PDF bytes (separate method for reusability)
+    async generatePreviewPdfBytes() {
+        console.log('generatePreviewPdfBytes started');
+        
+        if (!this.PDFLib) {
+            throw new Error('PDF library not loaded yet');
+        }
+        
+        // Ensure pageSetup has defaults
+        if (!this.pageSetup.pageSize) {
+            this.pageSetup.pageSize = 'A4';
+        }
+        if (!this.pageSetup.orientation) {
+            this.pageSetup.orientation = 'portrait';
+        }
+        if (!this.pageSetup.pageCount) {
+            this.pageSetup.pageCount = 1;
+        }
+        
+        try {
+            console.log('Creating PDF document for preview...');
+            
+            // Create a new PDF document
+            const pdfDoc = await this.PDFLib.PDFDocument.create();
+            
+            // Add pages based on template settings
+            const dimensions = this.currentPageDimensions;
+            console.log('Page dimensions:', JSON.stringify(dimensions));
+            
+            if (!dimensions || !dimensions.width || !dimensions.height) {
+                throw new Error('Invalid page dimensions: ' + JSON.stringify(dimensions));
+            }
+            
+            for (let i = 0; i < this.pageSetup.pageCount; i++) {
+                const page = pdfDoc.addPage([dimensions.width, dimensions.height]);
+                
+                // Add page title
+                const helveticaFont = await pdfDoc.embedFont(this.PDFLib.StandardFonts.Helvetica);
+                const boldFont = await pdfDoc.embedFont(this.PDFLib.StandardFonts.HelveticaBold);
+                
+                // Page header with "PREVIEW" watermark
+                page.drawText(`${this.templateName || 'Template'} - Page ${i + 1} [PREVIEW]`, {
+                    x: 50,
+                    y: dimensions.height - 50,
+                    size: 16,
+                    font: boldFont,
+                    color: this.PDFLib.rgb(0.13, 0.74, 0.76) // Theme primary color
+                });
+                
+                // Template info on first page
+                if (i === 0) {
+                    let yPosition = dimensions.height - 80;
+                    
+                    if (this.templateDescription) {
+                        page.drawText(`Description: ${this.templateDescription}`, {
+                            x: 50,
+                            y: yPosition,
+                            size: 10,
+                            font: helveticaFont,
+                            color: this.PDFLib.rgb(0.4, 0.4, 0.4)
+                        });
+                        yPosition -= 20;
+                    }
+                    
+                    page.drawText(`Object: ${this.selectedObject}`, {
+                        x: 50,
+                        y: yPosition,
+                        size: 10,
+                        font: helveticaFont,
+                        color: this.PDFLib.rgb(0.4, 0.4, 0.4)
+                    });
+                    yPosition -= 15;
+                    
+                    page.drawText(`Page Size: ${this.pageSetup.pageSize} (${this.pageSetup.orientation})`, {
+                        x: 50,
+                        y: yPosition,
+                        size: 10,
+                        font: helveticaFont,
+                        color: this.PDFLib.rgb(0.4, 0.4, 0.4)
+                    });
+                }
+                
+                // Add field placements for this page
+                const pageFields = this.placedFields.filter(field => field.pageNumber === (i + 1));
+                console.log(`Page ${i + 1} has ${pageFields.length} fields:`, pageFields.map(f => f.fieldLabel));
+                
+                for (const field of pageFields) {
+                    // Convert coordinates (our UI uses top-left origin, PDF uses bottom-left)
+                    // Ensure all values are numbers
+                    const pdfX = Number(field.x) || 0;
+                    const pdfY = Number(dimensions.height) - Number(field.y) - Number(field.height);
+                    const fieldWidth = Number(field.width) || 200;
+                    const fieldHeight = Number(field.height) || 30;
+                    
+                    console.log('Creating form field:', field.fieldLabel, 'at coordinates:', {
+                        x: pdfX, 
+                        y: pdfY, 
+                        width: fieldWidth, 
+                        height: fieldHeight,
+                        type: field.fieldType
+                    });
+                    
+                    // Create actual fillable form fields based on field type
+                    const form = pdfDoc.getForm();
+                    
+                    try {
+                        if (field.fieldType === 'BOOLEAN') {
+                            // Create checkbox field
+                            const checkBox = form.createCheckBox(`${field.fieldApiName}_${i}`);
+                            checkBox.addToPage(page, {
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight
+                            });
+                            
+                            // Add label next to checkbox
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX + fieldWidth + 5,
+                                y: pdfY + (fieldHeight / 2) - 6,
+                                size: 10,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                            });
+                            
+                        } else if (field.fieldType === 'PICKLIST' || field.fieldType === 'MULTIPICKLIST') {
+                            // Create dropdown field
+                            const dropdown = form.createDropdown(`${field.fieldApiName}_${i}`);
+                            dropdown.addOptions(['Option 1', 'Option 2', 'Option 3', 'Other']);
+                            dropdown.select(''); // No default selection
+                            dropdown.addToPage(page, {
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight
+                            });
+                            
+                            // Add label above dropdown
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight + 5,
+                                size: 10,
+                                font: boldFont,
+                                color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                            });
+                            
+                        } else if (field.fieldType === 'TEXTAREA' || field.fieldType === 'LONG_TEXT_AREA') {
+                            // Create multiline text field
+                            const textField = form.createTextField(`${field.fieldApiName}_${i}`);
+                            textField.setMultiline(true);
+                            textField.addToPage(page, {
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight
+                            });
+                            
+                            // Add label above text area
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight + 5,
+                                size: 10,
+                                font: boldFont,
+                                color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                            });
+                            
+                        } else {
+                            // Create single-line text field for all other types (STRING, EMAIL, PHONE, etc.)
+                            const textField = form.createTextField(`${field.fieldApiName}_${i}`);
+                            textField.addToPage(page, {
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight
+                            });
+                            
+                            // Set placeholder text based on field type
+                            let placeholder = '';
+                            switch (field.fieldType) {
+                                case 'EMAIL':
+                                    placeholder = 'email@example.com';
+                                    break;
+                                case 'PHONE':
+                                    placeholder = '(555) 123-4567';
+                                    break;
+                                case 'URL':
+                                    placeholder = 'https://example.com';
+                                    break;
+                                case 'DATE':
+                                    placeholder = 'MM/DD/YYYY';
+                                    break;
+                                case 'DATETIME':
+                                    placeholder = 'MM/DD/YYYY HH:MM';
+                                    break;
+                                case 'CURRENCY':
+                                case 'DOUBLE':
+                                case 'INTEGER':
+                                    placeholder = '0';
+                                    break;
+                                default:
+                                    placeholder = `Enter ${field.fieldLabel}...`;
+                            }
+                            
+                            // Add label above text field
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight + 5,
+                                size: 10,
+                                font: boldFont,
+                                color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                            });
+                            
+                            // Add placeholder/helper text inside field (light gray)
+                            page.drawText(placeholder, {
+                                x: pdfX + 3,
+                                y: pdfY + (fieldHeight / 2) - 4,
+                                size: 8,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.6, 0.6, 0.6)
+                            });
+                        }
+                        
+                    } catch (fieldError) {
+                        console.warn('Error creating form field:', field.fieldLabel, fieldError);
+                        
+                        // Fallback to visual representation if form field creation fails
+                        page.drawRectangle({
+                            x: pdfX,
+                            y: pdfY,
+                            width: fieldWidth,
+                            height: fieldHeight,
+                            borderColor: this.PDFLib.rgb(0.13, 0.74, 0.76),
+                            borderWidth: 1,
+                            color: this.PDFLib.rgb(0.13, 0.74, 0.76, 0.1)
+                        });
+                        
+                        // Add field label
+                        page.drawText(field.fieldLabel, {
+                            x: pdfX + 4,
+                            y: pdfY + fieldHeight - 12,
+                            size: 10,
+                            font: boldFont,
+                            color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                        });
+                    }
+                }
+                
+                // Add page footer with preview notice
+                page.drawText(`PREVIEW - Generated on ${new Date().toLocaleDateString()}`, {
+                    x: 50,
+                    y: 30,
+                    size: 8,
+                    font: helveticaFont,
+                    color: this.PDFLib.rgb(0.6, 0.6, 0.6)
+                });
+            }
+            
+            // Generate PDF bytes
+            console.log('Generating PDF bytes...');
+            const pdfBytes = await pdfDoc.save();
+            
+            return pdfBytes;
+            
+        } catch (error) {
+            console.error('Error in generatePreviewPdfBytes:', error);
+            throw error;
         }
     }
     
@@ -1379,6 +1708,9 @@ export default class PdfCreatorDragDrop extends LightningElement {
         this.selectedExistingTemplate = null; // Reset selected existing template
         this.templateMode = 'create'; // Reset to create mode
         this.fieldsFiltered = false; // Reset filtering flag
+        this.previewUrl = ''; // Reset preview URL
+        this.isGeneratingPreview = false; // Reset preview generation state
+        this.previewContentVersionId = null; // Reset preview content version ID
         this.pageSetup = {
             pageSize: 'A4',
             orientation: 'portrait',
@@ -1748,53 +2080,157 @@ export default class PdfCreatorDragDrop extends LightningElement {
                     const fieldWidth = Number(field.width) || 200;
                     const fieldHeight = Number(field.height) || 30;
                     
-                    console.log('Drawing field:', field.fieldLabel, 'at coordinates:', {
+                    console.log('Creating form field:', field.fieldLabel, 'at coordinates:', {
                         x: pdfX, 
                         y: pdfY, 
                         width: fieldWidth, 
                         height: fieldHeight,
-                        originalX: field.x,
-                        originalY: field.y,
-                        xType: typeof field.x,
-                        yType: typeof field.y
+                        type: field.fieldType
                     });
                     
-                    // Draw field border
-                    page.drawRectangle({
-                        x: pdfX,
-                        y: pdfY,
-                        width: fieldWidth,
-                        height: fieldHeight,
-                        borderColor: this.PDFLib.rgb(0.13, 0.74, 0.76), // Theme primary color
-                        borderWidth: 1,
-                        color: this.PDFLib.rgb(0.13, 0.74, 0.76, 0.1) // Light background
-                    });
+                    // Create actual fillable form fields based on field type
+                    const form = pdfDoc.getForm();
                     
-                    // Calculate font size to fit the field
-                    const maxFontSize = Math.min(fieldHeight / 3, 12);
-                    const fontSize = Math.max(8, maxFontSize);
-                    
-                    // Draw field label
-                    const labelY = pdfY + fieldHeight - fontSize - 2;
-                    page.drawText(field.fieldLabel, {
-                        x: pdfX + 4,
-                        y: labelY,
-                        size: fontSize,
-                        font: boldFont,
-                        color: this.PDFLib.rgb(0.1, 0.1, 0.1),
-                        maxWidth: fieldWidth - 8
-                    });
-                    
-                    // Draw field API name
-                    const apiNameY = pdfY + 4;
-                    page.drawText(`[${field.fieldApiName}]`, {
-                        x: pdfX + 4,
-                        y: apiNameY,
-                        size: Math.max(6, fontSize - 2),
-                        font: helveticaFont,
-                        color: this.PDFLib.rgb(0.13, 0.74, 0.76),
-                        maxWidth: fieldWidth - 8
-                    });
+                    try {
+                        if (field.fieldType === 'BOOLEAN') {
+                            // Create checkbox field
+                            const checkBox = form.createCheckBox(`${field.fieldApiName}_${i}`);
+                            checkBox.addToPage(page, {
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight
+                            });
+                            
+                            // Add label next to checkbox
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX + fieldWidth + 5,
+                                y: pdfY + (fieldHeight / 2) - 6,
+                                size: 10,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                            });
+                            
+                        } else if (field.fieldType === 'PICKLIST' || field.fieldType === 'MULTIPICKLIST') {
+                            // Create dropdown field
+                            const dropdown = form.createDropdown(`${field.fieldApiName}_${i}`);
+                            dropdown.addOptions(['Option 1', 'Option 2', 'Option 3', 'Other']);
+                            dropdown.select(''); // No default selection
+                            dropdown.addToPage(page, {
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight
+                            });
+                            
+                            // Add label above dropdown
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight + 5,
+                                size: 10,
+                                font: boldFont,
+                                color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                            });
+                            
+                        } else if (field.fieldType === 'TEXTAREA' || field.fieldType === 'LONG_TEXT_AREA') {
+                            // Create multiline text field
+                            const textField = form.createTextField(`${field.fieldApiName}_${i}`);
+                            textField.setMultiline(true);
+                            textField.addToPage(page, {
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight
+                            });
+                            
+                            // Add label above text area
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight + 5,
+                                size: 10,
+                                font: boldFont,
+                                color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                            });
+                            
+                        } else {
+                            // Create single-line text field for all other types (STRING, EMAIL, PHONE, etc.)
+                            const textField = form.createTextField(`${field.fieldApiName}_${i}`);
+                            textField.addToPage(page, {
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight
+                            });
+                            
+                            // Set placeholder text based on field type
+                            let placeholder = '';
+                            switch (field.fieldType) {
+                                case 'EMAIL':
+                                    placeholder = 'email@example.com';
+                                    break;
+                                case 'PHONE':
+                                    placeholder = '(555) 123-4567';
+                                    break;
+                                case 'URL':
+                                    placeholder = 'https://example.com';
+                                    break;
+                                case 'DATE':
+                                    placeholder = 'MM/DD/YYYY';
+                                    break;
+                                case 'DATETIME':
+                                    placeholder = 'MM/DD/YYYY HH:MM';
+                                    break;
+                                case 'CURRENCY':
+                                case 'DOUBLE':
+                                case 'INTEGER':
+                                    placeholder = '0';
+                                    break;
+                                default:
+                                    placeholder = `Enter ${field.fieldLabel}...`;
+                            }
+                            
+                            // Add label above text field
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight + 5,
+                                size: 10,
+                                font: boldFont,
+                                color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                            });
+                            
+                            // Add placeholder/helper text inside field (light gray)
+                            page.drawText(placeholder, {
+                                x: pdfX + 3,
+                                y: pdfY + (fieldHeight / 2) - 4,
+                                size: 8,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.6, 0.6, 0.6)
+                            });
+                        }
+                        
+                    } catch (fieldError) {
+                        console.warn('Error creating form field:', field.fieldLabel, fieldError);
+                        
+                        // Fallback to visual representation if form field creation fails
+                        page.drawRectangle({
+                            x: pdfX,
+                            y: pdfY,
+                            width: fieldWidth,
+                            height: fieldHeight,
+                            borderColor: this.PDFLib.rgb(0.13, 0.74, 0.76),
+                            borderWidth: 1,
+                            color: this.PDFLib.rgb(0.13, 0.74, 0.76, 0.1)
+                        });
+                        
+                        // Add field label
+                        page.drawText(field.fieldLabel, {
+                            x: pdfX + 4,
+                            y: pdfY + fieldHeight - 12,
+                            size: 10,
+                            font: boldFont,
+                            color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                        });
+                    }
                 }
                 
                 // Add page footer
@@ -1814,7 +2250,7 @@ export default class PdfCreatorDragDrop extends LightningElement {
             // Convert to base64 for saving to Salesforce
             const base64String = this.arrayBufferToBase64(pdfBytes);
             
-            // Save PDF to Salesforce
+            // Save PDF to Salesforce for record keeping
             console.log('Saving PDF to Salesforce...');
             const contentVersionId = await this.savePdfToSalesforce(
                 base64String, 
@@ -1823,17 +2259,22 @@ export default class PdfCreatorDragDrop extends LightningElement {
                 false // not temporary
             );
             
-            // Get download URL and trigger download
-            const downloadUrl = await this.getDocumentDownloadUrl(contentVersionId);
+            // Force immediate download using blob instead of Salesforce URL
+            console.log('Creating blob for immediate download...');
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
             
-            // Create download link
+            // Create download link and force download
             const link = document.createElement('a');
-            link.href = downloadUrl;
+            link.href = url;
             link.download = `${this.templateName}_Template.pdf`;
             link.style.display = 'none';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            
+            // Clean up the blob URL
+            window.URL.revokeObjectURL(url);
             
             this.showToast('Success', 'Template PDF downloaded successfully!', 'success');
             
@@ -2070,4 +2511,9 @@ export default class PdfCreatorDragDrop extends LightningElement {
             }
         }, 200); // Increased timeout to ensure combobox is fully rendered
     }
+    
+    // Preview-related properties
+    @track previewUrl = ''; // URL for PDF preview
+    @track isGeneratingPreview = false; // Loading state for preview generation
+    @track previewContentVersionId = null; // Content version ID for preview PDF
 } 
