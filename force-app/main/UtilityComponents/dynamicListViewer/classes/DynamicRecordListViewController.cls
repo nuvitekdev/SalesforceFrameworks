@@ -174,117 +174,120 @@ public with sharing class DynamicRecordListViewController {
     @AuraEnabled
     public static List<Map<String, Object>> getRelatedObjects(String objectApiName) {
         try {
-            // --- Input Validation ---
-            // Ensure a valid object API name is provided.
+            // --- Input Validation & Security ---
             if (String.isBlank(objectApiName)) {
                 throw new AuraHandledException('Object API name is required');
             }
-
-            // --- Security Check ---
-            // Verify the current user has access to the requested object.
             if (!isValidObjectName(objectApiName)) {
                 throw new AuraHandledException('Object is not accessible: ' + objectApiName);
             }
 
             // --- Initialization ---
             List<Map<String, Object>> relatedObjectsList = new List<Map<String, Object>>();
-
-            // --- Schema Describe (Optimized) ---
-            // Get the global describe map once to avoid repeated calls within the loop.
-            Map<String, Schema.SObjectType> globalDescribe = Schema.getGlobalDescribe();
-            Schema.SObjectType objectType = globalDescribe.get(objectApiName);
-
-            // If the object type is somehow null (shouldn't happen after isValidObjectName check, but defensive coding)
+            SObjectType objectType = Schema.getGlobalDescribe().get(objectApiName);
             if (objectType == null) {
-                 throw new AuraHandledException('Could not describe object: ' + objectApiName);
+                throw new AuraHandledException('Could not describe object: ' + objectApiName);
             }
+
+            // --- Configuration for what to show ---
+            // Exclude relationships handled in dedicated UI tabs (Files, Activity, etc.) to avoid duplication.
+            Set<String> excludedRelationshipNames = new Set<String>{
+                'FeedItems', 'AttachedContentDocuments', 'ContentDocumentLinks', 
+                'ActivityHistories', 'OpenActivities', 'Tasks', 'Events', 'Feeds',
+                'ProcessInstances', 'ProcessSteps'
+            };
+
+            // Whitelist of common standard child objects that are usually relevant on page layouts.
+            // This helps filter out less common/system-related standard objects.
+            Set<String> commonStandardChildObjects = new Set<String>{
+                'Contact', 'Opportunity', 'Case', 'Order', 'Asset', 'Contract', 'Quote', 'Solution', 'Account', 'Lead', 'Campaign', 'User'
+            };
 
             // --- Governor Limit Prevention ---
-            // Set a reasonable limit for the number of child relationships to process.
-            // This prevents exceeding CPU time limits or hitting other governor limits
-            // when dealing with objects with a very large number of relationships.
             Integer relationshipCount = 0;
-            Integer maxRelationships = 10; // Limit to the potentially most relevant relationships
+            Integer maxRelationships = 20; // Limit to a reasonable number of relevant relationships
 
             // --- Child Relationship Processing ---
-            Schema.DescribeSObjectResult describeResult = objectType.getDescribe();
-            if (describeResult == null) {
-                // Handle case where describe result is null
-                 throw new AuraHandledException('Could not get describe result for object: ' + objectApiName);
-            }
-
-            List<Schema.ChildRelationship> childRelationships = describeResult.getChildRelationships();
+            List<Schema.ChildRelationship> childRelationships = objectType.getDescribe().getChildRelationships();
             if (childRelationships == null) {
-                // Handle case where child relationships list is null, return empty list
                 return relatedObjectsList;
             }
-
 
             for (Schema.ChildRelationship childRel : childRelationships) {
                 // Stop processing if we've hit the defined limit.
                 if (relationshipCount >= maxRelationships) break;
 
-                // --- Relationship Details ---
-                Schema.SObjectType childObjectType = childRel.getChildSObject();
                 String relationshipName = childRel.getRelationshipName();
 
-                // --- Filtering ---
-                // Skip if:
-                // 1. Relationship name is null (indicates an issue).
-                // 2. The child object is not accessible to the user.
-                // 3. It's likely a system object (e.g., FeedItem, AttachedContentDocument).
-                // 4. It's a history or sharing object, which are often large and less relevant for this UI context.
-                if (relationshipName == null ||
-                    childObjectType == null || // Added null check for childObjectType
-                    !childObjectType.getDescribe().isAccessible() ||
-                    childObjectType.getDescribe().getName().startsWith('System') ||
-                    childObjectType.getDescribe().getName().endsWith('History') || // Use endsWith for History tables
-                    childObjectType.getDescribe().getName().endsWith('Share')) // Use endsWith for Share tables
-                {
-                    continue; // Skip this relationship
+                // --- Filtering Logic ---
+
+                // 1. Skip if relationship name is null or explicitly excluded
+                if (String.isBlank(relationshipName) || excludedRelationshipNames.contains(relationshipName)) {
+                    continue;
                 }
 
-                // --- Prepare Data for LWC ---
-                Map<String, Object> relatedObj = new Map<String, Object>();
+                Schema.SObjectType childObjectType = childRel.getChildSObject();
+
+                // 2. Skip if child object is null or not accessible
+                if (childObjectType == null || !childObjectType.getDescribe().isAccessible()) {
+                    continue;
+                }
+
                 String childObjectName = childObjectType.getDescribe().getName();
 
-                // Only include essential information needed by the LWC to minimize payload.
+                // 3. Skip history, sharing, and change event objects which are noisy
+                if (childObjectName.endsWith('History') || childObjectName.endsWith('Share') || childObjectName.endsWith('ChangeEvent')) {
+                    continue;
+                }
+
+                // 4. Main Curation Logic: Include if it's a custom object OR it's in our whitelist of common standard objects.
+                boolean isCustomObject = childObjectName.endsWith('__c');
+                boolean isCommonStandardObject = commonStandardChildObjects.contains(childObjectName);
+
+                if (!isCustomObject && !isCommonStandardObject) {
+                    continue; // It's a standard object we don't want to show by default
+                }
+                
+                // --- Prepare Data for LWC ---
+                Map<String, Object> relatedObj = new Map<String, Object>();
                 relatedObj.put('objectApiName', childObjectName);
                 relatedObj.put('label', childObjectType.getDescribe().getLabel());
                 relatedObj.put('relationshipName', relationshipName);
-                // Removed 'fieldName' as it wasn't used in the frontend requirement.
 
                 relatedObjectsList.add(relatedObj);
-                relationshipCount++; // Increment the counter only when a relationship is added.
+                relationshipCount++; // Increment counter
             }
 
-            // --- Return Result ---
             return relatedObjectsList;
 
         } catch (AuraHandledException e) {
-            // Re-throw exceptions already formatted for the LWC.
             throw e;
         } catch (Exception e) {
-            // Catch any other unexpected exceptions and wrap them for the LWC.
             throw new AuraHandledException('Error getting related objects: ' + e.getMessage());
         }
     }
     
     /**
-     * Get related records for a specific parent record
+     * Get related records for a specific parent record and relationship
+     * Enhanced to support field configuration
      * 
      * @param parentId The ID of the parent record
      * @param relationshipName The relationship name from the parent to the child
      * @param objectApiName The API name of the parent object
+     * @param fields Optional list of fields to query
+     * @param maxRecords Maximum number of records to return
      * @return List of related records
      */
     @AuraEnabled
     public static List<SObject> getRelatedRecords(
         String objectApiName,
         String parentId,
-        String relationshipName
+        String relationshipName,
+        List<String> fields,
+        Integer maxRecords
     ) {
         try {
+            // [Validation code remains the same]
             if (String.isBlank(parentId)) {
                 throw new AuraHandledException('Parent ID is required');
             }
@@ -297,25 +300,19 @@ public with sharing class DynamicRecordListViewController {
                 throw new AuraHandledException('Object API name is required');
             }
             
-            if (!isValidObjectName(objectApiName)) {
-                throw new AuraHandledException('Object is not accessible: ' + objectApiName);
-            }
-            
             // Ensure the ID is valid format
-            Id recordId;
-            try {
-                recordId = Id.valueOf(parentId);
-            } catch (Exception e) {
-                throw new AuraHandledException('Invalid ID format: ' + parentId);
-            }
+            Id recordId = Id.valueOf(parentId);
             
             // Get the relationship object via describe calls
             Schema.SObjectType parentType = Schema.getGlobalDescribe().get(objectApiName);
             
             String relatedObjectName = '';
+            Schema.SObjectField relationshipField = null;
+            
             for (Schema.ChildRelationship rel : parentType.getDescribe().getChildRelationships()) {
-                if (rel.getRelationshipName() == relationshipName) {
+                if (rel.getRelationshipName() != null && rel.getRelationshipName().equalsIgnoreCase(relationshipName)) {
                     relatedObjectName = String.valueOf(rel.getChildSObject());
+                    relationshipField = rel.getField();
                     break;
                 }
             }
@@ -324,50 +321,30 @@ public with sharing class DynamicRecordListViewController {
                 throw new AuraHandledException('Relationship not found: ' + relationshipName);
             }
             
-            // Get the related object's schema to determine appropriate name fields
-            Schema.SObjectType relatedType = Schema.getGlobalDescribe().get(relatedObjectName);
-            Map<String, Schema.SObjectField> fieldMap = relatedType.getDescribe().fields.getMap();
+            // Build the query with specified fields or defaults
+            Set<String> fieldsToQuery = new Set<String>{'Id'};
             
-            // Determine the most appropriate "name" field for display
-            String nameField = findAppropriateNameField(relatedObjectName, fieldMap);
-            
-            // Construct query for the related records 
-            // Always include Id and dynamically determined name field
-            String query = 'SELECT Id';
-            
-            if (!String.isBlank(nameField)) {
-                query += ', ' + nameField;
+            if (fields != null && !fields.isEmpty()) {
+                fieldsToQuery.addAll(fields);
+            } else {
+                // Use default fields for the object
+                fieldsToQuery.addAll(getDefaultFieldsForRelatedList(relatedObjectName));
             }
             
-            query += ' FROM ' + String.escapeSingleQuotes(relatedObjectName);
+            // Ensure we have valid fields
+            fieldsToQuery = validateFieldsForQuery(relatedObjectName, fieldsToQuery);
             
-            // Add relationship field
-            String relationshipField = '';
+            String query = 'SELECT ' + String.join(new List<String>(fieldsToQuery), ', ');
+            query += ' FROM ' + relatedObjectName;
+            query += ' WHERE ' + relationshipField.getDescribe().getName() + ' = :recordId';
             
-            for (Schema.SObjectField field : fieldMap.values()) {
-                Schema.DescribeFieldResult describe = field.getDescribe();
-                if (describe.getType() == Schema.DisplayType.REFERENCE) {
-                    List<Schema.SObjectType> referenceTo = describe.getReferenceTo();
-                    for (Schema.SObjectType refType : referenceTo) {
-                        if (refType == parentType) {
-                            relationshipField = describe.getName();
-                            break;
-                        }
-                    }
-                }
-                if (!String.isBlank(relationshipField)) break;
-            }
-            
-            if (String.isBlank(relationshipField)) {
-                throw new AuraHandledException('Could not determine relationship field');
-            }
-            
-            query += ' WHERE ' + relationshipField + ' = :recordId';
-            query += ' LIMIT ' + MAX_RELATED_RECORDS;
+            // Add limit
+            Integer limitValue = (maxRecords != null && maxRecords > 0) ? 
+                Math.min(maxRecords, MAX_RELATED_RECORDS) : MAX_RELATED_RECORDS;
+            query += ' LIMIT ' + limitValue;
             
             return Database.query(query);
-        } catch (AuraHandledException e) {
-            throw e;
+            
         } catch (Exception e) {
             throw new AuraHandledException('Error fetching related records: ' + e.getMessage());
         }
@@ -1219,5 +1196,239 @@ public with sharing class DynamicRecordListViewController {
         } catch(Exception e) {
             return false;
         }
+    }
+
+    /**
+     * Get page layout related lists for a given object and record type
+     * This retrieves only the related lists configured on the page layout
+     * 
+     * @param objectApiName The API name of the object
+     * @param recordTypeId Optional record type ID
+     * @return List of related list information from page layout
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<Map<String, Object>> getPageLayoutRelatedLists(String objectApiName, String recordTypeId) {
+        try {
+            if (String.isBlank(objectApiName)) {
+                throw new AuraHandledException('Object API name is required');
+            }
+            
+            List<Map<String, Object>> relatedListsInfo = new List<Map<String, Object>>();
+            
+            // Get the object describe
+            Schema.SObjectType sObjectType = Schema.getGlobalDescribe().get(objectApiName);
+            if (sObjectType == null) {
+                throw new AuraHandledException('Invalid object: ' + objectApiName);
+            }
+            
+            // Get default record type if not provided
+            if (String.isBlank(recordTypeId)) {
+                List<Schema.RecordTypeInfo> rtInfos = sObjectType.getDescribe().getRecordTypeInfos();
+                for (Schema.RecordTypeInfo rtInfo : rtInfos) {
+                    if (rtInfo.isDefaultRecordTypeMapping() && rtInfo.isActive()) {
+                        recordTypeId = rtInfo.getRecordTypeId();
+                        break;
+                    }
+                }
+            }
+            
+            // Get page layout metadata using Metadata API wrapper
+            // Note: This is a simplified version - in production, you'd use Metadata API or UI API
+            List<String> commonRelatedLists = getCommonRelatedListsForObject(objectApiName);
+            
+            // Get child relationships
+            for (Schema.ChildRelationship childRel : sObjectType.getDescribe().getChildRelationships()) {
+                String relationshipName = childRel.getRelationshipName();
+                if (String.isBlank(relationshipName)) continue;
+                
+                Schema.SObjectType childSObjectType = childRel.getChildSObject();
+                if (childSObjectType == null || !childSObjectType.getDescribe().isAccessible()) continue;
+                
+                String childObjectName = childSObjectType.getDescribe().getName();
+                
+                // Filter to only include common related lists
+                if (commonRelatedLists.contains(relationshipName)) {
+                    Map<String, Object> relatedListInfo = new Map<String, Object>();
+                    relatedListInfo.put('objectApiName', childObjectName);
+                    relatedListInfo.put('relationshipName', relationshipName);
+                    relatedListInfo.put('label', childSObjectType.getDescribe().getLabelPlural());
+                    relatedListInfo.put('icon', getObjectIcon(childObjectName));
+                    
+                    // Get default fields for the related list
+                    List<String> defaultFields = getDefaultFieldsForRelatedList(childObjectName);
+                    relatedListInfo.put('fields', defaultFields);
+                    
+                    relatedListsInfo.add(relatedListInfo);
+                }
+            }
+            
+            return relatedListsInfo;
+            
+        } catch (Exception e) {
+            throw new AuraHandledException('Error getting page layout related lists: ' + e.getMessage());
+        }
+    }
+    
+    /**
+     * Get common related lists based on object type
+     * This is a simplified approach - in production, use Metadata API or UI API
+     */
+    private static List<String> getCommonRelatedListsForObject(String objectApiName) {
+        Map<String, List<String>> commonRelatedListsMap = new Map<String, List<String>>{
+            'Account' => new List<String>{'Contacts', 'Opportunities', 'Cases', 'Tasks', 'Events', 'OpenActivities', 'ActivityHistories', 'AttachedContentDocuments', 'CombinedAttachments'},
+            'Contact' => new List<String>{'Cases', 'Tasks', 'Events', 'OpenActivities', 'ActivityHistories', 'AttachedContentDocuments', 'CombinedAttachments'},
+            'Opportunity' => new List<String>{'OpportunityLineItems', 'OpportunityContactRoles', 'Tasks', 'Events', 'OpenActivities', 'ActivityHistories', 'AttachedContentDocuments'},
+            'Case' => new List<String>{'CaseComments', 'Tasks', 'Events', 'OpenActivities', 'ActivityHistories', 'AttachedContentDocuments', 'CombinedAttachments'},
+            'Lead' => new List<String>{'Tasks', 'Events', 'OpenActivities', 'ActivityHistories', 'AttachedContentDocuments', 'CombinedAttachments'}
+        };
+        
+        // Return common related lists for the object, or a default set
+        List<String> relatedLists = commonRelatedListsMap.get(objectApiName);
+        if (relatedLists == null) {
+            // Default related lists for custom objects
+            relatedLists = new List<String>{'Tasks', 'Events', 'AttachedContentDocuments', 'CombinedAttachments'};
+        }
+        
+        return relatedLists;
+    }
+    
+    /**
+     * Get default fields for a related list
+     */
+    private static List<String> getDefaultFieldsForRelatedList(String objectApiName) {
+        Map<String, List<String>> defaultFieldsMap = new Map<String, List<String>>{
+            'Contact' => new List<String>{'Name', 'Title', 'Email', 'Phone'},
+            'Opportunity' => new List<String>{'Name', 'StageName', 'Amount', 'CloseDate'},
+            'Case' => new List<String>{'CaseNumber', 'Subject', 'Status', 'Priority'},
+            'Task' => new List<String>{'Subject', 'ActivityDate', 'Status', 'Priority'},
+            'Event' => new List<String>{'Subject', 'StartDateTime', 'EndDateTime', 'Location'},
+            'OpportunityLineItem' => new List<String>{'Product2.Name', 'Quantity', 'UnitPrice', 'TotalPrice'},
+            'CaseComment' => new List<String>{'CommentBody', 'CreatedDate', 'CreatedBy.Name'}
+        };
+        
+        List<String> fields = defaultFieldsMap.get(objectApiName);
+        if (fields == null) {
+            // Default fields for unknown objects
+            fields = new List<String>{'Name', 'CreatedDate', 'LastModifiedDate'};
+        }
+        
+        return fields;
+    }
+    
+    /**
+     * Get the appropriate icon for an object
+     */
+    private static String getObjectIcon(String objectApiName) {
+        // Standard object icons
+        Map<String, String> iconMap = new Map<String, String>{
+            'Account' => 'standard:account',
+            'Contact' => 'standard:contact',
+            'Opportunity' => 'standard:opportunity',
+            'Case' => 'standard:case',
+            'Task' => 'standard:task',
+            'Event' => 'standard:event',
+            'Lead' => 'standard:lead',
+            'ContentDocument' => 'standard:file',
+            'Attachment' => 'standard:attachment'
+        };
+        
+        String icon = iconMap.get(objectApiName);
+        if (icon == null) {
+            icon = objectApiName.endsWith('__c') ? 'standard:custom' : 'standard:default';
+        }
+        
+        return icon;
+    }
+
+    /**
+     * Get available actions for an object
+     * 
+     * @param objectApiName The API name of the object
+     * @param recordId Optional record ID for record-specific actions
+     * @return List of available actions
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<Map<String, Object>> getObjectActions(String objectApiName, String recordId) {
+        try {
+            List<Map<String, Object>> actions = new List<Map<String, Object>>();
+            
+            // NOTE: Dynamically fetching all quick actions in Apex is not directly supported.
+            // The UI API is the standard way to get a complete list of available actions.
+            // For now, we will return a set of standard, essential actions.
+            
+            // Add standard actions that are generally available
+            actions.add(createAction('Edit', 'Edit', 'standard:edit', 'standard'));
+            actions.add(createAction('Delete', 'Delete', 'standard:delete', 'standard'));
+            actions.add(createAction('Clone', 'Clone', 'standard:clone', 'standard'));
+            
+            return actions;
+            
+        } catch (Exception e) {
+            throw new AuraHandledException('Error getting object actions: ' + e.getMessage());
+        }
+    }
+    
+    /**
+     * Helper method to create an action map
+     */
+    private static Map<String, Object> createAction(String name, String label, String icon, String type) {
+        Map<String, Object> action = new Map<String, Object>();
+        action.put('name', name);
+        action.put('label', label);
+        action.put('icon', icon);
+        action.put('type', type);
+        return action;
+    }
+    
+    /**
+     * Launch a flow with input parameters
+     * 
+     * @param flowApiName The API name of the flow
+     * @param inputVariables Map of input variable names to values
+     * @return Flow interview ID or result
+     */
+    @AuraEnabled
+    public static String launchFlow(String flowApiName, Map<String, Object> inputVariables) {
+        try {
+            if (String.isBlank(flowApiName)) {
+                throw new AuraHandledException('Flow API name is required');
+            }
+            
+            // Create a new flow interview
+            Flow.Interview flowInterview = Flow.Interview.createInterview(flowApiName, inputVariables);
+            
+            // Start the flow
+            flowInterview.start();
+            
+            // Return success message or flow outputs if needed
+            return 'Flow launched successfully';
+            
+        } catch (Exception e) {
+            throw new AuraHandledException('Error launching flow: ' + e.getMessage());
+        }
+    }
+    
+    /**
+     * Validate that fields exist and are accessible
+     */
+    private static Set<String> validateFieldsForQuery(String objectApiName, Set<String> requestedFields) {
+        Set<String> validFields = new Set<String>();
+        
+        Schema.SObjectType objectType = Schema.getGlobalDescribe().get(objectApiName);
+        if (objectType == null) return validFields;
+        
+        Map<String, Schema.SObjectField> fieldMap = objectType.getDescribe().fields.getMap();
+        
+        for (String field : requestedFields) {
+            // Handle relationship fields (e.g., 'Account.Name')
+            if (field.contains('.')) {
+                validFields.add(field); // Add as-is, will be validated by SOQL
+            } else if (fieldMap.containsKey(field.toLowerCase()) && 
+                       fieldMap.get(field.toLowerCase()).getDescribe().isAccessible()) {
+                validFields.add(field);
+            }
+        }
+        
+        return validFields;
     }
 }

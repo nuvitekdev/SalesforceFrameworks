@@ -18,6 +18,9 @@
             <property name="titleField" type="String" label="Title Field" description="Field to use as the title in record detail view. Name is used by default if left blank. Do not specify if Name is already in List View Fields." />
             <property name="subtitleField" type="String" label="Subtitle Field" description="Field to use as the subtitle in record detail view. Use a field that is not already in List View Fields to avoid errors." />
             <property name="maxNavigationDepth" type="Integer" label="Max Navigation Depth" description="Maximum number of lookup record navigations allowed. Set to 0 to disable all lookup navigation. Set to 1-10 to allow that specific number of related record navigations." default="1" min="0" max="10" />
+            <property name="recordTypeId" type="String" label="Record Type ID" description="Optional Record Type ID for page layout configuration" />
+            <property name="showActions" type="Boolean" label="Show Actions" description="Display action buttons in the record detail" default="false" />
+            <property name="relatedListFields" type="String" label="Related List Fields Configuration" description="JSON configuration for related list fields. Example: {&quot;Contacts&quot;:[&quot;Name&quot;,&quot;Email&quot;,&quot;Phone&quot;]}" />
             <property name="primaryColor" type="String" label="Primary Color" description="Primary theme color (headers, buttons)" default="#22BDC1" />
             <property name="accentColor" type="String" label="Accent Color" description="Accent color (highlights, secondary elements)" default="#D5DF23" />
             <property name="textColor" type="String" label="Text Color" description="Main text color" default="#1d1d1f" />

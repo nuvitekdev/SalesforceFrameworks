@@ -2,11 +2,11 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { deleteRecord } from 'lightning/uiRecordApi';
 import getRecords from '@salesforce/apex/DynamicRecordListViewController.getRecords';
 import getRelatedRecords from '@salesforce/apex/DynamicRecordListViewController.getRelatedRecords';
-// Assuming getObjectFields is still needed for initial column setup if fields aren't provided directly
-// import getObjectFields from '@salesforce/apex/DynamicRecordListViewController.getObjectFields';
-import getRelatedObjects from '@salesforce/apex/DynamicRecordListViewController.getRelatedObjects';
+import getPageLayoutRelatedLists from '@salesforce/apex/DynamicRecordListViewController.getPageLayoutRelatedLists';
+import getObjectActions from '@salesforce/apex/DynamicRecordListViewController.getObjectActions';
 import getRecordAllFields from '@salesforce/apex/DynamicRecordListViewController.getRecordAllFields'; // Crucial for modal details
 
 // Constants for configuration and debouncing
@@ -31,8 +31,6 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     @api titleField = 'Name'; 
     /** Optional. The field API name to use for the subtitle in the record detail modal */
     @api subtitleField;
-    /** Optional. The SLDS icon name to display in the modal header */
-    @api iconName = 'standard:default'; 
     /** Optional. The number of records to display per page in the list view */
     @api recordsPerPage = 10; 
     /** Optional. Primary theme color */
@@ -43,6 +41,12 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     @api textColor = '#1d1d1f';
     /** Maximum number of lookup navigations allowed (0 = disable all navigation) */
     @api maxNavigationDepth = 1;
+    /** Optional. The Record Type ID to fetch the correct page layout. */
+    @api recordTypeId;
+    /** Optional. Whether to show the actions menu in the modal header. */
+    @api showActions = false;
+    /** Optional. JSON configuration for fields to display in related lists. */
+    @api relatedListFields;
     
     // --- Internal Component State ---
     @track columns = [];
@@ -74,6 +78,16 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     @track selectedOperator = null;
     @track fieldValue = '';
     @track appliedFilters = null;
+    @track showFlowModal = false;
+    @track pageLayoutRelatedLists = [];
+    @track objectActions = [];
+    @track selectedRelatedList = null;
+    @track relatedListRecords = [];
+    @track relatedListColumns = [];
+    @track loadingRelatedList = false;
+    @track flowApiNameToLaunch = null;
+    @track showEditModal = false;
+    @track iconName = 'standard:default'; 
 
     searchTimeout;
     initialLoadComplete = false;
@@ -357,19 +371,24 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         // Clear any previous errors
         this.error = null;
 
-        getRelatedObjects({ objectApiName: objectApiName })
-            .then(result => {
-                // Store the list of related objects for potential future use
-                this.relatedObjects = result || [];
-                
-                // When the parent record changes, clear the previously loaded related records
-                this.relatedRecords = []; 
-            })
-            .catch(error => {
-                // Handle errors fetching related object metadata
-                this.handleError(error, `Error loading related objects list for ${objectApiName}`);
-                this.relatedObjects = [];
-            });
+        getPageLayoutRelatedLists({ 
+            objectApiName: objectApiName, 
+            recordTypeId: this.recordTypeId 
+        })
+        .then(result => {
+            this.pageLayoutRelatedLists = (result || []).map(list => ({
+                ...list, 
+                isSelected: false,
+                // Add the computedClass property for the template to use directly
+                computedClass: 'related-list-item'
+            }));
+        })
+        .catch(error => {
+            this.handleError(error, 'Error loading page layout related lists');
+        })
+        .finally(() => {
+            this.loadingRelatedObjects = false;
+        });
     }
 
     // --- Event Handlers ---
@@ -501,6 +520,8 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      */
     closeRecordDetail() {
         this.showRecordDetail = false;
+        // Also clear navigation stack when closing the top-level modal
+        this.navigationStack = [];
     }
 
     /**
@@ -513,8 +534,13 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         const selectedTabValue = event.detail.value;
         this.selectedTab = selectedTabValue;
         
-        if (selectedTabValue === 'relatedRecords') {
-            this.handleRelatedRecordsClick();
+        // The new "Related Lists" tab has a value of 'relatedLists'
+        if (selectedTabValue === 'relatedLists') {
+            // This is now handled by the initial load in fetchRecordDetails,
+            // but we can keep this as a backup if needed.
+            if (this.pageLayoutRelatedLists.length === 0) {
+                 this.loadPageLayoutRelatedLists(this.selectedRecord.attributes.type);
+            }
         } else if (selectedTabValue === 'filesAttachments') {
             this.handleFilesAttachmentsClick();
         } else if (selectedTabValue === 'activityHistory') {
@@ -2083,5 +2109,341 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             return 'depth-limit-reached';
         }
         return '';
+    }
+
+    /**
+     * Handles the click of the custom action button to launch a flow.
+     */
+    handleActionButtonClick() {
+        this.showFlowModal = true;
+    }
+
+    /**
+     * Closes the flow modal window.
+     */
+    closeFlowModal() {
+        this.showFlowModal = false;
+        this.flowApiNameToLaunch = null;
+    }
+
+    /**
+     * Handles the status change event from the embedded flow.
+     * Closes the modal and refreshes data upon successful completion.
+     * @param {Event} event - The `statuschange` event from `lightning-flow`.
+     */
+    handleFlowStatusChange(event) {
+        if (event.detail.status === 'FINISHED' || event.detail.status === 'FINISHED_SCREEN') {
+            this.closeFlowModal();
+    
+            // Show a success toast
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Success',
+                message: 'Process completed successfully.',
+                variant: 'success'
+            }));
+    
+            // Re-fetch record details and refresh the main list view
+            this.fetchRecordDetails(this.selectedRecord.Id, this.selectedRecord.attributes.type);
+            this.loadRecords();
+        } else if (event.detail.status === 'ERROR') {
+            // Handle flow errors
+            this.handleError(event.detail.error, 'An error occurred in the flow.');
+        }
+    }
+
+    /**
+     * Determines if the custom action button should be displayed.
+     * @returns {boolean} True if both `flowApiName` and `actionButtonLabel` are provided.
+     */
+    get showActionButton() {
+        return this.flowApiName && this.actionButtonLabel;
+    }
+
+    /**
+     * Prepares the input variables for the flow.
+     * @returns {Array} An array of input variables, including the current record's ID.
+     */
+    get flowInputVariables() {
+        if (!this.selectedRecord) return [];
+        return [
+            {
+                name: 'recordId', // The flow must have an input variable with this API name
+                type: 'String',
+                value: this.selectedRecord.Id
+            }
+        ];
+    }
+
+    /**
+     * Load page layout related lists instead of all related objects
+     */
+    loadPageLayoutRelatedLists(objectApiName) {
+        if (!objectApiName) return;
+        this.loadingRelatedObjects = true;
+        
+        getPageLayoutRelatedLists({ 
+            objectApiName: objectApiName, 
+            recordTypeId: this.recordTypeId 
+        })
+        .then(result => {
+            this.pageLayoutRelatedLists = (result || []).map(list => ({
+                ...list, 
+                isSelected: false,
+                // Add the computedClass property for the template to use directly
+                computedClass: 'related-list-item'
+            }));
+        })
+        .catch(error => {
+            this.handleError(error, 'Error loading page layout related lists');
+        })
+        .finally(() => {
+            this.loadingRelatedObjects = false;
+        });
+    }
+    
+    /**
+     * Load available actions for the object
+     */
+    loadObjectActions(objectApiName) {
+        if (!objectApiName || !this.showActions) return;
+
+        getObjectActions({ 
+            objectApiName: objectApiName, 
+            recordId: this.selectedRecord?.Id 
+        })
+        .then(result => {
+            this.objectActions = result || [];
+        })
+        .catch(error => {
+            console.error('Error loading actions:', error);
+            this.handleError(error, 'Error loading object actions');
+        });
+    }
+    
+    /**
+     * Handle action button clicks from the button menu
+     */
+    handleActionClick(event) {
+        const actionName = event.detail.value;
+        const action = this.objectActions.find(a => a.name === actionName);
+        
+        if (!action) return;
+        
+        console.log('Action clicked:', JSON.stringify(action));
+
+        switch (action.type) {
+            case 'standard':
+                this.handleStandardAction(action.name);
+                break;
+            case 'Flow':
+                this.handleFlowAction(action.flowName);
+                break;
+            default:
+                // For other action types like 'Create' or 'Update'
+                this.handleNavigationAction(action);
+                break;
+        }
+    }
+    
+    /**
+     * Handle standard actions (Edit, Delete, Clone)
+     */
+    handleStandardAction(actionName) {
+        const recordId = this.selectedRecord.Id;
+        
+        switch (actionName) {
+            case 'Edit':
+                this.showEditModal = true;
+                break;
+            case 'Delete':
+                // eslint-disable-next-line no-alert
+                if (confirm('Are you sure you want to delete this record?')) {
+                    this.isLoading = true;
+                    deleteRecord(recordId)
+                        .then(() => {
+                            this.dispatchEvent(
+                                new ShowToastEvent({
+                                    title: 'Success',
+                                    message: 'Record deleted',
+                                    variant: 'success'
+                                })
+                            );
+                            // Close modal and refresh list
+                            this.closeRecordDetail();
+                            this.loadRecords();
+                        })
+                        .catch(error => {
+                            this.handleError(error, 'Error deleting record');
+                        })
+                        .finally(() => {
+                            this.isLoading = false;
+                        });
+                }
+                break;
+            case 'Clone':
+                // For clone, navigation is the most straightforward approach
+                this[NavigationMixin.Navigate]({
+                    type: 'standard__recordPage',
+                    attributes: {
+                        recordId: recordId,
+                        actionName: 'clone'
+                    }
+                });
+                break;
+        }
+    }
+    
+    /**
+     * Handle flow actions by opening them in the component's flow modal
+     */
+    handleFlowAction(flowApiName) {
+        if (!flowApiName) return;
+        this.flowApiNameToLaunch = flowApiName;
+        this.showFlowModal = true;
+    }
+    
+    /**
+     * Handle other actions that require navigation (like create record quick actions)
+     */
+    handleNavigationAction(action) {
+         this[NavigationMixin.Navigate]({
+            type: 'standard__quickAction',
+            attributes: {
+                actionName: action.name
+            }
+        });
+    }
+
+    /**
+     * Handles a click on an item in the related lists sidebar.
+     * @param {Event} event The click event.
+     */
+    handleRelatedListClick(event) {
+        const relationshipName = event.currentTarget.dataset.relationship;
+        if (!relationshipName) return;
+
+        // Deselect all other lists and select the clicked one, updating the class
+        this.pageLayoutRelatedLists = this.pageLayoutRelatedLists.map(list => {
+            const isSelected = list.relationshipName === relationshipName;
+            return {
+                ...list,
+                isSelected: isSelected,
+                computedClass: isSelected ? 'related-list-item selected' : 'related-list-item'
+            };
+        });
+        
+        const selectedList = this.pageLayoutRelatedLists.find(list => list.relationshipName === relationshipName);
+        this.loadRelatedListRecords(selectedList);
+    }
+
+    /**
+     * Load records for a specific related list
+     */
+    loadRelatedListRecords(relatedList) {
+        if (!relatedList) return;
+
+        this.loadingRelatedList = true;
+        this.selectedRelatedList = relatedList;
+        this.relatedListRecords = [];
+        this.relatedListColumns = [];
+
+        // Parse custom field configuration if provided, otherwise use defaults from Apex
+        let fields = relatedList.fields;
+        if (this.relatedListFields) {
+            try {
+                const config = JSON.parse(this.relatedListFields);
+                if (config[relatedList.relationshipName]) {
+                    fields = config[relatedList.relationshipName];
+                }
+            } catch (e) {
+                console.error('Invalid relatedListFields JSON configuration:', e);
+            }
+        }
+
+        // Prepare columns for the datatable
+        this.relatedListColumns = fields.map(fieldApiName => {
+            // Handle relationship fields like 'Account.Name' for labels
+            const label = fieldApiName.includes('.')
+                ? fieldApiName.split('.').map(part => this.formatFieldLabel(part)).join(' ')
+                : this.formatFieldLabel(fieldApiName);
+            return { label: label, fieldName: fieldApiName };
+        });
+        
+        getRelatedRecords({
+            objectApiName: this.selectedRecord.attributes.type,
+            parentId: this.selectedRecord.Id,
+            relationshipName: relatedList.relationshipName,
+            fields: fields,
+            maxRecords: 50
+        })
+        .then(result => {
+            // Process records to handle nested data for the datatable
+            this.relatedListRecords = (result || []).map(record => {
+                 // Flatten relationship fields (e.g., record.Account.Name -> record.Account_Name)
+                 // a simple approach for one level of nesting.
+                 const flatRecord = {...record};
+                 for (const field of fields) {
+                     if(field.includes('.')) {
+                         const parts = field.split('.');
+                         if (record[parts[0]] && record[parts[0]][parts[1]]) {
+                             flatRecord[field] = record[parts[0]][parts[1]];
+                         }
+                     }
+                 }
+                 return flatRecord;
+            });
+        })
+        .catch(error => {
+            this.handleError(error, 'Error loading related records');
+        })
+        .finally(() => {
+            this.loadingRelatedList = false;
+        });
+    }
+    
+    /**
+     * Check if there are related records to display for the selected list
+     */
+    get hasRelatedListRecords() {
+        return this.relatedListRecords && this.relatedListRecords.length > 0;
+    }
+    
+    /**
+     * Replaces the original loadRelatedObjects with the new page-layout based one.
+     * This is now called from within fetchRecordDetails.
+     */
+    loadRelatedObjects(objectApiName) {
+        this.loadPageLayoutRelatedLists(objectApiName);
+    }
+
+    /**
+     * Returns the list of actions for the button menu, ensuring they are valid.
+     */
+    get validObjectActions() {
+        return this.objectActions && this.objectActions.length > 0;
+    }
+
+    /**
+     * Gets the title for the flow modal.
+     */
+    get flowModalTitle() {
+        if (this.flowApiNameToLaunch) {
+            const action = this.objectActions.find(a => a.flowName === this.flowApiNameToLaunch);
+            return action ? action.label : 'Run Process';
+        }
+        return 'Process';
+    }
+
+    /**
+     * Gets the CSS classes for a related list item in the sidebar.
+     * @param {object} list The related list item.
+     * @returns {string} The computed CSS class string.
+     */
+    getRelatedListClass(list) {
+        let classes = 'related-list-item';
+        if (list.isSelected) {
+            classes += ' selected';
+        }
+        return classes;
     }
 }

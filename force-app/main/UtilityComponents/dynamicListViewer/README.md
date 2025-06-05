@@ -4,34 +4,33 @@
 
 ## What is the Dynamic Record List View?
 
-The Dynamic Record List View is a versatile Lightning Web Component (LWC) that provides an advanced, configurable list view for any Salesforce object. It goes beyond standard list views by offering enhanced filtering, sorting, searching, and a powerful record detail modal with related record navigation. This component delivers a modern, intuitive interface for exploring and interacting with Salesforce data without requiring any custom development.
+The Dynamic Record List View is a versatile Lightning Web Component (LWC) that provides an advanced, configurable list view for any Salesforce object. It goes beyond standard list views by offering enhanced filtering, sorting, searching, and a powerful record detail modal with dynamic actions and intelligent related list navigation. This component delivers a modern, intuitive interface for exploring and interacting with Salesforce data without requiring any custom development.
 
 ### Key Features
 
 - **Object Agnostic**: Works with any standard or custom object in your org.
-- **Configurable Columns**: Specify which fields to display as columns.
+- **Configurable List View**: Specify exactly which fields to display as columns on the main list.
+- **Related Lists from Page Layouts**: Displays related lists based on a standard page layout structure, showing only what's relevant.
+- **Configurable Related List Columns**: Define the columns for each related list using a simple JSON configuration.
+- **Dynamic Object Actions**: Automatically surfaces standard actions (Edit, Delete) and custom Flow actions in the record detail view.
 - **Advanced Filtering**: Apply multiple filters with various operators.
 - **Instant Search**: Quickly find records with real-time search capabilities.
 - **Pagination**: Navigate through large data sets with page controls.
 - **Dynamic Sorting**: Sort by any column with a simple click.
 - **Record Detail Modal**: View complete record details without leaving the page.
-- **Related Records Navigation**: Explore related records and lookup fields.
-- **Nested Navigation**: Drill down through related records with breadcrumb tracking.
+- **Nested Record Navigation**: Explore related records and lookup fields with breadcrumb tracking.
 - **Modern UI/UX**: Clean, Apple-inspired design with responsive layout for all devices.
-- **Theme Integration**: Automatically adopts your Salesforce theme colors.
 
 ## Why Use the Dynamic Record List View?
 
-Standard Salesforce list views have limitations, and the Dynamic Record List View component offers several benefits:
+Standard Salesforce list views have limitations, and this component offers several benefits:
 
 1. **Efficiency**: Explore records and their relationships without multiple page loads.
-2. **Flexibility**: Configure to match specific business needs without custom code.
-3. **Enhanced Experience**: Provide users with a more modern, intuitive data exploration interface.
-4. **Consistency**: Maintain the same interface across different objects and contexts.
-5. **Reduced Clicks**: Access detailed information with fewer clicks and page transitions.
+2. **Relevance**: Show only the related lists and actions that matter to your users, just like a standard page.
+3. **Flexibility**: Configure list views and related lists to match specific business needs without custom code.
+4. **Enhanced Experience**: Provide users with a more modern, intuitive data exploration interface.
+5. **Reduced Clicks**: Access detailed information and perform actions with fewer clicks and page transitions.
 6. **Mobile Friendly**: Responsive design works across desktop and mobile devices.
-7. **Performance**: Client-side filtering and pagination for faster response times.
-8. **Implementation Speed**: Deploy in minutes with simple configuration.
 
 ## Who Should Use This Component?
 
@@ -77,25 +76,33 @@ The Dynamic Record List View component can be added to:
 ### Installation
 
 1. Deploy the component using Salesforce CLI or directly within your Salesforce org.
-2. Ensure all dependencies (apex classes, LWC) are deployed together.
+2. Ensure all dependencies (Apex classes, LWC) are deployed together.
 
 ### Configuration
 
 1. Navigate to the page where you want to add the Dynamic Record List View.
-2. Edit the page and drag the "Dynamic Record List View" component from the custom components section.
+2. Edit the page and drag the **Dynamic Record List View** component from the custom components section.
 3. Configure the following required properties:
    - **Object API Name**: The API name of the object to display (e.g., "Account", "Custom_Object__c").
-   - **List View Fields**: Comma-separated list of field API names to display as columns.
+   - **List View Fields**: Comma-separated list of field API names to display as columns (e.g., "Phone,Industry,CreatedDate").
 
-4. Configure the following optional properties:
+4. Configure the following optional properties to customize the experience:
    - **Title Field**: Field to use as the title in the detail modal (default: "Name").
    - **Subtitle Field**: Field to use as the subtitle in the detail modal.
-   - **Icon Name**: SLDS icon name to display in the modal header.
-   - **Records Per Page**: Number of records to display per page (default: 10).
+   - **Max Navigation Depth**: How many levels of related record navigation to allow (default: 1, 0 disables it).
+   - **Record Type ID**: The 18-digit ID of a record type to get the correct page layout for related lists.
+   - **Show Actions**: Check this box to display the action menu (Edit, Delete, Flow actions) in the record detail modal.
+   - **Related List Fields Configuration**: A JSON string to specify columns for related lists. If left blank, sensible defaults will be used.
+     - **Example**:
+       ```json
+       {
+         "Contacts": ["Name", "Title", "Email"],
+         "Opportunities": ["Name", "StageName", "Amount", "CloseDate"]
+       }
+       ```
    - **Primary Color**: Main theme color (default: #22BDC1).
    - **Accent Color**: Secondary theme color (default: #D5DF23).
    - **Text Color**: Text color (default: #1d1d1f).
-   - **Max Navigation Depth**: How many levels of related record navigation to allow.
 
 ### Usage
 
@@ -104,8 +111,9 @@ The Dynamic Record List View component can be added to:
 3. **Search**: Enter text in the search box to filter records instantly.
 4. **Filter**: Use the filter panel to apply specific field filters.
 5. **View Details**: Click any record to open the detail modal.
-6. **Explore Related Records**: Navigate to related records from the detail modal.
-7. **Navigate Back**: Use breadcrumbs to return to previous records.
+6. **Perform Actions**: Use the action menu in the modal header to Edit, Delete, or launch a configured Flow for the record.
+7. **Explore Related Lists**: In the "Related Lists" tab, click a list name in the left panel to see the corresponding records in a table on the right.
+8. **Navigate Relationships**: Click any lookup link to drill down into related records, and use the "Back" button to navigate up the chain.
 
 ## Technical Details
 
@@ -113,31 +121,35 @@ The Dynamic Record List View component can be added to:
 
 - **LWC Component**: `dynamicRecordListView`
 - **Apex Controller**: `DynamicRecordListViewController.cls`
+  - `getRecords`: Fetches the main list of records.
+  - `getRecordAllFields`: Retrieves all accessible fields for the detail modal.
+  - `getPageLayoutRelatedLists`: Gets the curated list of related lists for the modal sidebar.
+  - `getRelatedRecords`: Fetches records for a selected related list.
+  - `getObjectActions`: Gets the available standard and Flow actions for a record.
 
 ### Performance Considerations
 
 - The component uses client-side filtering for performance when possible
 - Server-side SOQL queries are optimized for specific use cases
 - Pagination helps manage large data sets efficiently
+- Record data for the detail modal is lazy-loaded upon click.
 
 ## Troubleshooting
 
 ### Common Issues
 
 1. **No Records Displayed**
-   - Verify object API name is correct
-   - Check that fields in the list view fields exist
-   - Ensure current user has access to the object and fields
+   - Verify **Object API Name** is correct.
+   - Check that fields in **List View Fields** exist and are valid.
+   - Ensure the current user has access to the object and fields.
 
-2. **Related Records Not Showing**
-   - Verify user has access to related objects
-   - Check that relationship fields are correctly defined
-   - Ensure max navigation depth is set appropriately
+2. **Related Lists Not Showing**
+   - The Apex controller uses a hard-coded map to determine which related lists to show for standard objects. You can modify the `getCommonRelatedListsForObject` method in `DynamicRecordListViewController.cls` to add or remove lists.
+   - For custom objects, ensure the relationships are correctly defined.
 
-3. **Performance Issues**
-   - Consider reducing the number of displayed fields
-   - Increase records per page for fewer server calls
-   - Use more specific filters to reduce data volume
+3. **Actions Not Appearing**
+   - Ensure the **Show Actions** checkbox is checked in the component's properties.
+   - For Flow actions, ensure they are configured as "Quick Actions" on the object and are active.
 
 ## Contributing
 

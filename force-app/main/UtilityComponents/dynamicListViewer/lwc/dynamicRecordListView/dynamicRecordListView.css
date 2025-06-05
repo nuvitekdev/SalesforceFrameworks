@@ -54,8 +54,8 @@
     /* Shadows */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
-    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.5);
 
     /* Transitions */
     --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -596,6 +596,14 @@ td {
     z-index: 9000;
 }
 
+.slds-backdrop--custom {
+    z-index: 9002; /* Ensure flow modal backdrop is on top */
+}
+
+.flow-modal .slds-modal__container {
+    z-index: 9003; /* Ensure flow modal is on top of its backdrop and other modals */
+}
+
 .slds-modal__container {
     max-width: 70rem;
     width: 90%;
@@ -843,6 +851,69 @@ lightning-tabset .slds-tabs_scoped__item {
 /* ============================================= */
 /* Modal - Related Records Tab Content           */
 /* ============================================= */
+.related-lists-container {
+    display: flex;
+    gap: var(--spacing-md);
+    height: 450px; /* Give the container a fixed height */
+    width: 100%;
+}
+
+.related-lists-sidebar {
+    width: 280px;
+    min-width: 250px;
+    border-right: 1px solid var(--border-color);
+    padding-right: var(--spacing-md);
+    overflow-y: auto;
+}
+
+.related-list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-bottom: var(--spacing-xs);
+    border: 1px solid transparent;
+}
+
+.related-list-item:hover {
+    background-color: var(--background-alt);
+    border-color: var(--border-subtle);
+}
+
+.related-list-item.selected {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+    color: var(--primary-color);
+    font-weight: var(--font-weight-semibold);
+    border-color: var(--primary-color);
+}
+
+.related-list-item .related-list-icon {
+    --sds-c-icon-color-foreground-default: var(--text-secondary);
+}
+
+.related-list-item.selected .related-list-icon {
+    --sds-c-icon-color-foreground-default: var(--primary-color);
+}
+
+.related-list-content {
+    flex: 1;
+    overflow: auto;
+    position: relative; /* For spinner positioning */
+    display: flex;
+    flex-direction: column;
+}
+
+.related-list-content h3 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    padding-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+}
+
 .related-records-container,
 .files-container {
     min-height: 100px;
@@ -1266,4 +1337,26 @@ lightning-tabset .slds-tabs_scoped__item {
 .depth-limit-reached {
     color: #c23934;
     font-weight: 600;
+}
+
+/* ============================================= */
+/* Action Button in Modal                        */
+/* ============================================= */
+.action-buttons {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: 60px; /* Position next to close button */
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.action-buttons lightning-button-menu::part(button) {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-inverse);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all var(--transition-fast);
+}
+
+.action-buttons lightning-button-menu::part(button):hover {
+    background: rgba(255, 255, 255, 0.3);
 }
