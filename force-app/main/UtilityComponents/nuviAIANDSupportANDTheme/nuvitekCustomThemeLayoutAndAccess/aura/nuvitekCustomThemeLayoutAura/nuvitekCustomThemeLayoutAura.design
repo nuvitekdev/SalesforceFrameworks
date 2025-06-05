@@ -1,0 +1,76 @@
+<!-- 
+    Design file for Nuvitek Custom Theme Layout Aura Component
+    Allows configuration of all theme properties in Experience Builder
+-->
+<design:component>
+    <!-- Theme appearance -->
+    <design:attribute name="primaryColor" label="Primary Color" description="Primary accent color for buttons and highlights" />
+    <design:attribute name="accentColor" label="Accent Color" description="Secondary accent color for gradients and decorations" />
+    <design:attribute name="textColor" label="Text Color" description="Main text color" />
+    <design:attribute name="themeName" label="Theme Mode" description="Light or dark theme mode" datasource="light,dark" />
+    <design:attribute name="applyThemeToSlots" label="Apply Theme to Slotted Content" description="When enabled, automatically applies theme styling to components placed in slots" />
+    <design:attribute name="globalThemeOverride" label="Global Theme Overrides" description="When enabled, applies theme styling to OOTB Salesforce components" />
+    
+    <!-- Header configuration -->
+    <design:attribute name="useDefaultHeader" label="Use Default Header" description="Enable to use the built-in header instead of custom header component" />
+    <design:attribute name="headerContainerWidth" label="Header Container Width %" description="Controls the width of the header container as percentage" min="0" max="100" />
+    <design:attribute name="headerVariant" label="Header Variant" description="Visual style for the header" datasource="standard,minimal,expanded" />
+    <design:attribute name="headerSticky" label="Sticky Header" description="Keep the header fixed at the top when scrolling" />
+    
+    <!-- Logo configuration -->
+    <design:attribute name="logoUrl" label="Logo URL" description="URL to your custom logo image" />
+    <design:attribute name="logoAltText" label="Logo Alt Text" description="Alternative text for the logo for accessibility" />
+    
+    <!-- Navigation configuration -->
+    <design:attribute name="headerNavigationMenuName" label="Header Navigation Menu" description="Enter the name of the navigation menu to use in the header" />
+    <design:attribute name="ensureHomeNavItem" label="Ensure Home Navigation Item" description="Automatically add a Home item to navigation if one doesn't exist" />
+    <design:attribute name="showSearchInHeader" label="Show Search in Header" description="Display a search box in the header" />
+    <design:attribute name="searchObjects" label="Objects to Search" description="Comma-separated list of objects to search across" />
+    <design:attribute name="showProfileIcon" label="Show Profile Icon" description="Display a profile icon in the header that links to the user profile" />
+    <design:attribute name="profilePageUrl" label="Profile Page URL" description="URL to the user profile page" />
+    
+    <!-- Hero section configuration -->
+    <design:attribute name="showHeroSection" label="Show Hero Section" description="Toggle to display the hero banner section" />
+    <design:attribute name="heroLayout" label="Hero Layout" description="Layout style for the hero section" datasource="split,fullwidth" />
+    <design:attribute name="heroBackgroundImage" label="Hero Background Image URL" description="Background image URL for hero section" />
+    <design:attribute name="heroTitle" label="Hero Title" description="Main headline for hero section" />
+    <design:attribute name="heroSubtitle" label="Hero Subtitle" description="Supporting text for hero section" />
+    <design:attribute name="heroCTAPrimaryLabel" label="Primary Button Label" description="Text for primary call-to-action button" />
+    <design:attribute name="heroCTAPrimaryUrl" label="Primary Button URL" description="Link for primary call-to-action button" />
+    <design:attribute name="heroCTASecondaryLabel" label="Secondary Button Label" description="Text for secondary call-to-action button" />
+    <design:attribute name="heroCTASecondaryUrl" label="Secondary Button URL" description="Link for secondary call-to-action button" />
+    
+    <!-- Video background properties -->
+    <design:attribute name="showBackgroundVideo" label="Show Background Video" description="Toggle to display a background video in the hero section" />
+    <design:attribute name="heroBackgroundDarkness" label="Hero Background Darkness" description="Controls the overlay of the hero section. Negative values darken (black overlay), positive values lighten (white overlay)." min="-100" max="100" />
+    <design:attribute name="backgroundVideoUrl" label="Background Video URL" description="URL to your background video file (MP4 format recommended)" />
+    <design:attribute name="backgroundVideoFallbackUrl" label="Background Video Fallback Image" description="URL to a fallback image shown on mobile or when video can't play" />
+    <design:attribute name="backgroundVideoDarkness" label="Video Darkness Percentage" description="Percentage to darken the background video (0-100)" min="0" max="100" />
+    
+    <!-- Visual elements -->
+    <design:attribute name="showFab" label="Show Floating Action Button" description="Toggle to display floating action button" />
+    <design:attribute name="fabUrl" label="FAB Action URL" description="Link for floating action button (only used when FAB Options is set to 'URL Link')" />
+    <design:attribute name="fabOptions" label="FAB Options" description="Select which options to show in the floating action button menu" datasource="both,help_form,ai_assistant,url_link" />
+    <design:attribute name="helpFormLabel" label="Help Form Label" description="Label for the help request option in the FAB menu" />
+    <design:attribute name="aiAssistantLabel" label="AI Assistant Label" description="Label for the AI assistant option in the FAB menu" />
+    <design:attribute name="helpFormIcon" label="Help Form Icon" description="Icon name for the help form option (e.g. utility:chat)" />
+    <design:attribute name="aiAssistantIcon" label="AI Assistant Icon" description="Icon name for the AI assistant option (e.g. utility:einstein)" />
+    
+    <!-- Footer configuration -->
+    <design:attribute name="useDefaultFooter" label="Use Default Footer" description="Enable to use the built-in footer instead of custom footer component" />
+    <design:attribute name="footerNavigationMenuName" label="Footer Navigation Menu" description="Enter the name of the navigation menu to use in the footer" />
+    <design:attribute name="footerStyle" label="Footer Style" description="Style variant for the footer section" datasource="standard,minimal,multi-column" />
+    <design:attribute name="companyName" label="Company Name" description="Company name displayed in copyright notice" />
+    <design:attribute name="footerTagline" label="Footer Tagline" description="Short tagline displayed in the footer" />
+    <design:attribute name="footerLegalText" label="Legal Text" description="Additional legal text displayed in the footer" />
+    
+    <!-- Dynamic Footer Columns -->
+    <design:attribute name="footerColumnCount" label="Number of Footer Columns" description="Number of columns to display in the footer" min="1" max="5" />
+    <design:attribute name="footerColumnTitles" label="Footer Column Titles" description="Comma-separated list of column titles" />
+    <design:attribute name="footerColumnMenus" label="Footer Column Menus" description="Comma-separated list of navigation menu names for each column (leave blank to use sections of main footer menu)" />
+    
+    <!-- Social media links -->
+    <design:attribute name="socialLinksCount" label="Number of Social Links" description="Number of social links to display" min="0" max="10" />
+    <design:attribute name="socialLinkTitles" label="Social Link Titles" description="Comma-separated list of social media names" />
+    <design:attribute name="socialLinkUrls" label="Social Link URLs" description="Comma-separated list of social media URLs" />
+</design:component> 

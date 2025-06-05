@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AuraDefinitionBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>63.0</apiVersion>
+    <description>Nuvitek Custom Theme Layout for Aura - A comprehensive theme layout component with customizable header, hero, footer, and FAB functionality. Provides exact feature parity with the LWC version for Aura-based Experience sites.</description>
+</AuraDefinitionBundle> 
