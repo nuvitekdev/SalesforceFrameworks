@@ -92,6 +92,13 @@
     <!-- Current year for footer -->
     <aura:attribute name="currentYear" type="Integer" access="private"/>
     
+    <!-- Computed attributes for dynamic values -->
+    <aura:attribute name="heroOverlayStyle" type="String" access="private"/>
+    <aura:attribute name="footerColumnsStyle" type="String" access="private"/>
+    <aura:attribute name="footerColumns" type="Object[]" access="private"/>
+    <aura:attribute name="socialLinks" type="Object[]" access="private"/>
+    <aura:attribute name="mainFabIcon" type="String" default="utility:add" access="private"/>
+    
     <!-- Handler registration -->
     <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
     <aura:handler name="render" value="{!this}" action="{!c.onRender}"/>
@@ -323,13 +330,13 @@
                 
                 <!-- Regular background overlay -->
                 <aura:if isTrue="{!!v.showBackgroundVideo}">
-                    <div class="hero-overlay" style="{!c.getHeroOverlayStyle}"></div>
+                    <div class="hero-overlay" style="{!v.heroOverlayStyle}"></div>
                 </aura:if>
                 
                 <div class="hero-container">
                     <div class="hero-content">
                         <h1 class="hero-title" aria-label="{!v.heroTitle}">
-                            <span class="hero-title-text">{!v.heroTitle}</span>
+                            <span class="hero-title-text" data-text="{!v.heroTitle}">{!v.heroTitle}</span>
                         </h1>
                         <p class="hero-subtitle">{!v.heroSubtitle}</p>
                         <div class="hero-cta">
@@ -395,9 +402,9 @@
                     <div class="footer-container">
                         <!-- Footer top section with columns -->
                         <div class="footer-top">
-                            <div class="footer-columns" style="{!c.getFooterColumnsStyle}">
+                            <div class="footer-columns" style="{!v.footerColumnsStyle}">
                                 <!-- Dynamic footer columns -->
-                                <aura:iteration items="{!c.getFooterColumns}" var="column">
+                                <aura:iteration items="{!v.footerColumns}" var="column">
                                     <div class="footer-column">
                                         <h3 class="footer-column-title">{!column.title}</h3>
                                         <div class="footer-nav-container">
@@ -429,7 +436,7 @@
                                     <!-- Social Links -->
                                     <aura:if isTrue="{!v.socialLinksCount > 0}">
                                         <div class="social-links">
-                                            <aura:iteration items="{!c.getSocialLinks}" var="socialLink" indexVar="index">
+                                            <aura:iteration items="{!v.socialLinks}" var="socialLink" indexVar="index">
                                                 <a href="{!socialLink.url}" 
                                                    class="social-link"
                                                    aria-label="{!socialLink.title}" 
@@ -464,7 +471,7 @@
         <aura:if isTrue="{!v.showFab}">
             <div class="fab">
                 <button class="fab-button" aria-label="Options" onclick="{!c.handleFabClick}">
-                    <lightning:icon iconName="{!c.getMainFabIcon}" size="small"/>
+                    <lightning:icon iconName="{!v.mainFabIcon}" size="small"/>
                 </button>
                 
                 <!-- FAB Menu Options -->

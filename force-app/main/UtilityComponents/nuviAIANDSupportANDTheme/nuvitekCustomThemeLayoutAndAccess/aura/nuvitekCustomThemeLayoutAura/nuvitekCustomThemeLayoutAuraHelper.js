@@ -19,9 +19,6 @@
         } else {
             component.set('v.isFooterNavLoaded', true);
         }
-        
-        // Initialize footer columns
-        this.initializeFooterColumns(component);
     },
     
     /**
@@ -45,6 +42,8 @@
                 } else {
                     component.set('v.footerNavItems', processedItems);
                     component.set('v.isFooterNavLoaded', true);
+                    // Recompute footer columns with the loaded nav items
+                    this.computeFooterColumns(component);
                 }
             } else {
                 console.error('Error loading navigation items:', response.getError());
@@ -415,5 +414,153 @@
         if (name.includes('pinterest')) return 'utility:socialshare';
         
         return 'utility:world';
+    },
+    
+    /**
+     * Compute dynamic values for the component
+     */
+    computeDynamicValues : function(component) {
+        // Compute hero overlay style
+        this.computeHeroOverlayStyle(component);
+        
+        // Compute footer columns style
+        this.computeFooterColumnsStyle(component);
+        
+        // Compute footer columns
+        this.computeFooterColumns(component);
+        
+        // Compute social links
+        this.computeSocialLinks(component);
+        
+        // Compute main FAB icon
+        this.computeMainFabIcon(component);
+        
+        // Watch for changes to recompute values
+        this.setupValueChangeHandlers(component);
+    },
+    
+    /**
+     * Setup handlers to recompute values when attributes change
+     */
+    setupValueChangeHandlers : function(component) {
+        // In Aura, we need to use change handlers on attributes
+        // These would be defined in the component markup with aura:handler
+        // For now, we'll call the compute methods when values change
+        // This can be enhanced by adding specific handlers in the component
+    },
+    
+    /**
+     * Compute hero overlay style
+     */
+    computeHeroOverlayStyle : function(component) {
+        var darkness = component.get('v.heroBackgroundDarkness');
+        var style = '';
+        
+        if (darkness === 0) {
+            style = 'background: none;';
+        } else {
+            var opacity = Math.abs(darkness) / 100;
+            
+            if (darkness < 0) {
+                // Darken with black overlay
+                style = 'background: linear-gradient(to bottom, rgba(0, 0, 0, ' + opacity + '), rgba(0, 0, 0, ' + (opacity * 1.2) + '));';
+            } else {
+                // Lighten with white overlay
+                style = 'background: linear-gradient(to bottom, rgba(255, 255, 255, ' + opacity + '), rgba(255, 255, 255, ' + opacity + '));';
+            }
+        }
+        
+        component.set('v.heroOverlayStyle', style);
+    },
+    
+    /**
+     * Compute main FAB icon
+     */
+    computeMainFabIcon : function(component) {
+        var fabOptions = component.get('v.fabOptions');
+        var icon = 'utility:add';
+        
+        if (fabOptions === 'url_link') {
+            icon = 'utility:add';
+        } else if (fabOptions === 'help_form') {
+            icon = component.get('v.helpFormIcon');
+        } else if (fabOptions === 'ai_assistant') {
+            icon = component.get('v.aiAssistantIcon');
+        }
+        
+        component.set('v.mainFabIcon', icon);
+    },
+    
+    /**
+     * Compute footer columns style
+     */
+    computeFooterColumnsStyle : function(component) {
+        var footerStyle = component.get('v.footerStyle');
+        var style = '';
+        
+        if (footerStyle === 'minimal' || footerStyle === 'standard') {
+            style = 'display: flex; justify-content: center; flex-wrap: wrap; gap: var(--spacing-lg);';
+        } else {
+            var columnCount = component.get('v.footerColumnCount');
+            style = 'grid-template-columns: repeat(' + columnCount + ', 1fr);';
+        }
+        
+        component.set('v.footerColumnsStyle', style);
+    },
+    
+    /**
+     * Compute footer columns
+     */
+    computeFooterColumns : function(component) {
+        var columnCount = component.get('v.footerColumnCount');
+        var columnTitles = component.get('v.footerColumnTitles').split(',');
+        var footerNavItems = component.get('v.footerNavItems') || [];
+        var columns = [];
+        
+        for (var i = 0; i < columnCount; i++) {
+            var title = columnTitles[i] ? columnTitles[i].trim() : 'Column ' + (i + 1);
+            var columnItems = [];
+            
+            // Divide footer nav items among columns
+            if (footerNavItems.length > 0) {
+                var itemsPerColumn = Math.ceil(footerNavItems.length / columnCount);
+                var startIndex = i * itemsPerColumn;
+                var endIndex = Math.min(startIndex + itemsPerColumn, footerNavItems.length);
+                columnItems = footerNavItems.slice(startIndex, endIndex);
+            }
+            
+            columns.push({
+                index: i,
+                title: title,
+                items: columnItems
+            });
+        }
+        
+        component.set('v.footerColumns', columns);
+    },
+    
+    /**
+     * Compute social links
+     */
+    computeSocialLinks : function(component) {
+        var socialLinksCount = component.get('v.socialLinksCount');
+        var socialLinkTitles = component.get('v.socialLinkTitles').split(',');
+        var socialLinkUrls = component.get('v.socialLinkUrls').split(',');
+        var links = [];
+        
+        for (var i = 0; i < socialLinksCount; i++) {
+            var title = socialLinkTitles[i] ? socialLinkTitles[i].trim() : '';
+            var url = socialLinkUrls[i] ? socialLinkUrls[i].trim() : '';
+            
+            if (url) {
+                links.push({
+                    title: title,
+                    url: url,
+                    iconName: this.getSocialIconName(title)
+                });
+            }
+        }
+        
+        component.set('v.socialLinks', links);
     }
 }) 
