@@ -29,6 +29,13 @@
                     <lightning-icon icon-name="utility:filterList" size="small"></lightning-icon>
                     <span>Filter</span>
                 </button>
+                <lightning-button
+                    if:true={showNewButton}
+                    label="New"
+                    variant="brand"
+                    onclick={handleNewClick}
+                    class="new-button">
+                </lightning-button>
             </div>
         </div>
 
@@ -168,24 +175,22 @@
                 <div class="slds-modal__container">
                     <!-- Header -->
                     <header class="slds-modal__header">
-                        <template if:true={showActions}>
-                            <div class="action-buttons">
-                                <lightning-button-menu
-                                    icon-size="small"
-                                    onselect={handleActionClick}
-                                    variant="border-inverse"
-                                    menu-alignment="right"
-                                    if:true={validObjectActions}>
-                                    <template for:each={objectActions} for:item="action">
-                                        <lightning-menu-item
-                                            key={action.name}
-                                            value={action.name}
-                                            label={action.label}>
-                                        </lightning-menu-item>
-                                    </template>
-                                </lightning-button-menu>
-                            </div>
-                        </template>
+                        <div class="action-buttons">
+                            <lightning-button-menu
+                                icon-size="small"
+                                onselect={handleActionClick}
+                                variant="border-inverse"
+                                menu-alignment="right"
+                                if:true={validObjectActions}>
+                                <template for:each={objectActions} for:item="action">
+                                    <lightning-menu-item
+                                        key={action.name}
+                                        value={action.name}
+                                        label={action.label}>
+                                    </lightning-menu-item>
+                                </template>
+                            </lightning-button-menu>
+                        </div>
                         <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeRecordDetail} aria-label="Close modal">
                             <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse" size="small"></lightning-icon>
                             <span class="slds-assistive-text">Close</span>
@@ -362,7 +367,7 @@
                             </lightning-tab>
 
                             <!-- Files and Attachments Tab -->
-                            <lightning-tab label="Files" value="filesAttachments" icon-name="utility:file">
+                            <lightning-tab label="Files & Notes" value="filesAndNotes" icon-name="utility:file">
                                 <div class="tab-container" role="tabpanel">
                                     <div class="files-container">
                                         <!-- Loading state -->
@@ -377,7 +382,7 @@
                                         <template if:false={loadingFiles}>
                                             <template if:false={hasFiles}>
                                                 <div class="empty-state small">
-                                                    <p>No files or attachments found for this record.</p>
+                                                    <p>No files, notes, or attachments found for this record.</p>
                                                 </div>
                                             </template>
                                             
@@ -499,21 +504,14 @@
                             <h2 class="slds-modal__title">Edit {recordDetailTitle}</h2>
                         </header>
                         <div class="slds-modal__content slds-p-around_medium">
-                            <lightning-record-edit-form
+                            <lightning-record-form
                                 record-id={selectedRecord.Id}
                                 object-api-name={selectedRecord.attributes.type}
-                                onsuccess={handleEditSuccess}>
-                                <!-- Fields will be automatically determined by the layout -->
-                                <lightning-messages></lightning-messages>
-                                <div class="slds-grid slds-wrap">
-                                     <!-- Add lightning-output-fields here if you want to explicitly define the form layout -->
-                                     <!-- If left empty, it will use the default layout -->
-                                </div>
-                                <div class="slds-m-top_medium slds-text-align_right">
-                                    <lightning-button label="Cancel" onclick={closeEditModal} class="slds-m-right_x-small"></lightning-button>
-                                    <lightning-button type="submit" variant="brand" label="Save"></lightning-button>
-                                </div>
-                            </lightning-record-edit-form>
+                                layout-type="Full"
+                                mode="edit"
+                                onsuccess={handleEditSuccess}
+                                oncancel={closeEditModal}>
+                            </lightning-record-form>
                         </div>
                     </div>
                 </section>

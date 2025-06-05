@@ -90,8 +90,15 @@ The Dynamic Record List View component can be added to:
    - **Title Field**: Field to use as the title in the detail modal (default: "Name").
    - **Subtitle Field**: Field to use as the subtitle in the detail modal.
    - **Max Navigation Depth**: How many levels of related record navigation to allow (default: 1, 0 disables it).
+   - **Show New Button**: If checked, displays a "New" button on the main list view.
+   - **Record Action API Names**: A comma-separated list of Quick Action API names to show in the record detail modal. This supports:
+     - **Standard Actions**: `Edit`, `Delete`, `Clone`
+     - **Custom Flow Actions**: Any Flow configured as a Quick Action on the object (e.g., `Send_Email_Flow`, `My_Custom_Process`)
+     - **Custom Quick Actions**: Any custom quick action defined on the object
+     - **Example**: `Edit,Delete,Clone,Send_Email_Flow,Update_Status` 
+     - **Default**: `Edit,Delete` (if left blank, no actions will show)
    - **Record Type ID**: The 18-digit ID of a record type to get the correct page layout for related lists.
-   - **Show Actions**: Check this box to display the action menu (Edit, Delete, Flow actions) in the record detail modal.
+   - **Show Actions (Deprecated)**: Kept for backward compatibility. Use `Record Action API Names` for better control.
    - **Related List Fields Configuration**: A JSON string to specify columns for related lists. If left blank, sensible defaults will be used.
      - **Example**:
        ```json
@@ -148,8 +155,16 @@ The Dynamic Record List View component can be added to:
    - For custom objects, ensure the relationships are correctly defined.
 
 3. **Actions Not Appearing**
-   - Ensure the **Show Actions** checkbox is checked in the component's properties.
-   - For Flow actions, ensure they are configured as "Quick Actions" on the object and are active.
+   - **Check Configuration**: Ensure you have added action names to the **Record Action API Names** property (e.g., `Edit,Delete,Clone`).
+   - **For Flow Actions**: 
+     - Create your Flow and make sure it has an input variable named `recordId` of type Text/String
+     - Go to Object Manager → Your Object → Buttons, Links, and Actions → New Action
+     - Choose "Flow" as the action type and select your Flow
+     - Set the API name (this is what you'll use in **Record Action API Names**)
+     - Activate the action
+   - **For Custom Quick Actions**: Make sure they are active and available on the object
+   - **Check Browser Console**: Look for any error messages about action loading
+   - **Verify Object Access**: Ensure the user has permission to perform the actions on the object
 
 ## Contributing
 

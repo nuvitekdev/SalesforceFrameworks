@@ -41,10 +41,13 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     @api textColor = '#1d1d1f';
     /** Maximum number of lookup navigations allowed (0 = disable all navigation) */
     @api maxNavigationDepth = 1;
+    /** Optional. If true, displays a 'New' button to create new records. */
+    @api showNewButton = false;
+    /** Optional. Comma-separated list of Quick Action API names to show in the record modal. */
+    @api recordActionApiNames;
+ 
     /** Optional. The Record Type ID to fetch the correct page layout. */
     @api recordTypeId;
-    /** Optional. Whether to show the actions menu in the modal header. */
-    @api showActions = false;
     /** Optional. JSON configuration for fields to display in related lists. */
     @api relatedListFields;
     
@@ -88,6 +91,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     @track flowApiNameToLaunch = null;
     @track showEditModal = false;
     @track iconName = 'standard:default'; 
+    @track flowLabelToDisplay = 'Run Process';
 
     searchTimeout;
     initialLoadComplete = false;
@@ -208,14 +212,16 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * (objectApiName, columns, sorting, pagination, search term).
      * Called initially by `processFieldConfiguration` and subsequently by sorting, pagination, or search.
      */
-    loadRecords() {
+    loadRecords(showLoadingSpinner = true) {
         // Don't attempt load if the object API name isn't set
         if (!this.objectApiName) {
             console.warn('loadRecords called without objectApiName.');
             return; 
         }
 
-        this.isLoading = true; // Show loading spinner for list view
+        if (showLoadingSpinner) {
+            this.isLoading = true; // Show loading spinner for list view only when requested
+        }
         this.error = null; // Clear previous errors before new load attempt
 
         // Determine the precise set of fields needed for this specific SOQL query:
@@ -245,7 +251,9 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             // Update component state with the fetched data
             this.records = result.records || [];
             this.totalRecords = result.totalRecords || 0;
-            this.isLoading = false; // Hide loading spinner
+            if (showLoadingSpinner) {
+                this.isLoading = false; // Hide loading spinner only if we showed it
+            }
             this.initialLoadComplete = true;
             
             // Update CSS custom properties
@@ -256,8 +264,18 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             this.handleError(error, 'Error loading records');
             this.records = []; // Clear records on error
             this.totalRecords = 0;
-            this.isLoading = false; // Hide loading spinner
+            if (showLoadingSpinner) {
+                this.isLoading = false; // Hide loading spinner only if we showed it
+            }
         });
+    }
+
+    /**
+     * Refresh records in the background without showing the main loading spinner
+     * Used after actions like delete, edit, etc. to update the list silently
+     */
+    refreshRecordsInBackground() {
+        this.loadRecords(false); // Don't show loading spinner
     }
 
     /**
@@ -327,6 +345,9 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                     
                     // Load related objects
                     this.loadRelatedObjects(objectApiName);
+                    
+                    // Load available actions for this record
+                    this.loadObjectActions(objectApiName, recordId);
                     
                     console.log('Processed record data:', JSON.stringify(this.selectedRecord));
                     console.log('Detailed fields data:', JSON.stringify(this.detailedFieldsData));
@@ -541,8 +562,8 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             if (this.pageLayoutRelatedLists.length === 0) {
                  this.loadPageLayoutRelatedLists(this.selectedRecord.attributes.type);
             }
-        } else if (selectedTabValue === 'filesAttachments') {
-            this.handleFilesAttachmentsClick();
+        } else if (selectedTabValue === 'filesAndNotes') {
+            this.handleFilesAndNotesClick();
         } else if (selectedTabValue === 'activityHistory') {
             this.handleChatterPostsClick();
         }
@@ -680,9 +701,9 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     }
 
     /**
-     * Handle Files tab click - automatically load file attachments
+     * Handle Files & Notes tab click - fetches all modern and classic files/notes/attachments.
      */
-    handleFilesAttachmentsClick() {
+    handleFilesAndNotesClick() {
         if (!this.isValidRecord()) {
             this.loadingFiles = false;
             return;
@@ -691,21 +712,35 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         this.loadingFiles = true;
         this.files = [];
         
-        this.fetchRelatedRecords('ContentDocumentLinks')
-            .then(result => {
-                if (result && result.length > 0) {
-                    this.files = this.formatFiles(result);
-                } else {
-                    this.files = [];
-                }
-            })
-            .catch(error => {
-                this.handleError(error, 'Error loading files');
-                this.files = [];
-            })
-            .finally(() => {
-                this.loadingFiles = false;
-            });
+        Promise.all([
+            this.fetchRelatedRecords('ContentDocumentLinks'), // Modern Files & Notes (ContentNote)
+            this.fetchRelatedRecords('Attachments'),          // Classic Attachments
+            this.fetchRelatedRecords('Notes')                 // Classic Notes
+        ]).then(([contentLinks, classicAttachments, classicNotes]) => {
+            let allFiles = [];
+
+            if (contentLinks && contentLinks.length > 0) {
+                allFiles.push(...this.formatFiles(contentLinks));
+            }
+            if (classicAttachments && classicAttachments.length > 0) {
+                allFiles.push(...this.formatAttachments(classicAttachments));
+            }
+             if (classicNotes && classicNotes.length > 0) {
+                allFiles.push(...this.formatClassicNotes(classicNotes));
+            }
+
+            // Sort all items by date, most recent first
+            allFiles.sort((a, b) => new Date(b.rawCreatedDate) - new Date(a.rawCreatedDate));
+            
+            this.files = allFiles;
+        })
+        .catch(error => {
+            this.handleError(error, 'Error loading files and attachments');
+            this.files = [];
+        })
+        .finally(() => {
+            this.loadingFiles = false;
+        });
     }
     
     /**
@@ -715,18 +750,68 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         return fileLinks.map(link => {
             // Try to extract file information from ContentDocument relationship
             const contentDoc = link.ContentDocument || {};
-            const fileType = contentDoc.FileType || '';
+            let fileType = contentDoc.FileType || 'UNKNOWN';
             
+            // Modern notes have a file type of SNOTE
+            if (fileType === 'SNOTE') {
+                fileType = 'Note';
+            }
+
             return {
                 id: link.Id,
                 title: contentDoc.Title || 'Untitled',
                 fileType: fileType,
-                iconName: this.getFileIcon(fileType),
+                iconName: this.getFileIcon(fileType, contentDoc.FileExtension),
                 fileSize: this.formatFileSize(contentDoc.ContentSize || 0),
                 createdDate: contentDoc.CreatedDate ? this.formatDateTime(contentDoc.CreatedDate) : '',
+                rawCreatedDate: contentDoc.CreatedDate, // For sorting
                 createdBy: contentDoc.CreatedBy?.Name || 'Unknown',
                 description: contentDoc.Description || '',
-                downloadUrl: '/sfc/servlet.shepherd/document/download/' + (contentDoc.Id || '')
+                // Modern Notes (ContentNote) are downloaded just like files
+                downloadUrl: `/sfc/servlet.shepherd/document/download/${contentDoc.Id || ''}`
+            };
+        });
+    }
+
+    /**
+     * Format classic attachment records for display
+     */
+    formatAttachments(attachments) {
+        return attachments.map(attachment => {
+            const fileExtension = attachment.Name ? attachment.Name.split('.').pop() : '';
+            return {
+                id: attachment.Id,
+                title: attachment.Name,
+                fileType: attachment.ContentType,
+                iconName: this.getFileIcon(attachment.ContentType, fileExtension),
+                fileSize: this.formatFileSize(attachment.BodyLength || 0),
+                createdDate: attachment.CreatedDate ? this.formatDateTime(attachment.CreatedDate) : '',
+                rawCreatedDate: attachment.CreatedDate, // For sorting
+                createdBy: attachment.CreatedBy?.Name || 'Unknown',
+                description: attachment.Description || '',
+                downloadUrl: `/servlet/servlet.FileDownload?file=${attachment.Id}`
+            };
+        });
+    }
+
+    /**
+     * Format classic note records for display
+     */
+    formatClassicNotes(notes) {
+        return notes.map(note => {
+            return {
+                id: note.Id,
+                title: note.Title,
+                fileType: 'Note',
+                iconName: 'doctype:note',
+                fileSize: this.formatFileSize(note.Body?.length || 0),
+                createdDate: note.CreatedDate ? this.formatDateTime(note.CreatedDate) : '',
+                rawCreatedDate: note.CreatedDate, // For sorting
+                createdBy: note.CreatedBy?.Name || 'Unknown',
+                // For classic notes, the description can be a preview of the body
+                description: note.IsPrivate ? 'Private Note' : (note.Body || '').substring(0, 255),
+                // Clicking a classic note should navigate to its record detail page
+                downloadUrl: `/${note.Id}` 
             };
         });
     }
@@ -734,11 +819,17 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     /**
      * Get the appropriate SLDS icon for a file type
      */
-    getFileIcon(fileType) {
+    getFileIcon(fileType, fileExtension) {
         if (!fileType) return 'doctype:unknown';
         
-        const fileTypeLower = fileType.toLowerCase();
+        const type = (fileType || '').toLowerCase();
+        const extension = (fileExtension || '').toLowerCase();
         
+        // Handle modern notes explicitly
+        if (type === 'snote' || type === 'note') {
+            return 'doctype:note';
+        }
+
         // Map common file types to SLDS doctype icons
         const iconMap = {
             'pdf': 'doctype:pdf',
@@ -770,7 +861,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             'json': 'doctype:json'
         };
         
-        return iconMap[fileTypeLower] || 'doctype:unknown';
+        return iconMap[type] || iconMap[extension] || 'doctype:unknown';
     }
     
     /**
@@ -801,22 +892,40 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             this.loadingChatterPosts = false;
             return;
         }
-        
+
         this.loadingChatterPosts = true;
         this.chatterPosts = [];
-        
-        // Try to load FeedItems first (this is the standard relationship name)
-        this.tryLoadFeedItems()
-            .then(success => {
-                if (!success) {
-                    // If no FeedItems, try ActivityHistories
-                    return this.loadActivityHistory();
-                }
-                return true;
-            })
-            .finally(() => {
-                this.loadingChatterPosts = false;
-            });
+
+        // Use Promise.all to fetch all activity types in parallel for better performance
+        Promise.all([
+            this.fetchRelatedRecords('FeedItems'),
+            this.fetchRelatedRecords('ActivityHistories'),
+            this.fetchRelatedRecords('OpenActivities'), // Includes Tasks and Events
+        ])
+        .then(([feedItems, activityHistories, openActivities]) => {
+            let allActivities = [];
+
+            if (feedItems && feedItems.length > 0) {
+                allActivities.push(...this.formatChatterPosts(feedItems));
+            }
+            if (activityHistories && activityHistories.length > 0) {
+                allActivities.push(...this.formatActivityRecords(activityHistories));
+            }
+            if (openActivities && openActivities.length > 0) {
+                allActivities.push(...this.formatActivityRecords(openActivities));
+            }
+
+            // Sort all activities by date, most recent first
+            allActivities.sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate));
+
+            this.chatterPosts = allActivities;
+        })
+        .catch(error => {
+            this.handleError(error, 'Error loading activity timeline');
+        })
+        .finally(() => {
+            this.loadingChatterPosts = false;
+        });
     }
     
     /**
@@ -941,6 +1050,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             
             return {
                 id: post.Id,
+                sortDate: post.CreatedDate, // Add a raw date for sorting
                 createdDate: createdDate,
                 createdById: post.CreatedById,
                 createdByName: post.CreatedBy?.Name || 'User',
@@ -956,11 +1066,12 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      */
     formatActivityRecords(activities) {
         return activities.map(activity => {
-            const activityDate = activity.ActivityDate ? this.formatDate(activity.ActivityDate) : '';
+            const activityDate = activity.ActivityDate ? this.formatDate(activity.ActivityDate) : (activity.CreatedDate || new Date().toISOString());
             const subject = activity.Subject || '';
             
             return {
                 id: activity.Id,
+                sortDate: activity.ActivityDate || activity.CreatedDate, // Use ActivityDate for sorting if available
                 createdDate: activityDate,
                 createdById: activity.OwnerId,
                 createdByName: activity.Owner?.Name || 'User',
@@ -2144,7 +2255,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     
             // Re-fetch record details and refresh the main list view
             this.fetchRecordDetails(this.selectedRecord.Id, this.selectedRecord.attributes.type);
-            this.loadRecords();
+            this.refreshRecordsInBackground();
         } else if (event.detail.status === 'ERROR') {
             // Handle flow errors
             this.handleError(event.detail.error, 'An error occurred in the flow.');
@@ -2204,14 +2315,29 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     /**
      * Load available actions for the object
      */
-    loadObjectActions(objectApiName) {
-        if (!objectApiName || !this.showActions) return;
+    loadObjectActions(objectApiName, recordId) {
+        let actionNames = [];
+        
+        if (this.recordActionApiNames) {
+            actionNames = this.recordActionApiNames.split(',').map(name => name.trim()).filter(name => name);
+        }
+
+        console.log('Loading actions for object:', objectApiName);
+        console.log('Requested action names:', actionNames);
+
+        if (!objectApiName || actionNames.length === 0) {
+            console.log('No actions to load - either no object name or no action names configured');
+            this.objectActions = [];
+            return;
+        }
 
         getObjectActions({ 
             objectApiName: objectApiName, 
-            recordId: this.selectedRecord?.Id 
+            recordId: recordId,
+            actionNames: actionNames
         })
         .then(result => {
+            console.log('Actions loaded successfully:', result);
             this.objectActions = result || [];
         })
         .catch(error => {
@@ -2236,10 +2362,10 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 this.handleStandardAction(action.name);
                 break;
             case 'Flow':
-                this.handleFlowAction(action.flowName);
+                this.handleFlowAction(action.flowApiName, action.label);
                 break;
             default:
-                // For other action types like 'Create' or 'Update'
+                // For other action types like 'Create' or 'Update', which are also navigation based
                 this.handleNavigationAction(action);
                 break;
         }
@@ -2270,7 +2396,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                             );
                             // Close modal and refresh list
                             this.closeRecordDetail();
-                            this.loadRecords();
+                            this.refreshRecordsInBackground();
                         })
                         .catch(error => {
                             this.handleError(error, 'Error deleting record');
@@ -2296,9 +2422,10 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     /**
      * Handle flow actions by opening them in the component's flow modal
      */
-    handleFlowAction(flowApiName) {
+    handleFlowAction(flowApiName, flowLabel) {
         if (!flowApiName) return;
         this.flowApiNameToLaunch = flowApiName;
+        this.flowLabelToDisplay = flowLabel || 'Run Process';
         this.showFlowModal = true;
     }
     
@@ -2428,8 +2555,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      */
     get flowModalTitle() {
         if (this.flowApiNameToLaunch) {
-            const action = this.objectActions.find(a => a.flowName === this.flowApiNameToLaunch);
-            return action ? action.label : 'Run Process';
+            return this.flowLabelToDisplay;
         }
         return 'Process';
     }
@@ -2445,5 +2571,54 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             classes += ' selected';
         }
         return classes;
+    }
+
+    /**
+     * Handles the click of the 'New' button on the main list view.
+     * Navigates to the standard record creation page.
+     */
+    handleNewClick() {
+        this[NavigationMixin.Navigate]({
+            type: 'standard__objectPage',
+            attributes: {
+                objectApiName: this.objectApiName,
+                actionName: 'new'
+            }
+        });
+    }
+
+    /**
+     * Closes the edit record modal
+     */
+    closeEditModal() {
+        this.showEditModal = false;
+    }
+
+    /**
+     * Handles successful edit form submission
+     */
+    handleEditSuccess(event) {
+        this.showEditModal = false;
+        
+        // Show success message
+        this.dispatchEvent(new ShowToastEvent({
+            title: 'Success',
+            message: 'Record updated successfully',
+            variant: 'success'
+        }));
+        
+        // Refresh the record details
+        this.fetchRecordDetails(this.selectedRecord.Id, this.selectedRecord.attributes.type);
+        
+        // Refresh the main list view
+        this.refreshRecordsInBackground();
+    }
+
+    /**
+     * Determines if the custom action button should be displayed.
+     * @returns {boolean} True if both `flowApiName` and `actionButtonLabel` are provided.
+     */
+    get showPrimaryActionButton() {
+        return this.flowApiName && this.actionButtonLabel;
     }
 }

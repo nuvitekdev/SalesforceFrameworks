@@ -343,6 +343,9 @@ public with sharing class DynamicRecordListViewController {
                 Math.min(maxRecords, MAX_RELATED_RECORDS) : MAX_RELATED_RECORDS;
             query += ' LIMIT ' + limitValue;
             
+            System.debug(LoggingLevel.INFO, 'DynamicRecordListView Controller - getRelatedRecords Query: ' + query);
+            System.debug(LoggingLevel.INFO, 'DynamicRecordListView Controller - Parent Record ID: ' + recordId);
+
             return Database.query(query);
             
         } catch (Exception e) {
@@ -1221,22 +1224,11 @@ public with sharing class DynamicRecordListViewController {
                 throw new AuraHandledException('Invalid object: ' + objectApiName);
             }
             
-            // Get default record type if not provided
-            if (String.isBlank(recordTypeId)) {
-                List<Schema.RecordTypeInfo> rtInfos = sObjectType.getDescribe().getRecordTypeInfos();
-                for (Schema.RecordTypeInfo rtInfo : rtInfos) {
-                    if (rtInfo.isDefaultRecordTypeMapping() && rtInfo.isActive()) {
-                        recordTypeId = rtInfo.getRecordTypeId();
-                        break;
-                    }
-                }
-            }
-            
             // Get page layout metadata using Metadata API wrapper
-            // Note: This is a simplified version - in production, you'd use Metadata API or UI API
+            // This now serves as a base list of standard relationships to include.
             List<String> commonRelatedLists = getCommonRelatedListsForObject(objectApiName);
             
-            // Get child relationships
+            // Get child relationships and dynamically decide what to show
             for (Schema.ChildRelationship childRel : sObjectType.getDescribe().getChildRelationships()) {
                 String relationshipName = childRel.getRelationshipName();
                 if (String.isBlank(relationshipName)) continue;
@@ -1245,9 +1237,19 @@ public with sharing class DynamicRecordListViewController {
                 if (childSObjectType == null || !childSObjectType.getDescribe().isAccessible()) continue;
                 
                 String childObjectName = childSObjectType.getDescribe().getName();
-                
-                // Filter to only include common related lists
-                if (commonRelatedLists.contains(relationshipName)) {
+
+                // --- Intelligent Filtering Logic ---
+
+                // 1. Explicitly exclude system-level or redundant relationships
+                if (childObjectName.endsWith('History') || childObjectName.endsWith('Share') || childObjectName.endsWith('ChangeEvent') || childObjectName.endsWith('Feed') || childObjectName == 'ContentDocumentLink' || childObjectName == 'CombinedAttachment') {
+                    continue;
+                }
+
+                // 2. Determine if the related list should be shown
+                boolean isCommonStandardList = commonRelatedLists.contains(relationshipName);
+                boolean isCustomChildOfCustomObject = objectApiName.endsWith('__c') && childObjectName.endsWith('__c');
+
+                if (isCommonStandardList || isCustomChildOfCustomObject) {
                     Map<String, Object> relatedListInfo = new Map<String, Object>();
                     relatedListInfo.put('objectApiName', childObjectName);
                     relatedListInfo.put('relationshipName', relationshipName);
@@ -1275,18 +1277,18 @@ public with sharing class DynamicRecordListViewController {
      */
     private static List<String> getCommonRelatedListsForObject(String objectApiName) {
         Map<String, List<String>> commonRelatedListsMap = new Map<String, List<String>>{
-            'Account' => new List<String>{'Contacts', 'Opportunities', 'Cases', 'Tasks', 'Events', 'OpenActivities', 'ActivityHistories', 'AttachedContentDocuments', 'CombinedAttachments'},
-            'Contact' => new List<String>{'Cases', 'Tasks', 'Events', 'OpenActivities', 'ActivityHistories', 'AttachedContentDocuments', 'CombinedAttachments'},
-            'Opportunity' => new List<String>{'OpportunityLineItems', 'OpportunityContactRoles', 'Tasks', 'Events', 'OpenActivities', 'ActivityHistories', 'AttachedContentDocuments'},
-            'Case' => new List<String>{'CaseComments', 'Tasks', 'Events', 'OpenActivities', 'ActivityHistories', 'AttachedContentDocuments', 'CombinedAttachments'},
-            'Lead' => new List<String>{'Tasks', 'Events', 'OpenActivities', 'ActivityHistories', 'AttachedContentDocuments', 'CombinedAttachments'}
+            'Account' => new List<String>{'Contacts', 'Opportunities', 'Cases'},
+            'Contact' => new List<String>{'Cases'},
+            'Opportunity' => new List<String>{'OpportunityLineItems', 'OpportunityContactRoles'},
+            'Case' => new List<String>{'CaseComments'}
         };
         
         // Return common related lists for the object, or a default set
         List<String> relatedLists = commonRelatedListsMap.get(objectApiName);
         if (relatedLists == null) {
-            // Default related lists for custom objects
-            relatedLists = new List<String>{'Tasks', 'Events', 'AttachedContentDocuments', 'CombinedAttachments'};
+            // By default, custom objects will only have their custom relationships shown,
+            // as this method will return an empty list for them.
+            relatedLists = new List<String>();
         }
         
         return relatedLists;
@@ -1300,10 +1302,13 @@ public with sharing class DynamicRecordListViewController {
             'Contact' => new List<String>{'Name', 'Title', 'Email', 'Phone'},
             'Opportunity' => new List<String>{'Name', 'StageName', 'Amount', 'CloseDate'},
             'Case' => new List<String>{'CaseNumber', 'Subject', 'Status', 'Priority'},
-            'Task' => new List<String>{'Subject', 'ActivityDate', 'Status', 'Priority'},
+            'Task' => new List<String>{'Subject', 'ActivityDate', 'Status', 'Priority', 'Owner.Name'},
             'Event' => new List<String>{'Subject', 'StartDateTime', 'EndDateTime', 'Location'},
             'OpportunityLineItem' => new List<String>{'Product2.Name', 'Quantity', 'UnitPrice', 'TotalPrice'},
-            'CaseComment' => new List<String>{'CommentBody', 'CreatedDate', 'CreatedBy.Name'}
+            'CaseComment' => new List<String>{'CommentBody', 'CreatedDate', 'CreatedBy.Name'},
+            'ContentDocumentLink' => new List<String>{'ContentDocument.Title', 'ContentDocument.FileType', 'ContentDocument.ContentSize', 'ContentDocument.CreatedDate', 'ContentDocument.CreatedBy.Name', 'ContentDocument.Description', 'ContentDocument.FileExtension'},
+            'Attachment' => new List<String>{'Name', 'BodyLength', 'ContentType', 'Description', 'CreatedDate', 'CreatedBy.Name'},
+            'Note' => new List<String>{'Title', 'Body', 'CreatedDate', 'CreatedBy.Name', 'IsPrivate'}
         };
         
         List<String> fields = defaultFieldsMap.get(objectApiName);
@@ -1341,31 +1346,76 @@ public with sharing class DynamicRecordListViewController {
     }
 
     /**
-     * Get available actions for an object
-     * 
-     * @param objectApiName The API name of the object
-     * @param recordId Optional record ID for record-specific actions
-     * @return List of available actions
+     * Get available actions for an object based on a list of requested action API names.
+     * This method fetches available quick actions and filters them, and also
+     * manually constructs standard actions like 'Edit' and 'Delete'.
+     *
+     * @param objectApiName The API name of the object.
+     * @param recordId The ID of the record, used for context.
+     * @param actionNames A list of action API names requested by the LWC.
+     * @return A list of map representations for the available and valid actions.
      */
     @AuraEnabled(cacheable=true)
-    public static List<Map<String, Object>> getObjectActions(String objectApiName, String recordId) {
-        try {
-            List<Map<String, Object>> actions = new List<Map<String, Object>>();
-            
-            // NOTE: Dynamically fetching all quick actions in Apex is not directly supported.
-            // The UI API is the standard way to get a complete list of available actions.
-            // For now, we will return a set of standard, essential actions.
-            
-            // Add standard actions that are generally available
-            actions.add(createAction('Edit', 'Edit', 'standard:edit', 'standard'));
-            actions.add(createAction('Delete', 'Delete', 'standard:delete', 'standard'));
-            actions.add(createAction('Clone', 'Clone', 'standard:clone', 'standard'));
-            
-            return actions;
-            
-        } catch (Exception e) {
-            throw new AuraHandledException('Error getting object actions: ' + e.getMessage());
+    public static List<Map<String, Object>> getObjectActions(String objectApiName, String recordId, List<String> actionNames) {
+        if (String.isBlank(objectApiName) || actionNames == null || actionNames.isEmpty()) {
+            return new List<Map<String, Object>>();
         }
+
+        List<Map<String, Object>> availableActions = new List<Map<String, Object>>();
+        Set<String> processedActionNames = new Set<String>();
+
+        // 1. Handle Standard Actions manually
+        for (String actionName : actionNames) {
+            if (processedActionNames.contains(actionName.toLowerCase())) continue;
+
+            if (actionName.equalsIgnoreCase('Edit')) {
+                availableActions.add(createAction('Edit', 'Edit', 'standard:edit', 'standard'));
+                processedActionNames.add('edit');
+            } else if (actionName.equalsIgnoreCase('Delete')) {
+                availableActions.add(createAction('Delete', 'Delete', 'standard:delete', 'standard'));
+                processedActionNames.add('delete');
+            } else if (actionName.equalsIgnoreCase('Clone')) {
+                availableActions.add(createAction('Clone', 'Clone', 'standard:clone', 'standard'));
+                 processedActionNames.add('clone');
+            }
+        }
+        
+        // 2. Describe all available Quick Actions for the object
+        List<QuickAction.DescribeAvailableQuickActionResult> allQuickActions = QuickAction.DescribeAvailableQuickActions(objectApiName);
+
+        if (allQuickActions != null && !allQuickActions.isEmpty()) {
+            for (QuickAction.DescribeAvailableQuickActionResult actionResult : allQuickActions) {
+                // Check if this action was one of the ones requested and hasn't been processed yet
+                if (actionNames.contains(actionResult.getName()) && !processedActionNames.contains(actionResult.getName().toLowerCase())) {
+                    
+                    Map<String, Object> actionInfo = new Map<String, Object>();
+                    String actionType = actionResult.getType(); // getType() returns a String here
+
+                    actionInfo.put('name', actionResult.getName());
+                    actionInfo.put('label', actionResult.getLabel());
+                    actionInfo.put('type', actionType);
+
+                    // Manually map action type to a standard SLDS icon
+                    if (actionType == 'Flow') {
+                        actionInfo.put('icon', 'standard:flow');
+                    } else if (actionType == 'Update') {
+                        actionInfo.put('icon', 'standard:edit');
+                    } else {
+                        actionInfo.put('icon', 'standard:default'); // Fallback icon
+                    }
+                    
+                    // For Flow actions, capture the flow's API name
+                    if (actionType == 'Flow') {
+                        actionInfo.put('flowApiName', actionResult.getName());
+                    }
+                    
+                    availableActions.add(actionInfo);
+                    processedActionNames.add(actionResult.getName().toLowerCase());
+                }
+            }
+        }
+        
+        return availableActions;
     }
     
     /**

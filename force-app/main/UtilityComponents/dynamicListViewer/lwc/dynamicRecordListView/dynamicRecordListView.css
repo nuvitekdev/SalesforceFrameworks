@@ -200,6 +200,20 @@
     --sds-c-icon-color-foreground-default: var(--primary-color);
 }
 
+.new-button {
+    --sds-c-button-brand-color-background: var(--primary-color);
+    --sds-c-button-brand-color-border: var(--primary-color);
+    --sds-c-button-brand-color-background-hover: var(--primary-dark);
+    --sds-c-button-brand-color-border-hover: var(--primary-dark);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.new-button:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
 /* ============================================= */
 /* Filter Panel                                  */
 /* ============================================= */
@@ -1348,6 +1362,18 @@ lightning-tabset .slds-tabs_scoped__item {
     right: 60px; /* Position next to close button */
     display: flex;
     gap: var(--spacing-xs);
+    align-items: center;
+}
+
+.action-button {
+    --sds-c-button-inverse-color-background: rgba(255, 255, 255, 0.2);
+    --sds-c-button-inverse-color-background-hover: rgba(255, 255, 255, 0.3);
+    --sds-c-button-inverse-color-border: transparent;
+    transition: all var(--transition-fast);
+}
+
+.action-button:hover {
+    transform: scale(1.05);
 }
 
 .action-buttons lightning-button-menu::part(button) {
