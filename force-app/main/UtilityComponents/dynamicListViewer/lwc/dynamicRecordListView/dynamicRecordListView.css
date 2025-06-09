@@ -96,6 +96,7 @@
     -moz-osx-font-smoothing: grayscale;
     line-height: var(--line-height-normal);
     transition: all var(--transition-medium);
+    position: relative; /* Add relative positioning for spinner overlay */
 }
 
 /* Dark theme variant */
@@ -387,6 +388,29 @@
     text-align: center;
     color: var(--text-secondary);
     gap: var(--spacing-md);
+}
+
+/* Loading overlay specific to the component container */
+.container > .loading-state {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 100;
+    border-radius: var(--radius-md);
+}
+
+/* Dark theme loading overlay */
+.container[data-theme="dark"] > .loading-state {
+    background-color: rgba(29, 29, 31, 0.9);
+}
+
+/* Ensure spinner is properly sized and colored */
+.loading-state lightning-spinner {
+    --sds-c-spinner-color-background: var(--primary-color);
+    --sds-c-spinner-size: 48px;
 }
 
 .loading-state p, 
