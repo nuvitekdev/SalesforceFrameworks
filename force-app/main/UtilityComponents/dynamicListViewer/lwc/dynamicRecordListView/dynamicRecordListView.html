@@ -466,56 +466,80 @@
                     </div>
                 </div>
             </section>
+        </template>
 
-            <!-- Flow Modal -->
-            <template if:true={showFlowModal}>
-                <div class="slds-backdrop slds-backdrop_open slds-backdrop--custom"></div>
-                <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open flow-modal">
-                    <div class="slds-modal__container">
-                        <header class="slds-modal__header">
-                            <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeFlowModal}>
-                                <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse" size="small"></lightning-icon>
-                                <span class="slds-assistive-text">Close</span>
-                            </button>
-                            <h2 class="slds-modal__title">{flowModalTitle}</h2>
-                        </header>
-                        <div class="slds-modal__content slds-p-around_medium">
-                            <template if:true={flowApiNameToLaunch}>
-                                <lightning-flow
-                                    flow-api-name={flowApiNameToLaunch}
-                                    flow-input-variables={flowInputVariables}
-                                    onstatuschange={handleFlowStatusChange}>
-                                </lightning-flow>
-                            </template>
-                        </div>
+        <!-- Flow Modal -->
+        <template if:true={showFlowModal}>
+            <div class="slds-backdrop slds-backdrop_open slds-backdrop--custom"></div>
+            <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open flow-modal">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeFlowModal}>
+                            <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse" size="small"></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 class="slds-modal__title">{flowModalTitle}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <template if:true={flowApiNameToLaunch}>
+                            <lightning-flow
+                                flow-api-name={flowApiNameToLaunch}
+                                flow-input-variables={flowInputVariables}
+                                onstatuschange={handleFlowStatusChange}>
+                            </lightning-flow>
+                        </template>
                     </div>
-                </section>
-            </template>
+                </div>
+            </section>
+        </template>
 
-            <!-- Edit Record Modal -->
-            <template if:true={showEditModal}>
-                 <div class="slds-backdrop slds-backdrop_open slds-backdrop--custom"></div>
-                <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open">
-                    <div class="slds-modal__container">
-                        <header class="slds-modal__header">
-                            <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeEditModal}>
-                                <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse" size="small"></lightning-icon>
-                            </button>
-                            <h2 class="slds-modal__title">Edit {recordDetailTitle}</h2>
-                        </header>
-                        <div class="slds-modal__content slds-p-around_medium">
-                            <lightning-record-form
-                                record-id={selectedRecord.Id}
-                                object-api-name={selectedRecord.attributes.type}
-                                layout-type="Full"
-                                mode="edit"
-                                onsuccess={handleEditSuccess}
-                                oncancel={closeEditModal}>
-                            </lightning-record-form>
-                        </div>
+        <!-- Edit Record Modal -->
+        <template if:true={showEditModal}>
+             <div class="slds-backdrop slds-backdrop_open"></div>
+            <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeEditModal}>
+                            <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse" size="small"></lightning-icon>
+                        </button>
+                        <h2 class="slds-modal__title">Edit {recordDetailTitle}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-record-form
+                            record-id={selectedRecord.Id}
+                            object-api-name={selectedRecord.attributes.type}
+                            layout-type="Full"
+                            mode="edit"
+                            onsuccess={handleEditSuccess}
+                            oncancel={closeEditModal}>
+                        </lightning-record-form>
                     </div>
-                </section>
-            </template>
+                </div>
+            </section>
+        </template>
+
+        <!-- New Record Modal -->
+        <template if:true={showNewModal}>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+            <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeNewModal}>
+                            <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse" size="small"></lightning-icon>
+                        </button>
+                        <h2 class="slds-modal__title">New {objectLabel}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-record-form
+                            object-api-name={objectApiName}
+                            layout-type="Full"
+                            mode="edit"
+                            onsuccess={handleNewSuccess}
+                            oncancel={closeNewModal}>
+                        </lightning-record-form>
+                    </div>
+                </div>
+            </section>
         </template>
     </div>
 </template>

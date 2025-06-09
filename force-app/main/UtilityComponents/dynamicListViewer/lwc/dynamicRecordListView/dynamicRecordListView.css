@@ -604,17 +604,22 @@ td {
 }
 
 .slds-backdrop {
-    background: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    background-color: rgba(var(--background-rgb, 0, 0, 0), 0.5); /* Semi-transparent backdrop */
+    z-index: 9001; /* Must be below the modal */
+    opacity: 1;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    z-index: 9000;
+    transition: opacity 0.3s ease-in-out;
 }
 
 .slds-backdrop--custom {
+    background-color: rgba(var(--background-rgb, 0, 0, 0), 0.6);
     z-index: 9002; /* Ensure flow modal backdrop is on top */
 }
 
 .flow-modal .slds-modal__container {
+    max-width: 80vw; /* Wider for flows */
     z-index: 9003; /* Ensure flow modal is on top of its backdrop and other modals */
 }
 
