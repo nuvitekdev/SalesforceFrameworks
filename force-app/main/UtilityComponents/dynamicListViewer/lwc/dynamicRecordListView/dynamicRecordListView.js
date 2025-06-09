@@ -90,6 +90,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
     @track loadingRelatedList = false;
     @track flowApiNameToLaunch = null;
     @track showEditModal = false;
+    @track showNewModal = false; // Add state for the new record modal
     @track iconName = 'standard:default'; 
     @track flowLabelToDisplay = 'Run Process';
 
@@ -2316,32 +2317,27 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * Load available actions for the object
      */
     loadObjectActions(objectApiName, recordId) {
-        let actionNames = [];
-        
-        if (this.recordActionApiNames) {
-            actionNames = this.recordActionApiNames.split(',').map(name => name.trim()).filter(name => name);
-        }
-
-        console.log('Loading actions for object:', objectApiName);
-        console.log('Requested action names:', actionNames);
-
-        if (!objectApiName || actionNames.length === 0) {
-            console.log('No actions to load - either no object name or no action names configured');
-            this.objectActions = [];
+        // Clear previous actions
+        this.objectActions = [];
+        if (!this.recordActionApiNames) {
+            console.log('No recordActionApiNames specified.');
             return;
         }
 
-        getObjectActions({ 
-            objectApiName: objectApiName, 
-            recordId: recordId,
-            actionNames: actionNames
+        getObjectActions({
+            actionNames: this.recordActionApiNames.split(','),
+            recordId: recordId
         })
-        .then(result => {
-            console.log('Actions loaded successfully:', result);
-            this.objectActions = result || [];
+        .then(actions => {
+            // Manually add the standard "New", "Edit" and "Delete" actions
+            const standardActions = [
+                { name: 'New', label: 'New', type: 'Standard' },
+                { name: 'Edit', label: 'Edit', type: 'Standard' },
+                { name: 'Delete', label: 'Delete', type: 'Standard' }
+            ];
+            this.objectActions = [...standardActions, ...actions];
         })
         .catch(error => {
-            console.error('Error loading actions:', error);
             this.handleError(error, 'Error loading object actions');
         });
     }
@@ -2351,23 +2347,26 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      */
     handleActionClick(event) {
         const actionName = event.detail.value;
-        const action = this.objectActions.find(a => a.name === actionName);
-        
-        if (!action) return;
-        
-        console.log('Action clicked:', JSON.stringify(action));
 
-        switch (action.type) {
-            case 'standard':
-                this.handleStandardAction(action.name);
-                break;
-            case 'Flow':
-                this.handleFlowAction(action.flowApiName, action.label);
-                break;
-            default:
-                // For other action types like 'Create' or 'Update', which are also navigation based
-                this.handleNavigationAction(action);
-                break;
+        // Differentiate between standard actions and others (like flows)
+        if (actionName === 'Edit') {
+            this.closeRecordDetail();
+            this.showEditModal = true;
+        } else if (actionName === 'New') {
+            this.closeRecordDetail();
+            this.showNewModal = true;
+        } else if (actionName === 'Delete') {
+            this.handleStandardAction(actionName);
+        }
+        else {
+            // It might be a flow or other custom action.
+            const selectedAction = this.objectActions.find(a => a.name === actionName);
+            if (selectedAction) {
+                if (selectedAction.type === 'ScreenAction') { // Assuming type for flows
+                    this.handleFlowAction(selectedAction.name, selectedAction.label);
+                }
+                // Handle other action types if necessary
+            }
         }
     }
     
@@ -2620,5 +2619,28 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      */
     get showPrimaryActionButton() {
         return this.flowApiName && this.actionButtonLabel;
+    }
+
+    /**
+     * Closes the new record modal.
+     */
+    closeNewModal() {
+        this.showNewModal = false;
+    }
+
+    /**
+     * Handles successful creation of a new record.
+     * Closes the modal and refreshes the record list.
+     */
+    handleNewSuccess(event) {
+        this.showNewModal = false;
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: 'Success',
+                message: 'Record created successfully.',
+                variant: 'success',
+            })
+        );
+        this.refreshRecordsInBackground(); // Refresh the list to show the new record
     }
 }
