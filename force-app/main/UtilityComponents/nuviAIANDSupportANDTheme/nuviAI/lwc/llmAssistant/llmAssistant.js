@@ -31,6 +31,8 @@ export default class LLMAssistant extends LightningElement {
     @api contextPrompt = '';       // Custom context to provide to the LLM about its purpose/placement
     @api enableAnomalyDetection = false; // Whether to enable anomaly detection
     @api enableImageValidation = false; // Kept for backward compatibility/external dependencies
+    @api enableComparison = false; // Whether to enable comparison feature
+    @api comparisonRules = '';     // JSON string containing rules/standards to compare against
     @api relatedObjects = '';      // Comma-separated list of object API names to search across for related data
     @api analysisFieldApiName = ''; // API name of field to save analysis summary
     
@@ -85,6 +87,15 @@ export default class LLMAssistant extends LightningElement {
     @track anomalyBannerMessage = ''; // Message to display in the banner
     // --- End Anomaly Check properties ---
     
+    // --- New properties for Comparison Feature ---
+    @track comparisonCheckResult = ''; // Store the comparison result
+    @track comparisonCheckLoading = false; // Track if comparison is running
+    @track showComparisonBanner = false; // Flag to control comparison banner visibility
+    @track comparisonBannerMessage = ''; // Message to display in the comparison banner
+    @track comparisonInput = ''; // Input to compare against rules
+    @track showComparisonModal = false; // Show comparison input modal
+    // --- End Comparison Feature properties ---
+    
     // --- Accordion Control ---
     @track activeAccordionSections = []; // Keep track of open sections
     // --- End Accordion Control ---
@@ -94,6 +105,12 @@ export default class LLMAssistant extends LightningElement {
     styleCache = null;
     lastPrimaryColor = null;
     lastAccentColor = null;
+    
+    // Performance optimization: Cache expensive operations
+    _cachedRecordContext = null;
+    _cachedRecordContextId = null;
+    _cachedPageComponents = null;
+    _cacheCleanupInterval = null;
 
     // Flag to detect when running in Flow context
     get isInFlowContext() {
@@ -148,6 +165,40 @@ export default class LLMAssistant extends LightningElement {
     // Check if related objects are configured
     get hasRelatedObjects() {
         return !!this.relatedObjects && this.relatedObjects.trim() !== '';
+    }
+    
+    // Check if "Compare" button should be shown
+    get showComparisonButton() {
+        return this.enableComparison && !!this.comparisonRules && this.comparisonRules.trim() !== '';
+    }
+    
+    // Get comparison banner style based on result
+    get comparisonBannerStyle() {
+        if (this.comparisonBannerMessage && this.comparisonBannerMessage.includes('MEETS')) {
+            return 'background-color: #d4edda; border-color: #c3e6cb;';
+        } else {
+            return 'background-color: #f8d7da; border-color: #f5c6cb;';
+        }
+    }
+    
+    // Get comparison icon name based on result
+    get comparisonIconName() {
+        return this.comparisonBannerMessage && this.comparisonBannerMessage.includes('MEETS') ? 'utility:success' : 'utility:warning';
+    }
+    
+    // Get comparison icon alternative text based on result
+    get comparisonIconAltText() {
+        return this.comparisonBannerMessage && this.comparisonBannerMessage.includes('MEETS') ? 'Success' : 'Warning';
+    }
+    
+    // Get comparison icon variant based on result
+    get comparisonIconVariant() {
+        return this.comparisonBannerMessage && this.comparisonBannerMessage.includes('MEETS') ? 'success' : 'warning';
+    }
+    
+    // Check if comparison button should be disabled
+    get isComparisonButtonDisabled() {
+        return !this.comparisonInput || this.comparisonInput.trim() === '';
     }
 
     // Dynamically set CSS variables based on configured colors
@@ -343,11 +394,34 @@ export default class LLMAssistant extends LightningElement {
         
         this.isSummarizing = true;
         
-        // Prepare the summary request with basic parameters
+        // Create an optimized conversation summary prompt
+        const conversationText = this.conversationHistory.map(msg => {
+            const role = msg.isUser ? 'User' : 'AI Assistant';
+            return `${role}: ${msg.content}`;
+        }).join('\n\n');
+        
+        const summaryPrompt = `Create a concise summary of this AI assistant conversation.
+
+CONVERSATION TO SUMMARIZE:
+${conversationText}
+
+SUMMARY REQUIREMENTS:
+• Focus on key topics discussed and main outcomes
+• Highlight any important decisions, recommendations, or action items
+• Note the primary purpose/goal of the conversation
+• Keep it under 300 words
+• Use professional, objective language
+• Structure with brief paragraphs for readability
+
+${this.conversationSummary ? '\nEXISTING SUMMARY (to build upon):\n' + this.conversationSummary : ''}
+
+Provide only the summary text without additional commentary.`;
+
+        // Prepare the summary request with optimized prompt
         const requestParams = {
             llmConfigName: this.selectedLLM,
-            operation: 'summarize_conversation',
-            conversationSummary: this.conversationSummary // Include existing summary if available
+            userPrompt: summaryPrompt,
+            operation: 'ask'
         };
         
         // Add conversation history
@@ -421,12 +495,13 @@ export default class LLMAssistant extends LightningElement {
             // Calculate ripple position
             const rect = element.getBoundingClientRect();
             const size = Math.max(rect.width, rect.height);
-            const x = event.clientX - rect.left - size / 2;
-            const y = event.clientY - rect.top - size / 2;
+            // Get coordinates from element's bounding rect for safer positioning
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
             
             ripple.style.width = ripple.style.height = `${size}px`;
-            ripple.style.left = `${x}px`;
-            ripple.style.top = `${y}px`;
+            ripple.style.left = `${centerX - size / 2}px`;
+            ripple.style.top = `${centerY - size / 2}px`;
         } else {
             // For lightning components
             element.appendChild(ripple);
@@ -446,9 +521,49 @@ export default class LLMAssistant extends LightningElement {
             ripple.remove();
         }, 500);
     }
+    
+    // Setup cache management for performance
+    setupCacheManagement() {
+        // Clean up caches periodically to prevent memory leaks
+        this._cacheCleanupInterval = setInterval(() => {
+            // Clear color cache if it gets too large
+            if (this.colorCache && this.colorCache.size > 100) {
+                console.log('Cleaning up color cache');
+                this.colorCache.clear();
+            }
+            
+            // Clear style cache
+            this.styleCache = null;
+            
+            // Clear old record context cache if record has changed
+            if (this._cachedRecordContextId && this._cachedRecordContextId !== this.effectiveRecordId) {
+                this._cachedRecordContext = null;
+                this._cachedRecordContextId = null;
+            }
+        }, 300000); // Clean every 5 minutes
+    }
+    
+    disconnectedCallback() {
+        // Clean up intervals and caches when component is destroyed
+        if (this._cacheCleanupInterval) {
+            clearInterval(this._cacheCleanupInterval);
+        }
+        if (this.comparisonInputTimeout) {
+            clearTimeout(this.comparisonInputTimeout);
+        }
+        
+        // Clear all caches
+        this.colorCache?.clear();
+        this._cachedRecordContext = null;
+        this._cachedRecordContextId = null;
+        this._cachedPageComponents = null;
+    }
 
     connectedCallback() {
         console.log('LLM Assistant connected');
+        // Initialize cache cleanup interval for memory management
+        this.setupCacheManagement();
+        
         // Preload LLM configurations when connected
         this.loadLLMConfigurations();
         // Load object metadata when component is connected
@@ -633,6 +748,162 @@ export default class LLMAssistant extends LightningElement {
         this.handleLLMRequest('summarize');
     }
     
+    handleComparisonCheck() {
+        // Show the modal for comparison input
+        this.showComparisonModal = true;
+    }
+    
+    handleComparisonInputChange(event) {
+        // Use debouncing for better performance on large text inputs
+        if (this.comparisonInputTimeout) {
+            clearTimeout(this.comparisonInputTimeout);
+        }
+        
+        this.comparisonInputTimeout = setTimeout(() => {
+            this.comparisonInput = event.detail.value;
+        }, 300);
+    }
+    
+    handleComparisonModalCancel() {
+        this.showComparisonModal = false;
+        this.comparisonInput = '';
+    }
+    
+    async handleComparisonModalConfirm() {
+        if (!this.comparisonInput || !this.comparisonInput.trim()) {
+            this.showError('Please provide input to compare');
+            return;
+        }
+        
+        this.showComparisonModal = false;
+        this.comparisonCheckLoading = true;
+        this.showComparisonBanner = false;
+        
+        try {
+            // Parse the comparison rules
+            let rulesObj = {};
+            try {
+                rulesObj = JSON.parse(this.comparisonRules);
+            } catch (e) {
+                // If not valid JSON, treat as plain text rules
+                rulesObj = { rules: this.comparisonRules };
+            }
+            
+            // Build the comparison prompt
+            const comparisonPrompt = `You are an expert evaluator assessing whether submitted content meets specified standards and requirements.
+
+EVALUATION CRITERIA/RULES:
+${JSON.stringify(rulesObj, null, 2)}
+
+CONTENT TO EVALUATE:
+${this.comparisonInput}
+
+${this.recordId ? '\nADDITIONAL CONTEXT:\n' + (await this.getRecordContextForComparison()) : ''}
+
+EVALUATION INSTRUCTIONS:
+1. Carefully review each requirement/criterion in the rules
+2. Assess how the submitted content addresses each point
+3. Consider both explicit requirements and implied quality standards
+4. Be objective and specific in your assessment
+
+RESPONSE FORMAT:
+Begin with either "MEETS STANDARDS" or "DOES NOT MEET STANDARDS"
+
+Then provide:
+✓ **Overall Assessment**: Brief summary of compliance level
+✓ **Detailed Analysis**: 
+  - For each criterion, state if it's MET, PARTIALLY MET, or NOT MET
+  - Provide specific examples from the content
+  - Quote relevant passages when applicable
+✓ **Strengths**: What the submission does well
+✓ **Gaps/Weaknesses**: What's missing or inadequate
+✓ **Improvement Recommendations**: Specific, actionable suggestions
+
+Use clear formatting with bullet points and bold headers for readability.`;
+            
+            // Call the LLM to perform comparison
+            const result = await handleRequest({
+                recordId: this.recordId || '',
+                configName: this.selectedLLM,
+                prompt: comparisonPrompt,
+                operation: 'ask',
+                relatedObjects: ''
+            });
+            
+            this.comparisonCheckResult = result;
+            
+            // Parse the result to show banner
+            if (result) {
+                const meetsStandards = result.toUpperCase().includes('MEETS STANDARDS');
+                this.showComparisonBanner = true;
+                this.comparisonBannerMessage = meetsStandards 
+                    ? 'The input MEETS the specified standards and requirements.'
+                    : 'The input DOES NOT MEET all specified standards and requirements.';
+                
+                // Add the full analysis to conversation
+                this.addMessageToHistory({
+                    id: this.generateMessageId(),
+                    content: `Comparison Analysis Request:\n${this.comparisonInput}`,
+                    formattedContent: this.getFormattedMessageContent(`Comparison Analysis Request:\n${this.comparisonInput}`),
+                    sender: 'User',
+                    model: '',
+                    timestamp: this.getFormattedTimestamp(),
+                    isUser: true
+                });
+                
+                this.addMessageToHistory({
+                    id: this.generateMessageId(),
+                    content: result,
+                    formattedContent: this.getFormattedMessageContent(result),
+                    sender: 'AI',
+                    model: this.selectedLLMLabel,
+                    timestamp: this.getFormattedTimestamp(),
+                    isUser: false
+                });
+                
+                // Scroll to bottom
+                this.scrollToBottom();
+            }
+            
+        } catch (error) {
+            console.error('Error during comparison check:', error);
+            this.showError('Failed to perform comparison: ' + this.getErrorMessage(error));
+        } finally {
+            this.comparisonCheckLoading = false;
+            this.comparisonInput = '';
+        }
+    }
+    
+    async getRecordContextForComparison() {
+        // Get basic record context if available
+        if (!this.recordId) return '';
+        
+        // Use cached context if available and for the same record
+        if (this._cachedRecordContext && this._cachedRecordContextId === this.recordId) {
+            console.log('Using cached record context');
+            return this._cachedRecordContext;
+        }
+        
+        try {
+            const result = await handleRequest({
+                recordId: this.recordId,
+                configName: this.selectedLLM,
+                prompt: 'Provide a concise summary of this record including: record type, key identifiers, current status/stage, important dates, key stakeholders, and any critical values or flags. Focus on information relevant for evaluating compliance or standards.',
+                operation: 'summarize',
+                relatedObjects: this.relatedObjects
+            });
+            
+            // Cache the result
+            this._cachedRecordContext = result || '';
+            this._cachedRecordContextId = this.recordId;
+            
+            return this._cachedRecordContext;
+        } catch (error) {
+            console.error('Error getting record context for comparison:', error);
+            return '';
+        }
+    }
+
     handleAnalyzeImages() {
         if (!this.recordId) {
             this.showError('Record ID is required to analyze images');
@@ -646,7 +917,47 @@ export default class LLMAssistant extends LightningElement {
         this.isLoading = true;
         
         // --- MODIFICATION: Get context prompt for image analysis ---
-        let imageAnalysisUserPrompt = 'Analyze the content of this image in detail, describing its key features, objects, and any text present.'; // Default prompt
+        let imageAnalysisUserPrompt = `**EXPERT IMAGE ANALYSIS PROTOCOL**
+
+You are an expert visual analyst. Provide comprehensive analysis following this structure:
+
+**CONTENT OVERVIEW:**
+• Primary subject and purpose of the image
+• Type of document/image (form, chart, photo, etc.)
+• Overall quality and legibility assessment
+
+**TEXT EXTRACTION & OCR:**
+• Transcribe ALL visible text with exact formatting
+• Include headers, labels, values, and fine print
+• Note any text that's unclear or partially obscured
+• Preserve spatial relationships (tables, forms, lists)
+
+**VISUAL ELEMENTS:**
+• Signatures, stamps, seals, or official markings
+• Charts, graphs, diagrams, or technical illustrations  
+• People, objects, or scenes (if applicable)
+• Color coding, highlighting, or annotations
+
+**DATA EXTRACTION:**
+• Names, dates, amounts, reference numbers
+• Status indicators, checkboxes, selections
+• Contact information, addresses
+• Key identifiers or codes
+
+**QUALITY & INTEGRITY ASSESSMENT:**
+• Image clarity and resolution issues
+• Signs of alteration, editing, or tampering
+• Missing information or incomplete sections
+• Potential scanning or photography artifacts
+
+**COMPLIANCE & ANOMALY DETECTION:**
+• Unusual patterns or inconsistencies
+• Missing required elements (signatures, dates, etc.)
+• Formatting or content that seems incorrect
+• Red flags requiring attention
+
+Format your response with clear sections using **bold headers** and bullet points for easy scanning.`; // Enhanced default prompt
+        
         if (this.contextPrompt && this.contextPrompt.trim() !== '') {
             imageAnalysisUserPrompt = this.contextPrompt; 
             console.log('Using custom context prompt for image analysis:', imageAnalysisUserPrompt);
@@ -755,6 +1066,11 @@ export default class LLMAssistant extends LightningElement {
         // Add contextPrompt if specified in design attributes
         if (this.contextPrompt && this.contextPrompt.trim() !== '') {
             requestParams.contextPrompt = this.contextPrompt;
+        }
+        
+        // Add page components context for better understanding
+        if (this.pageComponents && this.pageComponents.length > 0) {
+            requestParams.pageContext = `User is currently viewing a Salesforce page with the following components: ${this.pageComponents.join(', ')}. This context may be relevant for understanding their questions.`;
         }
         
         // Add related objects if configured
@@ -928,35 +1244,37 @@ export default class LLMAssistant extends LightningElement {
         return formatted;
     }
     
+    // Utility method to copy text to clipboard
+    async copyToClipboard(text, target, successMessage) {
+        if (!text) return false;
+        
+        try {
+            // Use modern Clipboard API if available
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+                this.provideFeedback(target, successMessage);
+                return true;
+            } else {
+                // For non-secure contexts, show a message instead of using deprecated API
+                this.showError('Clipboard access requires HTTPS. Please copy the text manually.');
+                return false;
+            }
+        } catch (error) {
+            console.error('Failed to copy to clipboard:', error);
+            this.showError('Failed to copy to clipboard. Please copy the text manually.');
+            return false;
+        }
+    }
+
     // Copy response to clipboard
-    copyResponseToClipboard(event) {
-        if (!this.response) return;
-        
-        const tempTextArea = document.createElement('textarea');
-        tempTextArea.value = this.response;
-        document.body.appendChild(tempTextArea);
-        tempTextArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempTextArea);
-        
-        // Provide immediate feedback
-        this.provideFeedback(event.target, 'Response copied to clipboard');
+    async copyResponseToClipboard(event) {
+        await this.copyToClipboard(this.response, event.target, 'Response copied to clipboard');
     }
 
     // Copy a specific message to clipboard
-    copyMessageToClipboard(event) {
+    async copyMessageToClipboard(event) {
         const message = event.currentTarget.dataset.message;
-        if (!message) return;
-        
-        const tempTextArea = document.createElement('textarea');
-        tempTextArea.value = message;
-        document.body.appendChild(tempTextArea);
-        tempTextArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempTextArea);
-        
-        // Provide immediate feedback
-        this.provideFeedback(event.target, 'Message copied to clipboard');
+        await this.copyToClipboard(message, event.target, 'Message copied to clipboard');
     }
 
     // Get information about page components - optimized version
@@ -1202,17 +1520,29 @@ export default class LLMAssistant extends LightningElement {
         }
     }
 
-    // Utility to extract error messages
+    // Utility to extract error messages with better handling
     getErrorMessage(error) {
         let message = 'Unknown error';
-        // Check if it's an AuraHandledException
+        
+        // Check various error structures
         if (error?.body?.message) {
             message = error.body.message;
-        }
-        // Check for other common error structures
-        else if (error?.message) {
+        } else if (error?.body?.pageErrors?.[0]?.message) {
+            message = error.body.pageErrors[0].message;
+        } else if (error?.body?.fieldErrors) {
+            // Handle field-specific errors
+            const fieldErrors = Object.values(error.body.fieldErrors).flat();
+            message = fieldErrors.map(e => e.message).join(', ');
+        } else if (error?.message) {
             message = error.message;
+        } else if (typeof error === 'string') {
+            message = error;
         }
+        
+        // Clean up common error prefixes for better UX
+        message = message.replace(/^Error: /, '');
+        message = message.replace(/^System.AuraHandledException: /, '');
+        
         return message;
     }
 
@@ -1293,7 +1623,7 @@ export default class LLMAssistant extends LightningElement {
 
     // Helper method to prepare synopsis summary that returns a Promise
     prepareSynopsisSummary(analysis) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             // Create a summarized version for the field
             // Strict character limit of 500-600 characters (about 90 words)
             const promptForSummary = 

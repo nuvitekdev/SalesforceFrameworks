@@ -800,3 +800,25 @@ lightning-button-icon .slds-button {
     overflow-y: auto; /* Allow scrolling if content exceeds height */
     border-radius: var(--radius-md); /* Apply radius to container too */
 }
+
+/* Comparison result banner styling */
+.comparison-banner {
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.comparison-banner.meets-standards {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.comparison-banner.does-not-meet {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}

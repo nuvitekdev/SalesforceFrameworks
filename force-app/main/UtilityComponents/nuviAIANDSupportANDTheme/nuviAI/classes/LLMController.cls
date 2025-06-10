@@ -163,17 +163,31 @@ public with sharing class LLMController {
             String context = getRecordContext(recordId, relatedObjects);
             
             // Construct the prompt specifically for anomaly detection
-            String baseAnomalyPrompt = 'Analyze the following Salesforce record data. Look specifically for potential issues such as: \n' + 
-                                 '- Anomalies (e.g., unusual values, missing required information for the stage)\n' +
-                                 '- Conflicts of Interest (e.g., the same person involved in conflicting roles like submitter and approver)\n' + 
-                                 '- Inconsistencies (e.g., dates out of order, contradictory statements)\n' +
-                                 '- Any other red flags or data points that seem incorrect or warrant further investigation.\n\n' +
-                                 'Your response MUST start with either "YES - " followed by the explanation, or "NO" if no significant issues are detected.\n\n' +
-                                 'IMPORTANT FORMATTING INSTRUCTIONS: If issues are found (starting with "YES - "), format the explanation using basic HTML:\n' +
-                                 '  - Use <b> tags to highlight main points or titles (e.g., <b>Conflict of Interest</b>).\n' +
-                                 '  - Use <ol> and <li> for numbered lists of main findings.\n' +
-                                 '  - Use <ul> and <li> for bullet points under each finding or for recommendations.\n' +
-                                 '  - Use <br> for line breaks where appropriate. Do NOT include the markdown `-` for bullets, use <li> instead.\n\n';
+            String baseAnomalyPrompt = 'You are a specialized AI auditor analyzing Salesforce record data for potential issues. Examine the following record data with extreme attention to detail.\n\n' +
+                                 'Look specifically for:\n' + 
+                                 '1. **Data Anomalies**:\n' +
+                                 '   - Missing required fields based on record stage/status\n' +
+                                 '   - Values outside normal ranges or suspicious patterns\n' +
+                                 '   - Duplicate or conflicting information\n\n' +
+                                 '2. **Compliance & Process Issues**:\n' +
+                                 '   - Conflicts of interest (same person in multiple conflicting roles)\n' +
+                                 '   - Approval chains that violate separation of duties\n' +
+                                 '   - Missing mandatory approvals or signatures\n\n' +
+                                 '3. **Temporal Inconsistencies**:\n' +
+                                 '   - Dates out of logical sequence\n' +
+                                 '   - Future dates where past dates are expected\n' +
+                                 '   - Unrealistic timeframes between events\n\n' +
+                                 '4. **Business Logic Violations**:\n' +
+                                 '   - Status transitions that skip required steps\n' +
+                                 '   - Financial values that don\'t add up\n' +
+                                 '   - Percentages exceeding 100% or negative where inappropriate\n\n' +
+                                 'RESPONSE FORMAT:\n' +
+                                 '- Start with "YES - " if ANY issues found, or "NO" if record appears clean\n' +
+                                 '- For YES responses, provide HTML-formatted explanation:\n' +
+                                 '  • Use <b> for issue categories\n' +
+                                 '  • Use <ol><li> for numbered main findings\n' +
+                                 '  • Use <ul><li> for sub-points and recommendations\n' +
+                                 '  • Be specific with field names and values\n\n';
             
             // Prepend custom prompt if provided
             String anomalyPrompt = String.isNotBlank(customPrompt) ? customPrompt + baseAnomalyPrompt : baseAnomalyPrompt;
@@ -960,26 +974,55 @@ public with sharing class LLMController {
         
         String basePrompt;
         if (operation == 'summarize') {
-            // Enhanced prompt for summarization
-            basePrompt = 'Generate a concise yet comprehensive summary report for the following Salesforce record data. Structure the report clearly with numbered sections for:\n\n' +
-                         '1.  **Record Overview:** Key details of the main record. Elaborate on the key fields.\n' +
-                         '2.  **Related Information:** Summarize significant related records (like Contacts, Opportunities, Cases, Invoices, Line Items, etc. if present), highlighting their connection to the main record. Provide details from the available fields for these related records.\n' +
-                         '3.  **Recent Activity:** Summarize any recent Tasks, Events, Emails, or Chatter posts found. Be specific about the activity.\n' +
-                         '4.  **Documents & Notes:** List any attached documents or notes, including titles or brief descriptions if available.\n\n' +
-                         '**Style Guide:**\n' +
-                         '- Be professional, objective, and informative.\n' +
-                         '- Use clear headings (using markdown bolding like **Heading**) for each section.\n' +
-                         '- Use bullet points (•) for lists within sections.\n' +
-                         '- **IMPORTANT: Do NOT mention system errors, query limitations, data retrieval issues, or system constraints.** Focus *only* on summarizing the data *provided* in the context. Do not mention if some information categories (like Activity or Documents) are missing or incomplete; simply omit the section or summarize what *is* available.\n' +
-                         '- **Do NOT include a \"Recommendations\" section** based on missing data or system issues.\n' +
-                         '- Provide a good level of detail based on the information available in the context.\n\n' +
-                         '**RECORD DATA:**\n\n';
+            // Enhanced prompt for summarization with clearer structure
+            basePrompt = '**SALESFORCE RECORD ANALYSIS**\n\n' +
+                         'Provide a comprehensive, professional summary of the Salesforce record data below. ' +
+                         'Structure your analysis using these sections:\n\n' +
+                         
+                         '**📋 RECORD SUMMARY**\n' +
+                         '• Record type, ID, and current status/stage\n' +
+                         '• Key identifying information (name, number, title)\n' +
+                         '• Critical dates (created, modified, due dates)\n' +
+                         '• Primary stakeholders and ownership\n\n' +
+                         
+                         '**📊 KEY DATA POINTS**\n' +
+                         '• Important field values and their significance\n' +
+                         '• Financial amounts, quantities, or metrics\n' +
+                         '• Status indicators and progress tracking\n' +
+                         '• Compliance or regulatory information\n\n' +
+                         
+                         '**🔗 RELATIONSHIPS & CONNECTIONS**\n' +
+                         '• Related records (Contacts, Opportunities, Cases, etc.)\n' +
+                         '• Parent-child relationships and dependencies\n' +
+                         '• Cross-references and linked items\n\n' +
+                         
+                         '**📅 RECENT ACTIVITY**\n' +
+                         '• Recent tasks, events, and communications\n' +
+                         '• Workflow actions and approvals\n' +
+                         '• User interactions and updates\n\n' +
+                         
+                         '**📎 ATTACHMENTS & DOCUMENTATION**\n' +
+                         '• Attached files and their purposes\n' +
+                         '• Notes, comments, and annotations\n\n' +
+                         
+                         '**FORMATTING REQUIREMENTS:**\n' +
+                         '• Use bullet points for clarity and scannability\n' +
+                         '• Focus only on data provided (no system limitations mentions)\n' +
+                         '• Be specific with field names and values\n' +
+                         '• Maintain professional, objective tone\n\n' +
+                         '**RECORD DATA TO ANALYZE:**\n\n';
         } else {
             // For general questions, adjust the prompt based on whether there's a record context
             if (String.isBlank(context)) {
-                basePrompt = 'Answer this question based on your knowledge:\n\n';
+                basePrompt = 'You are a helpful AI assistant. Provide a clear, accurate, and comprehensive answer to the following question. ' +
+                           'Use structured formatting with headings and bullet points where appropriate for readability. ' +
+                           'If the question involves multiple parts, address each part systematically.\n\n' +
+                           'QUESTION:\n';
             } else {
-                basePrompt = 'Answer this question about the Salesforce record:\n\n';
+                basePrompt = 'You are an expert Salesforce analyst. Answer the following question about the provided Salesforce record data. ' +
+                           'Base your response on the specific record information provided. Use clear formatting with headings and bullet points. ' +
+                           'Reference specific field values and data points from the record in your analysis.\n\n' +
+                           'QUESTION:\n';
             }
         }
         
@@ -1872,19 +1915,48 @@ public with sharing class LLMController {
                 detailedPrompt += 'DOCUMENT ' + (i+1) + ': "' + fileTitlesForPrompt[i] + '"\n';
             }
 
-            detailedPrompt += '\n\nSTRICT FORMATTING AND CONTENT RULES FOR EACH DOCUMENT ANALYSIS:\n' +
-                '- **DO NOT** include any introductory or concluding conversational phrases, apologies, or offers for further assistance (e.g., do not say \'I am unable to...\' or \'If you need further analysis...\').\n' +
-                '- **ONLY** provide the structured analysis for each document as specified below.\n' +
-                '- Start each document\'s analysis *immediately* with its title using <b> tags (e.g., <b>Document 1: ' + (fileTitlesForPrompt.isEmpty() ? 'Example.pdf' : fileTitlesForPrompt[0]) + '</b>). NO text before this title.\n' +
-                '- For each document, create the following main sections using <b> tags for their titles: <b>Executive Summary:</b>, <b>In-Depth Analysis:</b>, and <b>Key Takeaways & Actionable Insights:</b>.\n' +
-                '- In the <b>Executive Summary:</b> section, provide a concise, high-level overview of the document, its primary purpose, and its most critical aspects.\n' +
-                '- In the <b>In-Depth Analysis:</b> section, provide a THOROUGH, COMPREHENSIVE, AND VERY DETAILED examination of the document. Cover all relevant aspects of the content, including (but not limited to) a detailed breakdown of its content, key arguments or information presented, data, methodologies (if any), important figures, names, dates, textual nuances, and overall structure. Extract as much specific information as possible. Use well-structured paragraphs and, where appropriate for clarity, <ul><li>bullet points</li></ul> for lists of specific details. Avoid overly breaking down this section into many small sub-headings; aim for a flowing, detailed narrative.\n' +
-                '- In the <b>Key Takeaways & Actionable Insights:</b> section, highlight the most important conclusions, actionable items, or critical observations that a user should focus on after reviewing the document.\n' +
-                '- **DO NOT USE MARKDOWN** for any formatting (no asterisks for bolding or lists, no hyphens for lists). Use HTML tags exclusively as specified.\n' +
-                '- Use <ul> and <li> tags for all bulleted lists. Each <li> item should represent a distinct point. \n' +
-                '- Use <ol> and <li> tags for all numbered lists if a sequence is truly necessary. Each <li> item should represent a distinct step or point.\n' +
-                '- Use a single <br> tag for a single line break where necessary for readability within paragraphs or after headings if needed. Avoid using multiple <br> tags together to create large empty spaces. \n' +
-                '- Ensure a clear visual separation (e.g., by using a single <hr> tag) between the full analysis of one document and the start of the next document\'s title. NO text or extra <br> tags after the final document analysis is complete.\n';
+            detailedPrompt += '\n\nEXPERT DOCUMENT ANALYSIS INSTRUCTIONS:\n' +
+                'You are an expert document analyst. For each PDF, provide a comprehensive, professional analysis following this EXACT structure:\n\n' +
+                
+                '**FORMATTING REQUIREMENTS:**\n' +
+                '• Start each document with: <b>Document X: [filename]</b>\n' +
+                '• Use HTML tags only (NO markdown): <b>, <ul>, <li>, <ol>, <br>, <hr>\n' +
+                '• Separate documents with <hr>\n' +
+                '• No conversational language or apologies\n\n' +
+                
+                '**ANALYSIS STRUCTURE (for each document):**\n\n' +
+                
+                '<b>Document Type & Purpose:</b>\n' +
+                'Identify what type of document this is and its intended purpose\n\n' +
+                
+                '<b>Executive Summary:</b>\n' +
+                'Concise overview highlighting the document\'s main purpose, key stakeholders, and critical information\n\n' +
+                
+                '<b>Content Analysis:</b>\n' +
+                'Comprehensive examination including:\n' +
+                '• All key data points, figures, dates, and identifiers\n' +
+                '• Important names, roles, and organizations\n' +
+                '• Processes, procedures, or workflows described\n' +
+                '• Financial information, amounts, or calculations\n' +
+                '• Compliance or regulatory references\n' +
+                '• Status indicators, approvals, or signatures\n\n' +
+                
+                '<b>Data Extraction:</b>\n' +
+                'Extract ALL specific values in structured format:\n' +
+                '• Names and titles\n' +
+                '• Dates and deadlines\n' +
+                '• Amounts and percentages\n' +
+                '• Reference numbers or IDs\n' +
+                '• Contact information\n' +
+                '• Status or stage indicators\n\n' +
+                
+                '<b>Quality Assessment:</b>\n' +
+                '• Document completeness (missing signatures, fields, etc.)\n' +
+                '• Potential inconsistencies or anomalies\n' +
+                '• Readability and image quality issues\n\n' +
+                
+                '<b>Key Insights & Actions:</b>\n' +
+                'Critical observations requiring attention, follow-up items, or compliance considerations\n\n';
 
             // Add the text prompt to the beginning of the content items list
             Map<String, Object> textContent = new Map<String, Object>();
@@ -2172,14 +2244,18 @@ public with sharing class LLMController {
             // 3. Prepare prompt for AI to extract values for target fields from document contents
             String combinedDocumentText = String.join(analyzedDocumentContents, '\n\n--- END OF DOCUMENT --- \n\n');
             
-            String extractionPrompt = 'You are an AI data extraction assistant. Based on the following combined text from one or more documents, and a list of requested field names, your task is to identify and extract potential values for each field.\n';
-            extractionPrompt += 'The document text is provided below, with document separations marked by "--- END OF DOCUMENT ---".\n';
-            extractionPrompt += 'Requested Fields to Extract (API Names): ' + String.join(targetFieldApiNames, ', ') + '\n\n';
-            extractionPrompt += 'Extraction Guidelines:\n';
-            extractionPrompt += '- For each requested field, find all potential distinct values mentioned in the document text.\n';
-            extractionPrompt += '- If a field might have multiple different values suggested across the documents (e.g., multiple different names or dates), list them all.\n';
-            extractionPrompt += '- If a field is not mentioned or no clear value can be extracted, indicate that (e.g., by an empty list or a specific note for that field).\n';
-            extractionPrompt += '- Consider the field type if known (e.g., a field named \'Birthdate__c\' likely expects a date). However, primarily focus on extracting text that seems to match the field\'s concept.\n';
+            String extractionPrompt = 'You are an expert data extraction specialist. Extract specific field values from document text with high accuracy.\n\n';
+            extractionPrompt += 'FIELDS TO EXTRACT: ' + String.join(targetFieldApiNames, ', ') + '\n\n';
+            extractionPrompt += 'EXTRACTION RULES:\n';
+            extractionPrompt += '1. **Field Type Intelligence**: Analyze field names to understand expected data types:\n';
+            extractionPrompt += '   • Names (Name, First_Name__c): Extract proper names\n';
+            extractionPrompt += '   • Dates (Date__c, Birthdate__c): Look for any date format (MM/DD/YYYY, DD-MM-YYYY, etc.)\n';
+            extractionPrompt += '   • Numbers (Amount__c, Count__c): Extract numeric values\n';
+            extractionPrompt += '   • IDs/References: Extract alphanumeric identifiers\n';
+            extractionPrompt += '   • Status/Picklist fields: Extract status-like terms\n\n';
+            extractionPrompt += '2. **Multiple Values**: If multiple potential values exist for a field, include all distinct options\n';
+            extractionPrompt += '3. **Context Awareness**: Consider surrounding text context to validate extracted values\n';
+            extractionPrompt += '4. **Format Consistency**: Standardize similar values (e.g., dates to YYYY-MM-DD when possible)\n';
             extractionPrompt += '- Present your findings ONLY as a JSON object where keys are the exact field API names provided in the \'Requested Fields to Extract\' list.\n';
             extractionPrompt += '- The value for each key (field API name) should be a JSON array of strings, representing the distinct potential values found for that field. Example: ["Value1", "Value2"].\n';
             extractionPrompt += '- If no values are found for a field, provide an empty array: [].\n';

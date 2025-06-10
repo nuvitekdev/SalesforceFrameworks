@@ -52,6 +52,37 @@
                 </template>
                 <!-- == End Anomaly Detection Sections == -->
                 
+                <!-- == Comparison Feature Sections - Only show if enabled == -->
+                <template if:true={enableComparison}>
+                    <!-- == Comparison Check Loading Spinner == -->
+                    <div if:true={comparisonCheckLoading} class="slds-is-relative slds-m-bottom_small slds-text-align_center" style="height: 2rem;">
+                        <lightning-spinner alternative-text="Performing comparison..." size="small"></lightning-spinner>
+                        <span class="slds-text-body_small slds-text-color_weak slds-m-left_small">Comparing against standards...</span>
+                    </div>
+                    <!-- == End Comparison Check Loading Spinner == -->
+
+                    <!-- == Comparison Result Banner == -->
+                    <template if:true={showComparisonBanner}>
+                        <div class="slds-scoped-notification slds-media slds-media_center slds-m-bottom_medium" 
+                             role="status"
+                             style={comparisonBannerStyle}>
+                            <div class="slds-media__figure">
+                                <lightning-icon 
+                                    icon-name={comparisonIconName} 
+                                    alternative-text={comparisonIconAltText} 
+                                    size="small"
+                                    variant={comparisonIconVariant}>
+                                </lightning-icon>
+                            </div>
+                            <div class="slds-media__body">
+                                <p>{comparisonBannerMessage}</p>
+                            </div>
+                        </div>
+                    </template>
+                    <!-- == End Comparison Result Banner == -->
+                </template>
+                <!-- == End Comparison Feature Sections == -->
+                
                 <!-- Model selector remains the same -->
                 <template if:true={showModelSelector}>
                     <lightning-combobox
@@ -146,6 +177,21 @@
                             </svg>
                         </span>
                         <span class="button-label">{analyzeDocumentButtonLabel}</span>
+                    </button>
+                    
+                    <!-- Custom Comparison button -->
+                    <button 
+                        if:true={showComparisonButton}
+                        class="custom-button secondary-button" 
+                        onclick={handleComparisonCheck} 
+                        disabled={areActionsDisabled}
+                    >
+                        <span class="button-icon">
+                            <svg width="16" height="16" viewBox="0 0 52 52">
+                                <path d="M48.5 31h-45c-.8 0-1.5.7-1.5 1.5v3c0 .8.7 1.5 1.5 1.5h45c.8 0 1.5-.7 1.5-1.5v-3c0-.8-.7-1.5-1.5-1.5zM48.5 42h-45c-.8 0-1.5.7-1.5 1.5v3c0 .8.7 1.5 1.5 1.5h45c.8 0 1.5-.7 1.5-1.5v-3c0-.8-.7-1.5-1.5-1.5zM16 20h-3c-.8 0-1.5-.7-1.5-1.5v-3c0-.8.7-1.5 1.5-1.5h3c.8 0 1.5.7 1.5 1.5v3c0 .8-.7 1.5-1.5 1.5zM39 14h-3c-.8 0-1.5.7-1.5 1.5v3c0 .8.7 1.5 1.5 1.5h3c.8 0 1.5-.7 1.5-1.5v-3c0-.8-.7-1.5-1.5-1.5zM27.5 4h-3c-.8 0-1.5.7-1.5 1.5v3c0 .8.7 1.5 1.5 1.5h3c.8 0 1.5-.7 1.5-1.5v-3c0-.8-.7-1.5-1.5-1.5z"></path>
+                            </svg>
+                        </span>
+                        <span class="button-label">Compare to Standards</span>
                     </button>
                     
                     <!-- Custom Clear button -->
@@ -248,6 +294,47 @@
                     <div class="slds-backdrop slds-backdrop_open component-backdrop"></div>
                 </div>
                 <!-- End New Modal for Extracting Fields from Documents -->
+                
+                <!-- Comparison Input Modal -->
+                <div class="modal-wrapper" if:true={showComparisonModal}>
+                    <section role="dialog" tabindex="-1" aria-labelledby="comparison-modal-heading" aria-modal="true" aria-describedby="comparison-modal-content" class="slds-modal slds-fade-in-open component-modal">
+                        <div class="slds-modal__container">
+                            <header class="slds-modal__header">
+                                <h2 id="comparison-modal-heading" class="slds-text-heading_medium slds-hyphenate">Compare to Standards</h2>
+                                <lightning-button-icon icon-name="utility:close" alternative-text="Close" title="Close" onclick={handleComparisonModalCancel} class="slds-modal__close"></lightning-button-icon>
+                            </header>
+                            <div class="slds-modal__content slds-p-around_medium" id="comparison-modal-content">
+                                <p class="slds-m-bottom_medium">Enter the content you want to compare against the configured standards and requirements.</p>
+                                
+                                <lightning-textarea
+                                    label="Content to Compare"
+                                    value={comparisonInput}
+                                    onchange={handleComparisonInputChange}
+                                    placeholder="Enter the application text, document content, or any information to be evaluated against the standards..."
+                                    field-level-help="This content will be analyzed against the predefined rules and standards to determine compliance."
+                                    max-length="10000"
+                                    class="slds-m-bottom_medium">
+                                </lightning-textarea>
+                                
+                                <div class="slds-text-body_small slds-text-color_weak">
+                                    <p>The AI will compare your input against the configured standards and provide:</p>
+                                    <ul class="slds-list_dotted slds-m-top_x-small">
+                                        <li>Overall assessment (meets/does not meet standards)</li>
+                                        <li>Detailed analysis of each requirement</li>
+                                        <li>Specific strengths and weaknesses</li>
+                                        <li>Suggestions for improvement</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <footer class="slds-modal__footer">
+                                <button class="slds-button slds-button_neutral" onclick={handleComparisonModalCancel}>Cancel</button>
+                                <button class="slds-button slds-button_brand" onclick={handleComparisonModalConfirm} disabled={isComparisonButtonDisabled}>Compare</button>
+                            </footer>
+                        </div>
+                    </section>
+                    <div class="slds-backdrop slds-backdrop_open component-backdrop"></div>
+                </div>
+                <!-- End Comparison Input Modal -->
 
                 <div if:true={isLoading} class="loading-container">
                     <lightning-spinner alternative-text="Processing" size="medium"></lightning-spinner>
