@@ -32,7 +32,8 @@ export default class LLMAssistant extends LightningElement {
     @api enableAnomalyDetection = false; // Whether to enable anomaly detection
     @api enableImageValidation = false; // Kept for backward compatibility/external dependencies
     @api enableComparison = false; // Whether to enable comparison feature
-    @api comparisonRules = '';     // JSON string containing rules/standards to compare against
+    @api comparisonRules = '';     // JSON string containing rules/standards to compare against (TO)
+    @api compareFrom = '';         // Content to compare (source) - if provided, auto-comparison runs
     @api relatedObjects = '';      // Comma-separated list of object API names to search across for related data
     @api analysisFieldApiName = ''; // API name of field to save analysis summary
     
@@ -167,9 +168,18 @@ export default class LLMAssistant extends LightningElement {
         return !!this.relatedObjects && this.relatedObjects.trim() !== '';
     }
     
-    // Check if "Compare" button should be shown
+    // Check if "Compare" button should be shown (manual comparison only when no compareFrom)
     get showComparisonButton() {
-        return this.enableComparison && !!this.comparisonRules && this.comparisonRules.trim() !== '';
+        return this.enableComparison && 
+               !!this.comparisonRules && this.comparisonRules.trim() !== '' && 
+               (!this.compareFrom || this.compareFrom.trim() === '');
+    }
+    
+    // Check if auto-comparison should be enabled (when compareFrom is provided)
+    get shouldRunAutoComparison() {
+        return this.enableComparison && 
+               this.compareFrom && this.compareFrom.trim() !== '' && 
+               this.comparisonRules && this.comparisonRules.trim() !== '';
     }
     
     // Get comparison banner style based on result
@@ -195,6 +205,7 @@ export default class LLMAssistant extends LightningElement {
     get comparisonIconVariant() {
         return this.comparisonBannerMessage && this.comparisonBannerMessage.includes('MEETS') ? 'success' : 'warning';
     }
+    
     
     // Check if comparison button should be disabled
     get isComparisonButtonDisabled() {
@@ -573,6 +584,9 @@ Provide only the summary text without additional commentary.`;
             this.loadPdfAttachments();
         }
         
+        // Check for auto-comparison on initial load
+        this.checkAutoComparison();
+        
         // Setup debounced handlers
         this.debouncedPromptChange = this.debounce((event) => {
             this.userPrompt = event.detail.value;
@@ -601,6 +615,9 @@ Provide only the summary text without additional commentary.`;
         
         // Try to detect and integrate with Nuvitek theme if available
         this.applyThemeIntegration();
+        
+        // Check for auto-comparison after render
+        this.checkAutoComparison();
     }
     
     applyThemeIntegration() {
@@ -871,6 +888,111 @@ Use clear formatting with bullet points and bold headers for readability.`;
         } finally {
             this.comparisonCheckLoading = false;
             this.comparisonInput = '';
+        }
+    }
+    
+    // Check and trigger auto-comparison if needed
+    checkAutoComparison() {
+        // Skip if already running, no model selected, or conditions not met
+        if (this.comparisonCheckLoading || !this.selectedLLM || !this.shouldRunAutoComparison) {
+            return;
+        }
+        
+        // Skip if we already have a result and inputs haven't changed
+        if (this.comparisonCheckResult && 
+            this._lastCompareFrom === this.compareFrom && 
+            this._lastComparisonRules === this.comparisonRules) {
+            return;
+        }
+        
+        console.log('Auto-comparison conditions met, triggering comparison...');
+        this.performAutoComparison();
+    }
+    
+    async performAutoComparison() {
+        if (!this.shouldRunAutoComparison || this.comparisonCheckLoading) {
+            return;
+        }
+        
+        console.log('Performing auto-comparison between:', this.compareFrom.substring(0, 50) + '...', 'and rules');
+        
+        this.comparisonCheckLoading = true;
+        this.showComparisonBanner = false;
+        
+        // Cache the current values to detect changes
+        this._lastCompareFrom = this.compareFrom;
+        this._lastComparisonRules = this.comparisonRules;
+        
+        try {
+            // Parse the comparison rules  
+            let rulesObj = {};
+            try {
+                rulesObj = JSON.parse(this.comparisonRules);
+            } catch (e) {
+                // If not valid JSON, treat as plain text rules
+                rulesObj = { rules: this.comparisonRules };
+            }
+            
+            // Build the auto-comparison prompt
+            const autoComparisonPrompt = `You are an expert evaluator assessing whether submitted content meets specified standards and requirements.
+
+EVALUATION CRITERIA/RULES:
+${JSON.stringify(rulesObj, null, 2)}
+
+CONTENT TO EVALUATE:
+${this.compareFrom}
+
+${this.recordId ? '\nADDITIONAL CONTEXT:\n' + (await this.getRecordContextForComparison()) : ''}
+
+EVALUATION INSTRUCTIONS:
+1. Carefully review each requirement/criterion in the rules
+2. Assess how the submitted content addresses each point
+3. Consider both explicit requirements and implied quality standards
+4. Be objective and specific in your assessment
+
+RESPONSE FORMAT:
+Begin with either "MEETS STANDARDS" or "DOES NOT MEET STANDARDS"
+
+Then provide:
+✓ **Overall Assessment**: Brief summary of compliance level
+✓ **Detailed Analysis**: 
+  - For each criterion, state if it's MET, PARTIALLY MET, or NOT MET
+  - Provide specific examples from the content
+  - Quote relevant passages when applicable
+✓ **Strengths**: What the submission does well
+✓ **Gaps/Weaknesses**: What's missing or inadequate
+✓ **Improvement Recommendations**: Specific, actionable suggestions
+
+Use clear formatting with bullet points and bold headers for readability.`;
+            
+            // Call the LLM to perform auto-comparison
+            const result = await handleRequest({
+                recordId: this.recordId || '',
+                configName: this.selectedLLM,
+                prompt: autoComparisonPrompt,
+                operation: 'ask',
+                relatedObjects: ''
+            });
+            
+            this.comparisonCheckResult = result;
+            
+            // Parse the result to show banner
+            if (result) {
+                const meetsStandards = result.toUpperCase().includes('MEETS STANDARDS');
+                this.showComparisonBanner = true;
+                this.comparisonBannerMessage = meetsStandards 
+                    ? 'Auto-comparison: Content MEETS the specified standards and requirements.'
+                    : 'Auto-comparison: Content DOES NOT MEET all specified standards and requirements.';
+                
+                console.log('Auto-comparison completed:', this.comparisonBannerMessage);
+            }
+            
+        } catch (error) {
+            console.error('Error during auto-comparison:', error);
+            this.showComparisonBanner = true;
+            this.comparisonBannerMessage = 'Auto-comparison failed: ' + this.getErrorMessage(error);
+        } finally {
+            this.comparisonCheckLoading = false;
         }
     }
     

@@ -111,7 +111,8 @@ The NuviAI Assistant component can be added to:
    - **Context Prompt**: Custom context to provide to the LLM about its purpose.
    - **Enable Anomaly Detection**: Turn on automatic checking for unusual patterns.
    - **Enable Comparison**: NEW! Turn on standards comparison and compliance validation.
-   - **Comparison Rules**: JSON or text rules/standards to compare content against.
+   - **Comparison Rules (TO)**: JSON or text rules/standards to compare content against.
+   - **Compare From (Source)**: Content to automatically compare. If provided, runs automatic comparison; if empty, shows manual comparison button.
    - **Enable Image Analysis**: Enable the ability to analyze images attached to records.
    - **Enable Document Analysis**: Turn on PDF processing and document analysis.
    - **Document Analysis Fields**: Comma-separated field API names for data extraction.
@@ -124,7 +125,7 @@ The NuviAI Assistant component can be added to:
 2. **Analyze Record**: Click the analyze button to get AI insights about the current record.
 3. **Analyze Images**: Process attached images and PDFs to extract text and visual information.
 4. **Analyze Documents**: Process PDF files with advanced document analysis and field extraction.
-5. **Compare to Standards**: NEW! Validate content against predefined rules and standards.
+5. **Compare to Standards**: NEW! Validate content against predefined rules and standards (manual or automatic).
 6. **Generate Content**: Request drafts of emails, summaries, or other content.
 7. **Save Analysis**: Save important insights directly to the record for future reference.
 8. **View History**: Access previous conversations for context or reference.
@@ -234,11 +235,15 @@ RECOMMENDATIONS:
 - Validate compliance with organizational policies
 - Screen applications, proposals, or documents
 - Provide detailed gap analysis and recommendations
+- **Automatic comparison** when content is provided via Flow or programmatically
+- **Manual comparison** when users need to input content on-demand
 
 **How to configure:**
 1. Enable "Comparison" in component settings
-2. Define your rules in "Comparison Rules" field
+2. Define your rules in "Comparison Rules (TO)" field
 3. Use JSON format for complex criteria or plain text for simple rules
+4. **For automatic comparison**: Set "Compare From (Source)" with content to compare
+5. **For manual comparison**: Leave "Compare From" empty to show user input button
 
 **Rule formats:**
 
@@ -279,6 +284,8 @@ Grant Application Requirements:
 ```
 
 **How to use:**
+
+**Manual Comparison (when "Compare From" is empty):**
 1. Click "Compare to Standards"
 2. Enter or paste content to evaluate:
    - Resume text
@@ -288,6 +295,12 @@ Grant Application Requirements:
    - Record data references
 3. Click "Compare"
 4. Review detailed analysis
+
+**Automatic Comparison (when "Compare From" has content):**
+1. Content is automatically compared when component loads
+2. Results appear in banner immediately
+3. No user input required
+4. Perfect for Flow integration or programmatic use
 
 **Example output:**
 ```
@@ -603,7 +616,8 @@ Regulatory Compliance Checklist:
 ### Scenario 2: Procurement - RFP Evaluation
 **Configuration:**
 - Enable Comparison: ✓ 
-- Comparison Rules: RFP requirements and scoring criteria
+- Comparison Rules (TO): RFP requirements and scoring criteria
+- Compare From (Source): (empty for manual comparison)
 - Related Objects: `Quote,Contract,Vendor_Reference__c`
 - Analysis Field: `Evaluation_Summary__c`
 
@@ -613,6 +627,12 @@ Regulatory Compliance Checklist:
 3. Use "Compare to Standards" for specific RFP compliance
 4. Save evaluation summary to record
 5. Reference in vendor selection process
+
+**Alternative Automated Workflow (using Flow):**
+1. Flow extracts proposal content to text variable
+2. Sets "Compare From" field with proposal content
+3. Component automatically compares against RFP rules
+4. Results appear in banner without user input
 
 ### Scenario 3: Sales - Deal Analysis
 **Configuration:**
@@ -630,15 +650,23 @@ Regulatory Compliance Checklist:
 ### Scenario 4: Compliance - Document Review
 **Configuration:**
 - Enable Comparison: ✓
-- Comparison Rules: Regulatory requirements checklist
+- Comparison Rules (TO): Regulatory requirements checklist
+- Compare From (Source): (empty for manual, or set via Flow for automatic)
 - Enable Document Analysis: ✓
 - Document Analysis Fields: `Compliance_Status__c,Review_Date__c`
 
-**Workflow:**
+**Manual Workflow:**
 1. Upload compliance documents to record
 2. "Compare to Standards" against regulatory requirements  
 3. Extract key data to compliance fields
 4. Generate compliance summary for auditors
+
+**Automated Flow Workflow:**
+1. Flow processes uploaded documents
+2. Extracts document content to text variable
+3. Sets "Compare From" with extracted content
+4. Component automatically validates against regulatory rules
+5. Banner shows immediate compliance status
 
 ## Technical Details
 
@@ -716,11 +744,13 @@ Regulatory Compliance Checklist:
 - Confirm LLM_Configuration__mdt records are properly set up
 
 #### 2. **Comparison Feature Not Working**
-**Symptoms:** "Compare to Standards" button not visible
+**Symptoms:** "Compare to Standards" button not visible or auto-comparison not running
 **Solutions:**
 - Verify "Enable Comparison" is checked in component settings
-- Ensure "Comparison Rules" field is not empty
+- Ensure "Comparison Rules (TO)" field is not empty
 - Check that rules are in valid JSON format (if using JSON)
+- For manual comparison: ensure "Compare From (Source)" is empty
+- For automatic comparison: ensure "Compare From (Source)" has content
 - Confirm user has access to the component and related data
 
 #### 3. **Document Analysis Failures**
