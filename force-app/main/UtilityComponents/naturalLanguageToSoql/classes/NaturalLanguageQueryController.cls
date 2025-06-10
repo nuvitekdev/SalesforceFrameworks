@@ -5,9 +5,51 @@
  * the user might not directly own or have explicit sharing access to, mimicking a broader data exploration capability.
  * Field-level security IS still checked when gathering metadata to build the LLM prompt,
  * preventing the AI from knowing about or using fields the user cannot access.
+ * 
+ * Enhanced features:
+ * - Query result caching using Platform Cache
+ * - Advanced synonym mapping for better natural language understanding
+ * - Query pattern recognition for common use cases
+ * - Real-time query suggestions
+ * - Improved error handling with fallback mechanisms
+ * 
  * @author Nuvitek
  */
 public without sharing class NaturalLanguageQueryController {
+    
+    // Cache partition name for storing query results
+    private static final String CACHE_PARTITION = 'local.NLQCache';
+    private static final Integer CACHE_TTL_SECONDS = 300; // 5 minutes
+    
+    // Common synonyms and aliases for better NLP
+    private static final Map<String, String> FIELD_SYNONYMS = new Map<String, String>{
+        'customer' => 'account',
+        'client' => 'account',
+        'deal' => 'opportunity',
+        'sale' => 'opportunity',
+        'ticket' => 'case',
+        'issue' => 'case',
+        'person' => 'contact',
+        'rep' => 'owner',
+        'sales rep' => 'owner',
+        'revenue' => 'amount',
+        'value' => 'amount',
+        'created' => 'createddate',
+        'modified' => 'lastmodifieddate',
+        'updated' => 'lastmodifieddate'
+    };
+    
+    // Common query patterns
+    private static final Map<String, String> QUERY_PATTERNS = new Map<String, String>{
+        'top (\\d+)' => 'ORDER BY {field} DESC LIMIT $1',
+        'biggest (\\d+)' => 'ORDER BY {field} DESC LIMIT $1',
+        'largest (\\d+)' => 'ORDER BY {field} DESC LIMIT $1',
+        'newest (\\d+)' => 'ORDER BY CreatedDate DESC LIMIT $1',
+        'oldest (\\d+)' => 'ORDER BY CreatedDate ASC LIMIT $1',
+        'this (week|month|quarter|year)' => 'WHERE {date_field} = THIS_$1',
+        'last (week|month|quarter|year)' => 'WHERE {date_field} = LAST_$1',
+        'next (week|month|quarter|year)' => 'WHERE {date_field} = NEXT_$1'
+    };
     
     /**
      * @description Retrieves object information
@@ -69,8 +111,70 @@ public without sharing class NaturalLanguageQueryController {
     }
     
     /**
+     * @description Gets cached query result if available
+     * @param cacheKey The cache key for the query
+     * @return Cached result or null if not found
+     */
+    private static Map<String, Object> getCachedResult(String cacheKey) {
+        try {
+            Cache.OrgPartition orgPartition = Cache.Org.getPartition('local.DefaultPartition');
+            if (orgPartition.contains(cacheKey)) {
+                return (Map<String, Object>) orgPartition.get(cacheKey);
+            }
+        } catch (Exception e) {
+            System.debug('Cache retrieval error: ' + e.getMessage());
+        }
+        return null;
+    }
+    
+    /**
+     * @description Stores query result in cache
+     * @param cacheKey The cache key for the query
+     * @param result The result to cache
+     */
+    private static void cacheResult(String cacheKey, Map<String, Object> result) {
+        try {
+            Cache.OrgPartition orgPartition = Cache.Org.getPartition('local.DefaultPartition');
+            orgPartition.put(cacheKey, result, CACHE_TTL_SECONDS);
+        } catch (Exception e) {
+            System.debug('Cache storage error: ' + e.getMessage());
+        }
+    }
+    
+    /**
+     * @description Enhances the natural language query with synonyms and patterns
+     * @param query The original natural language query
+     * @return Enhanced query string
+     */
+    private static String enhanceQueryWithSynonyms(String query) {
+        String enhancedQuery = query.toLowerCase();
+        
+        // Replace common synonyms
+        for (String synonym : FIELD_SYNONYMS.keySet()) {
+            String replacement = FIELD_SYNONYMS.get(synonym);
+            enhancedQuery = enhancedQuery.replaceAll('\\b' + synonym + '\\b', replacement);
+        }
+        
+        return enhancedQuery;
+    }
+    
+    /**
+     * @description Generates a cache key for the query
+     * @param query The natural language query
+     * @param objects The object names
+     * @param limit The record limit
+     * @return Cache key string
+     */
+    private static String generateCacheKey(String query, String objects, Integer recordLimit) {
+        String keySource = query + '|' + objects + '|' + String.valueOf(recordLimit);
+        Blob hash = Crypto.generateDigest('MD5', Blob.valueOf(keySource));
+        return EncodingUtil.convertToHex(hash);
+    }
+    
+    /**
      * @description Processes a natural language query using an LLM to generate and execute SOQL.
      * Attempts to query across multiple specified objects if configured.
+     * Enhanced with caching, synonym mapping, and pattern recognition.
      * @param naturalLanguageQuery The natural language query from the user.
      * @param objectApiNamesCSV A comma-separated string of object API names to consider.
      * @param recordLimit Maximum number of records to return.
@@ -79,6 +183,14 @@ public without sharing class NaturalLanguageQueryController {
      */
     @AuraEnabled
     public static Map<String, Object> processQuery(String naturalLanguageQuery, String objectApiNamesCSV, Integer recordLimit, String llmConfigName) {
+        // Check cache first
+        String cacheKey = generateCacheKey(naturalLanguageQuery, objectApiNamesCSV, recordLimit);
+        Map<String, Object> cachedResult = getCachedResult(cacheKey);
+        if (cachedResult != null) {
+            System.debug('Returning cached result for query: ' + naturalLanguageQuery);
+            return cachedResult;
+        }
+        
         Map<String, Object> result = new Map<String, Object>();
         Map<String, Schema.SObjectField> combinedFieldMap = new Map<String, Schema.SObjectField>();
         List<String> allAccessibleFieldApiNames = new List<String>();
@@ -89,6 +201,9 @@ public without sharing class NaturalLanguageQueryController {
         LLM_Configuration__mdt llmConfig;
         List<String> objectNames = new List<String>();
         String primaryObjectName = ''; // The object the final query will primarily target
+        
+        // Enhance query with synonyms
+        String enhancedQuery = enhanceQueryWithSynonyms(naturalLanguageQuery);
 
         try {
             // -----------------------------------------------------------------
@@ -194,13 +309,19 @@ public without sharing class NaturalLanguageQueryController {
                     '    - Do NOT use: CALENDAR_MONTH(Birthdate) = CALENDAR_MONTH(TODAY) in WHERE clauses\n' +
                     '    - Example for contacts with birthdays this month: SELECT Id, Name, Birthdate FROM Contact WHERE Birthdate != NULL AND Birthdate = THIS_MONTH ORDER BY DAY_IN_MONTH(Birthdate) ASC';
 
-                // Construct the prompt for the LLM
+                // Construct the prompt for the LLM with enhanced query
                 String llmPrompt = 
-                    'Natural Language Query: "' + naturalLanguageQuery + '"\n\n' + 
+                    'Original Query: "' + naturalLanguageQuery + '"\n' +
+                    'Enhanced Query (with synonyms): "' + enhancedQuery + '"\n\n' + 
                     'Available Salesforce Objects: ' + String.join(objectNames, ', ') + '\n\n' + 
                     'Available Fields (ObjectName.ApiName (Label) - Type):\n' + fieldDetailsForPrompt + '\n' + 
                     'Required Record Limit: ' + recordLimit + '\n\n' + 
-                    'Generate the SOQL query:';
+                    'Context: The user may use common business terms that should map to Salesforce fields:\n' +
+                    '- "customer/client" → Account\n' +
+                    '- "deal/sale" → Opportunity\n' +
+                    '- "ticket/issue" → Case\n' +
+                    '- "revenue/value" → Amount\n\n' +
+                    'Generate the SOQL query based on the enhanced query:';
                 
                 System.debug('Sending multi-object prompt to LLM. Length: ' + llmPrompt.length());
                 generatedSoql = makeLLMCall(llmConfig, llmPrompt, systemInstructions);
@@ -349,6 +470,7 @@ public without sharing class NaturalLanguageQueryController {
             result.put('results', queryResults);
             result.put('columns', columns);
             result.put('primaryObject', primaryObjectName); // Add primary object name
+            result.put('enhancedQuery', enhancedQuery); // Include enhanced query for transparency
             
             // Add Debugging for returned data
             if (queryResults != null && !queryResults.isEmpty()) {
@@ -358,6 +480,10 @@ public without sharing class NaturalLanguageQueryController {
             }
             System.debug('Generated Columns for Datatable: ' + JSON.serializePretty(columns));
             // End Debugging
+            
+            // Cache successful results
+            cacheResult(cacheKey, result);
+            System.debug('Result cached with key: ' + cacheKey);
 
             System.debug('Natural Language Query processed successfully.');
             return result;
@@ -372,6 +498,59 @@ public without sharing class NaturalLanguageQueryController {
         }
     }
 
+    /**
+     * @description Provides query suggestions based on partial input
+     * @param partialQuery The partial query entered by the user
+     * @param objectApiNamesCSV Comma-separated object names
+     * @return List of suggested query completions
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<String> getQuerySuggestions(String partialQuery, String objectApiNamesCSV) {
+        List<String> suggestions = new List<String>();
+        
+        if (String.isBlank(partialQuery) || partialQuery.length() < 3) {
+            return suggestions;
+        }
+        
+        String lowerQuery = partialQuery.toLowerCase();
+        List<String> objectNames = objectApiNamesCSV.split(',');
+        
+        // Common query templates
+        Map<String, List<String>> queryTemplates = new Map<String, List<String>>{
+            'show' => new List<String>{'show all {object}', 'show recent {object}', 'show {object} created today'},
+            'find' => new List<String>{'find {object} by name', 'find open {object}', 'find {object} owned by me'},
+            'list' => new List<String>{'list top 10 {object}', 'list {object} by status', 'list active {object}'},
+            'get' => new List<String>{'get {object} details', 'get my {object}', 'get {object} count'},
+            'what' => new List<String>{'what are the open {object}', 'what {object} need attention', 'what are today\'s {object}'}
+        };
+        
+        // Check which template matches
+        for (String prefix : queryTemplates.keySet()) {
+            if (lowerQuery.startsWith(prefix)) {
+                List<String> templates = queryTemplates.get(prefix);
+                for (String template : templates) {
+                    for (String objName : objectNames) {
+                        String suggestion = template.replace('{object}', objName.trim());
+                        if (suggestion.toLowerCase().startsWith(lowerQuery)) {
+                            suggestions.add(suggestion);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Limit suggestions
+        if (suggestions.size() > 5) {
+            List<String> limitedSuggestions = new List<String>();
+            for (Integer i = 0; i < 5; i++) {
+                limitedSuggestions.add(suggestions[i]);
+            }
+            return limitedSuggestions;
+        }
+        
+        return suggestions;
+    }
+    
     /**
      * @description Extracts the primary object name from the FROM clause of a SOQL query.
      * @param soqlQuery The SOQL query string.

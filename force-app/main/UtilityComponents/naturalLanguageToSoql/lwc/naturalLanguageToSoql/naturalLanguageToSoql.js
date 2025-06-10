@@ -2,6 +2,7 @@ import { LightningElement, api, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import processNaturalLanguageQuery from '@salesforce/apex/NaturalLanguageQueryController.processQuery';
 import getExampleQueries from '@salesforce/apex/NaturalLanguageQueryController.getExampleQueries';
+import getQuerySuggestions from '@salesforce/apex/NaturalLanguageQueryController.getQuerySuggestions';
 
 /**
  * @class
@@ -167,6 +168,30 @@ export default class NaturalLanguageToSoql extends LightningElement {
 
     // Add a flag to track connection state
     isConnected = false;
+    
+    /**
+     * @type {Array}
+     * @description Query suggestions based on user input
+     */
+    @track querySuggestions = [];
+    
+    /**
+     * @type {Boolean}
+     * @description Flag to show/hide suggestions dropdown
+     */
+    @track showSuggestions = false;
+    
+    /**
+     * @type {Object}
+     * @description Debounce timer for query suggestions
+     */
+    suggestionDebounceTimer = null;
+    
+    /**
+     * @type {String}
+     * @description Stores the enhanced query information
+     */
+    @track enhancedQueryInfo = '';
 
     // =========================================================================
     // Lifecycle Hooks
@@ -278,6 +303,21 @@ export default class NaturalLanguageToSoql extends LightningElement {
      */
     handleQueryChange(event) {
         this.userQuery = event.target.value;
+        
+        // Clear previous timer
+        if (this.suggestionDebounceTimer) {
+            clearTimeout(this.suggestionDebounceTimer);
+        }
+        
+        // Set new timer for suggestions
+        if (this.userQuery && this.userQuery.length >= 3) {
+            this.suggestionDebounceTimer = setTimeout(() => {
+                this.fetchQuerySuggestions();
+            }, 300); // 300ms debounce
+        } else {
+            this.querySuggestions = [];
+            this.showSuggestions = false;
+        }
     }
     
     /**
@@ -286,6 +326,24 @@ export default class NaturalLanguageToSoql extends LightningElement {
     handleClearQuery() {
         this.userQuery = '';
         this.resetQueryState();
+        this.querySuggestions = [];
+        this.showSuggestions = false;
+    }
+    
+    /**
+     * @description Handles clicking on a query suggestion
+     * @param {Event} event - Click event from the suggestion
+     */
+    handleSuggestionClick(event) {
+        this.userQuery = event.currentTarget.dataset.suggestion;
+        this.querySuggestions = [];
+        this.showSuggestions = false;
+        
+        // Focus back on input
+        const inputElement = this.template.querySelector('[data-id="query-input"]');
+        if (inputElement) {
+            inputElement.focus();
+        }
     }
     
     /**
@@ -322,6 +380,13 @@ export default class NaturalLanguageToSoql extends LightningElement {
             console.log('Raw response from Apex:', JSON.stringify(response, null, 2)); // Log raw response
             
             this.generatedSoql = response.soqlQuery;
+            
+            // Store enhanced query info if available
+            if (response.enhancedQuery && response.enhancedQuery !== this.userQuery.toLowerCase()) {
+                this.enhancedQueryInfo = `Query enhanced: "${response.enhancedQuery}"`;
+            } else {
+                this.enhancedQueryInfo = '';
+            }
             
             // Add recordUrl for navigation before assigning results
             if (response.results && response.results.length > 0 && response.primaryObject) {
@@ -438,6 +503,36 @@ export default class NaturalLanguageToSoql extends LightningElement {
     // =========================================================================
     // Utility Methods
     // =========================================================================
+    
+    /**
+     * @description Fetches query suggestions based on current input
+     */
+    async fetchQuerySuggestions() {
+        if (!this.userQuery || this.userQuery.length < 3 || !this.objectApiNames) {
+            this.querySuggestions = [];
+            this.showSuggestions = false;
+            return;
+        }
+
+        try {
+            const suggestions = await getQuerySuggestions({
+                partialQuery: this.userQuery,
+                objectApiNamesCSV: this.objectApiNames
+            });
+
+            if (suggestions && suggestions.length > 0) {
+                this.querySuggestions = suggestions;
+                this.showSuggestions = true;
+            } else {
+                this.querySuggestions = [];
+                this.showSuggestions = false;
+            }
+        } catch (error) {
+            console.error('Error fetching query suggestions:', error);
+            this.querySuggestions = [];
+            this.showSuggestions = false;
+        }
+    }
     
     /**
      * @description Fetches dynamic example queries from Apex using the configured objects.
