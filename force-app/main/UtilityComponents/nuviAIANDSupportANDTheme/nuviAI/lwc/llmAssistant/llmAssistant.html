@@ -61,25 +61,26 @@
                     </div>
                     <!-- == End Comparison Check Loading Spinner == -->
 
-                    <!-- == Comparison Result Banner == -->
+                    <!-- == Comparison Result Accordion == -->
                     <template if:true={showComparisonBanner}>
-                        <div class="slds-scoped-notification slds-media slds-media_center slds-m-bottom_medium" 
-                             role="status"
-                             style={comparisonBannerStyle}>
-                            <div class="slds-media__figure">
-                                <lightning-icon 
-                                    icon-name={comparisonIconName} 
-                                    alternative-text={comparisonIconAltText} 
-                                    size="small"
-                                    variant={comparisonIconVariant}>
-                                </lightning-icon>
-                            </div>
-                            <div class="slds-media__body">
-                                <p>{comparisonBannerMessage}</p>
-                            </div>
-                        </div>
+                        <lightning-accordion 
+                            allow-multiple-sections-open 
+                            active-section-name={activeAccordionSections} 
+                            class="slds-m-bottom_medium comparison-accordion"
+                        >
+                            <lightning-accordion-section 
+                                name="comparisonSection" 
+                                label={comparisonAccordionLabel}
+                                class={comparisonAccordionClass}
+                            >
+                                <div class="slds-p-horizontal_small slds-p-bottom_small accordion-content">
+                                    <!-- Use rich text to format the detailed analysis -->
+                                    <lightning-formatted-rich-text value={comparisonDetailedResult}></lightning-formatted-rich-text>
+                                </div>
+                            </lightning-accordion-section>
+                        </lightning-accordion>
                     </template>
-                    <!-- == End Comparison Result Banner == -->
+                    <!-- == End Comparison Result Accordion == -->
                 </template>
                 <!-- == End Comparison Feature Sections == -->
                 

@@ -95,6 +95,7 @@ export default class LLMAssistant extends LightningElement {
     @track comparisonBannerMessage = ''; // Message to display in the comparison banner
     @track comparisonInput = ''; // Input to compare against rules
     @track showComparisonModal = false; // Show comparison input modal
+    @track comparisonDetailedResult = ''; // Store formatted detailed comparison result
     // --- End Comparison Feature properties ---
     
     // --- Accordion Control ---
@@ -204,6 +205,24 @@ export default class LLMAssistant extends LightningElement {
     // Get comparison icon variant based on result
     get comparisonIconVariant() {
         return this.comparisonBannerMessage && this.comparisonBannerMessage.includes('MEETS') ? 'success' : 'warning';
+    }
+    
+    // Get comparison accordion label based on result
+    get comparisonAccordionLabel() {
+        if (this.comparisonBannerMessage && this.comparisonBannerMessage.includes('MEETS')) {
+            return 'Standards Compliance: MEETS Requirements ✓';
+        } else {
+            return 'Standards Compliance: DOES NOT MEET Requirements ⚠';
+        }
+    }
+    
+    // Get comparison accordion CSS class based on result
+    get comparisonAccordionClass() {
+        if (this.comparisonBannerMessage && this.comparisonBannerMessage.includes('MEETS')) {
+            return 'slds-theme_success';
+        } else {
+            return 'slds-theme_warning';
+        }
     }
     
     
@@ -411,7 +430,8 @@ export default class LLMAssistant extends LightningElement {
             return `${role}: ${msg.content}`;
         }).join('\n\n');
         
-        const summaryPrompt = `Create a concise summary of this AI assistant conversation.
+        const systemContext = this.buildSystemPrompt('general');
+        const summaryPrompt = `${systemContext}Create a concise summary of this AI assistant conversation.
 
 CONVERSATION TO SUMMARIZE:
 ${conversationText}
@@ -423,6 +443,7 @@ SUMMARY REQUIREMENTS:
 • Keep it under 300 words
 • Use professional, objective language
 • Structure with brief paragraphs for readability
+• REMEMBER: Apply your PRIMARY DIRECTIVE in how you approach this summary
 
 ${this.conversationSummary ? '\nEXISTING SUMMARY (to build upon):\n' + this.conversationSummary : ''}
 
@@ -806,8 +827,9 @@ Provide only the summary text without additional commentary.`;
                 rulesObj = { rules: this.comparisonRules };
             }
             
-            // Build the comparison prompt
-            const comparisonPrompt = `You are an expert evaluator assessing whether submitted content meets specified standards and requirements.
+            // Build the comparison prompt with system context at the forefront
+            const systemContext = this.buildSystemPrompt('comparison');
+            const comparisonPrompt = `${systemContext}You are an expert evaluator assessing whether submitted content meets specified standards and requirements.
 
 EVALUATION CRITERIA/RULES:
 ${JSON.stringify(rulesObj, null, 2)}
@@ -822,6 +844,7 @@ EVALUATION INSTRUCTIONS:
 2. Assess how the submitted content addresses each point
 3. Consider both explicit requirements and implied quality standards
 4. Be objective and specific in your assessment
+5. MOST IMPORTANTLY: Follow your PRIMARY DIRECTIVE in how you approach this evaluation
 
 RESPONSE FORMAT:
 Begin with either "MEETS STANDARDS" or "DOES NOT MEET STANDARDS"
@@ -849,13 +872,19 @@ Use clear formatting with bullet points and bold headers for readability.`;
             
             this.comparisonCheckResult = result;
             
-            // Parse the result to show banner
+            // Parse the result to show detailed accordion
             if (result) {
                 const meetsStandards = result.toUpperCase().includes('MEETS STANDARDS');
                 this.showComparisonBanner = true;
                 this.comparisonBannerMessage = meetsStandards 
-                    ? 'The input MEETS the specified standards and requirements.'
-                    : 'The input DOES NOT MEET all specified standards and requirements.';
+                    ? 'MEETS' 
+                    : 'DOES NOT MEET';
+                
+                // Format the detailed result for rich text display
+                this.comparisonDetailedResult = this.formatComparisonResult(result);
+                
+                // Automatically open the accordion when results are available
+                this.activeAccordionSections = ['comparisonSection'];
                 
                 // Add the full analysis to conversation
                 this.addMessageToHistory({
@@ -933,8 +962,9 @@ Use clear formatting with bullet points and bold headers for readability.`;
                 rulesObj = { rules: this.comparisonRules };
             }
             
-            // Build the auto-comparison prompt
-            const autoComparisonPrompt = `You are an expert evaluator assessing whether submitted content meets specified standards and requirements.
+            // Build the auto-comparison prompt with system context at the forefront
+            const systemContext = this.buildSystemPrompt('comparison');
+            const autoComparisonPrompt = `${systemContext}You are an expert evaluator assessing whether submitted content meets specified standards and requirements.
 
 EVALUATION CRITERIA/RULES:
 ${JSON.stringify(rulesObj, null, 2)}
@@ -949,6 +979,7 @@ EVALUATION INSTRUCTIONS:
 2. Assess how the submitted content addresses each point
 3. Consider both explicit requirements and implied quality standards
 4. Be objective and specific in your assessment
+5. MOST IMPORTANTLY: Follow your PRIMARY DIRECTIVE in how you approach this evaluation
 
 RESPONSE FORMAT:
 Begin with either "MEETS STANDARDS" or "DOES NOT MEET STANDARDS"
@@ -976,13 +1007,19 @@ Use clear formatting with bullet points and bold headers for readability.`;
             
             this.comparisonCheckResult = result;
             
-            // Parse the result to show banner
+            // Parse the result to show detailed accordion
             if (result) {
                 const meetsStandards = result.toUpperCase().includes('MEETS STANDARDS');
                 this.showComparisonBanner = true;
                 this.comparisonBannerMessage = meetsStandards 
-                    ? 'Auto-comparison: Content MEETS the specified standards and requirements.'
-                    : 'Auto-comparison: Content DOES NOT MEET all specified standards and requirements.';
+                    ? 'MEETS' 
+                    : 'DOES NOT MEET';
+                
+                // Format the detailed result for rich text display
+                this.comparisonDetailedResult = this.formatComparisonResult(result);
+                
+                // Automatically open the accordion when results are available
+                this.activeAccordionSections = ['comparisonSection'];
                 
                 console.log('Auto-comparison completed:', this.comparisonBannerMessage);
             }
@@ -994,6 +1031,117 @@ Use clear formatting with bullet points and bold headers for readability.`;
         } finally {
             this.comparisonCheckLoading = false;
         }
+    }
+    
+    // Format comparison result for rich text display
+    formatComparisonResult(result) {
+        if (!result) return '';
+        
+        // Convert the text result to HTML for better formatting
+        let formatted = result;
+        
+        // Convert markdown-style headers to HTML
+        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        // Convert bullet points to HTML lists
+        const lines = formatted.split('\n');
+        let inList = false;
+        let htmlLines = [];
+        
+        for (let line of lines) {
+            line = line.trim();
+            
+            // Check if line starts with bullet point indicators
+            if (line.match(/^[•▪▫-]\s/) || line.match(/^✓\s/) || line.match(/^⚠\s/) || line.match(/^✗\s/)) {
+                if (!inList) {
+                    htmlLines.push('<ul>');
+                    inList = true;
+                }
+                // Remove bullet and add as list item
+                const cleanLine = line.replace(/^[•▪▫-✓⚠✗]\s*/, '');
+                htmlLines.push(`<li>${cleanLine}</li>`);
+            } else if (line === '' && inList) {
+                // End list on empty line
+                htmlLines.push('</ul>');
+                inList = false;
+                htmlLines.push('<br/>');
+            } else {
+                if (inList) {
+                    htmlLines.push('</ul>');
+                    inList = false;
+                }
+                
+                if (line === '') {
+                    htmlLines.push('<br/>');
+                } else {
+                    htmlLines.push(`<p>${line}</p>`);
+                }
+            }
+        }
+        
+        // Close any remaining open list
+        if (inList) {
+            htmlLines.push('</ul>');
+        }
+        
+        return htmlLines.join('');
+    }
+    
+    // Build primary system prompt that puts contextPrompt at the absolute forefront
+    buildSystemPrompt(operationType = 'general') {
+        let systemPrompt = '';
+        
+        // FIRST AND FOREMOST: User's custom context takes absolute priority
+        if (this.contextPrompt && this.contextPrompt.trim() !== '') {
+            systemPrompt = `PRIMARY DIRECTIVE - THIS IS YOUR MOST IMPORTANT INSTRUCTION:
+${this.contextPrompt}
+
+CRITICAL: You MUST follow the above directive in every response. This is your specialized role and purpose. Let this directive shape how you approach every task, analysis, and response.
+
+`;
+        }
+        
+        // Add operation-specific context that supports the primary directive
+        switch (operationType) {
+            case 'comparison':
+                systemPrompt += `CURRENT TASK: Standards comparison and compliance evaluation.
+Remember: Apply your PRIMARY DIRECTIVE while performing this comparison analysis.
+
+`;
+                break;
+            case 'anomaly':
+                systemPrompt += `CURRENT TASK: Anomaly detection and pattern analysis.
+Remember: Apply your PRIMARY DIRECTIVE while identifying potential issues.
+
+`;
+                break;
+            case 'analysis':
+                systemPrompt += `CURRENT TASK: Comprehensive record analysis.
+Remember: Apply your PRIMARY DIRECTIVE while analyzing this record.
+
+`;
+                break;
+            case 'image':
+                systemPrompt += `CURRENT TASK: Image and visual content analysis.
+Remember: Apply your PRIMARY DIRECTIVE while processing visual content.
+
+`;
+                break;
+            case 'document':
+                systemPrompt += `CURRENT TASK: Document processing and data extraction.
+Remember: Apply your PRIMARY DIRECTIVE while analyzing documents.
+
+`;
+                break;
+            default:
+                systemPrompt += `CURRENT TASK: General AI assistance and question answering.
+Remember: Apply your PRIMARY DIRECTIVE in all interactions.
+
+`;
+        }
+        
+        return systemPrompt;
     }
     
     async getRecordContextForComparison() {
@@ -1038,8 +1186,9 @@ Use clear formatting with bullet points and bold headers for readability.`;
         // Show loading state
         this.isLoading = true;
         
-        // --- MODIFICATION: Get context prompt for image analysis ---
-        let imageAnalysisUserPrompt = `**EXPERT IMAGE ANALYSIS PROTOCOL**
+        // Build image analysis prompt with system context at the forefront
+        const systemContext = this.buildSystemPrompt('image');
+        let imageAnalysisUserPrompt = `${systemContext}**EXPERT IMAGE ANALYSIS PROTOCOL**
 
 You are an expert visual analyst. Provide comprehensive analysis following this structure:
 
@@ -1078,12 +1227,9 @@ You are an expert visual analyst. Provide comprehensive analysis following this 
 • Formatting or content that seems incorrect
 • Red flags requiring attention
 
-Format your response with clear sections using **bold headers** and bullet points for easy scanning.`; // Enhanced default prompt
-        
-        if (this.contextPrompt && this.contextPrompt.trim() !== '') {
-            imageAnalysisUserPrompt = this.contextPrompt; 
-            console.log('Using custom context prompt for image analysis:', imageAnalysisUserPrompt);
-        }
+REMEMBER: Apply your PRIMARY DIRECTIVE throughout this analysis.
+
+Format your response with clear sections using **bold headers** and bullet points for easy scanning.`;
         // --- END MODIFICATION ---
         
         // Call the Apex controller to process images
@@ -1185,9 +1331,11 @@ Format your response with clear sections using **bold headers** and bullet point
             requestParams.conversationSummary = this.conversationSummary;
         }
         
-        // Add contextPrompt if specified in design attributes
-        if (this.contextPrompt && this.contextPrompt.trim() !== '') {
-            requestParams.contextPrompt = this.contextPrompt;
+        // Build and add system prompt that puts contextPrompt at the forefront
+        const systemContext = this.buildSystemPrompt(operation);
+        if (systemContext) {
+            // Prepend system context to the user prompt to ensure it takes priority
+            requestParams.userPrompt = systemContext + requestParams.userPrompt;
         }
         
         // Add page components context for better understanding
@@ -1573,12 +1721,9 @@ Format your response with clear sections using **bold headers** and bullet point
                 }
             }
 
-            // Prepare the base anomaly detection prompt
-            let anomalyPrompt = '';
-            if (this.contextPrompt && this.contextPrompt.trim() !== '') {
-                anomalyPrompt = this.contextPrompt + '\n\n';
-                console.log('Including context prompt in anomaly detection');
-            }
+            // Build anomaly detection prompt with system context at the forefront
+            const systemContext = this.buildSystemPrompt('anomaly');
+            let anomalyPrompt = systemContext;
             
             // Call the Apex method directly with the PDF document IDs
             const result = await checkRecordForAnomalies({ 
