@@ -125,18 +125,40 @@
     },
     
     handleFabClick: function(component, event, helper) {
-        var fabOptions = component.get('v.fabOptions');
-        var fabUrl = component.get('v.fabUrl');
-        
-        if (fabOptions === 'url_link' && fabUrl) {
-            window.location.href = fabUrl;
-        } else if (fabOptions === 'help_form') {
-            this.toggleHelpForm(component, event, helper);
-        } else if (fabOptions === 'ai_assistant') {
-            this.toggleLlmAssistant(component, event, helper);
-        } else {
-            // Default to toggle menu when multiple options
-            this.toggleFabMenu(component, event, helper);
+        try {
+            var fabOptions = component.get('v.fabOptions');
+            var fabUrl = component.get('v.fabUrl');
+            
+            if (fabOptions === 'url_link' && fabUrl) {
+                window.location.href = fabUrl;
+            } else if (fabOptions === 'help_form') {
+                var currentValue = component.get('v.helpFormOpen');
+                component.set('v.helpFormOpen', !currentValue);
+                if (!currentValue) {
+                    component.set('v.fabMenuOpen', false);
+                    component.set('v.llmAssistantOpen', false);
+                }
+                helper.updateComputedProperties(component);
+            } else if (fabOptions === 'ai_assistant') {
+                var currentValue = component.get('v.llmAssistantOpen');
+                component.set('v.llmAssistantOpen', !currentValue);
+                if (!currentValue) {
+                    component.set('v.fabMenuOpen', false);
+                    component.set('v.helpFormOpen', false);
+                }
+                helper.updateComputedProperties(component);
+            } else {
+                // Default to toggle menu when multiple options (both)
+                var currentValue = component.get('v.fabMenuOpen');
+                component.set('v.fabMenuOpen', !currentValue);
+                if (!currentValue) {
+                    component.set('v.helpFormOpen', false);
+                    component.set('v.llmAssistantOpen', false);
+                }
+                helper.updateComputedProperties(component);
+            }
+        } catch (e) {
+            console.error('Error in handleFabClick:', e);
         }
     },
     

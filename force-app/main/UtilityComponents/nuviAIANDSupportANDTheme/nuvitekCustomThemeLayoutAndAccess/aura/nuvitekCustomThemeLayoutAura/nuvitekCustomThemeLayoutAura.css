@@ -729,6 +729,36 @@
     position: relative;
     display: inline-block;
     padding-bottom: 8px;
+    /* Fallback for browsers that don't support background-clip: text */
+    color: var(--primary-color);
+}
+
+/* Ensure fallback color in case gradient doesn't work */
+@supports not (-webkit-background-clip: text) {
+    .THIS .hero-title-text {
+        color: var(--primary-color) !important;
+        background: none !important;
+        -webkit-text-fill-color: initial !important;
+    }
+}
+
+/* Force visible text for Salesforce/Aura environment */
+.THIS .nuvitek-theme .hero-title-text {
+    /* Provide strong fallback colors */
+    text-shadow: none;
+    font-weight: 700;
+}
+
+/* If gradient fails completely, use solid colors */
+.THIS .nuvitek-theme .hero-title-text:not([style*="background"]) {
+    color: #22BDC1 !important;
+    -webkit-text-fill-color: #22BDC1 !important;
+    background: none !important;
+}
+
+.THIS .nuvitek-theme.theme-dark .hero-title-text:not([style*="background"]) {
+    color: #63d1d4 !important;
+    -webkit-text-fill-color: #63d1d4 !important;
 }
 
 .THIS .hero-title-text::after {
@@ -759,6 +789,17 @@
     max-width: 700px;
     animation: fadeInUp var(--transition-slow) forwards;
     padding-bottom: 4px;
+    opacity: 1;
+    /* Ensure text is fully visible */
+}
+
+/* Enhanced text visibility for hero content */
+.THIS .nuvitek-theme .hero-subtitle {
+    color: var(--text-secondary) !important;
+}
+
+.THIS .nuvitek-theme.theme-dark .hero-subtitle {
+    color: var(--text-secondary) !important;
 }
 
 .THIS .hero-section.layout-split .hero-subtitle {
