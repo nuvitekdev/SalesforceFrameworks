@@ -169,17 +169,17 @@ export default class LLMAssistant extends LightningElement {
         return !!this.relatedObjects && this.relatedObjects.trim() !== '';
     }
     
-    // Check if "Compare" button should be shown (manual comparison only when no compareFrom)
+    // Check if "Compare" button should be shown
+    // Always show when comparison is enabled with rules (users can compare different content manually)
     get showComparisonButton() {
         return this.enableComparison && 
-               !!this.comparisonRules && this.comparisonRules.trim() !== '' && 
-               (!this.compareFrom || this.compareFrom.trim() === '');
+               !!this.comparisonRules && this.comparisonRules.trim() !== '';
     }
     
     // Check if auto-comparison should be enabled (when compareFrom is provided)
     get shouldRunAutoComparison() {
         return this.enableComparison && 
-               this.compareFrom && this.compareFrom.trim() !== '' && 
+               (this.compareFrom || this.effectiveRecordId) && 
                this.comparisonRules && this.comparisonRules.trim() !== '';
     }
     
@@ -943,7 +943,14 @@ Use clear formatting with bullet points and bold headers for readability.`;
             return;
         }
         
-        console.log('Performing auto-comparison between:', this.compareFrom.substring(0, 50) + '...', 'and rules');
+        // Get the content to compare - either from compareFrom or the current record
+        let contentToCompare = this.compareFrom;
+        if (!contentToCompare && this.effectiveRecordId) {
+            // Fetch record data if compareFrom is not provided
+            contentToCompare = await this.getRecordContextForComparison();
+        }
+        
+        console.log('Performing auto-comparison with:', contentToCompare ? contentToCompare.substring(0, 50) + '...' : 'record data');
         
         this.comparisonCheckLoading = true;
         this.showComparisonBanner = false;
@@ -970,9 +977,9 @@ EVALUATION CRITERIA/RULES:
 ${JSON.stringify(rulesObj, null, 2)}
 
 CONTENT TO EVALUATE:
-${this.compareFrom}
+${contentToCompare}
 
-${this.recordId ? '\nADDITIONAL CONTEXT:\n' + (await this.getRecordContextForComparison()) : ''}
+${this.recordId && this.compareFrom ? '\nADDITIONAL CONTEXT:\n' + (await this.getRecordContextForComparison()) : ''}
 
 EVALUATION INSTRUCTIONS:
 1. Carefully review each requirement/criterion in the rules
