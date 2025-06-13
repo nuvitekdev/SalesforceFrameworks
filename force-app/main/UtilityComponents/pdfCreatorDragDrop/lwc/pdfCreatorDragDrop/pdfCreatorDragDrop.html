@@ -410,27 +410,67 @@
                     <!-- Left Panel: Selected Fields -->
                     <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
                         <div class="field-palette slds-box slds-p-around_small">
-                            <h3 class="slds-text-heading_small slds-m-bottom_small">Selected Fields</h3>
-                            <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_small">
-                                Drag fields to place them on the page
-                            </p>
+                            <div class="palette-header">
+                                <h3 class="slds-text-heading_small slds-m-bottom_small">Selected Fields</h3>
+                                <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_small">
+                                    Drag fields to place them on the page
+                                </p>
+                                
+                                <!-- Auto-Create Button -->
+                                <lightning-button
+                                    label="Auto-Place All Fields"
+                                    icon-name="utility:magicwand"
+                                    variant="brand"
+                                    class="slds-width_full"
+                                    onclick={handleAutoCreateFields}
+                                    title="Automatically place all selected fields on the page">
+                                </lightning-button>
+                            </div>
                             
-                            <div class="draggable-fields-list slds-scrollable_y">
-                                <template for:each={selectedFields} for:item="field">
-                                    <div key={field.id}
-                                        class="draggable-field"
-                                        draggable="true"
-                                        data-field-id={field.id}
-                                        ondragstart={handleFieldDragStart}
-                                        ondragend={handleFieldDragEnd}>
-                                        <lightning-icon
-                                            icon-name={field.iconName}
-                                            size="x-small"
-                                            class="slds-m-right_x-small">
-                                        </lightning-icon>
-                                        <span class="field-name">{field.label}</span>
-                                    </div>
-                                </template>
+                            <div class="selected-fields-container">
+                                <div class="draggable-fields-list">
+                                    <template for:each={selectedFields} for:item="field">
+                                        <div key={field.id}
+                                            class="draggable-field"
+                                            draggable="true"
+                                            data-field-id={field.id}
+                                            ondragstart={handleFieldDragStart}
+                                            ondragend={handleFieldDragEnd}>
+                                            <lightning-icon
+                                                icon-name={field.iconName}
+                                                size="x-small"
+                                                class="slds-m-right_x-small">
+                                            </lightning-icon>
+                                            <span class="field-name">{field.label}</span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                            
+                            <!-- Generic Fields Section -->
+                            <div class="generic-fields-section">
+                                <h4 class="slds-text-heading_small slds-m-bottom_small">Generic Elements</h4>
+                                <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_small">
+                                    Drag these elements to add structure
+                                </p>
+                                
+                                <div class="generic-fields-list">
+                                    <template for:each={genericFields} for:item="field">
+                                        <div key={field.id}
+                                            class="draggable-field generic-field"
+                                            draggable="true"
+                                            data-field-id={field.id}
+                                            ondragstart={handleFieldDragStart}
+                                            ondragend={handleFieldDragEnd}>
+                                            <lightning-icon
+                                                icon-name={field.iconName}
+                                                size="x-small"
+                                                class="slds-m-right_x-small">
+                                            </lightning-icon>
+                                            <span class="field-name">{field.label}</span>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -462,7 +502,13 @@
                                         Page {currentPageNum} of {pageSetup.pageCount}
                                     </span>
                                 </div>
-                                <div class="slds-col slds-text-align_right">
+                                <div class="slds-col">
+                                    <label class="grid-snap-toggle slds-m-right_small">
+                                        <input type="checkbox" 
+                                               checked={gridSnapEnabled} 
+                                               onchange={handleGridSnapToggle} />
+                                        <span class="slds-m-left_x-small">Grid Snap</span>
+                                    </label>
                                     <lightning-button
                                         label="Add Page"
                                         icon-name="utility:add"

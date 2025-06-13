@@ -16,6 +16,12 @@ The PDF Template Creator is an innovative Lightning Web Component (LWC) that emp
 - **Template Persistence**: Save templates for reuse across your organization
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
 - **Customizable Theming**: Match your organization's branding with configurable colors
+- **Auto-Create Feature**: Automatically place all selected fields in an intelligent layout
+- **Generic Elements**: Add titles, headers, text blocks, signatures, images, tables, and more
+- **Grid Snapping**: Align fields perfectly with optional grid snapping (10px grid)
+- **Interactive Signatures**: Draw signatures directly on the template
+- **Image Upload**: Upload logos and images that are embedded in the PDF
+- **Enhanced Visual Design**: Clean, professional field appearance with proper form elements
 
 ## Why Use the PDF Template Creator?
 
@@ -96,11 +102,25 @@ The PDF Template Creator can be added to:
 4. Select fields to include in your template
 
 #### Step 3: Design
-1. Drag fields from the palette onto the PDF page
-2. Position fields precisely where needed
-3. Resize field containers as required
-4. Navigate between pages
-5. Add additional pages if needed
+1. **Manual Placement**: Drag fields from the palette onto the PDF page
+   - Position fields precisely where needed
+   - Resize field containers as required
+   - Use grid snapping for perfect alignment
+2. **Auto-Create**: Click "Auto-Place All Fields" to automatically arrange fields
+   - Two-column layout with intelligent grouping
+   - Required fields placed first
+   - Automatic page creation when needed
+3. **Generic Elements**: Drag and drop structural elements
+   - Title and subtitle headers
+   - Section dividers
+   - Text blocks for static content
+   - Current date fields
+   - Page numbers
+   - Separator lines
+   - Signature fields (drawable)
+   - Image/logo uploads
+   - Tables
+4. Navigate between pages and add additional pages as needed
 
 #### Step 4: Save
 1. Name your template
@@ -152,6 +172,18 @@ pdfCreatorDragDrop/
 5. **Versioning**: Create new versions for major changes
 6. **Documentation**: Add descriptions to templates
 
+## Recent Enhancements
+
+### Version 2.0 Features
+- ✅ **Auto-Create Functionality**: Automatically arrange all selected fields with intelligent layout
+- ✅ **Generic Elements Library**: Pre-built elements for common document structures
+- ✅ **Grid Snapping**: 10px grid for precise field alignment with visual grid lines
+- ✅ **Interactive Signatures**: Draw signatures directly on canvas elements
+- ✅ **Image Upload Support**: Upload and embed logos/images in templates
+- ✅ **Enhanced Field Rendering**: Proper form elements (checkboxes, dropdowns, date pickers)
+- ✅ **Improved Drag & Drop**: Fixed positioning bugs and visual feedback
+- ✅ **Professional Styling**: Clean white backgrounds with subtle shadows
+
 ## Future Enhancements
 
 - **Preview Mode**: Real-time preview with sample data
@@ -160,6 +192,10 @@ pdfCreatorDragDrop/
 - **Template Library**: Pre-built template marketplace
 - **Bulk Generation**: Generate multiple PDFs at once
 - **Email Integration**: Direct email delivery of generated PDFs
+- **Field Duplication**: Copy and paste existing fields
+- **Undo/Redo**: Action history for template design
+- **Custom Fonts**: Support for additional font families
+- **Dynamic Images**: Pull images from Salesforce records
 
 ## Troubleshooting
 
@@ -176,10 +212,21 @@ pdfCreatorDragDrop/
 3. **Drag and Drop Not Working**
    - Ensure browser supports HTML5 drag/drop
    - Check for JavaScript errors
+   - Clear browser cache if fields appear in wrong positions
 
 4. **Template Not Saving**
    - Verify create/edit permissions on custom objects
    - Check for validation rule conflicts
+
+5. **Signatures Not Working**
+   - Ensure browser supports HTML5 Canvas
+   - Check touch event support on mobile devices
+   - Try using mouse instead of trackpad
+
+6. **Images Not Uploading**
+   - Verify file is an image format (PNG, JPG, GIF)
+   - Check file size (keep under 5MB for best performance)
+   - Ensure browser allows file uploads
 
 ## Contributing
 

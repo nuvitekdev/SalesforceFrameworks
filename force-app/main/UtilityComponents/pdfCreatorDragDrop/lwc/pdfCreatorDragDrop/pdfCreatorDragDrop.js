@@ -59,6 +59,10 @@ export default class PdfCreatorDragDrop extends LightningElement {
     @track selectedExistingTemplate = null; // Selected template for loading/downloading
     @track isLoadingTemplates = false; // Loading state for templates
     
+    // Grid snapping configuration
+    gridSnapEnabled = true; // Enable grid snapping by default
+    gridSize = 10; // Grid size in pixels
+    
     // Theme variables
     themeVariablesSet = false;
     libsLoaded = false;
@@ -413,6 +417,62 @@ export default class PdfCreatorDragDrop extends LightningElement {
         return category;
     }
     
+    // Get default field dimensions based on field type
+    getDefaultFieldDimensions(fieldType) {
+        // Default dimensions based on field type - MORE REALISTIC SIZES
+        let width = 200;
+        let height = 30;
+        
+        if (fieldType === 'TEXTAREA' || fieldType === 'LONG_TEXT_AREA') {
+            width = 300;
+            height = 100; // Taller for text areas
+        } else if (fieldType === 'BOOLEAN') {
+            width = 20;
+            height = 20; // Square for checkboxes
+        } else if (fieldType === 'CURRENCY' || fieldType === 'DOUBLE' || fieldType === 'INTEGER') {
+            width = 120; // Narrower for numbers
+        } else if (fieldType === 'DATE' || fieldType === 'DATETIME') {
+            width = 150; // Medium width for dates
+        } else if (fieldType === 'PICKLIST' || fieldType === 'MULTIPICKLIST') {
+            width = 200;
+            height = 35; // Slightly taller for dropdowns
+        }
+        // Generic field dimensions
+        else if (fieldType === 'GENERIC_TITLE') {
+            width = 400;
+            height = 40; // Large title
+        } else if (fieldType === 'GENERIC_SUBTITLE') {
+            width = 350;
+            height = 30; // Medium subtitle
+        } else if (fieldType === 'GENERIC_SECTION_HEADER') {
+            width = 300;
+            height = 35; // Section headers
+        } else if (fieldType === 'GENERIC_TEXT') {
+            width = 400;
+            height = 80; // Text blocks
+        } else if (fieldType === 'GENERIC_DATE') {
+            width = 120;
+            height = 25; // Compact date
+        } else if (fieldType === 'GENERIC_PAGE_NUMBER') {
+            width = 80;
+            height = 20; // Small page number
+        } else if (fieldType === 'GENERIC_SEPARATOR') {
+            width = 400;
+            height = 2; // Thin line
+        } else if (fieldType === 'GENERIC_SIGNATURE') {
+            width = 200;
+            height = 60; // Signature area
+        } else if (fieldType === 'GENERIC_IMAGE') {
+            width = 150;
+            height = 100; // Image/logo area
+        } else if (fieldType === 'GENERIC_TABLE') {
+            width = 500;
+            height = 200; // Table area
+        }
+        
+        return { width, height };
+    }
+    
     // Filter fields based on search and category
     filterFields() {
         console.log('filterFields called - searchTerm:', this.searchTerm, 'categories:', Array.from(this.selectedFieldCategories));
@@ -618,13 +678,22 @@ export default class PdfCreatorDragDrop extends LightningElement {
         }
         
         // Initialize design area when entering step 2
-        if (step === 2 && this.pdfPages.length === 0) {
-            console.log('Entering step 2 - initializing PDF pages...');
-            try {
-                this.initializePdfPages();
-                console.log('PDF pages initialized successfully');
-            } catch (error) {
-                console.error('Error initializing PDF pages:', error);
+        if (step === 2) {
+            console.log('Entering step 2 - checking PDF pages...');
+            if (this.pdfPages.length === 0) {
+                console.log('No PDF pages exist - initializing...');
+                try {
+                    this.initializePdfPages();
+                    console.log('PDF pages initialized successfully');
+                } catch (error) {
+                    console.error('Error initializing PDF pages:', error);
+                }
+            } else {
+                console.log('PDF pages already exist - re-rendering fields...');
+                // Re-render existing fields when returning to design step
+                setTimeout(() => {
+                    this.renderExistingFieldsOnPages();
+                }, 100); // Small delay to ensure DOM is ready
             }
         }
         
@@ -640,10 +709,12 @@ export default class PdfCreatorDragDrop extends LightningElement {
         try {
             this.pdfPages = [];
             for (let i = 0; i < this.pageSetup.pageCount; i++) {
+                const baseClass = i === 0 ? 'pdf-page active' : 'pdf-page hidden';
+                const cssClass = this.gridSnapEnabled ? `${baseClass} show-grid` : baseClass;
                 this.pdfPages.push({
                     pageNumber: i + 1,
                     fields: [],
-                    cssClass: i === 0 ? 'pdf-page active' : 'pdf-page hidden'
+                    cssClass: cssClass
                 });
             }
             console.log('Created', this.pdfPages.length, 'PDF page objects:', this.pdfPages);
@@ -673,6 +744,17 @@ export default class PdfCreatorDragDrop extends LightningElement {
     renderExistingFieldsOnPages() {
         console.log('renderExistingFieldsOnPages called');
         
+        // First, clear all existing field elements from the DOM
+        const allPlacedFields = this.template.querySelectorAll('.placed-field');
+        console.log('Clearing', allPlacedFields.length, 'existing field elements from DOM');
+        allPlacedFields.forEach(field => field.remove());
+        
+        // Clear page fields arrays
+        this.pdfPages.forEach(page => {
+            page.fields = [];
+        });
+        
+        // Now re-render all placed fields
         this.placedFields.forEach(placement => {
             const pageElement = this.template.querySelector(`[data-page-num="${placement.pageNumber}"]`);
             if (pageElement) {
@@ -733,7 +815,11 @@ export default class PdfCreatorDragDrop extends LightningElement {
         const fieldId = event.currentTarget.dataset.fieldId;
         console.log('handleFieldDragStart called for field:', fieldId);
         
-        const field = this.selectedFields.find(f => f.id === fieldId);
+        // Look for field in both selectedFields and genericFields
+        let field = this.selectedFields.find(f => f.id === fieldId);
+        if (!field) {
+            field = this.genericFields.find(f => f.id === fieldId);
+        }
         
         if (field) {
             console.log('Found field for drag:', field.label);
@@ -779,8 +865,29 @@ export default class PdfCreatorDragDrop extends LightningElement {
             
             // Get drop position relative to page - USING SAME COORDINATE SYSTEM AS PDFSIGNER
             const rect = pageElement.getBoundingClientRect();
-            const offsetX = event.clientX - rect.left;
-            const offsetY = event.clientY - rect.top;
+            let offsetX = event.clientX - rect.left;
+            let offsetY = event.clientY - rect.top;
+            
+            // Get default field dimensions based on type
+            const fieldDimensions = this.getDefaultFieldDimensions(fieldData.type);
+            
+            // Adjust position to account for field dimensions (center the field on cursor)
+            offsetX = Math.max(0, offsetX - (fieldDimensions.width / 2));
+            offsetY = Math.max(0, offsetY - (fieldDimensions.height / 2));
+            
+            // Ensure field doesn't go past page boundaries
+            const maxX = pageElement.clientWidth - fieldDimensions.width;
+            const maxY = pageElement.clientHeight - fieldDimensions.height;
+            offsetX = Math.min(offsetX, maxX);
+            offsetY = Math.min(offsetY, maxY);
+            
+            // Apply grid snapping if enabled
+            if (this.gridSnapEnabled) {
+                offsetX = Math.round(offsetX / this.gridSize) * this.gridSize;
+                offsetY = Math.round(offsetY / this.gridSize) * this.gridSize;
+            }
+            
+            console.log('Drop position adjusted:', { offsetX, offsetY, pageWidth: pageElement.clientWidth, pageHeight: pageElement.clientHeight });
             
             // Place field on page using pdfSigner coordinate system
             this.placeFieldOnPage(fieldData, pageNum, offsetX, offsetY, pageElement);
@@ -799,32 +906,21 @@ export default class PdfCreatorDragDrop extends LightningElement {
         const overlayHeight = pageElement.clientHeight;
         const pdfDimensions = this.currentPageDimensions;
         
+        // Get field dimensions
+        const dimensions = this.getDefaultFieldDimensions(fieldData.type);
+        const width = dimensions.width;
+        const height = dimensions.height;
+        
         // Compute relative positions as percentages (pdfSigner method)
         const relativeX = offsetX / overlayWidth;
         const relativeY = offsetY / overlayHeight;
         
-        // Calculate actual PDF coordinates (note PDF origin is bottom-left, like pdfSigner)
+        // Calculate actual PDF coordinates (PDF origin is bottom-left)
+        // For PDF: Y increases from bottom to top
+        // For UI: Y increases from top to bottom
         const pdfX = relativeX * pdfDimensions.width;
-        const pdfY = pdfDimensions.height - (relativeY * pdfDimensions.height);
-        
-        // Default dimensions based on field type - MORE REALISTIC SIZES
-        let width = 200;
-        let height = 30;
-        
-        if (fieldData.type === 'TEXTAREA' || fieldData.type === 'LONG_TEXT_AREA') {
-            width = 300;
-            height = 100; // Taller for text areas
-        } else if (fieldData.type === 'BOOLEAN') {
-            width = 20;
-            height = 20; // Square for checkboxes
-        } else if (fieldData.type === 'CURRENCY' || fieldData.type === 'DOUBLE' || fieldData.type === 'INTEGER') {
-            width = 120; // Narrower for numbers
-        } else if (fieldData.type === 'DATE' || fieldData.type === 'DATETIME') {
-            width = 150; // Medium width for dates
-        } else if (fieldData.type === 'PICKLIST' || fieldData.type === 'MULTIPICKLIST') {
-            width = 200;
-            height = 35; // Slightly taller for dropdowns
-        }
+        // Correct calculation: measure from bottom of page, accounting for field height
+        const pdfY = pdfDimensions.height - ((offsetY + height) / overlayHeight * pdfDimensions.height);
         
         // Calculate relative size (pdfSigner method)
         const relativeWidth = width / overlayWidth;
@@ -838,7 +934,7 @@ export default class PdfCreatorDragDrop extends LightningElement {
             fieldType: fieldData.type,
             pageNumber: pageNum,
             x: pdfX, // Store PDF coordinates
-            y: pdfY, // Store PDF coordinates
+            y: pdfY, // Store PDF coordinates (from bottom)
             width: relativeWidth * pdfDimensions.width, // PDF width
             height: relativeHeight * pdfDimensions.height, // PDF height
             fontSize: 12,
@@ -849,7 +945,12 @@ export default class PdfCreatorDragDrop extends LightningElement {
             overlayX: offsetX,
             overlayY: offsetY,
             overlayWidth: width,
-            overlayHeight: height
+            overlayHeight: height,
+            // Store relative positions for later use
+            relativeX: relativeX,
+            relativeY: relativeY,
+            relativeWidth: relativeWidth,
+            relativeHeight: relativeHeight
         };
         
         // Add to placed fields
@@ -1079,6 +1180,214 @@ export default class PdfCreatorDragDrop extends LightningElement {
                 });
                 break;
                 
+            // Generic field types
+            case 'GENERIC_TITLE':
+                element = document.createElement('h1');
+                element.contentEditable = true;
+                element.textContent = 'Document Title';
+                element.style.fontSize = '24px';
+                element.style.fontWeight = 'bold';
+                element.style.color = '#333';
+                element.style.margin = '0';
+                element.style.padding = '4px';
+                element.style.border = '1px dashed #ccc';
+                break;
+                
+            case 'GENERIC_SUBTITLE':
+                element = document.createElement('h2');
+                element.contentEditable = true;
+                element.textContent = 'Subtitle';
+                element.style.fontSize = '18px';
+                element.style.fontWeight = '600';
+                element.style.color = '#555';
+                element.style.margin = '0';
+                element.style.padding = '4px';
+                element.style.border = '1px dashed #ccc';
+                break;
+                
+            case 'GENERIC_SECTION_HEADER':
+                element = document.createElement('h3');
+                element.contentEditable = true;
+                element.textContent = 'Section Header';
+                element.style.fontSize = '16px';
+                element.style.fontWeight = 'bold';
+                element.style.color = '#444';
+                element.style.margin = '0';
+                element.style.padding = '4px';
+                element.style.borderBottom = '2px solid #22BDC1';
+                break;
+                
+            case 'GENERIC_TEXT':
+                element = document.createElement('div');
+                element.contentEditable = true;
+                element.textContent = 'Enter your text here...';
+                element.style.fontSize = '12px';
+                element.style.color = '#666';
+                element.style.padding = '8px';
+                element.style.border = '1px dashed #ccc';
+                element.style.minHeight = '60px';
+                element.style.lineHeight = '1.5';
+                break;
+                
+            case 'GENERIC_DATE':
+                element = document.createElement('span');
+                element.textContent = new Date().toLocaleDateString();
+                element.style.fontSize = '12px';
+                element.style.color = '#666';
+                element.style.padding = '4px';
+                break;
+                
+            case 'GENERIC_PAGE_NUMBER':
+                element = document.createElement('span');
+                element.textContent = `Page ${placement.pageNumber}`;
+                element.style.fontSize = '10px';
+                element.style.color = '#999';
+                element.style.padding = '2px';
+                break;
+                
+            case 'GENERIC_SEPARATOR':
+                element = document.createElement('hr');
+                element.style.border = 'none';
+                element.style.borderTop = '1px solid #ccc';
+                element.style.margin = '0';
+                element.style.width = '100%';
+                break;
+                
+            case 'GENERIC_SIGNATURE':
+                element = document.createElement('div');
+                element.className = 'signature-field-container';
+                element.style.width = '100%';
+                element.style.height = '100%';
+                element.style.position = 'relative';
+                
+                // Create canvas for signature drawing
+                const canvas = document.createElement('canvas');
+                canvas.width = 200;
+                canvas.height = 60;
+                canvas.style.width = '100%';
+                canvas.style.height = 'calc(100% - 20px)';
+                canvas.style.border = '1px solid #ccc';
+                canvas.style.backgroundColor = 'white';
+                canvas.style.cursor = 'crosshair';
+                canvas.dataset.placementId = placement.id;
+                
+                // Initialize signature drawing
+                this.initializeSignatureCanvas(canvas);
+                
+                element.appendChild(canvas);
+                
+                // Add clear button and label
+                const signControls = document.createElement('div');
+                signControls.style.display = 'flex';
+                signControls.style.justifyContent = 'space-between';
+                signControls.style.alignItems = 'center';
+                signControls.style.marginTop = '2px';
+                
+                const signLabel = document.createElement('span');
+                signLabel.textContent = 'Signature';
+                signLabel.style.fontSize = '10px';
+                signLabel.style.color = '#666';
+                
+                const clearBtn = document.createElement('button');
+                clearBtn.textContent = 'Clear';
+                clearBtn.style.fontSize = '10px';
+                clearBtn.style.padding = '2px 6px';
+                clearBtn.style.border = '1px solid #ccc';
+                clearBtn.style.borderRadius = '3px';
+                clearBtn.style.backgroundColor = '#f5f5f5';
+                clearBtn.style.cursor = 'pointer';
+                clearBtn.onclick = () => this.clearSignatureCanvas(canvas);
+                
+                signControls.appendChild(signLabel);
+                signControls.appendChild(clearBtn);
+                element.appendChild(signControls);
+                break;
+                
+            case 'GENERIC_IMAGE':
+                element = document.createElement('div');
+                element.className = 'image-field-container';
+                element.style.width = '100%';
+                element.style.height = '100%';
+                element.style.position = 'relative';
+                element.style.border = '2px dashed #ccc';
+                element.style.backgroundColor = '#f5f5f5';
+                element.style.display = 'flex';
+                element.style.flexDirection = 'column';
+                element.style.alignItems = 'center';
+                element.style.justifyContent = 'center';
+                element.style.overflow = 'hidden';
+                
+                // Create file input (hidden)
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.style.display = 'none';
+                fileInput.dataset.placementId = placement.id;
+                
+                // Create image preview
+                const imgPreview = document.createElement('img');
+                imgPreview.style.maxWidth = '100%';
+                imgPreview.style.maxHeight = '100%';
+                imgPreview.style.display = 'none';
+                imgPreview.dataset.placementId = placement.id;
+                
+                // Create upload prompt
+                const uploadPrompt = document.createElement('div');
+                uploadPrompt.style.textAlign = 'center';
+                uploadPrompt.style.padding = '10px';
+                uploadPrompt.innerHTML = `
+                    <div style="font-size: 24px; color: #999; margin-bottom: 5px;">📷</div>
+                    <div style="color: #666; font-size: 11px;">Click to upload image</div>
+                `;
+                
+                // Handle file selection
+                fileInput.onchange = (e) => this.handleImageUpload(e, imgPreview, uploadPrompt, placement.id);
+                
+                // Make container clickable
+                element.style.cursor = 'pointer';
+                element.onclick = () => fileInput.click();
+                
+                element.appendChild(fileInput);
+                element.appendChild(imgPreview);
+                element.appendChild(uploadPrompt);
+                break;
+                
+            case 'GENERIC_TABLE':
+                element = document.createElement('table');
+                element.style.width = '100%';
+                element.style.borderCollapse = 'collapse';
+                element.style.fontSize = '12px';
+                // Create sample table structure
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                ['Column 1', 'Column 2', 'Column 3'].forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    th.style.border = '1px solid #ccc';
+                    th.style.padding = '4px';
+                    th.style.backgroundColor = '#f0f0f0';
+                    th.contentEditable = true;
+                    headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+                element.appendChild(thead);
+                
+                const tbody = document.createElement('tbody');
+                for (let i = 0; i < 3; i++) {
+                    const row = document.createElement('tr');
+                    for (let j = 0; j < 3; j++) {
+                        const td = document.createElement('td');
+                        td.textContent = `Data ${i + 1}-${j + 1}`;
+                        td.style.border = '1px solid #ccc';
+                        td.style.padding = '4px';
+                        td.contentEditable = true;
+                        row.appendChild(td);
+                    }
+                    tbody.appendChild(row);
+                }
+                element.appendChild(tbody);
+                break;
+                
             default:
                 // Default to text input for STRING and other types
                 element = document.createElement('input');
@@ -1146,8 +1455,14 @@ export default class PdfCreatorDragDrop extends LightningElement {
             const maxLeft = pageElement.offsetWidth - fieldElement.offsetWidth;
             const maxTop = pageElement.offsetHeight - fieldElement.offsetHeight;
             
-            const constrainedLeft = Math.max(0, Math.min(newLeft, maxLeft));
-            const constrainedTop = Math.max(0, Math.min(newTop, maxTop));
+            let constrainedLeft = Math.max(0, Math.min(newLeft, maxLeft));
+            let constrainedTop = Math.max(0, Math.min(newTop, maxTop));
+            
+            // Apply grid snapping if enabled
+            if (this.gridSnapEnabled) {
+                constrainedLeft = Math.round(constrainedLeft / this.gridSize) * this.gridSize;
+                constrainedTop = Math.round(constrainedTop / this.gridSize) * this.gridSize;
+            }
             
             fieldElement.style.left = constrainedLeft + 'px';
             fieldElement.style.top = constrainedTop + 'px';
@@ -1272,6 +1587,157 @@ export default class PdfCreatorDragDrop extends LightningElement {
         
         // Update page classes
         this.updatePageClasses();
+    }
+    
+    // Auto-create fields handler
+    handleAutoCreateFields() {
+        console.log('handleAutoCreateFields called');
+        
+        if (this.selectedFields.length === 0) {
+            this.showToast('Warning', 'Please select fields before using auto-create', 'warning');
+            return;
+        }
+        
+        // Clear existing placed fields if any
+        if (this.placedFields.length > 0) {
+            const confirmClear = confirm('This will clear all existing field placements. Continue?');
+            if (!confirmClear) {
+                return;
+            }
+            // Clear all existing fields
+            this.placedFields = [];
+            this.pdfPages.forEach(page => {
+                page.fields = [];
+            });
+            // Remove all field elements from DOM
+            const allPlacedFields = this.template.querySelectorAll('.placed-field');
+            allPlacedFields.forEach(field => field.remove());
+        }
+        
+        // Get the first page element
+        const firstPageElement = this.template.querySelector('[data-page-num="1"]');
+        if (!firstPageElement) {
+            console.error('First page element not found');
+            return;
+        }
+        
+        // Define layout parameters
+        const pageWidth = firstPageElement.clientWidth;
+        const pageHeight = firstPageElement.clientHeight;
+        const margin = 40; // Margin from edges
+        const spacing = 25; // Spacing between fields - increased for better visibility
+        const columnWidth = (pageWidth - (2 * margin) - spacing) / 2; // Two-column layout
+        
+        let currentPage = 1;
+        let currentX = margin;
+        let currentY = margin + 60; // Start below page header area
+        let isLeftColumn = true;
+        
+        // Group fields by category for better organization
+        const fieldsByCategory = {
+            required: [],
+            text: [],
+            number: [],
+            date: [],
+            picklist: [],
+            checkbox: [],
+            other: []
+        };
+        
+        // Categorize fields
+        this.selectedFields.forEach(field => {
+            if (field.isRequired) {
+                fieldsByCategory.required.push(field);
+            } else if (field.type === 'BOOLEAN') {
+                fieldsByCategory.checkbox.push(field);
+            } else if (['CURRENCY', 'DOUBLE', 'INTEGER', 'PERCENT'].includes(field.type)) {
+                fieldsByCategory.number.push(field);
+            } else if (['DATE', 'DATETIME', 'TIME'].includes(field.type)) {
+                fieldsByCategory.date.push(field);
+            } else if (['PICKLIST', 'MULTIPICKLIST'].includes(field.type)) {
+                fieldsByCategory.picklist.push(field);
+            } else if (['STRING', 'TEXTAREA', 'EMAIL', 'PHONE', 'URL'].includes(field.type)) {
+                fieldsByCategory.text.push(field);
+            } else {
+                fieldsByCategory.other.push(field);
+            }
+        });
+        
+        // Place fields in order: required first, then by category
+        const orderedFields = [
+            ...fieldsByCategory.required,
+            ...fieldsByCategory.text,
+            ...fieldsByCategory.number,
+            ...fieldsByCategory.date,
+            ...fieldsByCategory.picklist,
+            ...fieldsByCategory.checkbox,
+            ...fieldsByCategory.other
+        ];
+        
+        // Place each field
+        orderedFields.forEach((field, index) => {
+            const dimensions = this.getDefaultFieldDimensions(field.type);
+            let fieldWidth = dimensions.width;
+            let fieldHeight = dimensions.height;
+            
+            // Adjust width for column layout
+            if (field.type !== 'BOOLEAN' && fieldWidth > columnWidth) {
+                fieldWidth = columnWidth;
+            }
+            
+            // Check if we need to move to next row
+            if (!isLeftColumn && currentY + fieldHeight + spacing > pageHeight - margin) {
+                // Move to next page
+                currentPage++;
+                if (currentPage > this.pageSetup.pageCount) {
+                    this.handleAddPage();
+                }
+                currentY = margin + 60;
+                isLeftColumn = true;
+                currentX = margin;
+            }
+            
+            // Place field
+            const pageElement = this.template.querySelector(`[data-page-num="${currentPage}"]`);
+            if (pageElement) {
+                // For checkboxes, place in left column only
+                if (field.type === 'BOOLEAN') {
+                    currentX = margin;
+                    isLeftColumn = true;
+                } else if (!isLeftColumn) {
+                    currentX = margin + columnWidth + spacing;
+                }
+                
+                this.placeFieldOnPage(field, currentPage, currentX, currentY, pageElement);
+                
+                // Update position for next field
+                if (field.type === 'BOOLEAN') {
+                    // Checkboxes are small, can fit multiple in a row
+                    if (index < orderedFields.length - 1 && orderedFields[index + 1].type === 'BOOLEAN') {
+                        currentX += fieldWidth + 40; // Move right for next checkbox
+                        if (currentX + fieldWidth > pageWidth - margin) {
+                            currentX = margin;
+                            currentY += fieldHeight + spacing;
+                        }
+                    } else {
+                        currentY += fieldHeight + spacing;
+                        isLeftColumn = true;
+                        currentX = margin;
+                    }
+                } else {
+                    // Regular fields
+                    if (isLeftColumn) {
+                        isLeftColumn = false;
+                    } else {
+                        currentY += fieldHeight + spacing;
+                        isLeftColumn = true;
+                        currentX = margin;
+                    }
+                }
+            }
+        });
+        
+        this.showToast('Success', `Placed ${orderedFields.length} fields on ${currentPage} page(s)`, 'success');
     }
     
     // Page navigation
@@ -1471,33 +1937,11 @@ export default class PdfCreatorDragDrop extends LightningElement {
                     color: this.PDFLib.rgb(0.13, 0.74, 0.76) // Theme primary color
                 });
                 
-                // Template info on first page
-                if (i === 0) {
-                    let yPosition = dimensions.height - 80;
-                    
-                    if (this.templateDescription) {
-                        page.drawText(`Description: ${this.templateDescription}`, {
-                            x: 50,
-                            y: yPosition,
-                            size: 10,
-                            font: helveticaFont,
-                            color: this.PDFLib.rgb(0.4, 0.4, 0.4)
-                        });
-                        yPosition -= 20;
-                    }
-                    
-                    page.drawText(`Object: ${this.selectedObject}`, {
+                // Template info on first page - removed Object and Page Size display
+                if (i === 0 && this.templateDescription) {
+                    page.drawText(`${this.templateDescription}`, {
                         x: 50,
-                        y: yPosition,
-                        size: 10,
-                        font: helveticaFont,
-                        color: this.PDFLib.rgb(0.4, 0.4, 0.4)
-                    });
-                    yPosition -= 15;
-                    
-                    page.drawText(`Page Size: ${this.pageSetup.pageSize} (${this.pageSetup.orientation})`, {
-                        x: 50,
-                        y: yPosition,
+                        y: dimensions.height - 80,
                         size: 10,
                         font: helveticaFont,
                         color: this.PDFLib.rgb(0.4, 0.4, 0.4)
@@ -1509,10 +1953,10 @@ export default class PdfCreatorDragDrop extends LightningElement {
                 console.log(`Page ${i + 1} has ${pageFields.length} fields:`, pageFields.map(f => f.fieldLabel));
                 
                 for (const field of pageFields) {
-                    // Convert coordinates (our UI uses top-left origin, PDF uses bottom-left)
-                    // Ensure all values are numbers
+                    // PDF coordinates are already stored correctly (bottom-left origin)
+                    // Just ensure all values are numbers
                     const pdfX = Number(field.x) || 0;
-                    const pdfY = Number(dimensions.height) - Number(field.y) - Number(field.height);
+                    const pdfY = Number(field.y) || 0; // Already in PDF coordinates
                     const fieldWidth = Number(field.width) || 200;
                     const fieldHeight = Number(field.height) || 30;
                     
@@ -1528,7 +1972,167 @@ export default class PdfCreatorDragDrop extends LightningElement {
                     const form = pdfDoc.getForm();
                     
                     try {
-                        if (field.fieldType === 'BOOLEAN') {
+                        // Handle generic field types first
+                        if (field.fieldType === 'GENERIC_SIGNATURE') {
+                            // Draw signature line
+                            page.drawLine({
+                                start: { x: pdfX, y: pdfY },
+                                end: { x: pdfX + fieldWidth, y: pdfY },
+                                thickness: 1,
+                                color: this.PDFLib.rgb(0, 0, 0),
+                                opacity: 0.5
+                            });
+                            
+                            // Add signature label below the line
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY - 15,
+                                size: 8,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.4, 0.4, 0.4)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_IMAGE') {
+                            // Draw image placeholder rectangle
+                            page.drawRectangle({
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight,
+                                borderColor: this.PDFLib.rgb(0.7, 0.7, 0.7),
+                                borderWidth: 1,
+                                color: this.PDFLib.rgb(0.95, 0.95, 0.95)
+                            });
+                            
+                            // Add image icon and label in center
+                            page.drawText('[ ' + field.fieldLabel + ' ]', {
+                                x: pdfX + (fieldWidth / 2) - (field.fieldLabel.length * 3),
+                                y: pdfY + (fieldHeight / 2) - 5,
+                                size: 10,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.5, 0.5, 0.5)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_TITLE') {
+                            // Draw title text
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight - 20,
+                                size: 24,
+                                font: boldFont,
+                                color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_SUBTITLE') {
+                            // Draw subtitle text
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight - 16,
+                                size: 18,
+                                font: boldFont,
+                                color: this.PDFLib.rgb(0.3, 0.3, 0.3)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_SECTION_HEADER') {
+                            // Draw section header
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight - 14,
+                                size: 14,
+                                font: boldFont,
+                                color: this.PDFLib.rgb(0.2, 0.2, 0.2)
+                            });
+                            
+                            // Draw underline
+                            page.drawLine({
+                                start: { x: pdfX, y: pdfY },
+                                end: { x: pdfX + fieldWidth, y: pdfY },
+                                thickness: 1,
+                                color: this.PDFLib.rgb(0.8, 0.8, 0.8)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_TEXT') {
+                            // Draw text block placeholder
+                            page.drawRectangle({
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight,
+                                borderColor: this.PDFLib.rgb(0.9, 0.9, 0.9),
+                                borderWidth: 1,
+                                color: this.PDFLib.rgb(0.98, 0.98, 0.98)
+                            });
+                            
+                            page.drawText('[Text Block]', {
+                                x: pdfX + 5,
+                                y: pdfY + fieldHeight - 15,
+                                size: 10,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.6, 0.6, 0.6)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_DATE') {
+                            // Draw current date
+                            page.drawText(new Date().toLocaleDateString(), {
+                                x: pdfX,
+                                y: pdfY + fieldHeight - 12,
+                                size: 10,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_PAGE_NUMBER') {
+                            // Draw page number
+                            page.drawText(`Page ${i + 1}`, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight - 12,
+                                size: 10,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.4, 0.4, 0.4)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_SEPARATOR') {
+                            // Draw separator line
+                            page.drawLine({
+                                start: { x: pdfX, y: pdfY + (fieldHeight / 2) },
+                                end: { x: pdfX + fieldWidth, y: pdfY + (fieldHeight / 2) },
+                                thickness: 1,
+                                color: this.PDFLib.rgb(0.8, 0.8, 0.8),
+                                opacity: 0.5
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_TABLE') {
+                            // Draw table placeholder
+                            page.drawRectangle({
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight,
+                                borderColor: this.PDFLib.rgb(0.7, 0.7, 0.7),
+                                borderWidth: 1
+                            });
+                            
+                            // Draw some table lines
+                            const rows = 3;
+                            const rowHeight = fieldHeight / rows;
+                            for (let r = 1; r < rows; r++) {
+                                page.drawLine({
+                                    start: { x: pdfX, y: pdfY + (r * rowHeight) },
+                                    end: { x: pdfX + fieldWidth, y: pdfY + (r * rowHeight) },
+                                    thickness: 0.5,
+                                    color: this.PDFLib.rgb(0.8, 0.8, 0.8)
+                                });
+                            }
+                            
+                            page.drawText('[Table]', {
+                                x: pdfX + 5,
+                                y: pdfY + fieldHeight - 15,
+                                size: 10,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.6, 0.6, 0.6)
+                            });
+                            
+                        } else if (field.fieldType === 'BOOLEAN') {
                             // Create checkbox field
                             const checkBox = form.createCheckBox(`${field.fieldApiName}_${i}`);
                             checkBox.addToPage(page, {
@@ -1970,6 +2574,11 @@ export default class PdfCreatorDragDrop extends LightningElement {
             this.currentStep = 2;
             this.updatePathClasses();
             
+            // Initialize PDF pages and render fields
+            setTimeout(() => {
+                this.initializePdfPages();
+            }, 100);
+            
         } catch (error) {
             console.error('Error loading template for edit:', error);
             this.showToast('Error', 'Failed to load template: ' + error.body?.message || error.message, 'error');
@@ -2027,7 +2636,7 @@ export default class PdfCreatorDragDrop extends LightningElement {
                 const boldFont = await pdfDoc.embedFont(this.PDFLib.StandardFonts.HelveticaBold);
                 
                 // Page header
-                page.drawText(`${this.templateName} - Page ${i + 1}`, {
+                page.drawText(`${this.templateName} - Page ${i + 1} [PREVIEW]`, {
                     x: 50,
                     y: dimensions.height - 50,
                     size: 16,
@@ -2035,33 +2644,11 @@ export default class PdfCreatorDragDrop extends LightningElement {
                     color: this.PDFLib.rgb(0.13, 0.74, 0.76) // Theme primary color
                 });
                 
-                // Template info on first page
-                if (i === 0) {
-                    let yPosition = dimensions.height - 80;
-                    
-                    if (this.templateDescription) {
-                        page.drawText(`Description: ${this.templateDescription}`, {
-                            x: 50,
-                            y: yPosition,
-                            size: 10,
-                            font: helveticaFont,
-                            color: this.PDFLib.rgb(0.4, 0.4, 0.4)
-                        });
-                        yPosition -= 20;
-                    }
-                    
-                    page.drawText(`Object: ${this.selectedObject}`, {
+                // Template info on first page - removed Object and Page Size display
+                if (i === 0 && this.templateDescription) {
+                    page.drawText(`${this.templateDescription}`, {
                         x: 50,
-                        y: yPosition,
-                        size: 10,
-                        font: helveticaFont,
-                        color: this.PDFLib.rgb(0.4, 0.4, 0.4)
-                    });
-                    yPosition -= 15;
-                    
-                    page.drawText(`Page Size: ${this.pageSetup.pageSize} (${this.pageSetup.orientation})`, {
-                        x: 50,
-                        y: yPosition,
+                        y: dimensions.height - 80,
                         size: 10,
                         font: helveticaFont,
                         color: this.PDFLib.rgb(0.4, 0.4, 0.4)
@@ -2073,10 +2660,10 @@ export default class PdfCreatorDragDrop extends LightningElement {
                 console.log(`Page ${i + 1} has ${pageFields.length} fields:`, pageFields.map(f => f.fieldLabel));
                 
                 for (const field of pageFields) {
-                    // Convert coordinates (our UI uses top-left origin, PDF uses bottom-left)
-                    // Ensure all values are numbers
+                    // PDF coordinates are already stored correctly (bottom-left origin)
+                    // Just ensure all values are numbers
                     const pdfX = Number(field.x) || 0;
-                    const pdfY = Number(dimensions.height) - Number(field.y) - Number(field.height);
+                    const pdfY = Number(field.y) || 0; // Already in PDF coordinates
                     const fieldWidth = Number(field.width) || 200;
                     const fieldHeight = Number(field.height) || 30;
                     
@@ -2092,7 +2679,167 @@ export default class PdfCreatorDragDrop extends LightningElement {
                     const form = pdfDoc.getForm();
                     
                     try {
-                        if (field.fieldType === 'BOOLEAN') {
+                        // Handle generic field types first
+                        if (field.fieldType === 'GENERIC_SIGNATURE') {
+                            // Draw signature line
+                            page.drawLine({
+                                start: { x: pdfX, y: pdfY },
+                                end: { x: pdfX + fieldWidth, y: pdfY },
+                                thickness: 1,
+                                color: this.PDFLib.rgb(0, 0, 0),
+                                opacity: 0.5
+                            });
+                            
+                            // Add signature label below the line
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY - 15,
+                                size: 8,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.4, 0.4, 0.4)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_IMAGE') {
+                            // Draw image placeholder rectangle
+                            page.drawRectangle({
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight,
+                                borderColor: this.PDFLib.rgb(0.7, 0.7, 0.7),
+                                borderWidth: 1,
+                                color: this.PDFLib.rgb(0.95, 0.95, 0.95)
+                            });
+                            
+                            // Add image icon and label in center
+                            page.drawText('[ ' + field.fieldLabel + ' ]', {
+                                x: pdfX + (fieldWidth / 2) - (field.fieldLabel.length * 3),
+                                y: pdfY + (fieldHeight / 2) - 5,
+                                size: 10,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.5, 0.5, 0.5)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_TITLE') {
+                            // Draw title text
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight - 20,
+                                size: 24,
+                                font: boldFont,
+                                color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_SUBTITLE') {
+                            // Draw subtitle text
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight - 16,
+                                size: 18,
+                                font: boldFont,
+                                color: this.PDFLib.rgb(0.3, 0.3, 0.3)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_SECTION_HEADER') {
+                            // Draw section header
+                            page.drawText(field.fieldLabel, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight - 14,
+                                size: 14,
+                                font: boldFont,
+                                color: this.PDFLib.rgb(0.2, 0.2, 0.2)
+                            });
+                            
+                            // Draw underline
+                            page.drawLine({
+                                start: { x: pdfX, y: pdfY },
+                                end: { x: pdfX + fieldWidth, y: pdfY },
+                                thickness: 1,
+                                color: this.PDFLib.rgb(0.8, 0.8, 0.8)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_TEXT') {
+                            // Draw text block placeholder
+                            page.drawRectangle({
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight,
+                                borderColor: this.PDFLib.rgb(0.9, 0.9, 0.9),
+                                borderWidth: 1,
+                                color: this.PDFLib.rgb(0.98, 0.98, 0.98)
+                            });
+                            
+                            page.drawText('[Text Block]', {
+                                x: pdfX + 5,
+                                y: pdfY + fieldHeight - 15,
+                                size: 10,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.6, 0.6, 0.6)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_DATE') {
+                            // Draw current date
+                            page.drawText(new Date().toLocaleDateString(), {
+                                x: pdfX,
+                                y: pdfY + fieldHeight - 12,
+                                size: 10,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.1, 0.1, 0.1)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_PAGE_NUMBER') {
+                            // Draw page number
+                            page.drawText(`Page ${i + 1}`, {
+                                x: pdfX,
+                                y: pdfY + fieldHeight - 12,
+                                size: 10,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.4, 0.4, 0.4)
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_SEPARATOR') {
+                            // Draw separator line
+                            page.drawLine({
+                                start: { x: pdfX, y: pdfY + (fieldHeight / 2) },
+                                end: { x: pdfX + fieldWidth, y: pdfY + (fieldHeight / 2) },
+                                thickness: 1,
+                                color: this.PDFLib.rgb(0.8, 0.8, 0.8),
+                                opacity: 0.5
+                            });
+                            
+                        } else if (field.fieldType === 'GENERIC_TABLE') {
+                            // Draw table placeholder
+                            page.drawRectangle({
+                                x: pdfX,
+                                y: pdfY,
+                                width: fieldWidth,
+                                height: fieldHeight,
+                                borderColor: this.PDFLib.rgb(0.7, 0.7, 0.7),
+                                borderWidth: 1
+                            });
+                            
+                            // Draw some table lines
+                            const rows = 3;
+                            const rowHeight = fieldHeight / rows;
+                            for (let r = 1; r < rows; r++) {
+                                page.drawLine({
+                                    start: { x: pdfX, y: pdfY + (r * rowHeight) },
+                                    end: { x: pdfX + fieldWidth, y: pdfY + (r * rowHeight) },
+                                    thickness: 0.5,
+                                    color: this.PDFLib.rgb(0.8, 0.8, 0.8)
+                                });
+                            }
+                            
+                            page.drawText('[Table]', {
+                                x: pdfX + 5,
+                                y: pdfY + fieldHeight - 15,
+                                size: 10,
+                                font: helveticaFont,
+                                color: this.PDFLib.rgb(0.6, 0.6, 0.6)
+                            });
+                            
+                        } else if (field.fieldType === 'BOOLEAN') {
                             // Create checkbox field
                             const checkBox = form.createCheckBox(`${field.fieldApiName}_${i}`);
                             checkBox.addToPage(page, {
@@ -2516,4 +3263,213 @@ export default class PdfCreatorDragDrop extends LightningElement {
     @track previewUrl = ''; // URL for PDF preview
     @track isGeneratingPreview = false; // Loading state for preview generation
     @track previewContentVersionId = null; // Content version ID for preview PDF
+    
+    // Generic fields that can be added to any template
+    @track genericFields = [
+        {
+            id: 'generic-title',
+            label: 'Title',
+            value: 'generic_title',
+            type: 'GENERIC_TITLE',
+            iconName: 'utility:text',
+            category: 'Generic'
+        },
+        {
+            id: 'generic-subtitle',
+            label: 'Subtitle',
+            value: 'generic_subtitle',
+            type: 'GENERIC_SUBTITLE',
+            iconName: 'utility:text',
+            category: 'Generic'
+        },
+        {
+            id: 'generic-section-header',
+            label: 'Section Header',
+            value: 'generic_section_header',
+            type: 'GENERIC_SECTION_HEADER',
+            iconName: 'utility:section',
+            category: 'Generic'
+        },
+        {
+            id: 'generic-text',
+            label: 'Text Block',
+            value: 'generic_text',
+            type: 'GENERIC_TEXT',
+            iconName: 'utility:note',
+            category: 'Generic'
+        },
+        {
+            id: 'generic-date',
+            label: 'Current Date',
+            value: 'generic_date',
+            type: 'GENERIC_DATE',
+            iconName: 'utility:date_input',
+            category: 'Generic'
+        },
+        {
+            id: 'generic-page-number',
+            label: 'Page Number',
+            value: 'generic_page_number',
+            type: 'GENERIC_PAGE_NUMBER',
+            iconName: 'utility:page',
+            category: 'Generic'
+        },
+        {
+            id: 'generic-separator',
+            label: 'Separator Line',
+            value: 'generic_separator',
+            type: 'GENERIC_SEPARATOR',
+            iconName: 'utility:minus',
+            category: 'Generic'
+        },
+        {
+            id: 'generic-signature',
+            label: 'Signature Field',
+            value: 'generic_signature',
+            type: 'GENERIC_SIGNATURE',
+            iconName: 'utility:edit',
+            category: 'Generic'
+        },
+        {
+            id: 'generic-logo',
+            label: 'Logo/Image',
+            value: 'generic_logo',
+            type: 'GENERIC_IMAGE',
+            iconName: 'utility:image',
+            category: 'Generic'
+        },
+        {
+            id: 'generic-table',
+            label: 'Table',
+            value: 'generic_table',
+            type: 'GENERIC_TABLE',
+            iconName: 'utility:table',
+            category: 'Generic'
+        }
+    ];
+    
+    // Grid snap toggle handler
+    handleGridSnapToggle(event) {
+        this.gridSnapEnabled = event.target.checked;
+        console.log('Grid snap toggled:', this.gridSnapEnabled);
+        
+        // Update all pages to show/hide grid
+        const pageElements = this.template.querySelectorAll('.pdf-page');
+        pageElements.forEach(page => {
+            if (this.gridSnapEnabled) {
+                page.classList.add('show-grid');
+            } else {
+                page.classList.remove('show-grid');
+            }
+        });
+    }
+    
+    // Initialize signature canvas for drawing
+    initializeSignatureCanvas(canvas) {
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        
+        // Store signature data
+        if (!this.signatureData) {
+            this.signatureData = {};
+        }
+        
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            lastX = e.clientX - rect.left;
+            lastY = e.clientY - rect.top;
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            
+            lastX = x;
+            lastY = y;
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+            // Store signature data
+            const placementId = canvas.dataset.placementId;
+            this.signatureData[placementId] = canvas.toDataURL();
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            isDrawing = false;
+        });
+        
+        // Touch support for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        });
+        
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            const mouseEvent = new MouseEvent('mouseup', {});
+            canvas.dispatchEvent(mouseEvent);
+        });
+    }
+    
+    // Clear signature canvas
+    clearSignatureCanvas(canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const placementId = canvas.dataset.placementId;
+        if (this.signatureData) {
+            delete this.signatureData[placementId];
+        }
+    }
+    
+    // Handle image upload
+    handleImageUpload(event, imgPreview, uploadPrompt, placementId) {
+        const file = event.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                imgPreview.src = e.target.result;
+                imgPreview.style.display = 'block';
+                uploadPrompt.style.display = 'none';
+                
+                // Store image data
+                if (!this.imageData) {
+                    this.imageData = {};
+                }
+                this.imageData[placementId] = e.target.result;
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    }
 } 

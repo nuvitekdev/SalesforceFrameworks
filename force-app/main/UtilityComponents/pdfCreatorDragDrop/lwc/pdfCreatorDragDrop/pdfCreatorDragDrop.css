@@ -1,6 +1,12 @@
 /* PDF Creator Component - Modern Nuvitek Style (Matching pdfSigner) */
 :host {
     display: block;
+    
+    /* Custom scrollbar styling */
+    --scrollbar-width: 8px;
+    --scrollbar-thumb-color: rgba(0, 0, 0, 0.2);
+    --scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.3);
+    --scrollbar-track-color: rgba(0, 0, 0, 0.05);
     /* Local Theme variable defaults (can be overridden by JS from target config) */
     --theme-primary-color: #22BDC1;
     --theme-accent-color: #D5DF23;
@@ -164,6 +170,10 @@
     font-size: 14px !important;
     line-height: 1.4 !important;
     z-index: 10 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+    -webkit-text-fill-color: var(--text-color) !important; /* Fix for webkit browsers */
 }
 
 /* Focus state for input */
@@ -173,6 +183,20 @@
     outline: none !important;
     background-color: white !important;
     color: var(--text-color) !important;
+    -webkit-text-fill-color: var(--text-color) !important;
+}
+
+/* Placeholder text styling */
+.form-group lightning-combobox .slds-combobox .slds-input::placeholder {
+    color: var(--text-tertiary) !important;
+    opacity: 0.7 !important;
+    -webkit-text-fill-color: var(--text-tertiary) !important;
+}
+
+/* When typing in the combobox */
+.form-group lightning-combobox .slds-combobox .slds-input[aria-expanded="true"] {
+    color: var(--text-color) !important;
+    -webkit-text-fill-color: var(--text-color) !important;
 }
 
 /* Dropdown options styling */
@@ -472,6 +496,14 @@
 
 .design-container {
     min-height: 500px;
+    height: 100%;
+}
+
+/* Ensure the column containing field palette has proper height */
+.design-container .slds-col.slds-size_1-of-1.slds-medium-size_3-of-12 {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .field-palette {
@@ -479,12 +511,38 @@
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
     height: 100%;
-    max-height: 600px;
+    display: flex;
+    flex-direction: column;
 }
 
 .draggable-fields-list {
-    max-height: 450px;
+    max-height: 200px;
     overflow-y: auto;
+    margin-top: var(--spacing-xs);
+    padding-right: 4px;
+}
+
+/* Custom scrollbar for field lists */
+.draggable-fields-list::-webkit-scrollbar,
+.generic-fields-list::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+}
+
+.draggable-fields-list::-webkit-scrollbar-track,
+.generic-fields-list::-webkit-scrollbar-track {
+    background: var(--scrollbar-track-color);
+    border-radius: 4px;
+}
+
+.draggable-fields-list::-webkit-scrollbar-thumb,
+.generic-fields-list::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-color);
+    border-radius: 4px;
+}
+
+.draggable-fields-list::-webkit-scrollbar-thumb:hover,
+.generic-fields-list::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover-color);
 }
 
 .draggable-field {
@@ -497,12 +555,14 @@
     display: flex;
     align-items: center;
     box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
 }
 
 .draggable-field:hover {
     background: var(--background-elevated);
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
+    border-color: var(--theme-primary-color);
 }
 
 .draggable-field:active {
@@ -548,6 +608,13 @@
     box-shadow: var(--shadow-md);
 }
 
+/* Ensure right column also has proper height */
+.design-container .slds-col.slds-size_1-of-1.slds-medium-size_9-of-12 {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
 .pdf-page {
     background: white;
     box-shadow: var(--shadow-lg);
@@ -588,11 +655,69 @@
     background: rgba(var(--theme-primary-color-rgb), 0.05);
 }
 
+/* Grid snapping visual grid */
+.pdf-page.show-grid {
+    background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    background-size: 10px 10px; /* Grid size */
+    background-position: 0 0;
+}
+
+/* Grid snap toggle styling */
+.grid-snap-toggle {
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.grid-snap-toggle input[type="checkbox"] {
+    cursor: pointer;
+    margin-right: 4px;
+}
+
+.grid-snap-toggle:hover {
+    color: var(--text-color);
+}
+
+/* Signature field styling */
+.signature-field-container canvas {
+    touch-action: none; /* Prevent scrolling while drawing */
+    user-select: none;
+}
+
+.signature-field-container button {
+    transition: all var(--transition-fast);
+}
+
+.signature-field-container button:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-1px);
+}
+
+/* Image field styling */
+.image-field-container {
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.image-field-container:hover {
+    background-color: #eee !important;
+    border-color: var(--theme-primary-color) !important;
+}
+
+.image-field-container img {
+    object-fit: contain;
+    pointer-events: none;
+}
+
 /* Placed Fields - Updated for actual form elements */
 .placed-field {
     position: absolute;
-    background: rgba(var(--theme-primary-color-rgb), 0.05);
-    border: 1px solid var(--theme-primary-color);
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid var(--theme-primary-color);
     border-radius: var(--radius-sm);
     padding: 4px;
     cursor: move;
@@ -600,13 +725,21 @@
     min-width: 50px;
     min-height: 30px;
     box-sizing: border-box;
+    box-shadow: var(--shadow-sm);
 }
 
 .placed-field:hover {
-    box-shadow: var(--shadow-md);
-    background: rgba(var(--theme-primary-color-rgb), 0.1);
+    box-shadow: var(--shadow-lg);
+    background: rgba(255, 255, 255, 1);
     z-index: 10;
     border-color: var(--theme-accent-color);
+    transform: translateY(-1px);
+}
+
+.placed-field.selected {
+    border-color: var(--theme-accent-color);
+    border-width: 3px;
+    box-shadow: 0 0 0 3px rgba(var(--theme-accent-color-rgb), 0.2);
 }
 
 .field-content {
@@ -861,6 +994,76 @@
     100% { box-shadow: 0 0 0 0 rgba(var(--theme-primary-color-rgb), 0); }
 }
 
+/* Palette header styling */
+.palette-header {
+    margin-bottom: var(--spacing-md);
+}
+
+.palette-header lightning-button {
+    margin-top: var(--spacing-xs);
+}
+
+/* Selected fields container */
+.selected-fields-container {
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Generic Fields Section */
+.generic-fields-section {
+    border-top: 1px solid var(--border-color);
+    padding-top: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Important for flex children */
+    overflow: hidden; /* Prevent overflow */
+}
+
+.generic-fields-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    overflow-y: auto;
+    max-height: 250px;
+    padding-right: 4px; /* Space for scrollbar */
+    min-height: 0; /* Important for proper scrolling */
+}
+
+.generic-field {
+    background: var(--background-elevated);
+    border-style: dashed;
+}
+
+.generic-field:hover {
+    background: var(--theme-accent-color);
+    color: white;
+    border-color: var(--theme-accent-color);
+    border-style: solid;
+}
+
+.generic-field:hover .field-name {
+    color: white;
+}
+
+/* Auto-place button styling */
+.field-palette lightning-button.slds-width_full {
+    margin-bottom: var(--spacing-sm);
+}
+
+lightning-button.slds-width_full button {
+    width: 100%;
+    background-color: var(--theme-primary-color);
+    border-color: var(--theme-primary-color);
+    color: white;
+    font-weight: 500;
+}
+
+lightning-button.slds-width_full button:hover {
+    background-color: var(--theme-primary-color);
+    filter: brightness(90%);
+}
+
 /* Responsive styling */
 @media (max-width: 768px) {
     .design-container {
@@ -868,8 +1071,16 @@
     }
     
     .field-palette {
-        max-height: 200px;
+        max-height: 350px;
         margin-bottom: var(--spacing-md);
+    }
+    
+    .draggable-fields-list {
+        max-height: 120px;
+    }
+    
+    .generic-fields-list {
+        max-height: 150px;
     }
     
     .custom-path-item:not(:first-child)::before {
