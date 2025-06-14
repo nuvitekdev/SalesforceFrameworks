@@ -1,0 +1,15 @@
+<template>
+    <div class="hero-banner" style={bannerStyle}>
+        <div class="hero-content">
+            <div class="hero-content-wrapper">
+                <div class="logo-container" if:true={logoUrl}>
+                    <img src={logoUrl} alt="Logo" class="hero-logo"/>
+                </div>
+                <div class="text-content">
+                    <h1 class="hero-header" style={headerStyle}>{headerText}</h1>
+                    <h2 class="hero-subtitle" style={subtitleStyle}>{subtitleText}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
