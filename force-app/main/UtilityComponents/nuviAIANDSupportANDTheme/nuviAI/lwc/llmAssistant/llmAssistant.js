@@ -451,9 +451,11 @@ Provide only the summary text without additional commentary.`;
 
         // Prepare the summary request with optimized prompt
         const requestParams = {
-            llmConfigName: this.selectedLLM,
-            userPrompt: summaryPrompt,
-            operation: 'ask'
+            configName: this.selectedLLM,
+            prompt: summaryPrompt,
+            operation: 'ask',
+            recordId: '',
+            relatedObjects: ''
         };
         
         // Add conversation history
@@ -684,8 +686,10 @@ Provide only the summary text without additional commentary.`;
 
     // Load LLM configurations once instead of using wire that might re-run
     loadLLMConfigurations() {
+        console.log('🔄 loadLLMConfigurations START');
         getLLMConfigurations()
             .then(data => {
+                console.log('📥 Raw LLM configurations from Apex:', data);
                 if (data && data.length > 0) {
                     // Map configurations to combobox options
                     this.llmOptions = data.map(config => ({
@@ -695,14 +699,16 @@ Provide only the summary text without additional commentary.`;
                         supportsFiles: config.Supports_Files__c
                     }));
                     
-                    console.log('LLM configuration options loaded:', this.llmOptions.length);
+                    console.log('✅ LLM configuration options loaded:', this.llmOptions.length);
+                    console.log('📋 Mapped options:', JSON.stringify(this.llmOptions));
                     
                     // Set default model if specified in design attributes, or use the first model
                     if (this.defaultModelName && this.llmOptions.some(opt => opt.value === this.defaultModelName)) {
                         this.selectedLLM = this.defaultModelName;
-
+                        console.log('🎯 Using default model:', this.defaultModelName);
                     } else if (this.llmOptions.length > 0) {
                         this.selectedLLM = this.llmOptions[0].value;
+                        console.log('🎯 Using first available model:', this.selectedLLM);
                     }
                     
                     // Set the label after selecting the model
@@ -710,19 +716,29 @@ Provide only the summary text without additional commentary.`;
                         const selectedOption = this.llmOptions.find(opt => opt.value === this.selectedLLM);
                         this.selectedLLMLabel = selectedOption ? selectedOption.label : 'Unknown Model';
                         
+                        console.log('✅ Model selection complete:');
+                        console.log('  - selectedLLM:', this.selectedLLM);
+                        console.log('  - selectedLLMLabel:', this.selectedLLMLabel);
+                        console.log('  - Full selectedOption:', selectedOption);
+                        
                         // For a record page, perform an initial anomaly check
                         if (this.enableAnomalyDetection && this.effectiveRecordId) {
                             this.performInitialAnomalyCheck();
                         }
+                    } else {
+                        console.warn('⚠️ No model selected!');
                     }
-
-                    console.log('Selected LLM in LoadLLMConfigurations:', this.selectedLLM);
                 } else {
                     console.warn('No LLM configurations found');
                 }
             })
             .catch(error => {
-                console.error('Error loading LLM configurations:', error);
+                console.error('❌ ERROR loading LLM configurations:', error);
+                console.error('🔍 Error details:', {
+                    body: error.body,
+                    message: error.body?.message,
+                    stack: error.stack
+                });
                 this.showError(error.body?.message || 'Error fetching LLM configurations');
             });
     }
@@ -733,10 +749,18 @@ Provide only the summary text without additional commentary.`;
     }
     
     handleModelChange(event) {
+        console.log('🔄 handleModelChange START');
+        console.log('📋 Event detail:', event.detail);
+        console.log('📋 New value:', event.detail.value);
+        
         this.selectedLLM = event.detail.value;
         const selectedOption = this.llmOptions.find(opt => opt.value === this.selectedLLM);
         this.selectedLLMLabel = selectedOption ? selectedOption.label : 'Unknown Model';
-        console.log('Model changed to:', this.selectedLLMLabel);
+        
+        console.log('✅ Model changed successfully:');
+        console.log('  - selectedLLM (DeveloperName):', this.selectedLLM);
+        console.log('  - selectedLLMLabel (MasterLabel):', this.selectedLLMLabel);
+        console.log('  - selectedOption:', selectedOption);
         // --- Trigger anomaly check if the model is changed manually and hasn't run yet ---
         // This ensures it runs even if the default/first selection failed or wasn't ready
         if (!this.anomalyCheckResult && !this.anomalyCheckLoading) {
@@ -1297,10 +1321,21 @@ Format your response with clear sections using **bold headers** and bullet point
 
     // Replace your existing handleLLMRequest method with this version
     handleLLMRequest(operation) {
-        console.log('handleLLMRequest - Operation:', operation);
+        console.log('🚀 handleLLMRequest START - Operation:', operation);
+        console.log('📋 Current state:', {
+            selectedLLM: this.selectedLLM,
+            selectedLLMLabel: this.selectedLLMLabel,
+            llmOptions: this.llmOptions,
+            recordId: this.recordId,
+            effectiveRecordId: this.effectiveRecordId,
+            userPrompt: this.userPrompt
+        });
+        
         if (!this.validateInputs(operation)) {
+            console.error('❌ Validation failed');
             return;
         }
+        console.log('✅ Validation passed');
 
         // Clear any prior errors
         this.clearErrors();
@@ -1308,12 +1343,18 @@ Format your response with clear sections using **bold headers** and bullet point
         // Set loading state
         this.isLoading = true;
 
-        // Prepare basic request parameters
+        // Prepare basic request parameters - match Apex parameter names exactly
         const requestParams = {
-            llmConfigName: this.selectedLLM,
-            userPrompt: this.userPrompt,
-            operation: operation
+            configName: this.selectedLLM,  // Changed from llmConfigName to configName
+            prompt: this.userPrompt,       // Changed from userPrompt to prompt
+            operation: operation,
+            recordId: '',                  // Initialize with empty string
+            relatedObjects: ''             // Initialize with empty string
         };
+        
+        console.log('📦 Initial requestParams:', JSON.stringify(requestParams));
+        console.log('🔍 Specifically checking configName:', requestParams.configName);
+        console.log('🔍 Type of configName:', typeof requestParams.configName);
 
         // Add recordId parameter if available and is not the 'ask' operation
         if (this.effectiveRecordId && operation !== 'ask') {
@@ -1345,7 +1386,7 @@ Format your response with clear sections using **bold headers** and bullet point
         const systemContext = this.buildSystemPrompt(operation);
         if (systemContext) {
             // Prepend system context to the user prompt to ensure it takes priority
-            requestParams.userPrompt = systemContext + requestParams.userPrompt;
+            requestParams.prompt = systemContext + requestParams.prompt;
         }
         
         // Add page components context for better understanding
@@ -1369,15 +1410,21 @@ Format your response with clear sections using **bold headers** and bullet point
         };
         this.addMessageToHistory(messageObj);
 
-        console.log('LLM Request with params:', JSON.stringify(requestParams));
+        console.log('📤 FINAL LLM Request params before Apex call:', JSON.stringify(requestParams));
+        console.log('🔑 Final configName being sent:', requestParams.configName);
+        console.log('🔑 Is configName null/undefined?', requestParams.configName == null);
+        console.log('🔑 Is configName empty string?', requestParams.configName === '');
         
         // Note: truncateContent handles long prompt text to avoid hitting Apex limits
-        requestParams.userPrompt = this.truncateContent(requestParams.userPrompt);
+        requestParams.prompt = this.truncateContent(requestParams.prompt);
+        
+        console.log('🌐 Calling handleRequest Apex method with params:', requestParams);
         
         // Submit the request to Apex controller
         handleRequest(requestParams)
             .then(result => {
-                console.log('LLM Response received, operation:', operation);
+                console.log('✅ LLM Response SUCCESS, operation:', operation);
+                console.log('📥 Response result:', result);
                 
                 // For summarize operations, we open the analysis modal
                 if (operation === 'summarize' && this.analysisFieldApiName && this.analysisFieldApiName.trim() !== '') {
@@ -1417,7 +1464,16 @@ Format your response with clear sections using **bold headers** and bullet point
                 this.scrollToBottom();
             })
             .catch(error => {
-                console.error('Error in LLM request:', error);
+                console.error('❌ ERROR in LLM request:', error);
+                console.error('🔍 Error details:', {
+                    status: error.status,
+                    statusText: error.statusText,
+                    body: error.body,
+                    message: error.body?.message,
+                    stack: error.stack
+                });
+                console.error('📋 Request params that caused error:', requestParams);
+                console.error('🔑 configName in error state:', requestParams.configName);
                 this.showError(this.getErrorMessage(error));
             })
             .finally(() => {
@@ -1463,14 +1519,24 @@ Format your response with clear sections using **bold headers** and bullet point
     }
 
     validateInputs(operation) {
+        console.log('🔍 validateInputs START');
+        console.log('  - operation:', operation);
+        console.log('  - selectedLLM:', this.selectedLLM);
+        console.log('  - effectiveRecordId:', this.effectiveRecordId);
+        console.log('  - userPrompt:', this.userPrompt);
+        
         // When analyzing a record, we need a recordId
         if (operation === 'summarize' && !this.effectiveRecordId) {
+            console.error('❌ Validation failed: No record ID for summarize operation');
             this.showError('No record ID available for analysis');
             return false;
         }
         
         // Model selection is always required
         if (!this.selectedLLM) {
+            console.error('❌ Validation failed: No LLM selected');
+            console.error('  - selectedLLM value:', this.selectedLLM);
+            console.error('  - llmOptions:', this.llmOptions);
             this.showError('Please select an AI model first');
             return false;
         }

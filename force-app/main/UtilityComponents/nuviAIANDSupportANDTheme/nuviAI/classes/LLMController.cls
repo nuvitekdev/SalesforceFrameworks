@@ -19,8 +19,16 @@ public with sharing class LLMController {
     
     @AuraEnabled
     public static String handleRequest(String recordId, String configName, String prompt, String operation, String relatedObjects) {
-        System.debug('Handle request started');
-        System.debug('Parameters - recordId: ' + recordId + ', configName: ' + configName + ', operation: ' + operation);
+        System.debug('🚀 Handle request started');
+        System.debug('📋 Parameters - recordId: ' + recordId + ', configName: ' + configName + ', operation: ' + operation);
+        System.debug('🔍 configName is null: ' + (configName == null));
+        System.debug('🔍 configName length: ' + (String.isNotBlank(configName) ? configName.length() : 0));
+        
+        // Validate configName parameter
+        if (String.isBlank(configName)) {
+            System.debug('❌ ERROR: configName is blank or null');
+            throw new AuraHandledException('Configuration name is required. Please select an AI model.');
+        }
         
         try {
             // Use mock configurations in test context if available
@@ -35,7 +43,33 @@ public with sharing class LLMController {
                 }
                 
                 // If no matching mock config was found, create a default one
-                if (config == null) { config = new LLM_Configuration__mdt(DeveloperName = configName, API_Key__c = 'test_api_key', Base_URL__c = 'https://test.example.com/api', Model_Name__c = 'test-model', Provider__c = 'TestProvider', Supports_Files__c = true, Max_Tokens__c = 2000, Temperature__c = 0.7); }} else {config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c FROM LLM_Configuration__mdt WHERE DeveloperName = :configName LIMIT 1];}
+                if (config == null) { config = new LLM_Configuration__mdt(DeveloperName = configName, API_Key__c = 'test_api_key', Base_URL__c = 'https://test.example.com/api', Model_Name__c = 'test-model', Provider__c = 'TestProvider', Supports_Files__c = true, Max_Tokens__c = 2000, Temperature__c = 0.7); }} else {
+                System.debug('🔍 Querying LLM_Configuration__mdt with configName: ' + configName);
+                
+                // First, let's check what configurations are available
+                List<LLM_Configuration__mdt> allConfigs = [SELECT DeveloperName, MasterLabel FROM LLM_Configuration__mdt];
+                System.debug('📋 Available configurations: ' + allConfigs.size());
+                for (LLM_Configuration__mdt cfg : allConfigs) {
+                    System.debug('  - DeveloperName: ' + cfg.DeveloperName + ', MasterLabel: ' + cfg.MasterLabel);
+                }
+                
+                // Now try to query the specific configuration
+                List<LLM_Configuration__mdt> configList = [
+                    SELECT API_Key__c, Base_URL__c, Model_Name__c, Provider__c, 
+                           Supports_Files__c, Max_Tokens__c, Temperature__c 
+                    FROM LLM_Configuration__mdt 
+                    WHERE DeveloperName = :configName 
+                    LIMIT 1
+                ];
+                
+                if (configList.isEmpty()) {
+                    System.debug('❌ ERROR: No configuration found for configName: ' + configName);
+                    throw new AuraHandledException('No configuration found for model: ' + configName + '. Please ensure the model configuration exists and is active.');
+                }
+                
+                config = configList[0];
+                System.debug('✅ Configuration loaded successfully');
+            }
             
             String context = '';
             String attachments = '';
