@@ -700,6 +700,7 @@ Provide only the summary text without additional commentary.`;
                     // Set default model if specified in design attributes, or use the first model
                     if (this.defaultModelName && this.llmOptions.some(opt => opt.value === this.defaultModelName)) {
                         this.selectedLLM = this.defaultModelName;
+
                     } else if (this.llmOptions.length > 0) {
                         this.selectedLLM = this.llmOptions[0].value;
                     }
@@ -714,6 +715,8 @@ Provide only the summary text without additional commentary.`;
                             this.performInitialAnomalyCheck();
                         }
                     }
+
+                    console.log('Selected LLM in LoadLLMConfigurations:', this.selectedLLM);
                 } else {
                     console.warn('No LLM configurations found');
                 }

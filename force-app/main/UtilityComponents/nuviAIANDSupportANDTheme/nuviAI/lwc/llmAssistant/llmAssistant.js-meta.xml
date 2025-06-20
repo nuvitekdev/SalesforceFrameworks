@@ -9,9 +9,13 @@
         <target>lightning__AppPage</target>
         <target>lightning__HomePage</target>
         <target>lightning__FlowScreen</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+        <target>lightningCommunity__Page_Layout</target>
+        <target>lightningCommunity__Theme_Layout</target>
     </targets>
     <targetConfigs>
-        <targetConfig targets="lightning__RecordPage,lightning__AppPage,lightning__HomePage">
+        <targetConfig targets="lightning__RecordPage,lightning__AppPage,lightning__HomePage,lightningCommunity__Default">
             <property name="cardTitle" type="String" default="AI Assistant" label="Component Title" description="SETUP: Enter the title to display at the top of the AI Assistant card. This helps users understand the purpose of the assistant. Examples: 'AI Assistant', 'Sales Helper', 'HR Document Analyzer', 'Compliance Checker'. Default: 'AI Assistant'"/>
             <property name="primaryColor" type="String" default="#22BDC1" label="Primary Color" description="SETUP: The main color for the component's UI elements like buttons and headers. Use hex color format (#RRGGBB). This should match your org's branding. Example: '#1589EE' for Salesforce blue, '#22BDC1' for Nuvitek teal. Use online hex color pickers to find the right color. Default: '#22BDC1'"/>
             <property name="accentColor" type="String" default="#D5DF23" label="Accent Color" description="SETUP: The secondary color for highlights and hover effects. Use hex color format (#RRGGBB). This should complement your primary color. Example: '#FF6900' for orange, '#D5DF23' for Nuvitek green. The accent color appears on buttons when hovered. Default: '#D5DF23'"/>
