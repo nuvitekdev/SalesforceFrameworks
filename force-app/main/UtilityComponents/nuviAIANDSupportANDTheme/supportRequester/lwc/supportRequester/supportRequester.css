@@ -87,6 +87,8 @@
     flex-wrap: wrap;
     background-color: transparent;
     width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
     justify-content: space-between;
 }
 
@@ -96,6 +98,8 @@
     gap: var(--spacing-xl);
     background-color: transparent;
     width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 /* Support form section */

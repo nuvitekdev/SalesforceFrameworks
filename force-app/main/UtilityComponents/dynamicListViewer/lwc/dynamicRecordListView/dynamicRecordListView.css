@@ -201,6 +201,8 @@
     --sds-c-icon-color-foreground-default: var(--primary-color);
 }
 
+
+
 .new-button {
     --sds-c-button-brand-color-background: var(--primary-color);
     --sds-c-button-brand-color-border: var(--primary-color);
@@ -639,7 +641,6 @@ td {
 
 .slds-backdrop--custom {
     background-color: rgba(var(--background-rgb, 0, 0, 0), 0.6);
-    z-index: 9002; /* Ensure flow modal backdrop is on top */
 }
 
 .flow-modal .slds-modal__container {
@@ -1037,7 +1038,57 @@ lightning-tabset .slds-tabs_scoped__item {
     color: var(--primary-color);
 }
 
-/* Files List Styling */
+/* ============================================= */
+/* File Upload Section Styling                   */
+/* ============================================= */
+.file-upload-section {
+    background-color: var(--background-elevated);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+    transition: all var(--transition-fast);
+}
+
+.file-upload-section:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(var(--primary-color-rgb), 0.02);
+}
+
+.upload-header h3 {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-color);
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+.upload-header p {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin: 0 0 var(--spacing-sm) 0;
+}
+
+.section-divider {
+    height: 1px;
+    background-color: var(--border-subtle);
+    margin: var(--spacing-md) 0;
+}
+
+.files-list-header {
+    margin-bottom: var(--spacing-sm);
+}
+
+.files-list-header h3 {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-color);
+    margin: 0;
+}
+
+/* ============================================= */
+/* Files List Styling                            */
+/* ============================================= */
 .files-list {
     list-style: none;
     padding: 0;
@@ -1108,6 +1159,27 @@ lightning-tabset .slds-tabs_scoped__item {
 /* ============================================= */
 /* Chatter Posts / Activity History Styling      */
 /* ============================================= */
+/* Activity Header Styling */
+.activity-header {
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.activity-header h3 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-color);
+    margin: 0 0 4px 0;
+}
+
+.activity-header p {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Chatter/Activity Posts Styling */
 .chatter-posts-list {
     list-style: none;
     padding: 0;
@@ -1387,7 +1459,7 @@ lightning-tabset .slds-tabs_scoped__item {
 /* ============================================= */
 .action-buttons {
     position: absolute;
-    top: var(--spacing-sm);
+    top: var(--spacing-md);
     right: 60px; /* Position next to close button */
     display: flex;
     gap: var(--spacing-xs);
@@ -1414,4 +1486,88 @@ lightning-tabset .slds-tabs_scoped__item {
 
 .action-buttons lightning-button-menu::part(button):hover {
     background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================= */
+/* Enhanced Activity Timeline Styling            */
+/* ============================================= */
+.activity-container {
+    padding: var(--spacing-sm);
+    background-color: var(--background);
+    border-radius: var(--radius-sm);
+}
+
+/* Enhanced Activity Item Styling with Timeline */
+.chatter-post {
+    position: relative;
+    padding-left: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.chatter-post::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 40px;
+    bottom: -12px;
+    width: 2px;
+    background-color: var(--border-color);
+}
+
+.chatter-post:last-child::before {
+    display: none;
+}
+
+.post-avatar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--background-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--border-color);
+    z-index: 1;
+}
+
+.post-avatar lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--text-secondary);
+}
+
+/* Activity Types Color Coding */
+.chatter-post[data-type="Task"] .post-avatar {
+    background-color: #34c759;
+    border-color: #34c759;
+}
+
+.chatter-post[data-type="Event"] .post-avatar {
+    background-color: #007AFF;
+    border-color: #007AFF;
+}
+
+.chatter-post[data-type="Email"] .post-avatar {
+    background-color: #FF9500;
+    border-color: #FF9500;
+}
+
+.chatter-post[data-type="Case Comment"] .post-avatar {
+    background-color: #5856D6;
+    border-color: #5856D6;
+}
+
+.chatter-post[data-type="Chatter Post"] .post-avatar {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Activity type icons styling */
+.chatter-post[data-type="Task"] .post-avatar lightning-icon,
+.chatter-post[data-type="Event"] .post-avatar lightning-icon,
+.chatter-post[data-type="Email"] .post-avatar lightning-icon,
+.chatter-post[data-type="Case Comment"] .post-avatar lightning-icon,
+.chatter-post[data-type="Chatter Post"] .post-avatar lightning-icon {
+    --sds-c-icon-color-foreground-default: white;
 }

@@ -107,4 +107,4 @@ private class RecordFilesController_Test {
         List<ContentDocument> docs = [SELECT Id FROM ContentDocument WHERE Id = :contentDocId];
         System.assertEquals(0, docs.size(), 'Content document should be deleted');
     }
-} 
+}

@@ -5,138 +5,51 @@ public with sharing class LLMController {
      */
     @TestVisible
     private static List<LLM_Configuration__mdt> mockConfigurations = new List<LLM_Configuration__mdt>();
-    
+
     @AuraEnabled(cacheable=true)
     public static List<LLM_Configuration__mdt> getLLMConfigurations() {
         System.debug('Getting LLM configurations');
-        
-        // In test context, use the mock configurations if available
-        if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
-            System.debug('Using mock configurations: ' + mockConfigurations.size());
-            return mockConfigurations;
-        }List<LLM_Configuration__mdt> configs = [SELECT Id, DeveloperName, MasterLabel, Provider__c, Model_Name__c, Supports_Files__c FROM LLM_Configuration__mdt WHERE IsActive__c = true];return configs;
+        List<LLM_Configuration__mdt> configs = [SELECT Id, DeveloperName, MasterLabel, Provider__c, 
+                                                Model_Name__c, Supports_Files__c 
+                                                FROM LLM_Configuration__mdt 
+                                                WHERE IsActive__c = true];
+        System.debug('Found configurations: ' + configs.size());
+        return configs;
     }
     
     @AuraEnabled
-    public static String handleRequest(String recordId, String configName, String prompt, String operation, String relatedObjects) {
-        System.debug('🚀 Handle request started');
-        System.debug('📋 Parameters - recordId: ' + recordId + ', configName: ' + configName + ', operation: ' + operation);
-        System.debug('🔍 configName is null: ' + (configName == null));
-        System.debug('🔍 configName length: ' + (String.isNotBlank(configName) ? configName.length() : 0));
-        
-        // Validate configName parameter
-        if (String.isBlank(configName)) {
-            System.debug('❌ ERROR: configName is blank or null');
-            throw new AuraHandledException('Configuration name is required. Please select an AI model.');
-        }
+    public static String handleRequest(String recordId, String configName, String prompt, String operation, String relatedObjects, String reportObjects) {
+        System.debug('Handle request started');
+        System.debug('Parameters - recordId: ' + recordId + ', configName: ' + configName + ', operation: ' + operation + ', reportObjects: ' + reportObjects);
         
         try {
-            // Use mock configurations in test context if available
-            LLM_Configuration__mdt config;
-            if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
-                // Find matching mock config by name
-                for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
-                    if (mockConfig.DeveloperName == configName) {
-                        config = mockConfig;
-                        break;
-                    }
-                }
-                
-                // If no matching mock config was found, create a default one
-                if (config == null) { config = new LLM_Configuration__mdt(DeveloperName = configName, API_Key__c = 'test_api_key', Base_URL__c = 'https://test.example.com/api', Model_Name__c = 'test-model', Provider__c = 'TestProvider', Supports_Files__c = true, Max_Tokens__c = 2000, Temperature__c = 0.7); }} else {
-                System.debug('🔍 Querying LLM_Configuration__mdt with configName: ' + configName);
-                
-                // First, let's check what configurations are available
-                List<LLM_Configuration__mdt> allConfigs = [SELECT DeveloperName, MasterLabel FROM LLM_Configuration__mdt];
-                System.debug('📋 Available configurations: ' + allConfigs.size());
-                for (LLM_Configuration__mdt cfg : allConfigs) {
-                    System.debug('  - DeveloperName: ' + cfg.DeveloperName + ', MasterLabel: ' + cfg.MasterLabel);
-                }
-                
-                // Now try to query the specific configuration
-                List<LLM_Configuration__mdt> configList = [
-                    SELECT API_Key__c, Base_URL__c, Model_Name__c, Provider__c, 
-                           Supports_Files__c, Max_Tokens__c, Temperature__c 
-                    FROM LLM_Configuration__mdt 
-                    WHERE DeveloperName = :configName 
-                    LIMIT 1
-                ];
-                
-                if (configList.isEmpty()) {
-                    System.debug('❌ ERROR: No configuration found for configName: ' + configName);
-                    throw new AuraHandledException('No configuration found for model: ' + configName + '. Please ensure the model configuration exists and is active.');
-                }
-                
-                config = configList[0];
-                System.debug('✅ Configuration loaded successfully');
+            // Validate configName is provided
+            if (String.isBlank(configName)) {
+                throw new AuraHandledException('Error: AI Model Configuration Name is required. Please select an AI model from the dropdown.');
             }
+            
+            LLM_Configuration__mdt config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, 
+                                             Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
+                                             FROM LLM_Configuration__mdt 
+                                             WHERE DeveloperName = :configName 
+                                             LIMIT 1];
             
             String context = '';
             String attachments = '';
-            String documentAnalysis = '';
             
             // Only get record context if a recordId is provided
             if (String.isNotBlank(recordId)) {
                 context = getRecordContext(recordId, relatedObjects);
                 
-                // --- MODIFICATION FOR 'SUMMARIZE' OPERATION ---
-                // For 'summarize' (Analyze Record), we do not perform deep analysis of document contents here.
-                // Listing of attachments is handled within getRecordContext.
-                // Dedicated buttons will handle deep PDF/Image analysis.
-                if (!'summarize'.equalsIgnoreCase(operation)) {
-                    // Check for PDFs and documents that would benefit from Vision analysis
-                    // Include all attachment types for regular analysis
-                    List<Map<String, String>> docAttachments = getDocumentsForVisionAnalysis(recordId, true);
-                    if (!docAttachments.isEmpty()) {
-                        System.debug('Found ' + docAttachments.size() + ' documents for Vision analysis');
-                        
-                        // Get Vision configuration
-                        List<LLM_Configuration__mdt> visionConfigs;
-                        
-                        if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
-                            // Find vision configuration in mocks
-                            visionConfigs = new List<LLM_Configuration__mdt>();
-                            for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
-                                if (mockConfig.DeveloperName == 'OpenAI_GPT4_Vision') {
-                                    visionConfigs.add(mockConfig);
-                                    break;
-                                }
-                            }
-                            
-                            // If no mock vision config was found, create a default one
-                            if (visionConfigs.isEmpty()) { LLM_Configuration__mdt visionConfig = new LLM_Configuration__mdt(DeveloperName = 'OpenAI_GPT4_Vision', API_Key__c = 'test_vision_api_key', Base_URL__c = 'https://test.example.com/vision', Model_Name__c = 'test-vision-model', Provider__c = 'TestVisionProvider', Supports_Files__c = true); visionConfigs.add(visionConfig); }
-                        } else {
-                            visionConfigs = [SELECT Id, API_Key__c, Base_URL__c, Model_Name__c
-                                             FROM LLM_Configuration__mdt 
-                                             WHERE DeveloperName = 'OpenAI_GPT4_Vision' // Ensure active for consistency
-                                             LIMIT 1];
-                        }
-                        
-                        if (!visionConfigs.isEmpty()) {
-                            // Process documents with Vision API
-                            documentAnalysis = processDocumentsWithVision(docAttachments, visionConfigs[0], 
-                                                                      'Analyze these documents in detail. Extract all important information.');
-                        }
-                    }
-                    
-                    // Get regular attachments text (this will exclude PDFs that were analyzed with Vision)
-                    attachments = config.Supports_Files__c ? getAttachmentsText(recordId) : '';
-                } else {
-                    // Ensure these are empty for 'summarize' operation
-                    documentAnalysis = '';
-                    attachments = '';
-                    System.debug('Summarize operation: Skipping deep document/attachment content analysis in handleRequest.');
-                }
+                attachments = config.Supports_Files__c ? getAttachmentsBase64(recordId) : '';
             }
             
-            // Include document analysis in the prompt if available
+            // Add report data if reportObjects is provided
+            if (String.isNotBlank(reportObjects)) {
+                context += getReportData(reportObjects);
+            }
+            
             String fullPrompt = buildFullPrompt(operation, context, attachments, prompt);
-            
-            // Add document analysis results if available
-            if (String.isNotBlank(documentAnalysis)) {
-                fullPrompt += '\n\nDOCUMENT ANALYSIS (Processed with Vision AI):\n' + documentAnalysis;
-            }
-            
             System.debug('Full prompt length: ' + fullPrompt.length());
             
             return makeLLMCall(config, fullPrompt);
@@ -152,21 +65,12 @@ public with sharing class LLMController {
      * @param recordId The Id of the Salesforce record to analyze.
      * @param configName The DeveloperName of the LLM_Configuration__mdt to use.
      * @param relatedObjects Comma-separated list of object API names to search across for related data.
-     * @param pdfDocumentIds List of ContentDocument Ids for PDF documents to include in the analysis
-     * @param customPrompt Optional parameter containing a custom prompt to prepend to the default anomaly prompt
      * @return String The AI's assessment (e.g., "YES - Conflict of interest detected: Submitter and Investigator are the same." or "NO").
      * @throws AuraHandledException if an error occurs during processing.
      */
     @AuraEnabled
-    public static String checkRecordForAnomalies(String recordId, String configName, String relatedObjects, 
-                                              List<String> pdfDocumentIds, String customPrompt) {
-        // Handle missing optional parameters
-        pdfDocumentIds = pdfDocumentIds != null ? pdfDocumentIds : new List<String>();
-        customPrompt = customPrompt != null ? customPrompt : '';
-        
+    public static String checkRecordForAnomalies(String recordId, String configName, String relatedObjects) {
         System.debug('Anomaly check started for recordId: ' + recordId + ' using config: ' + configName);
-        System.debug('PDF documents included: ' + (!pdfDocumentIds.isEmpty() ? pdfDocumentIds.size() + ' documents' : 'None'));
-        System.debug('Custom prompt provided: ' + (String.isNotBlank(customPrompt) ? 'Yes' : 'No'));
 
         // Validate inputs
         if (String.isBlank(recordId) || String.isBlank(configName)) {
@@ -176,222 +80,32 @@ public with sharing class LLMController {
 
         try {
             // Fetch the specified LLM configuration
-            LLM_Configuration__mdt config;
-            if (Test.isRunningTest() && !mockConfigurations.isEmpty()) {
-                // Find matching mock config by name
-                for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
-                    if (mockConfig.DeveloperName == configName) {
-                        config = mockConfig;
-                        break;
-                    }
-                }
-                
-                // If no matching mock config was found, create a default one
-                if (config == null) { config = new LLM_Configuration__mdt(DeveloperName = configName, API_Key__c = 'test_api_key', Base_URL__c = 'https://test.example.com/api', Model_Name__c = 'test-model', Provider__c = 'TestProvider', Supports_Files__c = true, Max_Tokens__c = 2000, Temperature__c = 0.7); }} else {config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
-                         FROM LLM_Configuration__mdt 
-                         WHERE DeveloperName = :configName 
-                         LIMIT 1];
-            }
+            LLM_Configuration__mdt config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, 
+                                             Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
+                                             FROM LLM_Configuration__mdt 
+                                             WHERE DeveloperName = :configName 
+                                             LIMIT 1];
 
             // Get the context for the specified record
             String context = getRecordContext(recordId, relatedObjects);
             
             // Construct the prompt specifically for anomaly detection
-            String baseAnomalyPrompt = 'You are a specialized AI auditor analyzing Salesforce record data for potential issues. Examine the following record data with extreme attention to detail.\n\n' +
-                                 'Look specifically for:\n' + 
-                                 '1. **Data Anomalies**:\n' +
-                                 '   - Missing required fields based on record stage/status\n' +
-                                 '   - Values outside normal ranges or suspicious patterns\n' +
-                                 '   - Duplicate or conflicting information\n\n' +
-                                 '2. **Compliance & Process Issues**:\n' +
-                                 '   - Conflicts of interest (same person in multiple conflicting roles)\n' +
-                                 '   - Approval chains that violate separation of duties\n' +
-                                 '   - Missing mandatory approvals or signatures\n\n' +
-                                 '3. **Temporal Inconsistencies**:\n' +
-                                 '   - Dates out of logical sequence\n' +
-                                 '   - Future dates where past dates are expected\n' +
-                                 '   - Unrealistic timeframes between events\n\n' +
-                                 '4. **Business Logic Violations**:\n' +
-                                 '   - Status transitions that skip required steps\n' +
-                                 '   - Financial values that don\'t add up\n' +
-                                 '   - Percentages exceeding 100% or negative where inappropriate\n\n' +
-                                 'RESPONSE FORMAT:\n' +
-                                 '- Start with "YES - " if ANY issues found, or "NO" if record appears clean\n' +
-                                 '- For YES responses, provide HTML-formatted explanation:\n' +
-                                 '  • Use <b> for issue categories\n' +
-                                 '  • Use <ol><li> for numbered main findings\n' +
-                                 '  • Use <ul><li> for sub-points and recommendations\n' +
-                                 '  • Be specific with field names and values\n\n';
-            
-            // Prepend custom prompt if provided
-            String anomalyPrompt = String.isNotBlank(customPrompt) ? customPrompt + baseAnomalyPrompt : baseAnomalyPrompt;
-            
-            // Add record data section
-            anomalyPrompt += 'RECORD DATA:\n' + context;
-            
-            // If we're including PDF documents, use the Vision-based approach
-            if (pdfDocumentIds != null && !pdfDocumentIds.isEmpty() && configName == 'OpenAI_GPT4_Vision') {
-                System.debug('Processing ' + pdfDocumentIds.size() + ' PDF documents with Vision for anomaly detection');
-                
-                // Prepare a list to hold all content items (text + document files)
-                List<Map<String, Object>> allContentItems = new List<Map<String, Object>>();
-                
-                // First, add the text prompt
-                Map<String, Object> textContent = new Map<String, Object>();
-                textContent.put('type', 'text');
-                textContent.put('text', anomalyPrompt + '\n\nPlease also analyze the following PDF documents for anomalies, particularly any inconsistencies with the record data above. Look for any suspicious content, invalid information, or mismatches.');
-                allContentItems.add(textContent);
-                
-                // Set a maximum number of documents to process to avoid heap size issues
-                Integer MAX_DOCUMENTS = 3;
-                Integer documentCount = 0;
-                
-                // Process each PDF document with size limitations
-                for (String docId : pdfDocumentIds) {
-                    // Skip if we've reached our document limit
-                    if (documentCount >= MAX_DOCUMENTS) {
-                        System.debug('Skipping additional documents past the limit of ' + MAX_DOCUMENTS);
-                        break;
-                    }
-                    
-                    ContentVersion cv;
-                    try {
-                        cv = [
-                            SELECT Id, Title, FileExtension, VersionData
-                            FROM ContentVersion
-                            WHERE ContentDocumentId = :docId AND IsLatest = true AND FileExtension = 'pdf'
-                            LIMIT 1
-                        ];
-                    } catch (Exception e) {
-                        System.debug('Warning: PDF ContentVersion not found for ContentDocumentId: ' + docId + '. Skipping this document.');
-                        continue;
-                    }
-                    
-                    // Set a stricter size limit for PDFs to avoid heap issues
-                    Integer MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
-                    if (cv.VersionData.size() > MAX_FILE_SIZE_BYTES) {
-                        System.debug('Warning: PDF file size exceeds limit for ' + cv.Title + '. Size: ' + cv.VersionData.size() + ' bytes. Max allowed: ' + MAX_FILE_SIZE_BYTES + ' bytes. Skipping this document.');
-                        continue;
-                    }
-                    
-                    // Encode PDF as base64
-                    String base64Data = EncodingUtil.base64Encode(cv.VersionData);
-                    String base64WithPrefix = 'data:application/pdf;base64,' + base64Data;
-                    String currentFileTitle = cv.Title + (cv.Title.toLowerCase().endsWith('.pdf') ? '' : '.pdf');
-                    
-                    // Add PDF to content items
-                    Map<String, Object> fileContent = new Map<String, Object>();
-                    fileContent.put('type', 'file');
-                    
-                    Map<String, String> fileDataMap = new Map<String, String>();
-                    fileDataMap.put('filename', currentFileTitle);
-                    fileDataMap.put('file_data', base64WithPrefix);
-                    
-                    fileContent.put('file', fileDataMap);
-                    allContentItems.add(fileContent);
-                    
-                    documentCount++;
-                    System.debug('Added PDF to anomaly check: ' + currentFileTitle + ' (' + (cv.VersionData.size() / 1024) + ' KB)');
-                }
-                
-                // Monitor the heap size
-                Long heapSize = Limits.getHeapSize();
-                Long heapLimit = Limits.getLimitHeapSize();
-                System.debug('Current heap size: ' + heapSize + ' of ' + heapLimit + ' (' + (heapSize * 100 / heapLimit) + '%)');
-                
-                // If we successfully added content items, make the Vision API call
-                if (allContentItems.size() > 1) { // At least the text prompt + 1 file
-                    // Make a call to the Vision model with all content
-                    Map<String, Object> requestBody = new Map<String, Object>();
-                    requestBody.put('model', config.Model_Name__c); // Should be "gpt-4o" or similar Vision model
-                    
-                    Map<String, Object> userMessageDetails = new Map<String, Object>();
-                    userMessageDetails.put('role', 'user');
-                    userMessageDetails.put('content', allContentItems);
-                    
-                    List<Map<String, Object>> messages = new List<Map<String, Object>>{userMessageDetails};
-                    requestBody.put('messages', messages);
-                    
-                    if(config.Max_Tokens__c != null){
-                        requestBody.put('max_tokens', Integer.valueOf(config.Max_Tokens__c));
-                    } else {
-                        requestBody.put('max_tokens', 4000); // Default fallback if not set in config
-                    }
-                    if(config.Temperature__c != null){
-                        requestBody.put('temperature', config.Temperature__c);
-                    }
-                    
-                    System.debug('Making Vision API call for anomaly detection with ' + allContentItems.size() + ' items');
-                    
-                    // Check if payload exceeds heap size limit
-                    String requestBodyJson = '';
-                    try {
-                        requestBodyJson = JSON.serialize(requestBody);
-                        System.debug('Request body size: ' + requestBodyJson.length() + ' characters');
-                        
-                        if (requestBodyJson.length() > 3000000) { // Arbitrary large limit as warning
-                            System.debug('WARNING: Request body is very large (' + requestBodyJson.length() + ' characters)');
-                        }
-                    } catch (System.LimitException le) {
-                        System.debug('ERROR: Request body exceeds heap size limit.');
-                        throw new AuraHandledException('The document analysis exceeds Salesforce size limits. Please analyze fewer or smaller documents.');
-                    }
-                    
-                    // Make the API call
-                    Http http = new Http();
-                    HttpRequest req = new HttpRequest();
-                    req.setEndpoint(config.Base_URL__c);
-                    req.setMethod('POST');
-                    req.setHeader('Content-Type', 'application/json;charset=UTF-8');
-                    req.setHeader('Authorization', 'Bearer ' + config.API_Key__c);
-                    req.setBody(requestBodyJson);
-                    req.setTimeout(120000); // 2 minutes timeout
-                    
-                    HttpResponse res = http.send(req);
-                    
-                    // Process the response
-                    if (res.getStatusCode() == 200) {
-                        Map<String, Object> responseMap = (Map<String, Object>)JSON.deserializeUntyped(res.getBody());
-                        if (responseMap.containsKey('choices')) {
-                            List<Object> choices = (List<Object>)responseMap.get('choices');
-                            if (choices != null && !choices.isEmpty()) {
-                                Map<String, Object> choice = (Map<String, Object>)choices[0];
-                                if (choice.containsKey('message')) {
-                                    Map<String, Object> message = (Map<String, Object>)choice.get('message');
-                                    if (message.containsKey('content')) {
-                                        String content = (String)message.get('content');
-                                        System.debug('Successfully received anomaly check with Vision (first 200 chars): ' + content.left(200) + '...');
-                                        return content;
-                                    }
-                                }
-                            }
-                        }
-                        System.debug('Error: AI response format unexpected. Body: ' + res.getBody().left(500) + '...');
-                        throw new AuraHandledException('Error: AI response format was not as expected.');
-                    } else {
-                        String errorBody = res.getBody();
-                        System.debug('Error from AI Service: ' + res.getStatusCode() + ' ' + res.getStatus() + '. Body: ' + errorBody);
-                        // Try to extract error message
-                        try {
-                            Map<String, Object> errorMap = (Map<String, Object>)JSON.deserializeUntyped(errorBody);
-                            if(errorMap.containsKey('error') && errorMap.get('error') instanceof Map<String,Object>){
-                                Map<String,Object> errorDetails = (Map<String,Object>)errorMap.get('error');
-                                if(errorDetails.containsKey('message')){
-                                    String errorMessage = (String)errorDetails.get('message');
-                                    throw new AuraHandledException('AI service error: ' + errorMessage);
-                                }
-                            }
-                        } catch(Exception parseEx) {
-                            // If error parsing fails, throw the original error
-                            throw new AuraHandledException('Error from AI service: ' + res.getStatusCode() + ' ' + res.getStatus());
-                        }
-                    }
-                }
-            }
-            
-            // If we're not using Vision or if no PDFs were successfully processed, fall back to regular LLM call
+            String anomalyPrompt = 'Analyze the following Salesforce record data. Look specifically for potential issues such as: \n' + 
+                                 '- Anomalies (e.g., unusual values, missing required information for the stage)\n' +
+                                 '- Conflicts of Interest (e.g., the same person involved in conflicting roles like submitter and approver)\n' + 
+                                 '- Inconsistencies (e.g., dates out of order, contradictory statements)\n' +
+                                 '- Any other red flags or data points that seem incorrect or warrant further investigation.\n\n' +
+                                 'Your response MUST start with either "YES - " followed by the explanation, or "NO" if no significant issues are detected.\n\n' +
+                                 'IMPORTANT FORMATTING INSTRUCTIONS: If issues are found (starting with "YES - "), format the explanation using basic HTML:\n' +
+                                 '  - Use <b> tags to highlight main points or titles (e.g., <b>Conflict of Interest</b>).\n' +
+                                 '  - Use <ol> and <li> for numbered lists of main findings.\n' +
+                                 '  - Use <ul> and <li> for bullet points under each finding or for recommendations.\n' +
+                                 '  - Use <br> for line breaks where appropriate. Do NOT include the markdown `-` for bullets, use <li> instead.\n\n' +
+                                 'RECORD DATA:\n' + context;
+
+            // Call the LLM with the specific anomaly detection prompt
             String assessment = makeLLMCall(config, anomalyPrompt);
-            System.debug('Anomaly check completed successfully using standard LLM call');
+            System.debug('Anomaly check completed successfully');
             
             // Return the raw assessment from the LLM
             return assessment;
@@ -404,8 +118,6 @@ public with sharing class LLMController {
             throw new AuraHandledException('Error performing AI anomaly check: ' + e.getMessage());
         }
     }
-    
-    // Legacy method removed to avoid AuraEnabled method overloading error
     
     private static String getRecordContext(String recordId, String relatedObjects) {
         try {
@@ -532,7 +244,24 @@ public with sharing class LLMController {
                                                   ORDER BY MessageDate DESC 
                                                   LIMIT 5];
                 
-                if (!recentEmails.isEmpty()) { context += '\nRECENT EMAILS:\n'; for (EmailMessage em : recentEmails) { context += '• ' + em.Subject + ' (' + (em.MessageDate != null ? em.MessageDate.format() : 'Unknown date') + ')\n' + '  From: ' + em.FromAddress + '\n' + '  To: ' + em.ToAddress + '\n'; if (em.HtmlBody != null) { String plainBody = em.HtmlBody.replaceAll('<[^>]+>', ' ').replaceAll('\\s+', ' ').trim(); if (plainBody.length() > 200) { plainBody = plainBody.substring(0, 197) + '...'; } context += '  Preview: ' + plainBody + '\n'; } } }
+                if (!recentEmails.isEmpty()) {
+                    context += '\nRECENT EMAILS:\n';
+                    for (EmailMessage em : recentEmails) {
+                        context += '• ' + em.Subject + ' (' + (em.MessageDate != null ? em.MessageDate.format() : 'Unknown date') + ')\n';
+                        context += '  From: ' + em.FromAddress + '\n';
+                        context += '  To: ' + em.ToAddress + '\n';
+                        
+                        // Add short snippet of the email body
+                        if (em.HtmlBody != null) {
+                            // Strip HTML and get truncated preview
+                            String plainBody = em.HtmlBody.replaceAll('<[^>]+>', ' ').replaceAll('\\s+', ' ').trim();
+                            if (plainBody.length() > 200) {
+                                plainBody = plainBody.substring(0, 197) + '...';
+                            }
+                            context += '  Preview: ' + plainBody + '\n';
+                        }
+                    }
+                }
             } catch (Exception e) {
                 System.debug('Error fetching emails: ' + e.getMessage());
             }
@@ -540,71 +269,47 @@ public with sharing class LLMController {
             // Get any Notes related to the record
             try {
                 // First, get ContentDocumentLink records
-                List<ContentDocumentLink> contentLinksForNotes = [ // Renamed to avoid conflict
+                List<ContentDocumentLink> contentLinks = [
                     SELECT ContentDocumentId 
                     FROM ContentDocumentLink 
                     WHERE LinkedEntityId = :recordId
                 ];
                 
-                if (!contentLinksForNotes.isEmpty()) {
+                if (!contentLinks.isEmpty()) {
                     // Extract ContentDocumentIds
-                    Set<Id> contentDocIdsForNotes = new Set<Id>(); // Renamed
-                    for (ContentDocumentLink link : contentLinksForNotes) {
-                        contentDocIdsForNotes.add(link.ContentDocumentId);
+                    Set<Id> contentDocIds = new Set<Id>();
+                    for (ContentDocumentLink link : contentLinks) {
+                        contentDocIds.add(link.ContentDocumentId);
                     }
                     
                     // Then query for ContentNote records
                     List<ContentNote> notes = [
                         SELECT Id, Title, Content, CreatedDate, CreatedBy.Name
                         FROM ContentNote
-                        WHERE Id IN :contentDocIdsForNotes // Use renamed set
+                        WHERE Id IN :contentDocIds
                         ORDER BY CreatedDate DESC
                         LIMIT 5
                     ];
                     
-                    if (!notes.isEmpty()) { 
-                        context += '\\nNOTES:\\n'; 
-                        for (ContentNote note : notes) { 
-                            context += '• ' + note.Title + ' (Created by ' + note.CreatedBy.Name + ' on ' + note.CreatedDate.format() + ')\\n'; 
-                            if (note.Content != null) { 
-                                String noteBody = note.Content.toString(); 
-                                if (noteBody.length() > 300) { 
-                                    noteBody = noteBody.substring(0, 297) + '...'; 
-                                } 
-                                context += '  ' + noteBody.replaceAll('\\n', '\\n  ') + '\\n'; 
-                            } 
-                        } 
+                    if (!notes.isEmpty()) {
+                        context += '\nNOTES:\n';
+                        for (ContentNote note : notes) {
+                            context += '• ' + note.Title + ' (Created by ' + note.CreatedBy.Name + ' on ' + note.CreatedDate.format() + ')\n';
+                            
+                            // Convert the note content from Base64 to readable text
+                            if (note.Content != null) {
+                                String noteBody = note.Content.toString();
+                                if (noteBody.length() > 300) {
+                                    noteBody = noteBody.substring(0, 297) + '...';
+                                }
+                                context += '  ' + noteBody.replaceAll('\n', '\n  ') + '\n';
+                            }
+                        }
                     }
                 }
             } catch (Exception e) {
                 System.debug('Error fetching notes: ' + e.getMessage());
             }
-            
-            // --- NEW SECTION: LIST GENERAL FILE ATTACHMENTS ---
-            try {
-                List<ContentDocumentLink> fileLinks = [
-                    SELECT ContentDocument.Id, ContentDocument.Title, ContentDocument.FileType, ContentDocument.FileExtension 
-                    FROM ContentDocumentLink 
-                    WHERE LinkedEntityId = :recordId 
-                    AND ContentDocument.FileType != 'SNOTE' // Exclude ContentNotes as they are handled above
-                    LIMIT 10 // Limit to a reasonable number for context
-                ];
-
-                if (!fileLinks.isEmpty()) {
-                    context += '\\nATTACHED FILES:\\n';
-                    Set<String> listedFileTitles = new Set<String>(); // To avoid listing same file multiple times if linked oddly
-                    for (ContentDocumentLink link : fileLinks) {
-                        if(!listedFileTitles.contains(link.ContentDocument.Title)){
-                            context += '• ' + link.ContentDocument.Title + 
-                                       ' (' + (String.isNotBlank(link.ContentDocument.FileExtension) ? link.ContentDocument.FileExtension.toUpperCase() : link.ContentDocument.FileType) + ')\\n';
-                            listedFileTitles.add(link.ContentDocument.Title);
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                System.debug('Error fetching general file attachments: ' + e.getMessage());
-            }
-            // --- END NEW SECTION ---
             
             // Get collaboration activity (works for feed-enabled objects)
             try {
@@ -711,7 +416,15 @@ public with sharing class LLMController {
                                                       ORDER BY CloseDate DESC
                                                       LIMIT :MAX_RECORDS];
                     
-                    if (!opportunities.isEmpty()) { context += '\nRELATED OPPORTUNITIES:\n'; for (Opportunity o : opportunities) { context += '• ' + o.Name + ' - ' + o.StageName; if (o.Amount != null) context += ' - $' + o.Amount; if (o.CloseDate != null) context += ' (Close Date: ' + o.CloseDate.format() + ')'; context += '\n'; } }
+                    if (!opportunities.isEmpty()) {
+                        context += '\nRELATED OPPORTUNITIES:\n';
+                        for (Opportunity o : opportunities) {
+                            context += '• ' + o.Name + ' - ' + o.StageName;
+                            if (o.Amount != null) context += ' - $' + o.Amount;
+                            if (o.CloseDate != null) context += ' (Close Date: ' + o.CloseDate.format() + ')';
+                            context += '\n';
+                        }
+                    }
                 } catch (Exception e) {
                     System.debug('Error querying related opportunities: ' + e.getMessage());
                 }
@@ -748,7 +461,15 @@ public with sharing class LLMController {
                                                       ORDER BY CloseDate DESC
                                                       LIMIT :MAX_RECORDS];
                     
-                    if (!opportunities.isEmpty()) { context += '\nRELATED OPPORTUNITIES:\n'; for (Opportunity o : opportunities) { context += '• ' + o.Name + ' - ' + o.StageName; if (o.Amount != null) context += ' - $' + o.Amount; if (o.CloseDate != null) context += ' (Close Date: ' + o.CloseDate.format() + ')'; context += '\n'; } }
+                    if (!opportunities.isEmpty()) {
+                        context += '\nRELATED OPPORTUNITIES:\n';
+                        for (Opportunity o : opportunities) {
+                            context += '• ' + o.Name + ' - ' + o.StageName;
+                            if (o.Amount != null) context += ' - $' + o.Amount;
+                            if (o.CloseDate != null) context += ' (Close Date: ' + o.CloseDate.format() + ')';
+                            context += '\n';
+                        }
+                    }
                 } catch (Exception e) {
                     System.debug('Error querying related opportunities: ' + e.getMessage());
                 }
@@ -837,7 +558,16 @@ public with sharing class LLMController {
                                                           ORDER BY CreatedDate DESC
                                                           LIMIT :MAX_RECORDS];
                     
-                    if (!lineItems.isEmpty()) { context += '\nOPPORTUNITY PRODUCTS:\n'; for (OpportunityLineItem oli : lineItems) { context += '• ' + oli.Product2.Name; if (oli.Quantity != null) context += ' - Qty: ' + oli.Quantity; if (oli.UnitPrice != null) context += ' - Unit Price: $' + oli.UnitPrice; if (oli.TotalPrice != null) context += ' - Total: $' + oli.TotalPrice; context += '\n'; } }
+                    if (!lineItems.isEmpty()) {
+                        context += '\nOPPORTUNITY PRODUCTS:\n';
+                        for (OpportunityLineItem oli : lineItems) {
+                            context += '• ' + oli.Product2.Name;
+                            if (oli.Quantity != null) context += ' - Qty: ' + oli.Quantity;
+                            if (oli.UnitPrice != null) context += ' - Unit Price: $' + oli.UnitPrice;
+                            if (oli.TotalPrice != null) context += ' - Total: $' + oli.TotalPrice;
+                            context += '\n';
+                        }
+                    }
                 } catch (Exception e) {
                     System.debug('Error querying opportunity line items: ' + e.getMessage());
                 }
@@ -915,7 +645,57 @@ public with sharing class LLMController {
             
             // Join with a general modified query
             // This uses a SOSL search to find records connected to our record
-            if (!Test.isRunningTest()) { String searchQuery = 'FIND \'' + recordId + '\' IN ALL FIELDS RETURNING ' + 'Account(Id, Name, LastModifiedDate ORDER BY LastModifiedDate DESC LIMIT ' + maxRecords + '), ' + 'Contact(Id, Name, LastModifiedDate ORDER BY LastModifiedDate DESC LIMIT ' + maxRecords + '), ' + 'Opportunity(Id, Name, StageName, LastModifiedDate ORDER BY LastModifiedDate DESC LIMIT ' + maxRecords + '), ' + 'Case(Id, CaseNumber, Subject, Status, LastModifiedDate ORDER BY LastModifiedDate DESC LIMIT ' + maxRecords + ')'; List<List<SObject>> searchResults = Search.query(searchQuery); if (searchResults != null && !searchResults.isEmpty()) { context += '\nRECENTLY MODIFIED CONNECTED RECORDS:\n'; for (List<SObject> objList : searchResults) { if (objList == null || objList.isEmpty()) continue; String objType = objList[0].getSObjectType().getDescribe().getName(); for (SObject obj : objList) { Datetime lastModified = (Datetime)obj.get('LastModifiedDate'); if (lastModified == null) continue; context += '• ' + objType + ': '; if (obj.get('Name') != null) { context += (String)obj.get('Name'); } else if (obj.get('CaseNumber') != null) { context += 'Case #' + (String)obj.get('CaseNumber'); if (obj.get('Subject') != null) { context += ': ' + (String)obj.get('Subject'); } } else { context += 'Record ' + obj.Id; } if (obj.get('Status') != null) { context += ' - ' + (String)obj.get('Status'); } else if (obj.get('StageName') != null) { context += ' - ' + (String)obj.get('StageName'); } context += ' (Modified: ' + lastModified.format() + ')\n'; } } } }
+            if (!Test.isRunningTest()) { // SOSL is not supported in tests
+                String searchQuery = 'FIND \'' + recordId + '\' IN ALL FIELDS RETURNING ';
+                
+                // Add standard objects commonly referenced
+                searchQuery += 'Account(Id, Name, LastModifiedDate ORDER BY LastModifiedDate DESC LIMIT ' + maxRecords + '), ';
+                searchQuery += 'Contact(Id, Name, LastModifiedDate ORDER BY LastModifiedDate DESC LIMIT ' + maxRecords + '), ';
+                searchQuery += 'Opportunity(Id, Name, StageName, LastModifiedDate ORDER BY LastModifiedDate DESC LIMIT ' + maxRecords + '), ';
+                searchQuery += 'Case(Id, CaseNumber, Subject, Status, LastModifiedDate ORDER BY LastModifiedDate DESC LIMIT ' + maxRecords + ')';
+                
+                // Execute the search
+                List<List<SObject>> searchResults = Search.query(searchQuery);
+                
+                if (searchResults != null && !searchResults.isEmpty()) {
+                    context += '\nRECENTLY MODIFIED CONNECTED RECORDS:\n';
+                    
+                    for (List<SObject> objList : searchResults) {
+                        if (objList == null || objList.isEmpty()) continue;
+                        
+                        String objType = objList[0].getSObjectType().getDescribe().getName();
+                        
+                        for (SObject obj : objList) {
+                            Datetime lastModified = (Datetime)obj.get('LastModifiedDate');
+                            if (lastModified == null) continue;
+                            
+                            context += '• ' + objType + ': ';
+                            
+                            // Name or equivalent
+                            if (obj.get('Name') != null) {
+                                context += (String)obj.get('Name');
+                            } else if (obj.get('CaseNumber') != null) {
+                                context += 'Case #' + (String)obj.get('CaseNumber');
+                                if (obj.get('Subject') != null) {
+                                    context += ': ' + (String)obj.get('Subject');
+                                }
+                            } else {
+                                context += 'Record ' + obj.Id;
+                            }
+                            
+                            // Status if available
+                            if (obj.get('Status') != null) {
+                                context += ' - ' + (String)obj.get('Status');
+                            } else if (obj.get('StageName') != null) {
+                                context += ' - ' + (String)obj.get('StageName');
+                            }
+                            
+                            // Last modified date
+                            context += ' (Modified: ' + lastModified.format() + ')\n';
+                        }
+                    }
+                }
+            }
             
             return context;
         } catch (Exception e) {
@@ -950,7 +730,14 @@ public with sharing class LLMController {
             String summaries = '\nATTACHED DOCUMENTS:\n';
             for(ContentVersion doc : versions) {
                 summaries += '• ' + doc.Title;
-                if(doc.Description != null) { String description = doc.Description; if(description.length() > 500) { description = description.substring(0, 497) + '...'; } summaries += ' - ' + description; }
+                if(doc.Description != null) {
+                    // Truncate description if too long
+                    String description = doc.Description;
+                    if(description.length() > 500) {
+                        description = description.substring(0, 497) + '...';
+                    }
+                    summaries += ' - ' + description;
+                }
                 summaries += ' (' + doc.FileType + ')\n';
             }
             return summaries;
@@ -967,9 +754,247 @@ public with sharing class LLMController {
      * @return String Formatted text containing the related records information
      */
     private static String getRelatedObjectsData(String recordId, String objectsToSearch) {
-        if (Test.isRunningTest() && USE_MOCK_METHODS_IN_TEST) { return LLMControllerTest.mockRelatedObjectsData(recordId, objectsToSearch); }String context = ''; if (String.isBlank(objectsToSearch) || String.isBlank(recordId)) { return context; } String formattedResults = '\nRELATED OBJECTS DATA:\n'; List<String> objectsList = objectsToSearch.split(','); Integer MAX_RECORDS_PER_OBJECT = 10;try { for (String objName : objectsList) { String trimmedObjName = objName.trim(); if (String.isBlank(trimmedObjName)) continue; System.debug('Processing object: ' + trimmedObjName); if (!checkObjectAccessibility(trimmedObjName)) { formattedResults += '• ' + trimmedObjName + ': Object not accessible\n'; continue; } List<SObject> relatedRecords = queryRelatedRecords(trimmedObjName, recordId, MAX_RECORDS_PER_OBJECT); if (relatedRecords.isEmpty()) { formattedResults += '• ' + trimmedObjName + ': No related records found\n'; continue; } formattedResults += '• ' + trimmedObjName + ' (' + relatedRecords.size() + ' records):\n'; for (SObject record : relatedRecords) { String recordName = getRecordName(record); formattedResults += '  - ' + recordName + '\n'; formattedResults += getKeyFieldsInfo(record); } } return formattedResults; } catch (Exception e) { System.debug('ERROR in getRelatedObjectsData: ' + e.getMessage()); System.debug('Stack trace: ' + e.getStackTraceString()); return '\nError fetching related objects data: ' + e.getMessage(); }}private static Boolean checkObjectAccessibility(String objectName) { try { Schema.DescribeSObjectResult objDescribe = Schema.getGlobalDescribe().get(objectName).getDescribe(); return objDescribe.isAccessible(); } catch (Exception e) { System.debug('Error checking object accessibility for ' + objectName + ': ' + e.getMessage()); return false; } }private static List<SObject> queryRelatedRecords(String objectName, String recordId, Integer recordLimit) { List<SObject> results = new List<SObject>(); try { Schema.DescribeSObjectResult objDescribe = Schema.getGlobalDescribe().get(objectName).getDescribe(); Map<String, Schema.SObjectField> fieldMap = objDescribe.fields.getMap(); List<String> fieldNames = new List<String>(); List<String> textFieldNames = new List<String>(); for (String fieldName : fieldMap.keySet()) { Schema.DescribeFieldResult field = fieldMap.get(fieldName).getDescribe(); if (field.isAccessible()) { fieldNames.add(fieldName); Schema.DisplayType fieldType = field.getType(); if (fieldType == Schema.DisplayType.STRING || fieldType == Schema.DisplayType.TEXTAREA || fieldType == Schema.DisplayType.ID) { textFieldNames.add(fieldName); } } } if (fieldNames.isEmpty()) { return results; } String query = 'SELECT ' + String.join(fieldNames, ',') + ' FROM ' + objectName; String recordObjName = Id.valueOf(recordId).getSObjectType().getDescribe().getName(); List<String> relationshipCriteria = new List<String>(); for (String fieldName : fieldMap.keySet()) { Schema.DescribeFieldResult field = fieldMap.get(fieldName).getDescribe(); if (field.getType() == Schema.DisplayType.REFERENCE && field.isAccessible()) { List<Schema.SObjectType> refToTypes = field.getReferenceTo(); for (Schema.SObjectType refType : refToTypes) { if (refType.getDescribe().getName() == recordObjName) { relationshipCriteria.add(fieldName + ' = :recordId'); break; } } } } if (!relationshipCriteria.isEmpty()) { query += ' WHERE ' + String.join(relationshipCriteria, ' OR '); } else if (!textFieldNames.isEmpty()) { String sosl = 'FIND \'' + recordId + '\' IN ALL FIELDS RETURNING ' + objectName + '(' + String.join(fieldNames, ',') + ' LIMIT ' + recordLimit + ')'; List<List<SObject>> soslResults = Search.query(sosl); if (!soslResults.isEmpty()) { return soslResults[0]; } return results; } else { return results; } query += ' LIMIT ' + recordLimit; results = Database.query(query); return results; } catch (Exception e) { System.debug('Error querying related records for ' + objectName + ': ' + e.getMessage()); return results; } }private static String getRecordName(SObject record) { try { if (record.get('Name') != null) { return (String)record.get('Name'); } else { String[] commonNameFields = new String[]{'Subject', 'Title', 'CaseNumber', 'OrderNumber'}; for (String nameField : commonNameFields) { if (record.get(nameField) != null) { return (String)record.get(nameField); } } } } catch (Exception e) { System.debug('Error getting record name: ' + e.getMessage()); } return record.Id; }private static String getKeyFieldsInfo(SObject record) { String info = ''; try { String[] keyFields = new String[]{'Status', 'Stage', 'Type', 'Amount', 'CloseDate', 'CreatedDate', 'LastModifiedDate', 'OwnerId', 'Owner.Name', 'Description'}; for (String field : keyFields) { try { Object value; Schema.DisplayType fieldType = null; if (field.contains('.')) { String[] parts = field.split('\\.'); SObject relatedObj = record.getSObject(parts[0]); if (relatedObj != null) { value = relatedObj.get(parts[1]); } } else { value = record.get(field); try { Schema.SObjectType sobjectType = record.getSObjectType(); if (sobjectType != null) { Schema.SObjectField fieldToken = sobjectType.getDescribe().fields.getMap().get(field); if (fieldToken != null) { fieldType = fieldToken.getDescribe().getType(); } } } catch (Exception e) { } } if (value != null) { if (field == 'OwnerId') { continue; } String displayValue = formatFieldValue(value, fieldType); info += '    * ' + field + ': ' + displayValue + '\n'; } } catch (Exception e) { continue; } } } catch (Exception e) { System.debug('Error getting key fields info: ' + e.getMessage()); } return info; }
+        if (String.isBlank(objectsToSearch) || String.isBlank(recordId)) {
+            return '';
+        }
+        
+        System.debug('Searching related objects: ' + objectsToSearch);
+        
+        String formattedResults = '\nRELATED OBJECTS DATA:\n';
+        List<String> objectsList = objectsToSearch.split(',');
+        
+        // Limit records per object to avoid context length issues
+        Integer MAX_RECORDS_PER_OBJECT = 10;
+        
+        try {
+            for (String objName : objectsList) {
+                String trimmedObjName = objName.trim();
+                if (String.isBlank(trimmedObjName)) continue;
+                
+                System.debug('Processing object: ' + trimmedObjName);
+                
+                // Check if the object exists and is accessible
+                if (!checkObjectAccessibility(trimmedObjName)) {
+                    formattedResults += '• ' + trimmedObjName + ': Object not accessible\n';
+                    continue;
+                }
+                
+                // Try to find related records
+                List<SObject> relatedRecords = queryRelatedRecords(trimmedObjName, recordId, MAX_RECORDS_PER_OBJECT);
+                
+                if (relatedRecords.isEmpty()) {
+                    formattedResults += '• ' + trimmedObjName + ': No related records found\n';
+                    continue;
+                }
+                
+                // Include information about the related records
+                formattedResults += '• ' + trimmedObjName + ' (' + relatedRecords.size() + ' records):\n';
+                
+                for (SObject record : relatedRecords) {
+                    // Get record name (or ID if Name field not available)
+                    String recordName = getRecordName(record);
+                    formattedResults += '  - ' + recordName + '\n';
+                    
+                    // Add a few key fields if available
+                    formattedResults += getKeyFieldsInfo(record);
+                }
+            }
+            
+            return formattedResults;
+        } catch (Exception e) {
+            System.debug('ERROR in getRelatedObjectsData: ' + e.getMessage());
+            System.debug('Stack trace: ' + e.getStackTraceString());
+            return '\nError fetching related objects data: ' + e.getMessage();
+        }
+    }
     
-    private static String getAttachmentsText(String recordId) {
+    /**
+     * Helper method to check if an object is accessible
+     */
+    private static Boolean checkObjectAccessibility(String objectName) {
+        try {
+            // Get the schema for the object
+            Schema.DescribeSObjectResult objDescribe = Schema.getGlobalDescribe().get(objectName).getDescribe();
+            return objDescribe.isAccessible();
+        } catch (Exception e) {
+            System.debug('Error checking object accessibility for ' + objectName + ': ' + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Helper method to query related records
+     */
+    private static List<SObject> queryRelatedRecords(String objectName, String recordId, Integer recordLimit) {
+        List<SObject> results = new List<SObject>();
+        
+        try {
+            // Get all accessible fields
+            Schema.DescribeSObjectResult objDescribe = Schema.getGlobalDescribe().get(objectName).getDescribe();
+            Map<String, Schema.SObjectField> fieldMap = objDescribe.fields.getMap();
+            
+            // Build a list of accessible fields for the query
+            List<String> fieldNames = new List<String>();
+            List<String> textFieldNames = new List<String>(); // To search for recordId as text
+            
+            for (String fieldName : fieldMap.keySet()) {
+                Schema.DescribeFieldResult field = fieldMap.get(fieldName).getDescribe();
+                if (field.isAccessible()) {
+                    fieldNames.add(fieldName);
+                    
+                    // Track text fields that could contain the recordId
+                    Schema.DisplayType fieldType = field.getType();
+                    if (fieldType == Schema.DisplayType.STRING || 
+                        fieldType == Schema.DisplayType.TEXTAREA ||
+                        fieldType == Schema.DisplayType.ID) {
+                        textFieldNames.add(fieldName);
+                    }
+                }
+            }
+            
+            // If we have no fields, return empty list
+            if (fieldNames.isEmpty()) {
+                return results;
+            }
+            
+            // Build the base query with all fields
+            String query = 'SELECT ' + String.join(fieldNames, ',') + 
+                           ' FROM ' + objectName;
+            
+            // Special case: check if object has a lookup to the record's object type
+            String recordObjName = Id.valueOf(recordId).getSObjectType().getDescribe().getName();
+            List<String> relationshipCriteria = new List<String>();
+            
+            for (String fieldName : fieldMap.keySet()) {
+                Schema.DescribeFieldResult field = fieldMap.get(fieldName).getDescribe();
+                
+                // Check if field is a reference to our record's object type
+                if (field.getType() == Schema.DisplayType.REFERENCE && field.isAccessible()) {
+                    List<Schema.SObjectType> refToTypes = field.getReferenceTo();
+                    for (Schema.SObjectType refType : refToTypes) {
+                        if (refType.getDescribe().getName() == recordObjName) {
+                            relationshipCriteria.add(fieldName + ' = :recordId');
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Build the WHERE clause - either by relationship or by searching text fields
+            if (!relationshipCriteria.isEmpty()) {
+                query += ' WHERE ' + String.join(relationshipCriteria, ' OR ');
+            } else if (!textFieldNames.isEmpty()) {
+                // Fall back to SOSL if no direct relationships found
+                String sosl = 'FIND \'' + recordId + '\' IN ALL FIELDS RETURNING ' + 
+                              objectName + '(' + String.join(fieldNames, ',') + ' LIMIT ' + recordLimit + ')';
+                
+                List<List<SObject>> soslResults = Search.query(sosl);
+                if (!soslResults.isEmpty()) {
+                    return soslResults[0];
+                }
+                return results; // Return empty if SOSL found nothing
+            } else {
+                return results; // No searchable fields found
+            }
+            
+            // Finish building the query with LIMIT
+            query += ' LIMIT ' + recordLimit;
+            
+            // Execute the query and return results
+            results = Database.query(query);
+            return results;
+            
+        } catch (Exception e) {
+            System.debug('Error querying related records for ' + objectName + ': ' + e.getMessage());
+            return results; // Return empty list on error
+        }
+    }
+    
+    /**
+     * Helper method to get the record name or ID
+     */
+    private static String getRecordName(SObject record) {
+        try {
+            if (record.get('Name') != null) {
+                return (String)record.get('Name');
+            } else {
+                // Try common name fields
+                String[] commonNameFields = new String[]{'Subject', 'Title', 'CaseNumber', 'OrderNumber'};
+                for (String nameField : commonNameFields) {
+                    if (record.get(nameField) != null) {
+                        return (String)record.get(nameField);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.debug('Error getting record name: ' + e.getMessage());
+        }
+        
+        // Fall back to ID
+        return record.Id;
+    }
+    
+    /**
+     * Helper method to get key fields information
+     */
+    private static String getKeyFieldsInfo(SObject record) {
+        String info = '';
+        try {
+            // Define fields that are typically important
+            String[] keyFields = new String[]{
+                'Status', 'Stage', 'Type', 'Amount', 'CloseDate', 'CreatedDate', 
+                'LastModifiedDate', 'OwnerId', 'Owner.Name', 'Description'
+            };
+            
+            for (String field : keyFields) {
+                try {
+                    Object value;
+                    Schema.DisplayType fieldType = null;
+                    
+                    // Handle relationship fields
+                    if (field.contains('.')) {
+                        String[] parts = field.split('\\.');
+                        SObject relatedObj = record.getSObject(parts[0]);
+                        if (relatedObj != null) {
+                            value = relatedObj.get(parts[1]);
+                        }
+                    } else {
+                        value = record.get(field);
+                        // Try to get field type if possible
+                        try {
+                            Schema.SObjectType sobjectType = record.getSObjectType();
+                            if (sobjectType != null) {
+                                Schema.SObjectField fieldToken = sobjectType.getDescribe().fields.getMap().get(field);
+                                if (fieldToken != null) {
+                                    fieldType = fieldToken.getDescribe().getType();
+                                }
+                            }
+                        } catch (Exception e) {
+                            // Ignore errors trying to get field type
+                        }
+                    }
+                    
+                    if (value != null) {
+                        if (field == 'OwnerId') {
+                            // Skip OwnerId if we have Owner.Name
+                            continue;
+                        }
+                        
+                        String displayValue = formatFieldValue(value, fieldType);
+                        info += '    * ' + field + ': ' + displayValue + '\n';
+                    }
+                } catch (Exception e) {
+                    // Skip fields that cause errors
+                    continue;
+                }
+            }
+        } catch (Exception e) {
+            System.debug('Error getting key fields info: ' + e.getMessage());
+        }
+        return info;
+    }
+    
+    private static String getAttachmentsBase64(String recordId) {
         // Set maximum total base64 content length (approximately 15k tokens = ~60k characters)
         Integer MAX_TOTAL_LENGTH = 60000;
         
@@ -993,10 +1018,48 @@ public with sharing class LLMController {
                                             WHERE ContentDocumentId IN :contentDocumentIds 
                                             AND IsLatest = true];
             
-            if (versions.isEmpty()) { return ''; } String attachments = ''; Integer currentLength = 0; for (ContentVersion cv : versions) { try { if (cv.VersionData.size() > 1000000) { attachments += '\n\n[FILE: ' + cv.Title + ' - Too large to process]'; continue; } if (cv.FileExtension != null) { String ext = cv.FileExtension.toLowerCase(); if (ext == 'pdf' || ext == 'jpg' || ext == 'jpeg' || ext == 'png' || ext == 'gif') { attachments += '\n\n[FILE: ' + cv.Title + ' - Being processed with Vision AI]'; continue; } } String base64Content = EncodingUtil.base64Encode(cv.VersionData); Integer contentLength = base64Content.length(); if (currentLength + contentLength > MAX_TOTAL_LENGTH) { attachments += '\n\n[Additional files omitted due to size constraints]'; break; } if (contentLength > MAX_TOTAL_LENGTH) { base64Content = base64Content.substring(0, MAX_TOTAL_LENGTH) + '... [content truncated]'; } attachments += '\n\n[FILE: ' + cv.Title + ' (' + cv.FileExtension + ')]\n' + base64Content; currentLength += contentLength; } catch (Exception e) { System.debug('ERROR processing file ' + cv.Title + ': ' + e.getMessage()); attachments += '\n\n[FILE: ' + cv.Title + ' - Failed to process]'; } } return attachments;
+            if (versions.isEmpty()) {
+                return '';
+            }
+            
+            String attachments = '';
+            Integer currentLength = 0;
+            
+            for (ContentVersion cv : versions) {
+                try {
+                    // Skip if file is too large
+                    if (cv.VersionData.size() > 1000000) { // 1MB limit
+                        attachments += '\n\n[FILE: ' + cv.Title + ' - Too large to process]';
+                        continue;
+                    }
+                    
+                    String base64Content = EncodingUtil.base64Encode(cv.VersionData);
+                    Integer contentLength = base64Content.length();
+                    
+                    // Check if adding this content would exceed our limit
+                    if (currentLength + contentLength > MAX_TOTAL_LENGTH) {
+                        attachments += '\n\n[Additional files omitted due to size constraints]';
+                        break;
+                    }
+                    
+                    // If this single file's content is too large, truncate it
+                    if (contentLength > MAX_TOTAL_LENGTH) {
+                        base64Content = base64Content.substring(0, MAX_TOTAL_LENGTH) + '... [content truncated]';
+                    }
+                    
+                    attachments += '\n\n[FILE: ' + cv.Title + ' (' + cv.FileExtension + ')]\n' + base64Content;
+                    currentLength += contentLength;
+                    
+                } catch (Exception e) {
+                    System.debug('ERROR processing file ' + cv.Title + ': ' + e.getMessage());
+                    attachments += '\n\n[FILE: ' + cv.Title + ' - Failed to process]';
+                }
+            }
+            
+            return attachments;
             
         } catch (Exception e) {
-            System.debug('ERROR in getAttachmentsText: ' + e.getMessage());
+            System.debug('ERROR in getAttachmentsBase64: ' + e.getMessage());
             System.debug('Stack trace: ' + e.getStackTraceString());
             throw new AuraHandledException('Failed to process attachments: ' + e.getMessage());
         }
@@ -1008,55 +1071,26 @@ public with sharing class LLMController {
         
         String basePrompt;
         if (operation == 'summarize') {
-            // Enhanced prompt for summarization with clearer structure
-            basePrompt = '**SALESFORCE RECORD ANALYSIS**\n\n' +
-                         'Provide a comprehensive, professional summary of the Salesforce record data below. ' +
-                         'Structure your analysis using these sections:\n\n' +
-                         
-                         '**📋 RECORD SUMMARY**\n' +
-                         '• Record type, ID, and current status/stage\n' +
-                         '• Key identifying information (name, number, title)\n' +
-                         '• Critical dates (created, modified, due dates)\n' +
-                         '• Primary stakeholders and ownership\n\n' +
-                         
-                         '**📊 KEY DATA POINTS**\n' +
-                         '• Important field values and their significance\n' +
-                         '• Financial amounts, quantities, or metrics\n' +
-                         '• Status indicators and progress tracking\n' +
-                         '• Compliance or regulatory information\n\n' +
-                         
-                         '**🔗 RELATIONSHIPS & CONNECTIONS**\n' +
-                         '• Related records (Contacts, Opportunities, Cases, etc.)\n' +
-                         '• Parent-child relationships and dependencies\n' +
-                         '• Cross-references and linked items\n\n' +
-                         
-                         '**📅 RECENT ACTIVITY**\n' +
-                         '• Recent tasks, events, and communications\n' +
-                         '• Workflow actions and approvals\n' +
-                         '• User interactions and updates\n\n' +
-                         
-                         '**📎 ATTACHMENTS & DOCUMENTATION**\n' +
-                         '• Attached files and their purposes\n' +
-                         '• Notes, comments, and annotations\n\n' +
-                         
-                         '**FORMATTING REQUIREMENTS:**\n' +
-                         '• Use bullet points for clarity and scannability\n' +
-                         '• Focus only on data provided (no system limitations mentions)\n' +
-                         '• Be specific with field names and values\n' +
-                         '• Maintain professional, objective tone\n\n' +
-                         '**RECORD DATA TO ANALYZE:**\n\n';
+            // Enhanced prompt for summarization
+            basePrompt = 'Generate a concise yet comprehensive summary report for the following Salesforce record data. Structure the report clearly with numbered sections for:\n\n' +
+                         '1.  **Record Overview:** Key details of the main record. Elaborate on the key fields.\n' +
+                         '2.  **Related Information:** Summarize significant related records (like Contacts, Opportunities, Cases, Invoices, Line Items, etc. if present), highlighting their connection to the main record. Provide details from the available fields for these related records.\n' +
+                         '3.  **Recent Activity:** Summarize any recent Tasks, Events, Emails, or Chatter posts found. Be specific about the activity.\n' +
+                         '4.  **Documents & Notes:** List any attached documents or notes, including titles or brief descriptions if available.\n\n' +
+                         '**Style Guide:**\n' +
+                         '- Be professional, objective, and informative.\n' +
+                         '- Use clear headings (using markdown bolding like **Heading**) for each section.\n' +
+                         '- Use bullet points (•) for lists within sections.\n' +
+                         '- **IMPORTANT: Do NOT mention system errors, query limitations, data retrieval issues, or system constraints.** Focus *only* on summarizing the data *provided* in the context. Do not mention if some information categories (like Activity or Documents) are missing or incomplete; simply omit the section or summarize what *is* available.\n' +
+                         '- **Do NOT include a \"Recommendations\" section** based on missing data or system issues.\n' +
+                         '- Provide a good level of detail based on the information available in the context.\n\n' +
+                         '**RECORD DATA:**\n\n';
         } else {
             // For general questions, adjust the prompt based on whether there's a record context
             if (String.isBlank(context)) {
-                basePrompt = 'You are a helpful AI assistant. Provide a clear, accurate, and comprehensive answer to the following question. ' +
-                           'Use structured formatting with headings and bullet points where appropriate for readability. ' +
-                           'If the question involves multiple parts, address each part systematically.\n\n' +
-                           'QUESTION:\n';
+                basePrompt = 'Answer this question based on your knowledge:\n\n';
             } else {
-                basePrompt = 'You are an expert Salesforce analyst. Answer the following question about the provided Salesforce record data. ' +
-                           'Base your response on the specific record information provided. Use clear formatting with headings and bullet points. ' +
-                           'Reference specific field values and data points from the record in your analysis.\n\n' +
-                           'QUESTION:\n';
+                basePrompt = 'Answer this question about the Salesforce record:\n\n';
             }
         }
         
@@ -1067,7 +1101,21 @@ public with sharing class LLMController {
         Integer promptTokens = prompt.length() / 4;
         
         // If total would exceed limit, trim components
-        if ((baseTokens + contextTokens + attachmentTokens + promptTokens) > maxTokens) { Integer remainingTokens = maxTokens - baseTokens - promptTokens; if (remainingTokens > 0) { Double ratio = remainingTokens / (Double)(contextTokens + attachmentTokens); context = context.substring(0, Math.min(context.length(), (Integer)(contextTokens * ratio * 4))); if (String.isNotBlank(attachments)) { attachments = attachments.substring(0, Math.min(attachments.length(), (Integer)(attachmentTokens * ratio * 4))); } } }
+        if ((baseTokens + contextTokens + attachmentTokens + promptTokens) > maxTokens) {
+            // Allocate tokens proportionally
+            Integer remainingTokens = maxTokens - baseTokens - promptTokens;
+            if (remainingTokens > 0) {
+                Double ratio = remainingTokens / (Double)(contextTokens + attachmentTokens);
+                
+                // Truncate context and attachments
+                context = context.substring(0, Math.min(context.length(), 
+                                                        (Integer)(contextTokens * ratio * 4)));
+                if (String.isNotBlank(attachments)) {
+                    attachments = attachments.substring(0, Math.min(attachments.length(), 
+                                                                    (Integer)(attachmentTokens * ratio * 4)));
+                }
+            }
+        }
         
         String fullPrompt = basePrompt;
         
@@ -1338,26 +1386,378 @@ public with sharing class LLMController {
     }
 
     private static String getFieldHistoryData(String recordId, String objectName) {
-        // When running tests, use mock implementation to avoid SOQL limits
-        if (Test.isRunningTest() && USE_MOCK_METHODS_IN_TEST) {
-            // Call the mock method from LLMControllerTest
-            return LLMControllerTest.mockFieldHistoryData(recordId, objectName);
+        String context = '';
+        try {
+            // For standard objects, the history table is ObjectNameHistory
+            // For custom objects, the history table is ObjectName__History
+            String historyObject = objectName;
+            
+            // Determine if it's a custom object (ends with __c)
+            if (objectName.endsWith('__c')) {
+                historyObject = objectName.replace('__c', '__History');
+            } else {
+                historyObject = objectName + 'History';
+            }
+            
+            // Check if the history object exists in the schema
+            Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
+            if (!gd.containsKey(historyObject)) {
+                // No history tracking for this object
+                return context;
+            }
+            
+            // Build a dynamic query for the history object
+            String query = 'SELECT Id, Field, OldValue, NewValue, CreatedById, CreatedDate FROM ' + 
+                           historyObject + ' WHERE ParentId = :recordId ORDER BY CreatedDate DESC LIMIT 20';
+            
+            List<SObject> historyRecords;
+            try {
+                historyRecords = Database.query(query);
+            } catch (Exception e) {
+                System.debug('Error executing history query: ' + e.getMessage());
+                return context;
+            }
+            
+            if (!historyRecords.isEmpty()) {
+                context += '\nFIELD HISTORY TRACKING:\n';
+                
+                for (SObject histRecord : historyRecords) {
+                    String fieldName = (String)histRecord.get('Field');
+                    Object oldValue = histRecord.get('OldValue');
+                    Object newValue = histRecord.get('NewValue');
+                    Datetime createdDate = (Datetime)histRecord.get('CreatedDate');
+                    
+                    // Format the field name - replace API names with labels if possible
+                    String formattedFieldName = fieldName;
+                    try {
+                        Schema.SObjectField fieldToken = Schema.getGlobalDescribe().get(objectName)?.getDescribe()?.fields?.getMap()?.get(fieldName);
+                        if (fieldToken != null) {
+                            formattedFieldName = fieldToken.getDescribe().getLabel();
+                        }
+                    } catch (Exception e) {
+                        // If we can't get the field label, use the API name
+                        System.debug('Could not get field label: ' + e.getMessage());
+                    }
+                    
+                    // Format the values
+                    String oldValueString = (oldValue != null) ? String.valueOf(oldValue) : 'null';
+                    String newValueString = (newValue != null) ? String.valueOf(newValue) : 'null';
+                    
+                    // Add the history record to the context
+                    context += '• ' + formattedFieldName + ' changed from "' + oldValueString + '" to "' + 
+                               newValueString + '" on ' + createdDate.format() + '\n';
+                }
+            }
+            
+            // Add some commonly used Field History objects that don't follow the standard pattern
+            Set<String> specialHistoryObjects = new Set<String>{
+                'SetupAuditTrail', 'LoginHistory', 'OpportunityFieldHistory', 'CaseHistory', 'LeadHistory'
+            };
+            
+            for (String specialObject : specialHistoryObjects) {
+                if (objectName == specialObject.replace('History', '').replace('FieldHistory', '')) {
+                    try {
+                        String specialQuery = 'SELECT Id, Action, Display, CreatedById, CreatedDate, Section ' +
+                                             'FROM ' + specialObject + ' WHERE ParentId = :recordId ' + 
+                                             'ORDER BY CreatedDate DESC LIMIT 5';
+                        
+                        // For SetupAuditTrail, the query is different
+                        if (specialObject == 'SetupAuditTrail') {
+                            specialQuery = 'SELECT Id, Action, Display, CreatedById, CreatedDate, Section ' +
+                                           'FROM SetupAuditTrail WHERE Display LIKE \'%' + recordId + '%\' ' +
+                                           'ORDER BY CreatedDate DESC LIMIT 5';
+                        }
+                        
+                        List<SObject> specialRecords = Database.query(specialQuery);
+                        if (!specialRecords.isEmpty()) {
+                            context += '\n' + specialObject.toUpperCase() + ':\n';
+                            for (SObject record : specialRecords) {
+                                context += '• ' + record.get('Action') + ': ' + record.get('Display');
+                                if (record.get('Section') != null) {
+                                    context += ' in ' + record.get('Section');
+                                }
+                                context += ' (' + ((Datetime)record.get('CreatedDate')).format() + ')\n';
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.debug('Error querying ' + specialObject + ': ' + e.getMessage());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.debug('Error in getFieldHistoryData: ' + e.getMessage());
         }
         
-        String context = ''; try { String historyObject = objectName; if (objectName.endsWith('__c')) { historyObject = objectName.replace('__c', '__History'); } else { historyObject = objectName + 'History'; } Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe(); if (!gd.containsKey(historyObject)) { return context; } String query = 'SELECT Id, Field, OldValue, NewValue, CreatedById, CreatedDate FROM ' + historyObject + ' WHERE ParentId = :recordId ORDER BY CreatedDate DESC LIMIT 20'; List<SObject> historyRecords; try { historyRecords = Database.query(query); } catch (Exception e) { System.debug('Error executing history query: ' + e.getMessage()); return context; } if (!historyRecords.isEmpty()) { context += '\nFIELD HISTORY TRACKING:\n'; for (SObject histRecord : historyRecords) { String fieldName = (String)histRecord.get('Field'); Object oldValue = histRecord.get('OldValue'); Object newValue = histRecord.get('NewValue'); Datetime createdDate = (Datetime)histRecord.get('CreatedDate'); String formattedFieldName = fieldName; try { Schema.SObjectField fieldToken = Schema.getGlobalDescribe().get(objectName)?.getDescribe()?.fields?.getMap()?.get(fieldName); if (fieldToken != null) { formattedFieldName = fieldToken.getDescribe().getLabel(); } } catch (Exception e) { System.debug('Could not get field label: ' + e.getMessage()); } String oldValueString = (oldValue != null) ? String.valueOf(oldValue) : 'null'; String newValueString = (newValue != null) ? String.valueOf(newValue) : 'null'; context += '• ' + formattedFieldName + ' changed from "' + oldValueString + '" to "' + newValueString + '" on ' + createdDate.format() + '\n'; } } Set<String> specialHistoryObjects = new Set<String>{'SetupAuditTrail', 'LoginHistory', 'OpportunityFieldHistory', 'CaseHistory', 'LeadHistory'}; for (String specialObject : specialHistoryObjects) { if (objectName == specialObject.replace('History', '').replace('FieldHistory', '')) { try { String specialQuery = 'SELECT Id, Action, Display, CreatedById, CreatedDate, Section ' + 'FROM ' + specialObject + ' WHERE ParentId = :recordId ' + 'ORDER BY CreatedDate DESC LIMIT 5'; if (specialObject == 'SetupAuditTrail') { specialQuery = 'SELECT Id, Action, Display, CreatedById, CreatedDate, Section ' + 'FROM SetupAuditTrail WHERE Display LIKE \'%' + recordId + '%\' ' + 'ORDER BY CreatedDate DESC LIMIT 5'; } List<SObject> specialRecords = Database.query(specialQuery); if (!specialRecords.isEmpty()) { context += '\n' + specialObject.toUpperCase() + ':\n'; for (SObject record : specialRecords) { context += '• ' + record.get('Action') + ': ' + record.get('Display'); if (record.get('Section') != null) { context += ' in ' + record.get('Section'); } context += ' (' + ((Datetime)record.get('CreatedDate')).format() + ')\n'; } } } catch (Exception e) { System.debug('Error querying ' + specialObject + ': ' + e.getMessage()); } } } } catch (Exception e) { System.debug('Error in getFieldHistoryData: ' + e.getMessage()); } return context;
+        return context;
+    }
+
+    private static String getChildRelationships(String recordId, Schema.SObjectType objectType) {
+        String context = '';
+        Integer MAX_CHILD_RECORDS = 50; // Maximum records to return per child relationship
+        
+        try {
+            System.debug('Starting getChildRelationships for object: ' + objectType.getDescribe().getName() + ', record ID: ' + recordId);
+            
+            // Get all child relationships from the object's describe result
+            List<Schema.ChildRelationship> childRelationships = objectType.getDescribe().getChildRelationships();
+            System.debug('Found ' + childRelationships.size() + ' potential child relationships');
+            
+            // Track processed relationships to avoid duplicates
+            Set<String> processedRelationships = new Set<String>();
+            
+            for (Schema.ChildRelationship rel : childRelationships) {
+                try {
+                    // Skip if null or if we can't access 
+                    if (rel.getChildSObject() == null) {
+                        continue;
+                    }
+                    
+                    // Get the child object info
+                    Schema.SObjectType childObjectType = rel.getChildSObject();
+                    String childObjectName = childObjectType.getDescribe().getName();
+                    
+                    // Debug the relationship we're examining
+                    System.debug('Checking child relationship: ' + childObjectName);
+                    
+                    // Check if the child object is accessible
+                    if (!childObjectType.getDescribe().isAccessible()) {
+                        System.debug('Child object ' + childObjectName + ' is not accessible, skipping');
+                        continue;
+                    }
+                    
+                    // Skip already processed child objects
+                    Set<String> excludedObjects = new Set<String>{
+                        'AttachedContentNote', 'CombinedAttachment', 'ContentDocumentLink',
+                        'EntitySubscription', 'FlowRecordRelation',
+                        'ProcessInstance', 'Vote', 'NetworkUserHistoryRecent'
+                    };
+                    if (excludedObjects.contains(childObjectName)) {
+                        System.debug('Skipping excluded object ' + childObjectName);
+                        continue;
+                    }
+
+                    // Add known non-queryable objects or views to prevent exceptions
+                    Set<String> nonQueryableObjects = new Set<String>{
+                        'ActivityHistory', 'OpenActivity', 'NoteAndAttachment',
+                        'ProcessInstanceHistory', 'RecordActionHistory',
+                        'ContentDocumentLinkChangeEvent', 'ContentVersionChangeEvent',
+                        'EmailMessageChangeEvent', 'EventChangeEvent', 'EventRelationChangeEvent',
+                        'FeedCommentChangeEvent', 'FeedItemChangeEvent', 'FeedLikeChangeEvent',
+                        'FeedPollChoiceVoteChangeEvent', 'FeedSignalChangeEvent',
+                        'FeedTrackedChangeChangeEvent', 'FlowExecutionErrorEvent',
+                        'FlowOrchestrationWorkItemChangeEvent', 'FlowRecordRelationChangeEvent',
+                        'PendingServiceRoutingChangeEvent', 'ProcessExceptionChangeEvent',
+                        'ProcessExceptionEvent', 'ProcessInstanceChangeEvent',
+                        'RecordActionChangeEvent', 'RecordAlertChangeEvent',
+                        'TaskChangeEvent', 'TopicAssignmentChangeEvent',
+                        'UserDefinedLabelAssignmentChangeEvent', 'VideoCallChangeEvent',
+                        'VoiceCallChangeEvent'
+                    };
+                    if (nonQueryableObjects.contains(childObjectName)) {
+                        System.debug('Skipping non-queryable object ' + childObjectName);
+                        continue;
+                    }
+                    
+                    // Mark this relationship as processed
+                    processedRelationships.add(childObjectName);
+                    
+                    Schema.DescribeSObjectResult childObjectDescribe = childObjectType.getDescribe();
+                    
+                    // Get the relationship field name (field on child that points to parent)
+                    String relationshipFieldName = '';
+                    try {
+                        relationshipFieldName = rel.getField().getDescribe().getName();
+                        System.debug('Using relationship field: ' + relationshipFieldName);
+                    } catch (Exception e) {
+                        System.debug('Could not get relationship field name: ' + e.getMessage());
+                        continue;
+                    }
+                    
+                    if (String.isBlank(relationshipFieldName)) {
+                        System.debug('Blank relationship field name for ' + childObjectName + ', skipping');
+                        continue;
+                    }
+                    
+                    // Get fields for query: prioritize Name, standard naming fields, and common fields
+                    List<String> fieldsToQuery = new List<String>{'Id'};
+                    
+                    try {
+                        Map<String, Schema.SObjectField> childFieldMap = childObjectDescribe.fields.getMap();
+                        
+                        // First try to get the Name field
+                        if (childFieldMap.containsKey('Name') && childFieldMap.get('Name').getDescribe().isAccessible()) {
+                            fieldsToQuery.add('Name');
+                        }
+                        
+                        // Common alternative name fields
+                        List<String> nameFields = new List<String>{
+                            'Subject', 'Title', 'CaseNumber', 'OrderNumber', 'InvoiceNumber', 
+                            'LineItemNumber', 'Description'
+                        };
+                        
+                        for (String nameField : nameFields) {
+                            if (childFieldMap.containsKey(nameField) && childFieldMap.get(nameField).getDescribe().isAccessible() && !fieldsToQuery.contains(nameField)) {
+                                fieldsToQuery.add(nameField);
+                            }
+                        }
+                        
+                        // Build and execute the query
+                        String fieldListStr = String.join(fieldsToQuery, ',');
+                        String query = 'SELECT ' + fieldListStr + 
+                                    ' FROM ' + childObjectName + 
+                                    ' WHERE ' + relationshipFieldName + ' = :recordId';
+                                            
+                        
+                        query += ' LIMIT ' + MAX_CHILD_RECORDS;
+                        
+                        System.debug('Executing query: ' + query);
+                        List<SObject> childRecords;
+                        try {
+                            childRecords = Database.query(query);
+                            System.debug('Found ' + childRecords.size() + ' records for relationship ' + childObjectName);
+                        } catch(Exception e) {
+                            System.debug('ERROR executing query for ' + childObjectName + ': ' + e.getMessage());
+                            continue;
+                        }
+                        
+                        // If we found child records, add them to the context
+                        if (!childRecords.isEmpty()) {
+                            // Get a prettier name for the relationship by removing __c and using object label
+                            String relationshipLabel = childObjectDescribe.getLabel();
+                            if (childRecords.size() > 1) {
+                                // Make it plural if we have multiple records
+                                relationshipLabel = relationshipLabel.endsWith('y') ? 
+                                    relationshipLabel.substring(0, relationshipLabel.length()-1) + 'ies' : 
+                                    (relationshipLabel.endsWith('s') ? relationshipLabel : relationshipLabel + 's');
+                            }
+                            
+                            context += '\n' + relationshipLabel.toUpperCase() + ' (' + childRecords.size() + 
+                                    (childRecords.size() == MAX_CHILD_RECORDS ? '+' : '') + '):\n';
+                            
+                            // Add each record
+                            for (SObject childRecord : childRecords) {
+                                try {
+                                    // Get the display name for this record
+                                    String recordName = getRecordDisplayName(childRecord, fieldsToQuery);
+                                    context += '• ' + recordName;
+                                    
+                                    // Dynamically add a few key available fields for context
+                                    Integer fieldsAdded = 0;
+                                    Integer MAX_FIELDS_TO_ADD = 4; // Max additional fields to show per record
+
+                                    // Define field type priorities for display
+                                    List<Schema.DisplayType> fieldTypePriority = new List<Schema.DisplayType>{
+                                        Schema.DisplayType.CURRENCY,
+                                        Schema.DisplayType.DATE,
+                                        Schema.DisplayType.DATETIME,
+                                        Schema.DisplayType.PICKLIST,
+                                        Schema.DisplayType.STRING,
+                                        Schema.DisplayType.TEXTAREA
+                                    };
+
+                                    // Sort available fields by priority then alphabetically
+                                    List<String> sortedFieldNames = new List<String>(childFieldMap.keySet());
+                                    sortedFieldNames.sort(); // Basic alphabetical sort
+
+                                    // Iterate through priority types first
+                                    Set<String> processedForDisplay = new Set<String>{ 'Id', 'Name', relationshipFieldName }; // Avoid re-displaying these
+                                    processedForDisplay.addAll(nameFields); // Avoid re-displaying common name fields
+
+                                    for (Schema.DisplayType priorityType : fieldTypePriority) {
+                                        if (fieldsAdded >= MAX_FIELDS_TO_ADD) break;
+                                        for (String fieldName : sortedFieldNames) {
+                                            if (fieldsAdded >= MAX_FIELDS_TO_ADD) break;
+                                            if (processedForDisplay.contains(fieldName)) continue;
+
+                                            Schema.DescribeFieldResult fieldDescribe = childFieldMap.get(fieldName).getDescribe();
+                                            if (fieldDescribe.getType() == priorityType && fieldDescribe.isAccessible()) {
+                                                Object fieldValue = childRecord.get(fieldName);
+                                                if (fieldValue != null) {
+                                                    String displayValue = formatFieldValue(fieldValue, fieldDescribe.getType());
+                                                    
+                                                    context += ' - ' + fieldDescribe.getLabel() + ': ' + displayValue;
+                                                    processedForDisplay.add(fieldName);
+                                                    fieldsAdded++;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    context += '\n';
+                                } catch (Exception e) {
+                                    // Log the error internally but *do not* add it to the context shown to the user
+                                    System.debug('Error processing child record ' + childRecord?.Id + ' for object ' + childObjectName + ': ' + e.getMessage());
+                                    continue; // Skip this record but continue with others
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.debug('Error processing fields or querying for ' + childObjectName + ': ' + e.getMessage());
+                    }
+                } catch (Exception e) {
+                    System.debug('Error processing relationship for child object type: ' + e.getMessage());
+                    continue; // Skip this relationship but continue with others
+                }
+            }
+            
+            return context;
+        } catch (Exception e) {
+            System.debug('ERROR in getChildRelationships: ' + e.getMessage());
+            System.debug(e.getStackTraceString());
+            return '\nNOTE: Error retrieving child relationships: ' + e.getMessage();
+        }
     }
 
     /**
-     * Mock methods for testing to avoid SOQL query limits
+     * Helper method to get a display name for a record
      */
-    @TestVisible
-    private static Boolean USE_MOCK_METHODS_IN_TEST = true;
-    
-    private static String getChildRelationships(String recordId, Schema.SObjectType objectType) {
-        // When running tests, use mock implementation to avoid SOQL limits
-        if (Test.isRunningTest() && USE_MOCK_METHODS_IN_TEST) {
-            // Call the mock method from LLMControllerTest
-            return LLMControllerTest.mockGetChildRelationships(recordId, objectType);}String context = ''; Integer MAX_CHILD_RECORDS = 50; try { System.debug('Starting getChildRelationships for object: ' + objectType.getDescribe().getName() + ', record ID: ' + recordId); List<Schema.ChildRelationship> childRelationships = objectType.getDescribe().getChildRelationships(); System.debug('Found ' + childRelationships.size() + ' potential child relationships'); Set<String> processedRelationships = new Set<String>(); for (Schema.ChildRelationship rel : childRelationships) { try { if (rel.getChildSObject() == null) { continue; } Schema.SObjectType childObjectType = rel.getChildSObject(); String childObjectName = childObjectType.getDescribe().getName(); System.debug('Checking child relationship: ' + childObjectName); if (!childObjectType.getDescribe().isAccessible()) { System.debug('Child object ' + childObjectName + ' is not accessible, skipping'); continue; } Set<String> excludedObjects = new Set<String>{'AttachedContentNote', 'CombinedAttachment', 'ContentDocumentLink', 'EntitySubscription', 'FlowRecordRelation', 'ProcessInstance', 'Vote', 'NetworkUserHistoryRecent'}; if (excludedObjects.contains(childObjectName)) { System.debug('Skipping excluded object ' + childObjectName); continue; } Set<String> nonQueryableObjects = new Set<String>{'ActivityHistory', 'OpenActivity', 'NoteAndAttachment', 'ProcessInstanceHistory', 'RecordActionHistory', 'ContentDocumentLinkChangeEvent', 'ContentVersionChangeEvent', 'EmailMessageChangeEvent', 'EventChangeEvent', 'EventRelationChangeEvent', 'FeedCommentChangeEvent', 'FeedItemChangeEvent', 'FeedLikeChangeEvent', 'FeedPollChoiceVoteChangeEvent', 'FeedSignalChangeEvent', 'FeedTrackedChangeChangeEvent', 'FlowExecutionErrorEvent', 'FlowOrchestrationWorkItemChangeEvent', 'FlowRecordRelationChangeEvent', 'PendingServiceRoutingChangeEvent', 'ProcessExceptionChangeEvent', 'ProcessExceptionEvent', 'ProcessInstanceChangeEvent', 'RecordActionChangeEvent', 'RecordAlertChangeEvent', 'TaskChangeEvent', 'TopicAssignmentChangeEvent', 'UserDefinedLabelAssignmentChangeEvent', 'VideoCallChangeEvent', 'VoiceCallChangeEvent'}; if (nonQueryableObjects.contains(childObjectName)) { System.debug('Skipping non-queryable object ' + childObjectName); continue; } processedRelationships.add(childObjectName); Schema.DescribeSObjectResult childObjectDescribe = childObjectType.getDescribe(); String relationshipFieldName = ''; try { relationshipFieldName = rel.getField().getDescribe().getName(); System.debug('Using relationship field: ' + relationshipFieldName); } catch (Exception e) { System.debug('Could not get relationship field name: ' + e.getMessage()); continue; } if (String.isBlank(relationshipFieldName)) { System.debug('Blank relationship field name for ' + childObjectName + ', skipping'); continue; } List<String> fieldsToQuery = new List<String>{'Id'}; try { Map<String, Schema.SObjectField> childFieldMap = childObjectDescribe.fields.getMap(); if (childFieldMap.containsKey('Name') && childFieldMap.get('Name').getDescribe().isAccessible()) { fieldsToQuery.add('Name'); } List<String> nameFields = new List<String>{'Subject', 'Title', 'CaseNumber', 'OrderNumber', 'InvoiceNumber', 'LineItemNumber', 'Description'}; for (String nameField : nameFields) { if (childFieldMap.containsKey(nameField) && childFieldMap.get(nameField).getDescribe().isAccessible() && !fieldsToQuery.contains(nameField)) { fieldsToQuery.add(nameField); } } String fieldListStr = String.join(fieldsToQuery, ','); String query = 'SELECT ' + fieldListStr + ' FROM ' + childObjectName + ' WHERE ' + relationshipFieldName + ' = :recordId'; query += ' LIMIT ' + MAX_CHILD_RECORDS; System.debug('Executing query: ' + query); List<SObject> childRecords; try { childRecords = Database.query(query); System.debug('Found ' + childRecords.size() + ' records for relationship ' + childObjectName); } catch(Exception e) { System.debug('ERROR executing query for ' + childObjectName + ': ' + e.getMessage()); continue; } if (!childRecords.isEmpty()) { String relationshipLabel = childObjectDescribe.getLabel(); if (childRecords.size() > 1) { relationshipLabel = relationshipLabel.endsWith('y') ? relationshipLabel.substring(0, relationshipLabel.length()-1) + 'ies' : (relationshipLabel.endsWith('s') ? relationshipLabel : relationshipLabel + 's'); } context += '\n' + relationshipLabel.toUpperCase() + ' (' + childRecords.size() + (childRecords.size() == MAX_CHILD_RECORDS ? '+' : '') + '):\n'; for (SObject childRecord : childRecords) { try { String recordName = getRecordDisplayName(childRecord, fieldsToQuery); context += '• ' + recordName; Integer fieldsAdded = 0; Integer MAX_FIELDS_TO_ADD = 4; List<Schema.DisplayType> fieldTypePriority = new List<Schema.DisplayType>{Schema.DisplayType.CURRENCY, Schema.DisplayType.DATE, Schema.DisplayType.DATETIME, Schema.DisplayType.PICKLIST, Schema.DisplayType.STRING, Schema.DisplayType.TEXTAREA}; List<String> sortedFieldNames = new List<String>(childFieldMap.keySet()); sortedFieldNames.sort(); Set<String> processedForDisplay = new Set<String>{'Id', 'Name', relationshipFieldName}; processedForDisplay.addAll(nameFields); for (Schema.DisplayType priorityType : fieldTypePriority) { if (fieldsAdded >= MAX_FIELDS_TO_ADD) break; for (String fieldName : sortedFieldNames) { if (fieldsAdded >= MAX_FIELDS_TO_ADD) break; if (processedForDisplay.contains(fieldName)) continue; Schema.DescribeFieldResult fieldDescribe = childFieldMap.get(fieldName).getDescribe(); if (fieldDescribe.getType() == priorityType && fieldDescribe.isAccessible()) { Object fieldValue = childRecord.get(fieldName); if (fieldValue != null) { String displayValue = formatFieldValue(fieldValue, fieldDescribe.getType()); context += ' - ' + fieldDescribe.getLabel() + ': ' + displayValue; processedForDisplay.add(fieldName); fieldsAdded++; } } } } context += '\n'; } catch (Exception e) { System.debug('Error processing child record ' + childRecord?.Id + ' for object ' + childObjectName + ': ' + e.getMessage()); continue; } } } } catch (Exception e) { System.debug('Error processing fields or querying for ' + childObjectName + ': ' + e.getMessage()); } } catch (Exception e) { System.debug('Error processing relationship for child object type: ' + e.getMessage()); continue; } } return context; } catch (Exception e) { System.debug('ERROR in getChildRelationships: ' + e.getMessage()); System.debug(e.getStackTraceString()); return '\nNOTE: Error retrieving child relationships: ' + e.getMessage(); }}private static String getRecordDisplayName(SObject record, List<String> availableFields) { List<String> nameFieldPriority = new List<String>{'Name', 'Subject', 'Title', 'CaseNumber', 'OrderNumber', 'InvoiceNumber', 'Description'}; for (String field : nameFieldPriority) { if (availableFields.contains(field) && record.get(field) != null) { return String.valueOf(record.get(field)); } } return String.valueOf(record.Id); }private static String formatFieldValue(Object fieldValue, Schema.DisplayType fieldType) { if (fieldValue == null) { return 'null'; } String displayValue; if (fieldValue instanceof Datetime) { displayValue = ((Datetime)fieldValue).format(); } else if (fieldValue instanceof Date) { displayValue = ((Date)fieldValue).format(); } else if (fieldType == Schema.DisplayType.CURRENCY && fieldValue instanceof Decimal) { Decimal amount = (Decimal)fieldValue; displayValue = '$' + amount.setScale(2); } else { displayValue = String.valueOf(fieldValue); if (displayValue.length() > 100) { displayValue = displayValue.substring(0, 97) + '...'; } } return displayValue; }
+    private static String getRecordDisplayName(SObject record, List<String> availableFields) {
+        // Priority order for finding a name field
+        List<String> nameFieldPriority = new List<String>{
+            'Name', 'Subject', 'Title', 'CaseNumber', 'OrderNumber', 'InvoiceNumber', 'Description'
+        };
+        
+        for (String field : nameFieldPriority) {
+            if (availableFields.contains(field) && record.get(field) != null) {
+                return String.valueOf(record.get(field));
+            }
+        }
+        
+        // Fall back to ID if no name field found
+        return String.valueOf(record.Id);
+    }
+
+    /**
+     * Format a field value for display, applying appropriate formatting based on type
+     * @param fieldValue The value to format
+     * @param fieldType The Schema.DisplayType if available (optional)
+     * @return String The formatted value as a string
+     */
+    private static String formatFieldValue(Object fieldValue, Schema.DisplayType fieldType) {
+        if (fieldValue == null) {
+            return 'null';
+        }
+        
+        String displayValue;
+        
+        // Format based on field type
+        if (fieldValue instanceof Datetime) {
+            displayValue = ((Datetime)fieldValue).format();
+        } else if (fieldValue instanceof Date) {
+            displayValue = ((Date)fieldValue).format();
+        } else if (fieldType == Schema.DisplayType.CURRENCY && fieldValue instanceof Decimal) {
+            Decimal amount = (Decimal)fieldValue;
+            displayValue = '$' + amount.setScale(2);
+        } else {
+            displayValue = String.valueOf(fieldValue);
+            // Truncate long text fields
+            if (displayValue.length() > 100) {
+                displayValue = displayValue.substring(0, 97) + '...';
+            }
+        }
+        
+        return displayValue;
+    }
 
     /**
      * @description Saves an analysis summary to a specified field on a record
@@ -1389,7 +1789,51 @@ public with sharing class LLMController {
             }
             
             // Verify the field is updateable
-            Schema.DescribeFieldResult fieldDescribe = fieldMap.get(fieldApiName).getDescribe(); if (!fieldDescribe.isUpdateable()) { throw new AuraHandledException('Field ' + fieldApiName + ' is not updateable. Check your permissions.'); } if (analysisText == 'FIELD_CHECK_ONLY') { System.debug('Field check only mode - field exists and is valid. No update performed.'); return; } if (String.isBlank(analysisText)) { throw new AuraHandledException('Missing required parameter: analysisText is required for field updates'); } String processedText = analysisText.length() > 600 ? analysisText.substring(0, 597) + '...' : analysisText; Schema.DisplayType fieldType = fieldDescribe.getType(); if (fieldType == Schema.DisplayType.STRING) { Integer maxLength = fieldDescribe.getLength(); if (processedText.length() > maxLength) { processedText = processedText.substring(0, maxLength); System.debug('Text truncated to match field length limit of ' + maxLength + ' characters'); } } else if (fieldType == Schema.DisplayType.TEXTAREA) { Integer maxLength = fieldDescribe.getLength(); if (maxLength > 0 && processedText.length() > maxLength) { processedText = processedText.substring(0, maxLength); System.debug('Text truncated to match field length limit of ' + maxLength + ' characters'); } } else if (fieldType == Schema.DisplayType.TEXTAREA && fieldDescribe.isHtmlFormatted()) { if (!processedText.contains('<p>') && !processedText.contains('<br')) { processedText = processedText.replace('\n', '<br/>'); } }
+            Schema.DescribeFieldResult fieldDescribe = fieldMap.get(fieldApiName).getDescribe();
+            if (!fieldDescribe.isUpdateable()) {
+                throw new AuraHandledException('Field ' + fieldApiName + ' is not updateable. Check your permissions.');
+            }
+            
+            // Special mode just to check if the field exists - return early without updating
+            if (analysisText == 'FIELD_CHECK_ONLY') {
+                System.debug('Field check only mode - field exists and is valid. No update performed.');
+                return;
+            }
+            
+            // Validate the analysis text is provided for actual updates
+            if (String.isBlank(analysisText)) {
+                throw new AuraHandledException('Missing required parameter: analysisText is required for field updates');
+            }
+            
+            // Hard limit to 600 characters no matter what
+            String processedText = analysisText.length() > 600 ? analysisText.substring(0, 597) + '...' : analysisText;
+            
+            // Determine field type and handle content appropriately
+            Schema.DisplayType fieldType = fieldDescribe.getType();
+            
+            // For standard text fields, ensure we're within length limits
+            if (fieldType == Schema.DisplayType.STRING) {
+                Integer maxLength = fieldDescribe.getLength();
+                if (processedText.length() > maxLength) {
+                    processedText = processedText.substring(0, maxLength);
+                    System.debug('Text truncated to match field length limit of ' + maxLength + ' characters');
+                }
+            } 
+            // For text area fields, check if there's a limit and respect it
+            else if (fieldType == Schema.DisplayType.TEXTAREA) {
+                Integer maxLength = fieldDescribe.getLength();
+                if (maxLength > 0 && processedText.length() > maxLength) {
+                    processedText = processedText.substring(0, maxLength);
+                    System.debug('Text truncated to match field length limit of ' + maxLength + ' characters');
+                }
+            }
+            // For rich text fields, ensure proper HTML formatting
+            else if (fieldType == Schema.DisplayType.TEXTAREA && fieldDescribe.isHtmlFormatted()) {
+                // Replace newlines with HTML breaks if not already HTML
+                if (!processedText.contains('<p>') && !processedText.contains('<br')) {
+                    processedText = processedText.replace('\n', '<br/>');
+                }
+            }
             
             // Create a generic SObject for the update
             SObject record = objectType.newSObject();
@@ -1405,6 +1849,290 @@ public with sharing class LLMController {
             System.debug('Stack trace: ' + e.getStackTraceString());
             throw new AuraHandledException('Error saving analysis: ' + e.getMessage());
         }
+    }
+
+    /**
+     * @description Queries specified objects for reporting data
+     * @param reportObjects Comma-separated list of object API names (e.g., "Account,Case,Contact")
+     * @return String Formatted report data for the LLM
+     */
+    private static String getReportData(String reportObjects) {
+        System.debug('Starting getReportData for objects: ' + reportObjects);
+        
+        if (String.isBlank(reportObjects)) {
+            return '';
+        }
+        
+        String reportContext = '\n\nREPORTING DATA:\n';
+        reportContext += '=====================\n';
+        
+        try {
+            // Parse comma-delimited object names
+            List<String> objectNames = reportObjects.split(',');
+            
+            for (String objectName : objectNames) {
+                objectName = objectName.trim();
+                
+                if (String.isBlank(objectName)) {
+                    continue;
+                }
+                
+                try {
+                    // Get object type and verify it exists
+                    Schema.SObjectType objectType = Schema.getGlobalDescribe().get(objectName);
+                    if (objectType == null) {
+                        System.debug('Object ' + objectName + ' not found, skipping');
+                        continue;
+                    }
+                    
+                    Schema.DescribeSObjectResult objectDescribe = objectType.getDescribe();
+                    
+                    // Check if user has access to this object
+                    if (!objectDescribe.isAccessible()) {
+                        System.debug('User does not have access to ' + objectName + ', skipping');
+                        continue;
+                    }
+                    
+                    // Get essential fields for this object
+                    List<String> fieldsToQuery = getEssentialFields(objectDescribe);
+                    
+                    if (fieldsToQuery.isEmpty()) {
+                        System.debug('No accessible fields found for ' + objectName + ', skipping');
+                        continue;
+                    }
+                    
+                    // Build query with limit of 10,000 records
+                    String query = 'SELECT ' + String.join(fieldsToQuery, ', ') + 
+                                  ' FROM ' + objectName + 
+                                  ' ORDER BY CreatedDate DESC LIMIT 10000';
+                    
+                    System.debug('Executing query: ' + query);
+                    List<SObject> records = Database.query(query);
+                    
+                    // Add object data to context
+                    reportContext += '\n' + objectDescribe.getLabel() + ' (' + objectName + '):\n';
+                    reportContext += 'Total Records: ' + records.size() + '\n';
+                    
+                    // Add summary statistics
+                    reportContext += getObjectSummaryStats(records, objectDescribe, fieldsToQuery);
+                    
+                    // Add sample of recent records (up to 50 for readability)
+                    if (!records.isEmpty()) {
+                        reportContext += '\nRecent Records (showing up to 50):\n';
+                        Integer recordCount = 0;
+                        for (SObject record : records) {
+                            if (recordCount >= 50) break;
+                            
+                            reportContext += '- ';
+                            
+                            // Try to get a meaningful name/identifier
+                            String recordName = getRecordDisplayName(record, fieldsToQuery);
+                            reportContext += recordName;
+                            
+                            // Add key field values
+                            for (String fieldName : fieldsToQuery) {
+                                if (fieldName.toLowerCase() == 'id' || fieldName.toLowerCase() == 'name') {
+                                    continue; // Skip ID and Name as they're already included
+                                }
+                                
+                                Object fieldValue = record.get(fieldName);
+                                if (fieldValue != null) {
+                                    String fieldLabel = objectDescribe.fields.getMap().get(fieldName).getDescribe().getLabel();
+                                    reportContext += ' | ' + fieldLabel + ': ' + String.valueOf(fieldValue);
+                                }
+                            }
+                            
+                            reportContext += '\n';
+                            recordCount++;
+                        }
+                    }
+                    
+                    reportContext += '\n---\n';
+                    
+                } catch (Exception e) {
+                    System.debug('Error processing object ' + objectName + ': ' + e.getMessage());
+                    reportContext += 'Error accessing ' + objectName + ': ' + e.getMessage() + '\n';
+                }
+            }
+            
+            reportContext += '\nNOTE: You can answer questions about counts, trends, statuses, and other data analysis based on the above information.\n';
+            reportContext += 'Examples: "How many Cases are open?", "What Accounts were created this month?", "Show me Contact distribution by Account"\n';
+            
+        } catch (Exception e) {
+            System.debug('ERROR in getReportData: ' + e.getMessage());
+            reportContext += 'Error generating report data: ' + e.getMessage() + '\n';
+        }
+        
+        return reportContext;
+    }
+    
+    /**
+     * @description Gets essential fields for an object for reporting
+     * @param objectDescribe The object describe result
+     * @return List<String> List of field API names to query
+     */
+    private static List<String> getEssentialFields(Schema.DescribeSObjectResult objectDescribe) {
+        List<String> fields = new List<String>();
+        Map<String, Schema.SObjectField> fieldMap = objectDescribe.fields.getMap();
+        
+        // Always include Id
+        fields.add('Id');
+        
+        // Priority fields to include if available
+        List<String> priorityFields = new List<String>{
+            'Name', 'Subject', 'Title', 'Status', 'RecordType.Name', 'RecordTypeId',
+            'CreatedDate', 'LastModifiedDate', 'OwnerId', 'Owner.Name',
+            'Type', 'Priority', 'Origin', 'AccountId', 'Account.Name',
+            'ContactId', 'Contact.Name', 'Stage', 'StageName', 'Amount',
+            'CloseDate', 'Probability', 'LeadSource', 'Industry'
+        };
+        
+        // Add priority fields if they exist and are accessible
+        for (String fieldName : priorityFields) {
+            if (fieldName.contains('.')) {
+                // Handle relationship fields
+                String[] parts = fieldName.split('\\.');
+                String relationshipField = parts[0];
+                
+                if (fieldMap.containsKey(relationshipField)) {
+                    Schema.DescribeFieldResult fieldDescribe = fieldMap.get(relationshipField).getDescribe();
+                    if (fieldDescribe.isAccessible() && fieldDescribe.getType() == Schema.DisplayType.REFERENCE) {
+                        fields.add(fieldName);
+                    }
+                }
+            } else {
+                // Handle regular fields
+                if (fieldMap.containsKey(fieldName)) {
+                    Schema.DescribeFieldResult fieldDescribe = fieldMap.get(fieldName).getDescribe();
+                    if (fieldDescribe.isAccessible()) {
+                        fields.add(fieldName);
+                    }
+                }
+            }
+        }
+        
+        // Add any custom fields that might be important (limit to 5 additional)
+        Integer customFieldCount = 0;
+        for (String fieldName : fieldMap.keySet()) {
+            if (customFieldCount >= 5) break;
+            
+            if (fieldName.endsWith('__c') && !fields.contains(fieldName)) {
+                Schema.DescribeFieldResult fieldDescribe = fieldMap.get(fieldName).getDescribe();
+                if (fieldDescribe.isAccessible() && !fieldDescribe.isCalculated()) {
+                    fields.add(fieldName);
+                    customFieldCount++;
+                }
+            }
+        }
+        
+        return fields;
+    }
+    
+    /**
+     * @description Generates summary statistics for an object's records
+     * @param records List of SObject records
+     * @param objectDescribe Object describe result
+     * @param fieldsQueried List of fields that were queried
+     * @return String Summary statistics
+     */
+    private static String getObjectSummaryStats(List<SObject> records, Schema.DescribeSObjectResult objectDescribe, List<String> fieldsQueried) {
+        String stats = '';
+        
+        if (records.isEmpty()) {
+            return 'No records found.\n';
+        }
+        
+        try {
+            Map<String, Schema.SObjectField> fieldMap = objectDescribe.fields.getMap();
+            
+            // Count by Status field if available
+            if (fieldsQueried.contains('Status')) {
+                Map<String, Integer> statusCounts = new Map<String, Integer>();
+                for (SObject record : records) {
+                    String status = (String)record.get('Status');
+                    if (String.isNotBlank(status)) {
+                        statusCounts.put(status, statusCounts.containsKey(status) ? statusCounts.get(status) + 1 : 1);
+                    }
+                }
+                
+                if (!statusCounts.isEmpty()) {
+                    stats += 'Status Distribution:\n';
+                    for (String status : statusCounts.keySet()) {
+                        stats += '  - ' + status + ': ' + statusCounts.get(status) + '\n';
+                    }
+                }
+            }
+            
+            // Count by RecordType if available
+            if (fieldsQueried.contains('RecordType.Name')) {
+                Map<String, Integer> recordTypeCounts = new Map<String, Integer>();
+                for (SObject record : records) {
+                    if (record.getSObject('RecordType') != null) {
+                        String recordTypeName = (String)record.getSObject('RecordType').get('Name');
+                        if (String.isNotBlank(recordTypeName)) {
+                            recordTypeCounts.put(recordTypeName, recordTypeCounts.containsKey(recordTypeName) ? recordTypeCounts.get(recordTypeName) + 1 : 1);
+                        }
+                    }
+                }
+                
+                if (!recordTypeCounts.isEmpty()) {
+                    stats += 'Record Type Distribution:\n';
+                    for (String recordType : recordTypeCounts.keySet()) {
+                        stats += '  - ' + recordType + ': ' + recordTypeCounts.get(recordType) + '\n';
+                    }
+                }
+            }
+            
+            // Count by Owner if available
+            if (fieldsQueried.contains('Owner.Name')) {
+                Map<String, Integer> ownerCounts = new Map<String, Integer>();
+                for (SObject record : records) {
+                    if (record.getSObject('Owner') != null) {
+                        String ownerName = (String)record.getSObject('Owner').get('Name');
+                        if (String.isNotBlank(ownerName)) {
+                            ownerCounts.put(ownerName, ownerCounts.containsKey(ownerName) ? ownerCounts.get(ownerName) + 1 : 1);
+                        }
+                    }
+                }
+                
+                if (!ownerCounts.isEmpty() && ownerCounts.size() <= 20) { // Only show if reasonable number of owners
+                    stats += 'Owner Distribution:\n';
+                    for (String owner : ownerCounts.keySet()) {
+                        stats += '  - ' + owner + ': ' + ownerCounts.get(owner) + '\n';
+                    }
+                }
+            }
+            
+            // Date-based analysis if CreatedDate is available
+            if (fieldsQueried.contains('CreatedDate')) {
+                Date today = Date.today();
+                Date thisWeek = today.addDays(-7);
+                Date thisMonth = today.addMonths(-1);
+                
+                Integer todayCount = 0, weekCount = 0, monthCount = 0;
+                
+                for (SObject record : records) {
+                    Datetime createdDate = (Datetime)record.get('CreatedDate');
+                    if (createdDate != null) {
+                        Date recordDate = createdDate.date();
+                        if (recordDate == today) todayCount++;
+                        if (recordDate >= thisWeek) weekCount++;
+                        if (recordDate >= thisMonth) monthCount++;
+                    }
+                }
+                
+                stats += 'Recent Activity:\n';
+                stats += '  - Created Today: ' + todayCount + '\n';
+                stats += '  - Created This Week: ' + weekCount + '\n';
+                stats += '  - Created This Month: ' + monthCount + '\n';
+            }
+            
+        } catch (Exception e) {
+            System.debug('Error generating summary stats: ' + e.getMessage());
+            stats += 'Error generating statistics: ' + e.getMessage() + '\n';
+        }
+        
+        return stats;
     }
 
     /**
@@ -1548,261 +2276,54 @@ public with sharing class LLMController {
         }
     }
 
-    /**
-     * Gets base64-encoded attachments from a record for image processing
-     * @param recordId The ID of the record to get attachments from
-     * @return List<Map<String, String>> A list of maps containing attachment data (base64, fileName, contentType)
+     /**
+     * @description Retrieves a list of PDF attachments for a given record.
+     * @param recordId The ID of the record to check for PDF attachments.
+     * @return List<Map<String, String>> A list of maps, where each map contains 'id' (ContentDocumentId) and 'title' of a PDF.
      */
-    public static List<Map<String, String>> getAttachmentsBase64(String recordId) {
-        try {
-            List<ContentDocumentLink> links = [SELECT ContentDocumentId 
-                                              FROM ContentDocumentLink 
-                                              WHERE LinkedEntityId = :recordId
-                                              LIMIT 10];
-            
-            if (links.isEmpty()) {
-                return new List<Map<String, String>>();
-            }
-            
-            Set<Id> contentDocumentIds = new Set<Id>();
-            for(ContentDocumentLink link : links) {
-                contentDocumentIds.add(link.ContentDocumentId);
-            }
-            
-            List<ContentVersion> versions = [SELECT Title, FileType, PathOnClient, VersionData, FileExtension 
-                                            FROM ContentVersion 
-                                            WHERE ContentDocumentId IN :contentDocumentIds 
-                                            AND IsLatest = true];
-            
-            if (versions.isEmpty()) {
-                return new List<Map<String, String>>();
-            }
-            
-            List<Map<String, String>> result = new List<Map<String, String>>();
-            
-            for (ContentVersion cv : versions) {
-                try {
-                    // Skip if file is too large
-                    if (cv.VersionData.size() > 5000000) { // 5MB limit for images
-                        continue;
-                    }
-                    
-                    // Determine content type
-                    String contentType = 'application/octet-stream'; // Default
-                    if (cv.FileExtension != null) {
-                        String ext = cv.FileExtension.toLowerCase();
-                        if (ext == 'jpg' || ext == 'jpeg') {
-                            contentType = 'image/jpeg';
-                        } else if (ext == 'png') {
-                            contentType = 'image/png';
-                        } else if (ext == 'gif') {
-                            contentType = 'image/gif';
-                        } else if (ext == 'pdf') {
-                            contentType = 'application/pdf';
-                        }
-                    }
-                    
-                    Map<String, String> attachment = new Map<String, String>();
-                    attachment.put('fileName', cv.Title);
-                    attachment.put('contentType', contentType);
-                    attachment.put('base64', EncodingUtil.base64Encode(cv.VersionData));
-                    
-                    result.add(attachment);
-                    
-                } catch (Exception e) {
-                    System.debug('ERROR processing file ' + cv.Title + ': ' + e.getMessage());
-                }
-            }
-            
-            return result;
-            
-        } catch (Exception e) {
-            System.debug('ERROR in getAttachmentsBase64: ' + e.getMessage());
-            System.debug('Stack trace: ' + e.getStackTraceString());
-            throw new AuraHandledException('Failed to process attachments: ' + e.getMessage());
+    @AuraEnabled(cacheable=true)
+    public static List<Map<String, String>> getPdfAttachmentsForRecord(String recordId) {
+        if (String.isBlank(recordId)) {
+            return new List<Map<String, String>>();
         }
-    }
 
-    /**
-     * Identifies documents on the record that should be analyzed with Vision API
-     * @param recordId The ID of the record to check for documents
-     * @param includeAllAttachments Whether to include all attachment types or just images
-     * @return List<Map<String, String>> List of document attachments formatted for Vision processing
-     */
-    private static List<Map<String, String>> getDocumentsForVisionAnalysis(String recordId, Boolean includeAllAttachments) {
+        List<Map<String, String>> pdfs = new List<Map<String, String>>();
         try {
             List<ContentDocumentLink> links = [SELECT ContentDocumentId 
                                                FROM ContentDocumentLink 
-                                               WHERE LinkedEntityId = :recordId
-                                               LIMIT 10];
+                                               WHERE LinkedEntityId = :recordId];
             
             if (links.isEmpty()) {
-                return new List<Map<String, String>>();
+                return pdfs;
             }
-            
+
             Set<Id> contentDocumentIds = new Set<Id>();
             for(ContentDocumentLink link : links) {
                 contentDocumentIds.add(link.ContentDocumentId);
             }
+
+            List<ContentVersion> versions = [SELECT ContentDocumentId, Title, FileExtension
+                                             FROM ContentVersion 
+                                             WHERE ContentDocumentId IN :contentDocumentIds 
+                                             AND IsLatest = true 
+                                             AND FileExtension = 'pdf'];
             
-            List<ContentVersion> versions = [SELECT Title, FileType, PathOnClient, VersionData, FileExtension,
-                                           ContentSize, Description
-                                           FROM ContentVersion 
-                                           WHERE ContentDocumentId IN :contentDocumentIds 
-                                           AND IsLatest = true];
-            
-            if (versions.isEmpty()) {
-                return new List<Map<String, String>>();
-            }
-            
-            List<Map<String, String>> result = new List<Map<String, String>>();
-            
+            // Use a set to ensure we only add each ContentDocumentId once, even if it had multiple versions (though IsLatest should handle this)
+            Set<Id> processedDocIds = new Set<Id>();
             for (ContentVersion cv : versions) {
-                try {
-                    // Skip if file is too large
-                    if (cv.VersionData.size() > 5000000) { // 5MB limit
-                        continue;
-                    }
-                    
-                    // Check if this is a document type that should be analyzed by Vision
-                    String contentType = 'application/octet-stream'; // Default
-                    Boolean shouldUseVision = false;
-                    
-                    if (cv.FileExtension != null) { String ext = cv.FileExtension.toLowerCase(); if (ext == 'pdf') { contentType = 'application/pdf'; shouldUseVision = includeAllAttachments; } else if (ext == 'docx' || ext == 'doc') { contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'; shouldUseVision = includeAllAttachments; } else if (ext == 'jpg' || ext == 'jpeg') { contentType = 'image/jpeg'; shouldUseVision = true; } else if (ext == 'png') { contentType = 'image/png'; shouldUseVision = true; } else if (ext == 'gif') { contentType = 'image/gif'; shouldUseVision = true; } else if (includeAllAttachments) { shouldUseVision = true; } }
-                    
-                    // Only include files that should use Vision
-                    if (shouldUseVision) {
-                        Map<String, String> attachment = new Map<String, String>();
-                        attachment.put('fileName', cv.Title);
-                        attachment.put('contentType', contentType);
-                        attachment.put('base64', EncodingUtil.base64Encode(cv.VersionData));
-                        
-                        // Add file size info
-                        String fileSizeStr = formatFileSize(cv.ContentSize);
-                        attachment.put('fileSize', fileSizeStr);
-                        
-                        // Extract dimensions for images when possible
-                        String dimensions = extractImageDimensions(cv.VersionData, cv.FileExtension);
-                        if (String.isNotBlank(dimensions)) {
-                            attachment.put('dimensions', dimensions);
-                        }
-                        
-                        result.add(attachment);
-                    }
-                    
-                } catch (Exception e) {
-                    System.debug('ERROR processing file ' + cv.Title + ': ' + e.getMessage());
+                if (!processedDocIds.contains(cv.ContentDocumentId)) {
+                    Map<String, String> pdfInfo = new Map<String, String>();
+                    pdfInfo.put('id', cv.ContentDocumentId);
+                    pdfInfo.put('title', cv.Title);
+                    pdfs.add(pdfInfo);
+                    processedDocIds.add(cv.ContentDocumentId);
                 }
             }
-            
-            return result;
-            
         } catch (Exception e) {
-            System.debug('ERROR in getDocumentsForVisionAnalysis: ' + e.getMessage());
-            System.debug('Stack trace: ' + e.getStackTraceString());
-            return new List<Map<String, String>>(); // Return empty list on error
+            System.debug('Error in getPdfAttachmentsForRecord: ' + e.getMessage());
+            // Optionally, throw AuraHandledException or return empty list
         }
-    }
-
-    /**
-     * Formats file size into readable string (KB, MB)
-     * @param bytesSize The file size in bytes
-     * @return String Formatted file size string
-     */
-    private static String formatFileSize(Integer bytesSize) {
-        if (bytesSize == null) return 'Unknown size';
-        
-        if (bytesSize < 1024) { return bytesSize + ' B'; } else if (bytesSize < 1048576) { Decimal kbSize = bytesSize / 1024.0; return kbSize.setScale(1) + ' KB'; } else { Decimal mbSize = bytesSize / 1048576.0; return mbSize.setScale(1) + ' MB'; }
-    }
-
-    /**
-     * Attempts to extract image dimensions from JPG/PNG data
-     * This is a simplified version that extracts approximate dimensions for JPG and PNG
-     * @param imageData The binary image data
-     * @param fileExtension The file extension to determine image format
-     * @return String Dimensions in WxH format or null if can't be determined
-     */
-    private static String extractImageDimensions(Blob imageData, String fileExtension) {
-        try { String hex = EncodingUtil.convertToHex(imageData); if (fileExtension == 'jpg' || fileExtension == 'jpeg') { Integer width = Math.mod(Math.abs(hex.hashCode()), 1920) + 800; Integer height = Math.mod(Math.abs(hex.hashCode() / 1000), 1080) + 600; return width + 'x' + height + ' px (estimated)'; } else if (fileExtension == 'png') { Integer width = Math.mod(Math.abs(hex.hashCode()), 1920) + 800; Integer height = Math.mod(Math.abs(hex.hashCode() / 1000), 1080) + 600; return width + 'x' + height + ' px (estimated)'; } return null; } catch (Exception e) { System.debug('Error extracting image dimensions: ' + e.getMessage()); return null; }
-    }
-    
-    /**
-     * Processes documents with the OpenAI Vision API
-     * @param attachments List of document/image attachments to analyze
-     * @param config The Vision API configuration to use
-     * @param prompt The prompt to guide the analysis
-     * @return String The detailed document analysis from Vision API
-     */
-    private static String processDocumentsWithVision(List<Map<String, String>> attachments, 
-                                                    LLM_Configuration__mdt config,
-                                                    String prompt) {
-        try {
-            if (attachments == null || attachments.isEmpty()) {
-                return '';
-            }
-            
-            String apiKey = config.API_Key__c;
-            String model = config.Model_Name__c;
-            String endpoint = config.Base_URL__c;
-            
-            // Prepare request body with documents/images
-            Map<String, Object> requestBody = new Map<String, Object>();
-            requestBody.put('model', model);
-            
-            List<Map<String, Object>> messages = new List<Map<String, Object>>();
-            Map<String, Object> userMessage = new Map<String, Object>();
-            userMessage.put('role', 'user');
-            
-            List<Map<String, Object>> contentItems = new List<Map<String, Object>>();
-            
-            // Add text prompt
-            Map<String, Object> textContent = new Map<String, Object>();
-            textContent.put('type', 'text');
-            textContent.put('text', prompt);
-            contentItems.add(textContent);
-            
-            // Add documents/images
-            for (Map<String, String> attachment : attachments) {
-                String base64Data = attachment.get('base64');
-                String fileName = attachment.get('fileName');
-                String contentType = attachment.get('contentType');
-                
-                System.debug('Processing document for Vision: ' + fileName + ' (' + contentType + ')');
-                
-                Map<String, Object> imageContent = new Map<String, Object>();
-                imageContent.put('type', 'image_url');
-                
-                Map<String, String> imageUrl = new Map<String, String>();
-                imageUrl.put('url', 'data:' + contentType + ';base64,' + base64Data);
-                
-                imageContent.put('image_url', imageUrl);
-                contentItems.add(imageContent);
-            }
-            
-            userMessage.put('content', contentItems);
-            messages.add(userMessage);
-            requestBody.put('messages', messages);
-            
-            // Additional options
-            requestBody.put('max_tokens', 2000); // Increase token limit for document analysis
-            
-            // Call OpenAI API
-            Http http = new Http();
-            HttpRequest request = new HttpRequest();
-            request.setEndpoint(endpoint);
-            request.setMethod('POST');
-            request.setHeader('Content-Type', 'application/json');
-            request.setHeader('Authorization', 'Bearer ' + apiKey);
-            request.setBody(JSON.serialize(requestBody));
-            request.setTimeout(120000); // 2-minute timeout
-            
-            HttpResponse response = http.send(request);
-            
-            if (response.getStatusCode() == 200) {
-                Map<String, Object> responseMap = (Map<String, Object>)JSON.deserializeUntyped(response.getBody());
-                List<Object> choices = (List<Object>)responseMap.get('choices');
-                
-                if (choices != null && !choices.isEmpty()) { Map<String, Object> choice = (Map<String, Object>)choices[0]; Map<String, Object> message = (Map<String, Object>)choice.get('message'); String contentText = (String)message.get('content'); return contentText; }}return 'Error processing documents with Vision: ' + response.getStatusCode() + ' ' + response.getStatus();} catch (Exception e) { System.debug('ERROR in processDocumentsWithVision: ' + e.getMessage()); System.debug('Stack trace: ' + e.getStackTraceString()); return 'Error analyzing documents with Vision: ' + e.getMessage(); }
+        return pdfs;
     }
 
     /**
@@ -2086,56 +2607,6 @@ public with sharing class LLMController {
             System.debug('Stack trace: ' + e.getStackTraceString());
                 throw new AuraHandledException('Failed to process PDF document(s) with AI: ' + e.getMessage());
         }
-    }
-
-    /**
-     * @description Retrieves a list of PDF attachments for a given record.
-     * @param recordId The ID of the record to check for PDF attachments.
-     * @return List<Map<String, String>> A list of maps, where each map contains 'id' (ContentDocumentId) and 'title' of a PDF.
-     */
-    @AuraEnabled(cacheable=true)
-    public static List<Map<String, String>> getPdfAttachmentsForRecord(String recordId) {
-        if (String.isBlank(recordId)) {
-            return new List<Map<String, String>>();
-        }
-
-        List<Map<String, String>> pdfs = new List<Map<String, String>>();
-        try {
-            List<ContentDocumentLink> links = [SELECT ContentDocumentId 
-                                               FROM ContentDocumentLink 
-                                               WHERE LinkedEntityId = :recordId];
-            
-            if (links.isEmpty()) {
-                return pdfs;
-            }
-
-            Set<Id> contentDocumentIds = new Set<Id>();
-            for(ContentDocumentLink link : links) {
-                contentDocumentIds.add(link.ContentDocumentId);
-            }
-
-            List<ContentVersion> versions = [SELECT ContentDocumentId, Title, FileExtension
-                                             FROM ContentVersion 
-                                             WHERE ContentDocumentId IN :contentDocumentIds 
-                                             AND IsLatest = true 
-                                             AND FileExtension = 'pdf'];
-            
-            // Use a set to ensure we only add each ContentDocumentId once, even if it had multiple versions (though IsLatest should handle this)
-            Set<Id> processedDocIds = new Set<Id>();
-            for (ContentVersion cv : versions) {
-                if (!processedDocIds.contains(cv.ContentDocumentId)) {
-                    Map<String, String> pdfInfo = new Map<String, String>();
-                    pdfInfo.put('id', cv.ContentDocumentId);
-                    pdfInfo.put('title', cv.Title);
-                    pdfs.add(pdfInfo);
-                    processedDocIds.add(cv.ContentDocumentId);
-                }
-            }
-        } catch (Exception e) {
-            System.debug('Error in getPdfAttachmentsForRecord: ' + e.getMessage());
-            // Optionally, throw AuraHandledException or return empty list
-        }
-        return pdfs;
     }
 
     /**
@@ -2472,5 +2943,108 @@ public with sharing class LLMController {
             System.debug('Error in updateRecordFields: ' + e.getMessage() + ' Stack: ' + e.getStackTraceString());
             throw new AuraHandledException('Error updating record fields: ' + e.getMessage());
         }
+    }
+
+    /**
+     * Identifies documents on the record that should be analyzed with Vision API
+     * @param recordId The ID of the record to check for documents
+     * @param includeAllAttachments Whether to include all attachment types or just images
+     * @return List<Map<String, String>> List of document attachments formatted for Vision processing
+     */
+    private static List<Map<String, String>> getDocumentsForVisionAnalysis(String recordId, Boolean includeAllAttachments) {
+        try {
+            List<ContentDocumentLink> links = [SELECT ContentDocumentId 
+                                               FROM ContentDocumentLink 
+                                               WHERE LinkedEntityId = :recordId
+                                               LIMIT 10];
+            
+            if (links.isEmpty()) {
+                return new List<Map<String, String>>();
+            }
+            
+            Set<Id> contentDocumentIds = new Set<Id>();
+            for(ContentDocumentLink link : links) {
+                contentDocumentIds.add(link.ContentDocumentId);
+            }
+            
+            List<ContentVersion> versions = [SELECT Title, FileType, PathOnClient, VersionData, FileExtension,
+                                           ContentSize, Description
+                                           FROM ContentVersion 
+                                           WHERE ContentDocumentId IN :contentDocumentIds 
+                                           AND IsLatest = true];
+            
+            if (versions.isEmpty()) {
+                return new List<Map<String, String>>();
+            }
+            
+            List<Map<String, String>> result = new List<Map<String, String>>();
+            
+            for (ContentVersion cv : versions) {
+                try {
+                    // Skip if file is too large
+                    if (cv.VersionData.size() > 5000000) { // 5MB limit
+                        continue;
+                    }
+                    
+                    // Check if this is a document type that should be analyzed by Vision
+                    String contentType = 'application/octet-stream'; // Default
+                    Boolean shouldUseVision = false;
+                    
+                    if (cv.FileExtension != null) { String ext = cv.FileExtension.toLowerCase(); if (ext == 'pdf') { contentType = 'application/pdf'; shouldUseVision = includeAllAttachments; } else if (ext == 'docx' || ext == 'doc') { contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'; shouldUseVision = includeAllAttachments; } else if (ext == 'jpg' || ext == 'jpeg') { contentType = 'image/jpeg'; shouldUseVision = true; } else if (ext == 'png') { contentType = 'image/png'; shouldUseVision = true; } else if (ext == 'gif') { contentType = 'image/gif'; shouldUseVision = true; } else if (includeAllAttachments) { shouldUseVision = true; } }
+                    
+                    // Only include files that should use Vision
+                    if (shouldUseVision) {
+                        Map<String, String> attachment = new Map<String, String>();
+                        attachment.put('fileName', cv.Title);
+                        attachment.put('contentType', contentType);
+                        attachment.put('base64', EncodingUtil.base64Encode(cv.VersionData));
+                        
+                        // Add file size info
+                        String fileSizeStr = formatFileSize(cv.ContentSize);
+                        attachment.put('fileSize', fileSizeStr);
+                        
+                        // Extract dimensions for images when possible
+                        String dimensions = extractImageDimensions(cv.VersionData, cv.FileExtension);
+                        if (String.isNotBlank(dimensions)) {
+                            attachment.put('dimensions', dimensions);
+                        }
+                        
+                        result.add(attachment);
+                    }
+                    
+                } catch (Exception e) {
+                    System.debug('ERROR processing file ' + cv.Title + ': ' + e.getMessage());
+                }
+            }
+            
+            return result;
+            
+        } catch (Exception e) {
+            System.debug('ERROR in getDocumentsForVisionAnalysis: ' + e.getMessage());
+            System.debug('Stack trace: ' + e.getStackTraceString());
+            return new List<Map<String, String>>(); // Return empty list on error
+        }
+    }
+
+    /**
+     * Formats file size into readable string (KB, MB)
+     * @param bytesSize The file size in bytes
+     * @return String Formatted file size string
+     */
+    private static String formatFileSize(Integer bytesSize) {
+        if (bytesSize == null) return 'Unknown size';
+        
+        if (bytesSize < 1024) { return bytesSize + ' B'; } else if (bytesSize < 1048576) { Decimal kbSize = bytesSize / 1024.0; return kbSize.setScale(1) + ' KB'; } else { Decimal mbSize = bytesSize / 1048576.0; return mbSize.setScale(1) + ' MB'; }
+    }
+
+    /**
+     * Attempts to extract image dimensions from JPG/PNG data
+     * This is a simplified version that extracts approximate dimensions for JPG and PNG
+     * @param imageData The binary image data
+     * @param fileExtension The file extension to determine image format
+     * @return String Dimensions in WxH format or null if can't be determined
+     */
+    private static String extractImageDimensions(Blob imageData, String fileExtension) {
+        try { String hex = EncodingUtil.convertToHex(imageData); if (fileExtension == 'jpg' || fileExtension == 'jpeg') { Integer width = Math.mod(Math.abs(hex.hashCode()), 1920) + 800; Integer height = Math.mod(Math.abs(hex.hashCode() / 1000), 1080) + 600; return width + 'x' + height + ' px (estimated)'; } else if (fileExtension == 'png') { Integer width = Math.mod(Math.abs(hex.hashCode()), 1920) + 800; Integer height = Math.mod(Math.abs(hex.hashCode() / 1000), 1080) + 600; return width + 'x' + height + ' px (estimated)'; } return null; } catch (Exception e) { System.debug('Error extracting image dimensions: ' + e.getMessage()); return null; }
     }
 }

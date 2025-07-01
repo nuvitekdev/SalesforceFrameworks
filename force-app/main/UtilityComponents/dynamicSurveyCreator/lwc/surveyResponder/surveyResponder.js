@@ -1,5 +1,8 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import getSurveyById from '@salesforce/apex/SurveyPublicController.getSurveyById';
+import getSurveyByResponseId from '@salesforce/apex/SurveyPublicController.getSurveyByResponseId';
+import validatePasscode from '@salesforce/apex/SurveyPublicController.validatePasscode';
+import validatePasscodeBySurveyId from '@salesforce/apex/SurveyPublicController.validatePasscodeBySurveyId';
 import submitSurveyResponse from '@salesforce/apex/SurveyPublicController.submitSurveyResponse';
 import { CurrentPageReference } from 'lightning/navigation';
 
@@ -83,6 +86,32 @@ export default class SurveyResponder extends LightningElement {
      */
     currentQuestion;
 
+    // --- Passcode Properties ---
+    /**
+     * @description Indicates if the survey requires a passcode
+     */
+    @track requiresPasscode = false;
+    
+    /**
+     * @description Indicates if passcode screen should be shown
+     */
+    @track showPasscodeScreen = false;
+    
+    /**
+     * @description The passcode entered by the user
+     */
+    @track enteredPasscode = '';
+    
+    /**
+     * @description The response ID from URL parameters
+     */
+    responseId;
+    
+    /**
+     * @description Error message for passcode validation
+     */
+    @track passcodeError;
+
     // --- Wired Properties ---
     /**
      * @description Wires the CurrentPageReference to extract the survey ID from URL state.
@@ -93,17 +122,22 @@ export default class SurveyResponder extends LightningElement {
        if (currentPageReference && currentPageReference.state) {
           console.log('SurveyResponder: Page state:', JSON.stringify(currentPageReference.state));
           
-          // Look for survey ID in URL parameters
-          // Check both 'id' and 'surveyId' parameters for flexibility
+          // Look for response ID or survey ID in URL parameters
+          const urlResponseId = currentPageReference.state.responseId;
           const urlSurveyId = currentPageReference.state.id || currentPageReference.state.surveyId;
           
+          console.log('SurveyResponder: Extracted responseId:', urlResponseId);
           console.log('SurveyResponder: Extracted surveyId:', urlSurveyId);
           
-          if (urlSurveyId && !this._surveyId) {
+          if (urlResponseId) {
+             console.log('SurveyResponder: Setting responseId from page state:', urlResponseId);
+             this.responseId = urlResponseId;
+             this.loadSurveyByResponseId();
+          } else if (urlSurveyId && !this._surveyId) {
              console.log('SurveyResponder: Setting surveyId from page state:', urlSurveyId);
              this.surveyId = urlSurveyId;
-          } else if (!urlSurveyId) {
-             console.warn('SurveyResponder: No survey ID found in page state.');
+          } else {
+             console.warn('SurveyResponder: No survey ID or response ID found in page state.');
           }
        } else {
            console.warn('SurveyResponder: No currentPageReference or state received.');
@@ -219,6 +253,44 @@ export default class SurveyResponder extends LightningElement {
 
     // --- Data Loading ---
     /**
+     * @description Loads the survey details using a response ID (with potential passcode requirement)
+     */
+    loadSurveyByResponseId() {
+        if (!this.responseId) {
+            this.loadError = 'Cannot load survey: Response ID is missing.';
+            this.isLoading = false;
+            return;
+        }
+
+        this.isLoading = true;
+        this.loadError = null;
+        this.surveyData = null;
+        this.responses = {};
+        this.isCompleted = false;
+        this.passcodeError = null;
+
+        // First, try to load without passcode to check if it's required
+        getSurveyByResponseId({ responseId: this.responseId, passcode: null })
+            .then(result => {
+                this.processSurveyResult(result);
+            })
+            .catch(error => {
+                const errorMessage = this.reduceErrors(error).join(', ');
+                console.error('Error loading survey by response ID:', error);
+                
+                // Check if it's a passcode-related error
+                if (errorMessage.includes('passcode') || errorMessage.includes('Passcode')) {
+                    this.requiresPasscode = true;
+                    this.showPasscodeScreen = true;
+                    this.isLoading = false;
+                } else {
+                    this.loadError = errorMessage || 'An unknown error occurred while loading the survey.';
+                    this.isLoading = false;
+                }
+            });
+    }
+
+    /**
      * @description Loads the survey details directly using the survey ID.
      */
     loadSurvey() {
@@ -233,21 +305,23 @@ export default class SurveyResponder extends LightningElement {
         this.surveyData = null;
         this.responses = {};
         this.isCompleted = false;
+        this.passcodeError = null;
 
         // Check if the survey has already been submitted by this device
         this.checkPreviousSubmission();
 
         getSurveyById({ surveyId: this._surveyId })
             .then(result => {
-                // Store the responseId if it's provided (legacy support)
-                if (result.responseId) {
-                    this.surveyResponseRecordId = result.responseId;
+                // Check if survey requires passcode and we don't have a response ID
+                if (result.requiresPasscode && !this.responseId) {
+                    // For direct survey access with passcode requirement, show passcode screen
+                    this.requiresPasscode = true;
+                    this.showPasscodeScreen = true;
+                    this.surveyData = result; // Store survey data for later use
+                    this.isLoading = false;
+                } else {
+                    this.processSurveyResult(result);
                 }
-                
-                // Process the data for easier template rendering
-                const processedData = this.processSurveyData(result);
-                this.surveyData = processedData;
-                this.isLoading = false;
             })
             .catch(error => {
                 console.error('Error loading survey:', error);
@@ -328,6 +402,84 @@ export default class SurveyResponder extends LightningElement {
     }
 
     /**
+     * @description Processes the survey result from either getSurveyById or getSurveyByResponseId
+     */
+    processSurveyResult(result) {
+        // Store the responseId if it's provided
+        if (result.responseId) {
+            this.surveyResponseRecordId = result.responseId;
+        }
+        
+        // Process the data for easier template rendering
+        const processedData = this.processSurveyData(result);
+        this.surveyData = processedData;
+        this.requiresPasscode = result.requiresPasscode || false;
+        this.isLoading = false;
+    }
+
+    /**
+     * @description Handles passcode input changes
+     */
+    handlePasscodeChange(event) {
+        this.enteredPasscode = event.target.value;
+        this.passcodeError = null; // Clear error when user types
+    }
+
+    /**
+     * @description Validates the entered passcode and loads the survey
+     */
+    async handlePasscodeSubmit() {
+        if (!this.enteredPasscode || this.enteredPasscode.trim() === '') {
+            this.passcodeError = 'Please enter the passcode.';
+            return;
+        }
+
+        this.isLoading = true;
+        this.passcodeError = null;
+
+        try {
+            if (this.responseId) {
+                // We have a response ID, validate against specific response
+                const result = await getSurveyByResponseId({ 
+                    responseId: this.responseId, 
+                    passcode: this.enteredPasscode.trim() 
+                });
+                
+                this.showPasscodeScreen = false;
+                this.processSurveyResult(result);
+            } else {
+                // Direct survey access, validate passcode against any response for this survey
+                const isValid = await validatePasscodeBySurveyId({ 
+                    surveyId: this._surveyId, 
+                    passcode: this.enteredPasscode.trim() 
+                });
+                
+                if (isValid) {
+                    this.showPasscodeScreen = false;
+                    // Process the survey data we already have
+                    const processedData = this.processSurveyData(this.surveyData);
+                    this.surveyData = processedData;
+                    this.isLoading = false;
+                } else {
+                    this.passcodeError = 'Invalid passcode. Please check your email for the correct passcode.';
+                    this.isLoading = false;
+                }
+            }
+            
+        } catch (error) {
+            const errorMessage = this.reduceErrors(error).join(', ');
+            console.error('Error validating passcode:', error);
+            
+            if (errorMessage.includes('Invalid passcode')) {
+                this.passcodeError = 'Invalid passcode. Please check your email for the correct passcode.';
+            } else {
+                this.passcodeError = errorMessage || 'Error validating passcode.';
+            }
+            this.isLoading = false;
+        }
+    }
+
+    /**
      * @description Processes survey data for use in the template.
      */
     processSurveyData(rawData) {
@@ -346,10 +498,11 @@ export default class SurveyResponder extends LightningElement {
 
             // Add question type flags for template rendering
             processedQuestion.isText = question.Type__c === 'Text';
-            processedQuestion.isTextarea = question.Type__c === 'Long Text';
-            processedQuestion.isRadio = question.Type__c === 'Single Select';
-            processedQuestion.isCheckbox = question.Type__c === 'Multi Select';
+            processedQuestion.isTextarea = question.Type__c === 'Text Area' || question.Type__c === 'Long Text';
+            processedQuestion.isRadio = question.Type__c === 'Multiple Choice - Single' || question.Type__c === 'Single Select';
+            processedQuestion.isCheckbox = question.Type__c === 'Multiple Choice - Multiple' || question.Type__c === 'Multi Select';
             processedQuestion.isRating = question.Type__c === 'Rating';
+            processedQuestion.isDate = question.Type__c === 'Date';
 
             // For checkbox and radio options, format for the lightning-* components
             if ((processedQuestion.isRadio || processedQuestion.isCheckbox) && question.Answer_Options__r) {
@@ -588,4 +741,4 @@ export default class SurveyResponder extends LightningElement {
         
         return `${r}, ${g}, ${b}`;
     }
-} 
+}

@@ -148,4 +148,4 @@ public without sharing class RecordFilesController {
         @AuraEnabled public Long ContentSize;
         @AuraEnabled public Datetime ContentModifiedDate;
     }
-} 
+}

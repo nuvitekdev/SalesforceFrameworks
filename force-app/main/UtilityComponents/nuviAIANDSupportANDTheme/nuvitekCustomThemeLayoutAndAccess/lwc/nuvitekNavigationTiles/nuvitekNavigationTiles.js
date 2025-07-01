@@ -10,7 +10,7 @@ import createAccessRequest from '@salesforce/apex/NuvitekAccessRequestController
 export default class NuvitekNavigationTiles extends NavigationMixin(LightningElement) {
     @api columns = 3; // Default number of columns
     @api tileStyle = 'elevated'; // Default style for all tiles
-    
+    @api delimiter = ','; // Default delimiter for comma-delimited lists
     // Comma-delimited list properties
     @api titles = '';
     @api descriptions = '';
@@ -286,7 +286,7 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
     // Helper method to split comma-delimited string and trim whitespace
     splitAndTrim(str) {
         if (!str) return [];
-        return str.split(',').map(item => item.trim());
+        return str.split(this.delimiter).map(item => item.trim());
     }
     
     // Helper method to lighten a color (used for gradients and flat style)

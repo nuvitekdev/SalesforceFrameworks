@@ -1367,4 +1367,4 @@ public without sharing class NaturalLanguageQueryController {
             'High priority Cases'
         };
     }
-} 
+}

@@ -1,395 +1,619 @@
 <template>
     <div class="survey-creator-container" style={componentStyle}>
-        <!-- Modern path indicator similar to pdfSigner -->
-        <div class="custom-path-container">
-            <ul class="custom-path">
-                <li class="custom-path-item" data-step="0" onclick={goToStep}>
-                    <div class="custom-path-indicator">
-                        <span class="custom-path-number">1</span>
-                    </div>
-                    <div class="custom-path-label">Survey Details</div>
-                </li>
-                <li class="custom-path-item" data-step="1" onclick={goToStep}>
-                    <div class="custom-path-indicator">
-                        <span class="custom-path-number">2</span>
-                    </div>
-                    <div class="custom-path-label">Build Questions</div>
-                </li>
-                <li class="custom-path-item" data-step="2" onclick={goToStep}>
-                    <div class="custom-path-indicator">
-                        <span class="custom-path-number">3</span>
-                    </div>
-                    <div class="custom-path-label">Prepare Survey</div>
-                </li>
-                <li class="custom-path-item" data-step="3" onclick={goToStep}>
-                    <div class="custom-path-indicator">
-                        <span class="custom-path-number">4</span>
-                    </div>
-                    <div class="custom-path-label">Review & Send</div>
-                </li>
-                <li class="custom-path-item" data-step="4" onclick={goToStep}>
-                    <div class="custom-path-indicator">
-                        <span class="custom-path-number">5</span>
-                    </div>
-                    <div class="custom-path-label">Survey Created</div>
-                </li>
-                <li class="custom-path-item" data-step="5" onclick={goToStep}>
-                    <div class="custom-path-indicator">
-                        <span class="custom-path-number">6</span>
-                    </div>
-                    <div class="custom-path-label">Email Sent Confirmation</div>
-                </li>
-            </ul>
+        
+        <!-- Mode Switcher -->
+        <div class="mode-switcher slds-m-bottom_medium">
+            <lightning-button-group>
+                <lightning-button 
+                    label="Create Survey" 
+                    variant={createModeVariant} 
+                    onclick={switchToCreateMode}
+                    class="mode-button">
+                </lightning-button>
+                <lightning-button 
+                    label="View My Surveys" 
+                    variant={viewModeVariant} 
+                    onclick={switchToViewMode}
+                    class="mode-button">
+                </lightning-button>
+            </lightning-button-group>
         </div>
 
-        <!-- Add currentStepClass to the container div to match pdfSigner -->
-        <div class={currentStepClass}>
-            <!-- Step 1: Survey Details -->
-            <template if:true={isStep1}>
-                <div class="step-section">
-                    <h2 class="step-title">{step1Title}</h2>
-                    <div class="form-content">
-                        <lightning-input
-                            label="Survey Name"
-                            value={survey.Name}
-                            onchange={handleSurveyDetailChange}
-                            data-field="Name"
-                            required
-                            message-when-value-missing="Survey Name is required."
-                            class="slds-m-bottom_small"
-                        ></lightning-input>
-                        <lightning-textarea
-                            label="Description"
-                            value={survey.Description__c}
-                            onchange={handleSurveyDetailChange}
-                            data-field="Description__c"
-                            class="slds-m-bottom_small"
-                        ></lightning-textarea>
-                        <lightning-textarea
-                            label="Welcome Message (Optional)"
-                            value={survey.Welcome_Message__c}
-                            onchange={handleSurveyDetailChange}
-                            data-field="Welcome_Message__c"
-                            class="slds-m-bottom_small"
-                        ></lightning-textarea>
-                        <lightning-textarea
-                            label="Thank You Message (Optional)"
-                            value={survey.Thank_You_Message__c}
-                            onchange={handleSurveyDetailChange}
-                            data-field="Thank_You_Message__c"
-                        ></lightning-textarea>
+        <!-- Create Mode Content -->
+        <template if:true={isCreateMode}>
+            <!-- Modern path indicator similar to pdfSigner -->
+            <div class="custom-path-container">
+                <ul class="custom-path">
+                    <li class="custom-path-item" data-step="0" onclick={goToStep}>
+                        <div class="custom-path-indicator">
+                            <span class="custom-path-number">1</span>
+                        </div>
+                        <div class="custom-path-label">Survey Details</div>
+                    </li>
+                    <li class="custom-path-item" data-step="1" onclick={goToStep}>
+                        <div class="custom-path-indicator">
+                            <span class="custom-path-number">2</span>
+                        </div>
+                        <div class="custom-path-label">Build Questions</div>
+                    </li>
+                    <li class="custom-path-item" data-step="2" onclick={goToStep}>
+                        <div class="custom-path-indicator">
+                            <span class="custom-path-number">3</span>
+                        </div>
+                        <div class="custom-path-label">Prepare Survey</div>
+                    </li>
+                    <li class="custom-path-item" data-step="3" onclick={goToStep}>
+                        <div class="custom-path-indicator">
+                            <span class="custom-path-number">4</span>
+                        </div>
+                        <div class="custom-path-label">Review & Send</div>
+                    </li>
+                    <li class="custom-path-item" data-step="4" onclick={goToStep}>
+                        <div class="custom-path-indicator">
+                            <span class="custom-path-number">5</span>
+                        </div>
+                        <div class="custom-path-label">Survey Created</div>
+                    </li>
+                    <li class="custom-path-item" data-step="5" onclick={goToStep}>
+                        <div class="custom-path-indicator">
+                            <span class="custom-path-number">6</span>
+                        </div>
+                        <div class="custom-path-label">Email Sent Confirmation</div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Add currentStepClass to the container div to match pdfSigner -->
+            <div class={currentStepClass}>
+                <!-- Step 1: Survey Details -->
+                <template if:true={isStep1}>
+                    <div class="step-section">
+                        <h2 class="step-title">{step1Title}</h2>
+                        <div class="form-content">
+                            <lightning-input
+                                label="Survey Name"
+                                value={survey.Name}
+                                onchange={handleSurveyDetailChange}
+                                data-field="Name"
+                                required
+                                message-when-value-missing="Survey Name is required."
+                                class="slds-m-bottom_small"
+                            ></lightning-input>
+                            <lightning-textarea
+                                label="Description"
+                                value={survey.Description__c}
+                                onchange={handleSurveyDetailChange}
+                                data-field="Description__c"
+                                class="slds-m-bottom_small"
+                            ></lightning-textarea>
+                            <lightning-textarea
+                                label="Welcome Message (Optional)"
+                                value={survey.Welcome_Message__c}
+                                onchange={handleSurveyDetailChange}
+                                data-field="Welcome_Message__c"
+                                class="slds-m-bottom_small"
+                            ></lightning-textarea>
+                            <lightning-textarea
+                                label="Thank You Message (Optional)"
+                                value={survey.Thank_You_Message__c}
+                                onchange={handleSurveyDetailChange}
+                                data-field="Thank_You_Message__c"
+                                class="slds-m-bottom_small"
+                            ></lightning-textarea>
+                            <lightning-input
+                                type="checkbox"
+                                label="Require Passcode for Access"
+                                checked={survey.Require_Passcode__c}
+                                onchange={handleSurveyDetailChange}
+                                data-field="Require_Passcode__c"
+                                class="passcode-checkbox"
+                            ></lightning-input>
+                            <div class="passcode-help-text">
+                                <lightning-icon icon-name="utility:info" size="x-small" class="info-icon"></lightning-icon>
+                                <span>When enabled, respondents will need to enter a passcode sent in the email to access the survey</span>
+                            </div>
+                        </div>
                     </div>
+                </template>
+
+                <!-- Step 2: Build Questions -->
+                <template if:true={isStep2}>
+                    <div class="step-section">
+                        <h2 class="step-title">{step2Title}</h2>
+                        <div class="form-content">
+                            <div class="section-header">
+                                <button class="add-button" onclick={addQuestion} title="Add Question">
+                                    <lightning-icon icon-name="utility:add" size="small" class="add-icon"></lightning-icon>
+                                    <span>Add Question</span>
+                                </button>
+                            </div>
+
+                            <!-- Iterate through questions -->
+                            <template for:each={questionsWithComputedFields} for:item="question" for:index="qIndex">
+                                <div key={question.key} class="question-block">
+                                    <div class="question-header">
+                                        <h3 class="question-number">Question {question.displayOrder}</h3>
+                                        <button class="remove-button" data-index={qIndex} onclick={removeQuestion} title="Remove Question">
+                                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                                        </button>
+                                    </div>
+
+                                    <lightning-textarea
+                                        label="Question Text"
+                                        value={question.questionText}
+                                        data-index={qIndex}
+                                        onchange={handleQuestionChange}
+                                        data-field="questionText"
+                                        required
+                                        message-when-value-missing="Question text cannot be empty."
+                                        class="slds-m-bottom_small"
+                                    ></lightning-textarea>
+
+                                    <div class="question-options">
+                                        <lightning-combobox
+                                            name="questionType"
+                                            label="Question Type"
+                                            value={question.type}
+                                            placeholder="Select Type"
+                                            options={questionTypeOptions}
+                                            onchange={handleQuestionChange}
+                                            data-index={qIndex}
+                                            data-field="type"
+                                            required
+                                            class="slds-m-right_small"
+                                        ></lightning-combobox>
+
+                                        <lightning-input
+                                            type="checkbox"
+                                            label="Required"
+                                            checked={question.isRequired}
+                                            onchange={handleQuestionChange}
+                                            data-index={qIndex}
+                                            data-field="isRequired"
+                                            class="required-checkbox"
+                                        ></lightning-input>
+                                    </div>
+
+                                    <!-- Answer Options for Radio/Checkbox -->
+                                    <template if:true={question.showOptions}>
+                                        <div class="answer-options-section">
+                                            <div class="section-header-small">
+                                                <h4>Answer Options</h4>
+                                                <button class="add-button small-button" data-qindex={qIndex} onclick={addAnswerOption} title="Add Option">
+                                                    <lightning-icon icon-name="utility:add" size="xx-small" class="add-icon-small"></lightning-icon>
+                                                    <span>Add Option</span>
+                                                </button>
+                                            </div>
+                                            <template for:each={question.answerOptions} for:item="option" for:index="optIndex">
+                                                <div key={option.key} class="option-item">
+                                                    <lightning-input
+                                                        label={optionInputLabel}
+                                                        value={option.optionText}
+                                                        data-qindex={qIndex}
+                                                        data-optindex={optIndex}
+                                                        onchange={handleOptionChange}
+                                                        required
+                                                        message-when-value-missing="Option text cannot be empty."
+                                                    ></lightning-input>
+                                                    <button class="remove-button small-button" data-qindex={qIndex} data-optindex={optIndex} onclick={removeAnswerOption} title="Remove Option">
+                                                        <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Step 3: Add Recipients -->
+                <template if:true={isStep3}>
+                    <div class="step-section">
+                        <h2 class="step-title">{step3Title}</h2>
+                        <div class="form-content">
+                            <div class="slds-text-align_center slds-m-vertical_large">
+                                <lightning-icon icon-name="utility:info" size="medium" variant="warning"></lightning-icon>
+                                <p class="slds-m-top_medium">
+                                    You'll be able to send email invitations after your survey is created.
+                                </p>
+                                <p class="slds-m-top_small">
+                                    Click "Next" to proceed to the review step.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Step 4: Review and Send -->
+                <template if:true={isStep4}>
+                    <div class="step-section">
+                        <h2 class="step-title">{step4Title}</h2>
+                        <div class="form-content review-section">
+                            <div class="review-item">
+                                <span class="review-label">Survey Name:</span>
+                                <span class="review-value">{survey.Name}</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Description:</span>
+                                <span class="review-value">{survey.Description__c}</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Number of Questions:</span>
+                                <span class="review-value">{questions.length}</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Recipients:</span>
+                                <div class="review-value email-list">
+                                    <template for:each={emailList} for:item="email">
+                                        <span key={email} class="email-badge">{email}</span>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Public Link Base URL:</span>
+                                <span class="review-value">{publicSiteUrl}</span>
+                                <template if:false={publicSiteUrl}>
+                                    <span class="review-value error-text">(Not Configured - Cannot Send)</span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Step 5: Survey Created (between creation and sending) -->
+                <template if:true={isStep5}>
+                    <div class="step-section">
+                        <div class="step-title">{step5Title}</div>
+                        
+                        <div class="survey-created-section">
+                            <!-- Success message -->
+                            <div class="survey-created-message">
+                                <lightning-icon icon-name="utility:success" class="success-icon" size="small"></lightning-icon>
+                                <p class="success-text">Your survey has been created successfully!</p>
+                            </div>
+                            
+                            <!-- Survey ID Display Section -->
+                            <div class="survey-id-container slds-m-bottom_medium">
+                                <h3 class="slds-text-heading_small slds-m-bottom_small">Survey ID</h3>
+                                <p class="slds-text-body_small slds-m-bottom_small">
+                                    <strong>This is the ID you need to copy</strong> for the survey responder component.
+                                </p>
+                                <div class="slds-grid slds-gutters slds-grid_vertical-align-center">
+                                    <div class="slds-col">
+                                        <span class="survey-id">{surveyId}</span>
+                                    </div>
+                                    <div class="slds-col slds-shrink">
+                                        <lightning-button-icon 
+                                            icon-name="utility:copy_to_clipboard" 
+                                            class="slds-m-left_xx-small" 
+                                            alternative-text="Copy to clipboard" 
+                                            title="Copy Survey ID to clipboard"
+                                            onclick={copySurveyIdToClipboard}>
+                                        </lightning-button-icon>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Direct Survey Link Section -->
+                            <div class="survey-link-container slds-m-bottom_medium">
+                                <h3 class="slds-text-heading_small slds-m-bottom_small">Direct Survey Link</h3>
+                                <p class="slds-text-body_small slds-m-bottom_small">
+                                    Share this link to allow anyone to take the survey directly:
+                                </p>
+                                <div class="slds-grid slds-gutters slds-grid_vertical-align-center">
+                                    <div class="slds-col">
+                                        <div class="survey-direct-link">
+                                            {directSurveyLink}
+                                        </div>
+                                    </div>
+                                    <div class="slds-col slds-shrink">
+                                        <lightning-button-icon 
+                                            icon-name="utility:copy_to_clipboard" 
+                                            class="slds-m-left_xx-small" 
+                                            alternative-text="Copy link to clipboard" 
+                                            title="Copy link to clipboard"
+                                            onclick={copyDirectLinkToClipboard}>
+                                        </lightning-button-icon>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Email Recipients Section -->
+                            <div class="email-inputs slds-m-top_medium">
+                                <h3 class="slds-text-heading_small slds-m-bottom_small">Send Email Invitations</h3>
+                                <p class="slds-text-body_small slds-m-bottom_small">
+                                    Enter email addresses to send survey invitations (separate multiple emails with commas):
+                                </p>
+                                <lightning-textarea
+                                    name="recipientEmails"
+                                    label="Recipient Email Addresses"
+                                    value={recipientEmails}
+                                    onchange={handleEmailChange}
+                                    placeholder="e.g., john@example.com, jane@example.com"
+                                    class="slds-m-bottom_medium">
+                                </lightning-textarea>
+                            </div>
+                            
+                            <!-- Survey Actions -->
+                            <div class="survey-created-actions slds-m-top_large">
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col">
+                                        <lightning-button 
+                                            variant="brand" 
+                                            label="Send Email Invitations" 
+                                            onclick={handleSendEmails}
+                                            disabled={isProcessing}
+                                            class="send-button">
+                                        </lightning-button>
+                                    </div>
+                                    <div class="slds-col">
+                                        <lightning-button 
+                                            variant="neutral" 
+                                            label="Create Another Survey" 
+                                            onclick={handleCreateAnother}
+                                            disabled={isProcessing}
+                                            class="create-another-button">
+                                        </lightning-button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Step 6: Sent Confirmation -->
+                <template if:true={isStep6}>
+                    <div class="success-container">
+                        <div class="success-icon">
+                            <lightning-icon icon-name="utility:success" alternative-text="Success" size="large"></lightning-icon>
+                        </div>
+                        <h2 class="success-title">{step6Title}</h2>
+                        <p class="success-message">Successfully sent survey invitations to <strong>{sentCount}</strong> recipients. You can now track responses in the Survey Response records.</p>
+                        <div class="success-actions">
+                            <lightning-button 
+                                variant="brand" 
+                                label="Create Another Survey" 
+                                onclick={handleCreateAnother}
+                                class="sign-another-button"></lightning-button>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Error Display -->
+                <template if:true={error}>
+                    <div class="error-panel" role="alert">
+                        <lightning-icon icon-name="utility:error" alternative-text="Error" variant="error" size="small" class="error-icon"></lightning-icon>
+                        <span class="error-text">{error}</span>
+                    </div>
+                </template>
+
+                <!-- Loading Spinner -->
+                <template if:true={isProcessing}>
+                    <div class="spinner-container">
+                        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                    </div>
+                </template>
+                
+                <!-- Actions Section - Only for Steps 1-4 -->
+                <template if:true={showNavButtons}>
+                    <div class="action-section">
+                        <lightning-button 
+                            variant="neutral" 
+                            label="Previous" 
+                            onclick={handlePrevious} 
+                            if:true={showPreviousButton}
+                            class="previous-button"></lightning-button>
+                        
+                        <lightning-button 
+                            variant="brand" 
+                            label={nextButtonLabel} 
+                            onclick={handleNext} 
+                            disabled={isProcessing}
+                            if:true={showNextButton}
+                            class="next-button"></lightning-button>
+                        
+                        <template if:true={showSaveButton}>
+                            <lightning-button 
+                                variant="brand" 
+                                label="Create Survey" 
+                                onclick={handleSaveSurvey} 
+                                disabled={isProcessing}
+                                class="send-button"></lightning-button>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- View Mode Content -->
+        <template if:true={isViewMode}>
+            <!-- Survey List View -->
+            <template if:true={isViewingSurveys}>
+                <div class="view-section">
+                    <!-- Survey Report Assistant Section -->
+                    <div class="report-assistant-section slds-m-bottom_large" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 8px; padding: 20px; border: 1px solid #dee2e6;">
+                        <div class="slds-grid slds-gutters slds-grid_align-center slds-m-bottom_medium">
+                            <div class="slds-col">
+                                <h3 class="slds-text-heading_medium slds-text-color_default">
+                                    <lightning-icon icon-name="standard:bot" size="small" class="slds-m-right_small"></lightning-icon>
+                                    Survey Report Assistant
+                                </h3>
+                                <p class="slds-text-body_small slds-text-color_weak">
+                                    Ask questions about your surveys, responses, and get insights from your data.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- LLM Assistant Component -->
+                        <c-llm-assistant
+                            primary-color={primaryColor}
+                            accent-color={accentColor}
+                            card-title="Survey Data Assistant"
+                            context-prompt="You are a survey data analysis assistant. Help users understand and analyze their survey data, responses, and generate reports. You have access to Survey__c and Survey_Response__c objects along with Question__c and Question_Response__c records."
+                            report-objects="Survey__c,Survey_Response__c,Question__c,Question_Response__c,Answer_Option__c"
+                            question-input-label="Ask about your surveys and responses"
+                            question-input-placeholder="e.g., 'Show me a summary of all survey responses from last month' or 'What are the common themes in the feedback?'"
+                            ask-button-label="Analyze Data"
+                            class="survey-llm-assistant">
+                        </c-llm-assistant>
+                    </div>
+
+                    <h2 class="view-title">My Surveys</h2>
+                    
+                    <!-- Loading Spinner for Surveys -->
+                    <template if:true={isLoadingSurveys}>
+                        <div class="spinner-container">
+                            <lightning-spinner alternative-text="Loading surveys" size="medium"></lightning-spinner>
+                        </div>
+                    </template>
+
+                    <!-- Survey List -->
+                    <template if:false={isLoadingSurveys}>
+                        <template if:true={userSurveys}>
+                            <template if:true={userSurveys.length}>
+                                <div class="survey-list">
+                                    <template for:each={userSurveys} for:item="surveyItem">
+                                        <div key={surveyItem.survey.Id} class="survey-card">
+                                            <div class="survey-card-header">
+                                                <h3 class="survey-card-title">{surveyItem.survey.Name}</h3>
+                                                <div class="survey-card-meta">
+                                                    <span class="survey-status" data-active={surveyItem.survey.Is_Active__c}>
+                                                        {surveyItem.statusText}
+                                                    </span>
+                                                    <span class="response-count">
+                                                        {surveyItem.responseCount} responses
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="survey-card-body">
+                                                <p class="survey-description">{surveyItem.survey.Description__c}</p>
+                                                <p class="survey-created">Created: {surveyItem.survey.CreatedDate}</p>
+                                            </div>
+                                            
+                                            <div class="survey-card-actions">
+                                                <lightning-button 
+                                                    variant="brand" 
+                                                    label="View Responses" 
+                                                    data-survey-id={surveyItem.survey.Id}
+                                                    onclick={handleViewSurveyResponses}
+                                                    class="view-responses-button">
+                                                </lightning-button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template if:false={userSurveys.length}>
+                                <div class="empty-state">
+                                    <lightning-icon icon-name="utility:survey" size="large" class="empty-icon"></lightning-icon>
+                                    <h3 class="empty-title">No Surveys Found</h3>
+                                    <p class="empty-message">You haven't created any surveys yet. Create your first survey to get started!</p>
+                                    <lightning-button 
+                                        variant="brand" 
+                                        label="Create First Survey" 
+                                        onclick={switchToCreateMode}
+                                        class="create-first-button">
+                                    </lightning-button>
+                                </div>
+                            </template>
+                        </template>
+                    </template>
                 </div>
             </template>
 
-            <!-- Step 2: Build Questions -->
-            <template if:true={isStep2}>
-                <div class="step-section">
-                    <h2 class="step-title">{step2Title}</h2>
-                    <div class="form-content">
-                        <div class="section-header">
-                            <button class="add-button" onclick={addQuestion} title="Add Question">
-                                <lightning-icon icon-name="utility:add" size="small" class="add-icon"></lightning-icon>
-                                <span>Add Question</span>
-                            </button>
+            <!-- Survey Responses View -->
+            <template if:true={isViewingResponses}>
+                <div class="responses-section">
+                    <!-- Back Button -->
+                    <div class="responses-header">
+                        <lightning-button 
+                            variant="neutral" 
+                            label="← Back to Surveys" 
+                            onclick={handleBackToSurveyList}
+                            class="back-button">
+                        </lightning-button>
+                        <h2 class="responses-title">{selectedSurveyData.survey.Name} - Responses</h2>
+                    </div>
+
+                    <!-- Loading Spinner for Responses -->
+                    <template if:true={isLoadingResponses}>
+                        <div class="spinner-container">
+                            <lightning-spinner alternative-text="Loading responses" size="medium"></lightning-spinner>
                         </div>
+                    </template>
 
-                        <!-- Iterate through questions -->
-                        <template for:each={questionsWithComputedFields} for:item="question" for:index="qIndex">
-                            <div key={question.key} class="question-block">
-                                <div class="question-header">
-                                    <h3 class="question-number">Question {question.displayOrder}</h3>
-                                    <button class="remove-button" data-index={qIndex} onclick={removeQuestion} title="Remove Question">
-                                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
-                                    </button>
-                                </div>
+                    <!-- Responses Content -->
+                    <template if:false={isLoadingResponses}>
+                        <template if:true={selectedSurveyData}>
+                            <div class="survey-info">
+                                <p class="survey-description">{selectedSurveyData.survey.Description__c}</p>
+                                <p class="response-summary">
+                                    Total Responses: <strong>{selectedSurveyData.responses.length}</strong>
+                                </p>
+                            </div>
 
-                                <lightning-textarea
-                                    label="Question Text"
-                                    value={question.questionText}
-                                    data-index={qIndex}
-                                    onchange={handleQuestionChange}
-                                    data-field="questionText"
-                                    required
-                                    message-when-value-missing="Question text cannot be empty."
-                                    class="slds-m-bottom_small"
-                                ></lightning-textarea>
-
-                                <div class="question-options">
-                                    <lightning-combobox
-                                        name="questionType"
-                                        label="Question Type"
-                                        value={question.type}
-                                        placeholder="Select Type"
-                                        options={questionTypeOptions}
-                                        onchange={handleQuestionChange}
-                                        data-index={qIndex}
-                                        data-field="type"
-                                        required
-                                        class="slds-m-right_small"
-                                    ></lightning-combobox>
-
-                                    <lightning-input
-                                        type="checkbox"
-                                        label="Required"
-                                        checked={question.isRequired}
-                                        onchange={handleQuestionChange}
-                                        data-index={qIndex}
-                                        data-field="isRequired"
-                                        class="required-checkbox"
-                                    ></lightning-input>
-                                </div>
-
-                                <!-- Answer Options for Radio/Checkbox -->
-                                <template if:true={question.showOptions}>
-                                    <div class="answer-options-section">
-                                        <div class="section-header-small">
-                                            <h4>Answer Options</h4>
-                                            <button class="add-button small-button" data-qindex={qIndex} onclick={addAnswerOption} title="Add Option">
-                                                <lightning-icon icon-name="utility:add" size="xx-small" class="add-icon-small"></lightning-icon>
-                                                <span>Add Option</span>
-                                            </button>
+                            <!-- Responses List -->
+                            <template if:true={selectedSurveyData.responses.length}>
+                                <div class="responses-list">
+                                    <template for:each={selectedSurveyData.responses} for:item="response">
+                                        <div key={response.Id} class="response-card">
+                                            <div class="response-header">
+                                                <h4 class="response-title">Response {response.Name}</h4>
+                                                <div class="response-meta">
+                                                    <span class="respondent-email">{response.Respondent_Email__c}</span>
+                                                    <span class="response-date">{response.Response_Date__c}</span>
+                                                </div>
+                                            </div>
+                                            
+                                                                        <div class="response-answers">
+                                <template for:each={response.Question_Responses__r} for:item="answer">
+                                    <div key={answer.Id} class="answer-item">
+                                        <div class="question-container">
+                                            <lightning-icon icon-name="utility:questions_and_answers" size="x-small" class="question-icon"></lightning-icon>
+                                            <span class="question-label">Question:</span>
+                                            <div class="question-text">{answer.Question__r.Question_Text__c}</div>
                                         </div>
-                                        <template for:each={question.answerOptions} for:item="option" for:index="optIndex">
-                                            <div key={option.key} class="option-item">
-                                                <lightning-input
-                                                    label={optionInputLabel}
-                                                    value={option.optionText}
-                                                    data-qindex={qIndex}
-                                                    data-optindex={optIndex}
-                                                    onchange={handleOptionChange}
-                                                    required
-                                                    message-when-value-missing="Option text cannot be empty."
-                                                ></lightning-input>
-                                                <button class="remove-button small-button" data-qindex={qIndex} data-optindex={optIndex} onclick={removeAnswerOption} title="Remove Option">
-                                                    <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
-                                                </button>
+                                        <div class="answer-container">
+                                            <lightning-icon icon-name="utility:comments" size="x-small" class="answer-icon"></lightning-icon>
+                                            <span class="answer-label">Response:</span>
+                                            <div class="answer-text">{answer.Response_Text__c}</div>
+                                        </div>
+                                        <template if:true={answer.Question__r.Question_Type__c}>
+                                            <div class="question-type">
+                                                <span class="type-label">Type: {answer.Question__r.Question_Type__c}</span>
                                             </div>
                                         </template>
                                     </div>
                                 </template>
                             </div>
-                        </template>
-                    </div>
-                </div>
-            </template>
-
-            <!-- Step 3: Add Recipients -->
-            <template if:true={isStep3}>
-                <div class="step-section">
-                    <h2 class="step-title">{step3Title}</h2>
-                    <div class="form-content">
-                        <div class="slds-text-align_center slds-m-vertical_large">
-                            <lightning-icon icon-name="utility:info" size="medium" variant="warning"></lightning-icon>
-                            <p class="slds-m-top_medium">
-                                You'll be able to send email invitations after your survey is created.
-                            </p>
-                            <p class="slds-m-top_small">
-                                Click "Next" to proceed to the review step.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </template>
-
-            <!-- Step 4: Review and Send -->
-            <template if:true={isStep4}>
-                <div class="step-section">
-                    <h2 class="step-title">{step4Title}</h2>
-                    <div class="form-content review-section">
-                        <div class="review-item">
-                            <span class="review-label">Survey Name:</span>
-                            <span class="review-value">{survey.Name}</span>
-                        </div>
-                        <div class="review-item">
-                            <span class="review-label">Description:</span>
-                            <span class="review-value">{survey.Description__c}</span>
-                        </div>
-                        <div class="review-item">
-                            <span class="review-label">Number of Questions:</span>
-                            <span class="review-value">{questions.length}</span>
-                        </div>
-                        <div class="review-item">
-                            <span class="review-label">Recipients:</span>
-                            <div class="review-value email-list">
-                                <template for:each={emailList} for:item="email">
-                                    <span key={email} class="email-badge">{email}</span>
-                                </template>
-                            </div>
-                        </div>
-                        <div class="review-item">
-                            <span class="review-label">Public Link Base URL:</span>
-                            <span class="review-value">{publicSiteUrl}</span>
-                            <template if:false={publicSiteUrl}>
-                                <span class="review-value error-text">(Not Configured - Cannot Send)</span>
+                                        </div>
+                                    </template>
+                                </div>
                             </template>
-                        </div>
-                    </div>
-                </div>
-            </template>
-
-            <!-- Step 5: Survey Created (between creation and sending) -->
-            <template if:true={isStep5}>
-                <div class="step-section">
-                    <div class="step-title">{step5Title}</div>
-                    
-                    <div class="survey-created-section">
-                        <!-- Success message -->
-                        <div class="survey-created-message">
-                            <lightning-icon icon-name="utility:success" class="success-icon" size="small"></lightning-icon>
-                            <p class="success-text">Your survey has been created successfully!</p>
-                        </div>
-                        
-                        <!-- Survey ID Display Section -->
-                        <div class="survey-id-container slds-m-bottom_medium">
-                            <h3 class="slds-text-heading_small slds-m-bottom_small">Survey ID</h3>
-                            <p class="slds-text-body_small slds-m-bottom_small">
-                                <strong>This is the ID you need to copy</strong> for the survey responder component.
-                            </p>
-                            <div class="slds-grid slds-gutters slds-grid_vertical-align-center">
-                                <div class="slds-col">
-                                    <span class="survey-id">{surveyId}</span>
+                            
+                            <!-- No Responses State -->
+                            <template if:false={selectedSurveyData.responses.length}>
+                                <div class="empty-responses">
+                                    <lightning-icon icon-name="utility:comments" size="large" class="empty-icon"></lightning-icon>
+                                    <h3 class="empty-title">No Responses Yet</h3>
+                                    <p class="empty-message">This survey hasn't received any responses yet.</p>
                                 </div>
-                                <div class="slds-col slds-shrink">
-                                    <lightning-button-icon 
-                                        icon-name="utility:copy_to_clipboard" 
-                                        class="slds-m-left_xx-small" 
-                                        alternative-text="Copy to clipboard" 
-                                        title="Copy Survey ID to clipboard"
-                                        onclick={copySurveyIdToClipboard}>
-                                    </lightning-button-icon>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Direct Survey Link Section -->
-                        <div class="survey-link-container slds-m-bottom_medium">
-                            <h3 class="slds-text-heading_small slds-m-bottom_small">Direct Survey Link</h3>
-                            <p class="slds-text-body_small slds-m-bottom_small">
-                                Share this link to allow anyone to take the survey directly:
-                            </p>
-                            <div class="slds-grid slds-gutters slds-grid_vertical-align-center">
-                                <div class="slds-col">
-                                    <div class="survey-direct-link">
-                                        {directSurveyLink}
-                                    </div>
-                                </div>
-                                <div class="slds-col slds-shrink">
-                                    <lightning-button-icon 
-                                        icon-name="utility:copy_to_clipboard" 
-                                        class="slds-m-left_xx-small" 
-                                        alternative-text="Copy link to clipboard" 
-                                        title="Copy link to clipboard"
-                                        onclick={copyDirectLinkToClipboard}>
-                                    </lightning-button-icon>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Email Recipients Section -->
-                        <div class="email-inputs slds-m-top_medium">
-                            <h3 class="slds-text-heading_small slds-m-bottom_small">Send Email Invitations</h3>
-                            <p class="slds-text-body_small slds-m-bottom_small">
-                                Enter email addresses to send survey invitations (separate multiple emails with commas):
-                            </p>
-                            <lightning-textarea
-                                name="recipientEmails"
-                                label="Recipient Email Addresses"
-                                value={recipientEmails}
-                                onchange={handleEmailChange}
-                                placeholder="e.g., john@example.com, jane@example.com"
-                                class="slds-m-bottom_medium">
-                            </lightning-textarea>
-                        </div>
-                        
-                        <!-- Survey Actions -->
-                        <div class="survey-created-actions slds-m-top_large">
-                            <div class="slds-grid slds-gutters">
-                                <div class="slds-col">
-                                    <lightning-button 
-                                        variant="brand" 
-                                        label="Send Email Invitations" 
-                                        onclick={handleSendEmails}
-                                        disabled={isProcessing}
-                                        class="send-button">
-                                    </lightning-button>
-                                </div>
-                                <div class="slds-col">
-                                    <lightning-button 
-                                        variant="neutral" 
-                                        label="Create Another Survey" 
-                                        onclick={handleCreateAnother}
-                                        disabled={isProcessing}
-                                        class="create-another-button">
-                                    </lightning-button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-
-            <!-- Step 6: Sent Confirmation -->
-            <template if:true={isStep6}>
-                <div class="success-container">
-                    <div class="success-icon">
-                        <lightning-icon icon-name="utility:success" alternative-text="Success" size="large"></lightning-icon>
-                    </div>
-                    <h2 class="success-title">{step6Title}</h2>
-                    <p class="success-message">Successfully sent survey invitations to <strong>{sentCount}</strong> recipients. You can now track responses in the Survey Response records.</p>
-                    <div class="success-actions">
-                        <lightning-button 
-                            variant="brand" 
-                            label="Create Another Survey" 
-                            onclick={handleCreateAnother}
-                            class="sign-another-button"></lightning-button>
-                    </div>
-                </div>
-            </template>
-
-            <!-- Error Display -->
-            <template if:true={error}>
-                <div class="error-panel" role="alert">
-                    <lightning-icon icon-name="utility:error" alternative-text="Error" variant="error" size="small" class="error-icon"></lightning-icon>
-                    <span class="error-text">{error}</span>
-                </div>
-            </template>
-
-            <!-- Loading Spinner -->
-            <template if:true={isProcessing}>
-                <div class="spinner-container">
-                    <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
-                </div>
-            </template>
-            
-            <!-- Actions Section - Only for Steps 1-4 -->
-            <template if:true={showNavButtons}>
-                <div class="action-section">
-                    <lightning-button 
-                        variant="neutral" 
-                        label="Previous" 
-                        onclick={handlePrevious} 
-                        if:true={showPreviousButton}
-                        class="previous-button"></lightning-button>
-                    
-                    <lightning-button 
-                        variant="brand" 
-                        label={nextButtonLabel} 
-                        onclick={handleNext} 
-                        disabled={isProcessing}
-                        if:true={showNextButton}
-                        class="next-button"></lightning-button>
-                    
-                    <template if:true={showSaveButton}>
-                        <lightning-button 
-                            variant="brand" 
-                            label="Create Survey" 
-                            onclick={handleSaveSurvey} 
-                            disabled={isProcessing}
-                            class="send-button"></lightning-button>
+                            </template>
+                        </template>
                     </template>
                 </div>
             </template>
-        </div>
-    </div>
-</template> 
+        </template>
+
+        <!-- Global Error Display -->
+        <template if:true={error}>
+            <div class="error-panel" role="alert">
+                <lightning-icon icon-name="utility:error" alternative-text="Error" variant="error" size="small" class="error-icon"></lightning-icon>
+                <span class="error-text">{error}</span>
+            </div>
+        </template>
+     </div>
+ </template>

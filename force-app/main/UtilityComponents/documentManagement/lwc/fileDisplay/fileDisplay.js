@@ -562,4 +562,4 @@ export default class FileDisplay extends NavigationMixin(LightningElement) {
         this.displayToast('Refreshing', 'Refreshing files list...', 'success');
         this.refreshFiles();
     }
-} 
+}

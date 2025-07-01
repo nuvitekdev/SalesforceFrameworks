@@ -29,4 +29,4 @@
             <property name="allowMultipleSubmissions" type="Boolean" label="Allow Multiple Submissions" description="If checked, allows multiple submissions from the same device" default="false" />
         </targetConfig>
     </targetConfigs>
-</LightningComponentBundle> 
+</LightningComponentBundle>

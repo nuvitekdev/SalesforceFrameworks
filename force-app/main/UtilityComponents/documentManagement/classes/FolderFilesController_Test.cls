@@ -107,4 +107,4 @@ private class FolderFilesController_Test {
         System.assertEquals(1, documentFiles.size(), 'Should return 1 file in Documents folder');
         System.assertEquals('Test Document.pdf', documentFiles[0].Title, 'Should return correct file name');
     }
-} 
+}

@@ -1061,4 +1061,4 @@ export default class NaturalLanguageToSoql extends LightningElement {
             return processedColumn;
         });
     }
-} 
+}

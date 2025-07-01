@@ -380,4 +380,4 @@ public with sharing class FolderFilesController {
         @AuraEnabled public Long ContentSize;
         @AuraEnabled public Datetime ContentModifiedDate;
     }
-} 
+}

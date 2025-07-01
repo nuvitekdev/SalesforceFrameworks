@@ -97,9 +97,22 @@
 
                 <!-- PDF Processing Spinner and Error -->
                 <template if:true={isProcessingPdf}>
-                    <div class="loading-container slds-m-vertical_medium slds-text-align_center">
-                        <lightning-spinner alternative-text="Analyzing PDF..." size="medium"></lightning-spinner>
-                        <p class="loading-text slds-m-top_small">Analyzing PDF, please wait...</p>
+                    <div class="enhanced-loading-container slds-m-vertical_medium">
+                        <div class="loading-content">
+                            <!-- <div class="spinner-container">
+                                <lightning-spinner alternative-text="Analyzing PDF..." size="medium" class="enhanced-spinner"></lightning-spinner>
+                                <div class="pulse-ring"></div>
+                            </div> -->
+                            <div class="loading-info">
+                                <p class="loading-text">Analyzing PDF, please wait...</p>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill"></div>
+                                    </div>
+                                    <span class="progress-text">Processing document...</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </template>
                 <template if:true={pdfProcessingError}>
@@ -109,12 +122,12 @@
                     </div>
                 </template>
 
-                <!-- Text area remains the same -->
+                <!-- Text area with dynamic label and placeholder -->
                 <lightning-textarea
-                    label="Your Question"
+                    label={questionInputLabel}
                     value={userPrompt}
                     onchange={handlePromptChange}
-                    placeholder="Type your question here..."
+                    placeholder={questionInputPlaceholder}
                     class="slds-m-bottom_small question-input">
                 </lightning-textarea>
 
@@ -131,7 +144,7 @@
                                 <path d="M30.2 3.2c-2.4-2.4-6.3-2.4-8.7 0-2.4 2.4-2.4 6.3 0 8.7l1.4 1.4c.7.7 1.9.2 1.9-.8V9.3c0-1.8 1.6-3.4 3.4-3.4h3.2c1 0 1.5-1.2.8-1.9L30.2 3.2zM33.5 15.5h-14c-.8 0-1.5.7-1.5 1.5v14c0 .8.7 1.5 1.5 1.5h14c.8 0 1.5-.7 1.5-1.5V17c0-.8-.7-1.5-1.5-1.5zM26.5 40h-7c-.8 0-1.5.7-1.5 1.5v3c0 .8.7 1.5 1.5 1.5h7c.8 0 1.5-.7 1.5-1.5v-3c0-.8-.7-1.5-1.5-1.5zM39.5 40h-7c-.8 0-1.5.7-1.5 1.5v3c0 .8.7 1.5 1.5 1.5h7c.8 0 1.5-.7 1.5-1.5v-3c0-.8-.7-1.5-1.5-1.5z"></path>
                             </svg>
                         </span>
-                        <span class="button-label">Ask Question</span>
+                        <span class="button-label">{askButtonLabel}</span>
                     </button>
                     
                     <!-- Custom Analyze button -->
@@ -257,9 +270,21 @@
                             <div class="slds-modal__content slds-p-around_medium" id="extract-modal-content">
                                 <p class="slds-m-bottom_medium">Review the data extracted from the analyzed documents. For each field, select the value you want to update on the record, or choose to keep the current value.</p>
                                 
-                                <div if:true={isExtractingFields} class="loading-container slds-m-vertical_medium">
-                                    <lightning-spinner alternative-text="Extracting field data..." size="medium"></lightning-spinner>
-                                    <p class="loading-text">AI is extracting data, please wait...</p>
+                                <div if:true={isExtractingFields} class="enhanced-loading-container slds-m-vertical_medium">
+                                    <div class="loading-content">
+                                        <!-- <div class="spinner-container">
+                                            <div class="pulse-ring"></div>
+                                        </div> -->
+                                        <div class="loading-info">
+                                            <p class="loading-text">AI is extracting data, please wait...</p>
+                                            <div class="progress-bar-container">
+                                                <div class="progress-bar">
+                                                    <div class="progress-fill"></div>
+                                                </div>
+                                                <span class="progress-text">Analyzing documents...</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <template if:false={isExtractingFields}>
@@ -337,9 +362,21 @@
                 </div>
                 <!-- End Comparison Input Modal -->
 
-                <div if:true={isLoading} class="loading-container">
-                    <lightning-spinner alternative-text="Processing" size="medium"></lightning-spinner>
-                    <p class="loading-text">Analyzing data and generating response...</p>
+                <div if:true={isLoading} class="enhanced-loading-container">
+                    <div class="loading-content">
+                        <!-- <div class="spinner-container">
+                            <div class="pulse-ring"></div>
+                        </div> -->
+                        <div class="loading-info">
+                            <p class="loading-text">Analyzing data and generating response...</p>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                </div>
+                                <span class="progress-text">Processing your request...</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div if:true={hasError} class="error-container slds-text-color_error slds-m-bottom_small slds-p-around_small slds-border_left slds-border_red slds-border_left-4">

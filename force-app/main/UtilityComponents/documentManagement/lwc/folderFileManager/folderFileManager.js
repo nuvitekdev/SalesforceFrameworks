@@ -1485,4 +1485,4 @@ export default class FolderFileManager extends NavigationMixin(LightningElement)
             });
         }
     }
-} 
+}

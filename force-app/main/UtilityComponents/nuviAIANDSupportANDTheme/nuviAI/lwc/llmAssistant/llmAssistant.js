@@ -36,6 +36,10 @@ export default class LLMAssistant extends LightningElement {
     @api compareFrom = '';         // Content to compare (source) - if provided, auto-comparison runs
     @api relatedObjects = '';      // Comma-separated list of object API names to search across for related data
     @api analysisFieldApiName = ''; // API name of field to save analysis summary
+    @api questionInputLabel = 'Your Question'; // Label for the question input textarea
+    @api questionInputPlaceholder = 'Type your question here...'; // Placeholder text for the question input textarea
+    @api askButtonLabel = 'Ask Question'; // Label for the primary ask/submit button
+    @api reportObjects = ''; // Comma-separated list of object API names to query for reporting (e.g., "Account,Case,Contact")
     
     // New design attribute for enabling document analysis
     @api enableDocumentAnalysis = false;
@@ -1349,7 +1353,8 @@ Format your response with clear sections using **bold headers** and bullet point
             prompt: this.userPrompt,       // Changed from userPrompt to prompt
             operation: operation,
             recordId: '',                  // Initialize with empty string
-            relatedObjects: ''             // Initialize with empty string
+            relatedObjects: '',            // Initialize with empty string
+            reportObjects: ''              // Initialize with empty string for reporting
         };
         
         console.log('📦 Initial requestParams:', JSON.stringify(requestParams));
@@ -1397,6 +1402,11 @@ Format your response with clear sections using **bold headers** and bullet point
         // Add related objects if configured
         if (this.hasRelatedObjects) {
             requestParams.relatedObjects = this.relatedObjects;
+        }
+        
+        // Add report objects if configured
+        if (this.reportObjects && this.reportObjects.trim() !== '') {
+            requestParams.reportObjects = this.reportObjects;
         }
         
         // Add message to history for user's message
@@ -1991,7 +2001,8 @@ Format your response with clear sections using **bold headers** and bullet point
                 configName: this.selectedLLM,
                 prompt: 'Provide a detailed analysis of this record including all important fields and relationships.',
                 operation: 'summarize',
-                relatedObjects: this.relatedObjects
+                relatedObjects: this.relatedObjects,
+                reportObjects: this.reportObjects || ''
             })
             .then(recordContext => {
                 console.log('Record context received, generating summary...');
@@ -2010,7 +2021,8 @@ Format your response with clear sections using **bold headers** and bullet point
                     configName: this.selectedLLM,
                     prompt: enhancedPrompt,
                     operation: 'ask',
-                    relatedObjects: ''
+                    relatedObjects: '',
+                    reportObjects: ''
                 });
             })
             .then(summary => {
@@ -2036,7 +2048,8 @@ Format your response with clear sections using **bold headers** and bullet point
                     configName: this.selectedLLM,
                     prompt: `${promptForSummary} REMEMBER: Output MUST be 600 characters or less.`,
                     operation: 'ask',
-                    relatedObjects: ''
+                    relatedObjects: '',
+                    reportObjects: ''
                 })
                 .then(fallbackSummary => {
                     console.log('Fallback summary generated, length:', fallbackSummary.length);

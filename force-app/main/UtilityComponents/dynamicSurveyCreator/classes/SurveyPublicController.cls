@@ -7,66 +7,54 @@
 public without sharing class SurveyPublicController {
 
     /**
-     * @description Retrieves the details of a specific survey for display.
-     * @param responseId The Unique_Response_ID__c identifying the response attempt.
-     * @return SurveyWrapper A wrapper object containing survey and question details.
+     * @description Wrapper class for survey data
      */
-    @AuraEnabled(cacheable=true)
-    public static SurveyWrapper getSurveyDetails(String responseId) {
-        // 1. Validate the responseId and find the corresponding Survey_Response__c record.
-        List<Survey_Response__c> responses = [
-            SELECT Id, Survey__c, Status__c
-            FROM Survey_Response__c
-            WHERE Unique_Response_ID__c = :responseId
-            LIMIT 1
-        ];
+    public class SurveyWrapper {
+        @AuraEnabled public Survey__c survey { get; set; }
+        @AuraEnabled public List<Question__c> questions { get; set; }
+        @AuraEnabled public Id responseId { get; set; }
+        @AuraEnabled public Boolean requiresPasscode { get; set; }
+    }
 
-        if (responses.isEmpty()) {
-            throw new AuraHandledException('Invalid survey link.');
+    /**
+     * @description Validates passcode for a survey response
+     * @param responseId The Unique_Response_ID__c identifying the response attempt
+     * @param passcode The passcode entered by the user
+     * @return Boolean True if passcode is valid or not required
+     */
+    @AuraEnabled
+    public static Boolean validatePasscode(String responseId, String passcode) {
+        try {
+            // Find the survey response record
+            List<Survey_Response__c> responses = [
+                SELECT Id, Survey__c, Passcode__c, Survey__r.Require_Passcode__c
+                FROM Survey_Response__c
+                WHERE Unique_Response_ID__c = :responseId
+                LIMIT 1
+            ];
+
+            if (responses.isEmpty()) {
+                throw new AuraHandledException('Invalid survey link.');
+            }
+
+            Survey_Response__c responseRecord = responses[0];
+            
+            // If survey doesn't require passcode, return true
+            if (!responseRecord.Survey__r.Require_Passcode__c) {
+                return true;
+            }
+            
+            // If passcode is required, validate it
+            if (String.isBlank(passcode) || String.isBlank(responseRecord.Passcode__c)) {
+                return false;
+            }
+            
+            return passcode.equals(responseRecord.Passcode__c);
+            
+        } catch (Exception e) {
+            System.debug('Error validating passcode: ' + e.getMessage());
+            throw new AuraHandledException('Error validating passcode: ' + e.getMessage());
         }
-
-        Survey_Response__c responseRecord = responses[0];
-
-        // 2. Check if the survey response is already completed or the survey is inactive.
-        // (Allow retaking if needed, based on requirements)
-        /*
-        if (responseRecord.Status__c == 'Completed') {
-            throw new AuraHandledException('This survey has already been completed.');
-        }
-        */
-
-        Id surveyId = responseRecord.Survey__c;
-
-        // 3. Query the Survey details.
-        List<Survey__c> surveys = [
-            SELECT Id, Name, Description__c, Welcome_Message__c, Thank_You_Message__c, Is_Active__c
-            FROM Survey__c
-            WHERE Id = :surveyId AND Is_Active__c = true
-            LIMIT 1
-        ];
-
-        if (surveys.isEmpty()) {
-            throw new AuraHandledException('Survey not found or is inactive.');
-        }
-
-        // 4. Query the related Questions and Answer Options.
-        List<Question__c> questions = [
-            SELECT Id, Question_Text__c, Type__c, Order__c, Is_Required__c,
-                   (SELECT Id, Option_Text__c, Order__c
-                    FROM Answer_Options__r
-                    ORDER BY Order__c ASC)
-            FROM Question__c
-            WHERE Survey__c = :surveyId
-            ORDER BY Order__c ASC
-        ];
-
-        // 5. Construct the wrapper object to return.
-        SurveyWrapper wrapper = new SurveyWrapper();
-        wrapper.survey = surveys[0];
-        wrapper.questions = questions;
-        wrapper.responseId = responseRecord.Id; // Pass the actual record Id back
-
-        return wrapper;
     }
 
     /**
@@ -92,7 +80,7 @@ public without sharing class SurveyPublicController {
             
             // Query the Survey details
             List<Survey__c> surveys = [
-                SELECT Id, Name, Description__c, Welcome_Message__c, Thank_You_Message__c, Is_Active__c
+                SELECT Id, Name, Description__c, Welcome_Message__c, Thank_You_Message__c, Is_Active__c, Require_Passcode__c
                 FROM Survey__c
                 WHERE Id = :surveyRecordId AND Is_Active__c = true
                 LIMIT 1
@@ -114,11 +102,10 @@ public without sharing class SurveyPublicController {
             ];
 
             // Construct the wrapper object to return
-            // We no longer create a response record here to avoid DML operations
             SurveyWrapper wrapper = new SurveyWrapper();
             wrapper.survey = surveys[0];
             wrapper.questions = questions;
-            // Don't set responseId yet - it will be created when the user submits
+            wrapper.requiresPasscode = surveys[0].Require_Passcode__c;
 
             return wrapper;
         } catch (AuraHandledException e) {
@@ -126,6 +113,119 @@ public without sharing class SurveyPublicController {
         } catch (Exception e) {
             System.debug('Error in getSurveyById: ' + e.getMessage() + '\n' + e.getStackTraceString());
             throw new AuraHandledException('Error retrieving survey: ' + e.getMessage());
+        }
+    }
+
+    /**
+     * @description Retrieves survey details using a response ID with passcode validation
+     * @param responseId The Unique_Response_ID__c identifying the response attempt
+     * @param passcode The passcode for accessing the survey (optional)
+     * @return SurveyWrapper A wrapper object containing survey and question details
+     */
+    @AuraEnabled(cacheable=true)
+    public static SurveyWrapper getSurveyByResponseId(String responseId, String passcode) {
+        try {
+            // Find the survey response record
+            List<Survey_Response__c> responses = [
+                SELECT Id, Survey__c, Status__c, Passcode__c, Survey__r.Require_Passcode__c
+                FROM Survey_Response__c
+                WHERE Unique_Response_ID__c = :responseId
+                LIMIT 1
+            ];
+
+            if (responses.isEmpty()) {
+                throw new AuraHandledException('Invalid survey link.');
+            }
+
+            Survey_Response__c responseRecord = responses[0];
+            Id surveyId = responseRecord.Survey__c;
+            
+            // Validate passcode if required
+            if (responseRecord.Survey__r.Require_Passcode__c) {
+                if (String.isBlank(passcode) || String.isBlank(responseRecord.Passcode__c)) {
+                    throw new AuraHandledException('Passcode is required to access this survey.');
+                }
+                
+                if (!passcode.equals(responseRecord.Passcode__c)) {
+                    throw new AuraHandledException('Invalid passcode. Please check your email for the correct passcode.');
+                }
+            }
+
+            // Query the Survey details
+            List<Survey__c> surveys = [
+                SELECT Id, Name, Description__c, Welcome_Message__c, Thank_You_Message__c, Is_Active__c, Require_Passcode__c
+                FROM Survey__c
+                WHERE Id = :surveyId AND Is_Active__c = true
+                LIMIT 1
+            ];
+
+            if (surveys.isEmpty()) {
+                throw new AuraHandledException('Survey not found or is inactive.');
+            }
+
+            // Query the related Questions and Answer Options
+            List<Question__c> questions = [
+                SELECT Id, Question_Text__c, Type__c, Order__c, Is_Required__c,
+                       (SELECT Id, Option_Text__c, Order__c
+                        FROM Answer_Options__r
+                        ORDER BY Order__c ASC)
+                FROM Question__c
+                WHERE Survey__c = :surveyId
+                ORDER BY Order__c ASC
+            ];
+
+            // Construct the wrapper object to return
+            SurveyWrapper wrapper = new SurveyWrapper();
+            wrapper.survey = surveys[0];
+            wrapper.questions = questions;
+            wrapper.responseId = responseRecord.Id;
+            wrapper.requiresPasscode = surveys[0].Require_Passcode__c;
+
+            return wrapper;
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            System.debug('Error in getSurveyByResponseId: ' + e.getMessage() + '\n' + e.getStackTraceString());
+            throw new AuraHandledException('Error retrieving survey: ' + e.getMessage());
+        }
+    }
+
+    /**
+     * @description Validates passcode for direct survey access by survey ID
+     * @param surveyId The ID of the Survey__c record
+     * @param passcode The passcode entered by the user
+     * @return Boolean True if passcode is valid
+     */
+    @AuraEnabled
+    public static Boolean validatePasscodeBySurveyId(String surveyId, String passcode) {
+        try {
+            // Validate the ID format
+            Id surveyRecordId;
+            try {
+                surveyRecordId = Id.valueOf(surveyId);
+                if (String.valueOf(surveyRecordId.getSobjectType()) != 'Survey__c') {
+                    throw new AuraHandledException('Invalid Survey ID format.');
+                }
+            } catch (Exception e) {
+                throw new AuraHandledException('Invalid Survey ID format.');
+            }
+            
+            // Find any survey response record for this survey with the given passcode
+            List<Survey_Response__c> responses = [
+                SELECT Id, Survey__c, Passcode__c, Survey__r.Require_Passcode__c
+                FROM Survey_Response__c
+                WHERE Survey__c = :surveyRecordId 
+                AND Passcode__c = :passcode
+                AND Survey__r.Require_Passcode__c = true
+                LIMIT 1
+            ];
+
+            // If we found a matching passcode, it's valid
+            return !responses.isEmpty();
+            
+        } catch (Exception e) {
+            System.debug('Error validating passcode by survey ID: ' + e.getMessage());
+            return false;
         }
     }
 
@@ -178,115 +278,56 @@ public without sharing class SurveyPublicController {
             }
 
             responseRecord = responses[0];
-
-            // Check survey/response status
-            if (responseRecord.Status__c == 'Completed') {
-                // For now, we'll allow overwriting, but you might want stricter logic.
-                System.debug('Warning: Response already completed, overwriting: ' + responseId);
-            }
-            if (responseRecord.Survey__r.Is_Active__c == false) {
+            
+            if (!responseRecord.Survey__r.Is_Active__c) {
                 throw new AuraHandledException('This survey is no longer active.');
             }
         }
 
-        // Continue with rest of the original method...
-        // 2. Deserialize the response data.
-        Map<String, Object> questionResponsesMap = (Map<String, Object>)JSON.deserializeUntyped(responseDataJson);
-        List<Question_Response__c> answersToUpsert = new List<Question_Response__c>();
-        List<Question_Response__c> answersToInsert = new List<Question_Response__c>();
-        List<Question_Response__c> answersToUpdate = new List<Question_Response__c>();
+        try {
+            // Parse the response data
+            Map<String, Object> responseData = (Map<String, Object>) JSON.deserializeUntyped(responseDataJson);
+            List<Question_Response__c> questionResponsesToUpsert = new List<Question_Response__c>();
 
-        // 3. Prepare Question_Response__c records.
-        Set<Id> questionIds = new Set<Id>();
-        for(String qIdStr : questionResponsesMap.keySet()) {
-            try {
-                questionIds.add(Id.valueOf(qIdStr));
-            } catch (System.StringException e) {
-                System.debug('Invalid Question ID format: ' + qIdStr);
-                // Handle error - maybe skip this response or throw exception
-            }
-        }
-
-        // Optional: Query Question__c records to validate types, required status etc.
-        Map<Id, Question__c> questionsMap = new Map<Id, Question__c>([
-            SELECT Id, Type__c, Is_Required__c FROM Question__c WHERE Id IN :questionIds
-        ]);
-
-        // Query existing responses for this Survey Response to determine insert vs update
-        Map<Id, Question_Response__c> existingResponses = new Map<Id, Question_Response__c>();
-        if (!isNewResponse) {
-            for (Question_Response__c existing : [
-                SELECT Id, Question__c, Response_Text__c
-                FROM Question_Response__c
-                WHERE Survey_Response__c = :responseId AND Question__c IN :questionIds
-            ]) {
-                existingResponses.put(existing.Question__c, existing);
-            }
-        }
-
-        for (Id questionId : questionIds) {
-            Object answerValue = questionResponsesMap.get(String.valueOf(questionId)); // Get value using String key
-            String answerText = '';
-
-            // Convert answer to string format suitable for Long Text Area
-            if (answerValue instanceof List<Object>) {
-                // Handle checkbox answers (list of selected values)
-                List<String> selectedOptions = new List<String>();
-                for(Object opt : (List<Object>)answerValue) {
-                    selectedOptions.add(String.valueOf(opt));
+            for (String questionId : responseData.keySet()) {
+                Object responseValue = responseData.get(questionId);
+                String responseText = '';
+                
+                if (responseValue instanceof List<Object>) {
+                    // Handle multi-select responses
+                    List<Object> selectedValues = (List<Object>) responseValue;
+                    List<String> valueStrings = new List<String>();
+                    for (Object val : selectedValues) {
+                        valueStrings.add(String.valueOf(val));
+                    }
+                    responseText = String.join(valueStrings, ';');
+                } else {
+                    responseText = String.valueOf(responseValue);
                 }
-                answerText = String.join(selectedOptions, '; ');
-            } else if (answerValue != null) {
-                // Handle text, radio, rating
-                answerText = String.valueOf(answerValue);
-            }
 
-            if (existingResponses.containsKey(questionId)) {
-                // Update existing response
-                Question_Response__c qrToUpdate = existingResponses.get(questionId);
-                qrToUpdate.Response_Text__c = answerText;
-                answersToUpdate.add(qrToUpdate);
-            } else {
-                // Insert new response
-                Question_Response__c qrToInsert = new Question_Response__c(
+                Question_Response__c qr = new Question_Response__c(
                     Survey_Response__c = responseId,
                     Question__c = questionId,
-                    Response_Text__c = answerText
+                    Response_Text__c = responseText
                 );
-                answersToInsert.add(qrToInsert);
+                questionResponsesToUpsert.add(qr);
             }
-        }
 
-        // 4. Update the main Survey_Response__c status and perform DML.
-        responseRecord.Status__c = 'Completed';
-        responseRecord.Response_Date__c = System.now();
+            // Upsert question responses
+            if (!questionResponsesToUpsert.isEmpty()) {
+                upsert questionResponsesToUpsert;
+            }
 
-        try {
-            // Perform DML in a transaction
+            // Update the survey response status
+            responseRecord.Status__c = 'Completed';
+            responseRecord.Response_Date__c = System.now();
             update responseRecord;
-            if (!answersToInsert.isEmpty()) {
-                insert answersToInsert;
-            }
-            if (!answersToUpdate.isEmpty()) {
-                update answersToUpdate;
-            }
 
-            return 'Survey submitted successfully. Thank you!';
+            return 'Survey response submitted successfully!';
+
         } catch (Exception e) {
-            // Log the error
-            System.debug('Error submitting survey response: ' + e.getMessage() + '\n' + e.getStackTraceString());
-            // Return a generic error message
-            throw new AuraHandledException('An error occurred while submitting your response. Please try again later.');
+            System.debug('Error submitting survey response: ' + e.getMessage());
+            throw new AuraHandledException('Failed to submit survey response: ' + e.getMessage());
         }
     }
-
-    /**
-     * @description Wrapper class to return survey details to the LWC.
-     */
-    public class SurveyWrapper {
-        @AuraEnabled public Survey__c survey;
-        @AuraEnabled public List<Question__c> questions;
-        @AuraEnabled public Id responseId; // The *record ID* of the Survey_Response__c
-        @AuraEnabled public String uniqueResponseId;
-    }
-} 
+}

@@ -648,4 +648,131 @@ lightning-checkbox-group label.slds-checkbox__label {
     .survey-title {
         font-size: 1.5rem;
     }
-} 
+}
+
+/* Passcode Entry Styles */
+.passcode-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: var(--background-color, #ffffff);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.passcode-header {
+    margin-bottom: 2rem;
+}
+
+.passcode-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.passcode-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color, #1d1d1f);
+    margin-bottom: 0.5rem;
+}
+
+.passcode-description {
+    color: #6c757d;
+    line-height: 1.5;
+    margin-bottom: 0;
+}
+
+.passcode-form {
+    margin-bottom: 2rem;
+}
+
+.passcode-input {
+    margin-bottom: 1rem;
+}
+
+.passcode-input input {
+    text-align: center;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    font-weight: 600;
+}
+
+.passcode-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: #dc3545;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+.error-icon-small {
+    color: #dc3545;
+}
+
+.passcode-submit-button {
+    background: var(--primary-color, #007bff);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0 auto;
+    min-width: 150px;
+}
+
+.passcode-submit-button:hover:not(:disabled) {
+    background: var(--primary-color-dark, #0056b3);
+    transform: translateY(-1px);
+}
+
+.passcode-submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.passcode-help {
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.passcode-help p {
+    color: #6c757d;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.button-spinner {
+    margin-right: 0.5rem;
+}
+
+/* Responsive Design for Passcode Screen */
+@media (max-width: 768px) {
+    .passcode-container {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .passcode-title {
+        font-size: 1.25rem;
+    }
+    
+    .passcode-icon {
+        font-size: 2.5rem;
+    }
+}

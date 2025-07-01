@@ -21,4 +21,4 @@
             <property name="publicSiteUrl" type="String" default="https://your-site.my.salesforce.com" label="Public Site URL" description="The base URL of the public site/page hosting the survey responder LWC (starting with http/https). Required to send surveys." required="true"/>
         </targetConfig>
     </targetConfigs>
-</LightningComponentBundle> 
+</LightningComponentBundle>

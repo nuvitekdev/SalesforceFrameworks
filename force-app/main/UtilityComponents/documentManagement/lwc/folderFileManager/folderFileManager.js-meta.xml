@@ -26,4 +26,4 @@
             <property name="accentColor" type="String" default="#D5DF23" label="Accent Color" description="Secondary accent color for gradients and decorations"/>
         </targetConfig>
     </targetConfigs>
-</LightningComponentBundle> 
+</LightningComponentBundle>

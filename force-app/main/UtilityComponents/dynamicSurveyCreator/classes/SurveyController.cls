@@ -347,7 +347,7 @@ public with sharing class SurveyController {
         // --- Query Survey Details (Optional but good for context/validation) ---
         Survey__c surveyToSend;
         try {
-             surveyToSend = [SELECT Id, Name, Is_Active__c FROM Survey__c WHERE Id = :surveyId LIMIT 1];
+             surveyToSend = [SELECT Id, Name, Is_Active__c, Require_Passcode__c FROM Survey__c WHERE Id = :surveyId LIMIT 1];
              if (!surveyToSend.Is_Active__c) {
                  throw new AuraHandledException('Cannot send an inactive survey.');
              }
@@ -366,13 +366,20 @@ public with sharing class SurveyController {
         for (String email : uniqueEmails) {
             // --- Create Unique ID --- //
             String uniqueId = generateUniqueResponseId();
+            
+            // --- Generate Passcode if required --- //
+            String passcode = null;
+            if (surveyToSend.Require_Passcode__c) {
+                passcode = generatePasscode();
+            }
 
             // --- Create Survey Response Record --- //
             Survey_Response__c response = new Survey_Response__c(
                 Survey__c = surveyId,
                 Respondent_Email__c = email,
                 Status__c = 'Not Started', // Default status
-                Unique_Response_ID__c = uniqueId
+                Unique_Response_ID__c = uniqueId,
+                Passcode__c = passcode
             );
             responsesToInsert.add(response);
 
@@ -389,7 +396,7 @@ public with sharing class SurveyController {
             mail.setToAddresses(new List<String>{ email });
             // Escape apostrophe in subject
             mail.setSubject('You\'re Invited to Take Our Survey: ' + surveyToSend.Name);
-            mail.setHtmlBody(createEmailHtmlBody(surveyToSend.Name, surveyLink));
+            mail.setHtmlBody(createEmailHtmlBody(surveyToSend.Name, surveyLink, passcode));
             mail.setSaveAsActivity(false); // Typically set to false for bulk survey sends
             emailsToSend.add(mail);
         }
@@ -461,14 +468,32 @@ public with sharing class SurveyController {
         Blob random = Crypto.generateAesKey(128); // 16 bytes = 128 bits
         return EncodingUtil.convertToHex(random).substring(0, 20); // Use first 20 hex chars for brevity
     }
+    
+    /**
+     * @description Generates a 6-digit passcode for survey access.
+     * @return String A 6-digit passcode.
+     */
+    private static String generatePasscode() {
+        // Generate a random 6-digit passcode
+        Integer randomNumber = Math.abs(Crypto.getRandomInteger());
+        String passcode = String.valueOf(randomNumber).left(6);
+        
+        // Ensure it's exactly 6 digits by padding with zeros if needed
+        while (passcode.length() < 6) {
+            passcode = '0' + passcode;
+        }
+        
+        return passcode;
+    }
 
     /**
      * @description Creates the HTML body for the survey invitation email.
      * @param surveyName The name of the survey.
      * @param surveyLink The unique link for the recipient.
+     * @param passcode The passcode for accessing the survey (optional).
      * @return String The HTML email body.
      */
-    private static String createEmailHtmlBody(String surveyName, String surveyLink) {
+    private static String createEmailHtmlBody(String surveyName, String surveyLink, String passcode) {
         // Simplified inline styles to avoid Apex parsing issues
         String bodyStyle = 'font-family: Arial, sans-serif; line-height: 1.6; color: #333333;';
         String containerStyle = 'padding: 20px; border: 1px solid #dddddd; border-radius: 5px; max-width: 600px; margin: 20px auto;';
@@ -476,9 +501,20 @@ public with sharing class SurveyController {
         String buttonStyle = 'display: inline-block; padding: 12px 25px; margin: 20px 0; font-size: 1em; color: #ffffff !important; background-color: #007bff; text-decoration: none; border-radius: 5px;';
         String linkStyle = 'color: #007bff; text-decoration: none; word-break: break-all;';
         String footerStyle = 'margin-top: 20px; font-size: 0.9em; color: #777777;';
+        String passcodeStyle = 'background-color: #f8f9fa; border: 2px solid #007bff; border-radius: 8px; padding: 15px; margin: 15px 0; text-align: center; font-size: 1.1em; font-weight: bold; color: #007bff;';
 
         // Safely escape HTML in survey name
         String safeSurveyName = surveyName.replace('<', '&lt;').replace('>', '&gt;');
+        
+        // Build passcode section if passcode is provided
+        String passcodeSection = '';
+        if (String.isNotBlank(passcode)) {
+            passcodeSection = '<div style="' + passcodeStyle + '">' +
+                '<p style="margin: 0 0 10px 0; font-size: 0.9em; color: #666666;">Your Survey Passcode:</p>' +
+                '<div style="font-size: 1.8em; letter-spacing: 3px; color: #007bff;">' + passcode + '</div>' +
+                '<p style="margin: 10px 0 0 0; font-size: 0.8em; color: #666666;">You will need to enter this passcode to access the survey</p>' +
+                '</div>';
+        }
 
         String htmlBody = '<!DOCTYPE html><html><head></head><body style="' + bodyStyle + '">' +
             '<div style="' + containerStyle + '">' +
@@ -486,6 +522,7 @@ public with sharing class SurveyController {
             '<p>Hello,</p>' +
             '<p>We invite you to share your feedback by participating in our survey: <strong>' + safeSurveyName + '</strong>.</p>' +
             '<p>Your input is valuable to us.</p>' +
+            passcodeSection +
             '<a href="' + surveyLink + '" style="' + buttonStyle + '" target="_blank">Start Survey</a>' +
             '<p>If the button above does not work, please copy and paste the following link into your web browser:</p>' +
             '<p><a href="' + surveyLink + '" style="' + linkStyle + '" target="_blank">' + surveyLink + '</a></p>' +
@@ -527,4 +564,180 @@ public with sharing class SurveyController {
         
         return new AuraHandledException(detailedMessage);
     }
-} 
+
+    /**
+     * @description Gets all surveys created by the current user
+     * @return List<SurveyWithStats> List of surveys with response statistics
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<SurveyWithStats> getUserSurveys() {
+        try {
+            // First get all surveys by current user
+            List<Survey__c> surveys = [
+                SELECT Id, Name, Description__c, CreatedDate, Is_Active__c
+                FROM Survey__c 
+                WHERE CreatedById = :UserInfo.getUserId()
+                ORDER BY CreatedDate DESC
+            ];
+
+            // Get survey IDs for response count query
+            Set<Id> surveyIds = new Set<Id>();
+            for (Survey__c survey : surveys) {
+                surveyIds.add(survey.Id);
+            }
+
+            // Get response counts by survey (separate query to avoid relationship depth issues)
+            Map<Id, Integer> responseCountMap = new Map<Id, Integer>();
+            if (!surveyIds.isEmpty()) {
+                List<AggregateResult> responseCounts = [
+                    SELECT Survey__c, COUNT(Id) responseCount
+                    FROM Survey_Response__c 
+                    WHERE Survey__c IN :surveyIds
+                    GROUP BY Survey__c
+                ];
+                
+                for (AggregateResult ar : responseCounts) {
+                    Id surveyId = (Id)ar.get('Survey__c');
+                    Integer count = (Integer)ar.get('responseCount');
+                    responseCountMap.put(surveyId, count);
+                }
+            }
+
+            // Build result list
+            List<SurveyWithStats> surveyStats = new List<SurveyWithStats>();
+            for (Survey__c survey : surveys) {
+                SurveyWithStats stat = new SurveyWithStats();
+                stat.survey = survey;
+                stat.responseCount = responseCountMap.containsKey(survey.Id) ? responseCountMap.get(survey.Id) : 0;
+                surveyStats.add(stat);
+            }
+
+            return surveyStats;
+        } catch (Exception e) {
+            System.debug('Error getting user surveys: ' + e.getMessage());
+            throw new AuraHandledException('Error retrieving surveys: ' + e.getMessage());
+        }
+    }
+
+    /**
+     * @description Gets responses for a specific survey
+     * @param surveyId The ID of the survey
+     * @return SurveyResponseData Survey data with responses
+     */
+    @AuraEnabled(cacheable=true)
+    public static SurveyResponseData getSurveyResponses(Id surveyId) {
+        try {
+            // Validate user owns this survey
+            List<Survey__c> surveys = [
+                SELECT Id, Name, Description__c 
+                FROM Survey__c 
+                WHERE Id = :surveyId AND CreatedById = :UserInfo.getUserId()
+                LIMIT 1
+            ];
+
+            if (surveys.isEmpty()) {
+                throw new AuraHandledException('Survey not found or access denied.');
+            }
+
+            // Get survey with questions (separate query)
+            Survey__c surveyWithQuestions = [
+                SELECT Id, Name, Description__c
+                FROM Survey__c 
+                WHERE Id = :surveyId 
+                LIMIT 1
+            ];
+
+            // Get questions for this survey
+            List<Question__c> questions = [
+                SELECT Id, Question_Text__c, Type__c, Order__c, Is_Required__c
+                FROM Question__c
+                WHERE Survey__c = :surveyId
+                ORDER BY Order__c
+            ];
+
+            // Get answer options for these questions
+            Set<Id> questionIds = new Set<Id>();
+            for (Question__c q : questions) {
+                questionIds.add(q.Id);
+            }
+
+            List<Answer_Option__c> answerOptions = new List<Answer_Option__c>();
+            if (!questionIds.isEmpty()) {
+                answerOptions = [
+                    SELECT Id, Question__c, Option_Text__c, Order__c
+                    FROM Answer_Option__c
+                    WHERE Question__c IN :questionIds
+                    ORDER BY Question__c, Order__c
+                ];
+            }
+
+            // Map answer options to questions
+            Map<Id, List<Answer_Option__c>> questionToOptionsMap = new Map<Id, List<Answer_Option__c>>();
+            for (Answer_Option__c option : answerOptions) {
+                if (!questionToOptionsMap.containsKey(option.Question__c)) {
+                    questionToOptionsMap.put(option.Question__c, new List<Answer_Option__c>());
+                }
+                questionToOptionsMap.get(option.Question__c).add(option);
+            }
+
+            // Get responses with their question responses
+            List<Survey_Response__c> responses = [
+                SELECT Id, Name, Respondent_Email__c, Status__c, Response_Date__c
+                FROM Survey_Response__c 
+                WHERE Survey__c = :surveyId AND Status__c = 'Completed'
+                ORDER BY Response_Date__c DESC
+            ];
+
+            // Get question responses for these survey responses
+            Set<Id> responseIds = new Set<Id>();
+            for (Survey_Response__c resp : responses) {
+                responseIds.add(resp.Id);
+            }
+
+            List<Question_Response__c> questionResponses = new List<Question_Response__c>();
+            if (!responseIds.isEmpty()) {
+                questionResponses = [
+                    SELECT Id, Survey_Response__c, Question__c, Response_Text__c,
+                           Question__r.Question_Text__c, Question__r.Order__c
+                    FROM Question_Response__c
+                    WHERE Survey_Response__c IN :responseIds
+                    ORDER BY Question__r.Order__c
+                ];
+            }
+
+            // Map question responses to survey responses
+            Map<Id, List<Question_Response__c>> responseToQuestionsMap = new Map<Id, List<Question_Response__c>>();
+            for (Question_Response__c qr : questionResponses) {
+                if (!responseToQuestionsMap.containsKey(qr.Survey_Response__c)) {
+                    responseToQuestionsMap.put(qr.Survey_Response__c, new List<Question_Response__c>());
+                }
+                responseToQuestionsMap.get(qr.Survey_Response__c).add(qr);
+            }
+
+            SurveyResponseData responseData = new SurveyResponseData();
+            responseData.survey = surveyWithQuestions;
+            responseData.responses = responses;
+            
+            return responseData;
+        } catch (Exception e) {
+            System.debug('Error getting survey responses: ' + e.getMessage());
+            throw new AuraHandledException('Error retrieving survey responses: ' + e.getMessage());
+        }
+    }
+
+    /**
+     * @description Wrapper class for survey with response count
+     */
+    public class SurveyWithStats {
+        @AuraEnabled public Survey__c survey { get; set; }
+        @AuraEnabled public Integer responseCount { get; set; }
+    }
+
+    /**
+     * @description Wrapper class for survey response data
+     */
+    public class SurveyResponseData {
+        @AuraEnabled public Survey__c survey { get; set; }
+        @AuraEnabled public List<Survey_Response__c> responses { get; set; }
+    }
+}

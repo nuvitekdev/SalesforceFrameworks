@@ -24,13 +24,14 @@
                         onchange={handleSearch}
                         variant="label-hidden">
                     </lightning-input>
-                </div>
+                                </div>
+
                 <button class="filter-button" onclick={toggleFilterPanel} title="Filter">
                     <lightning-icon icon-name="utility:filterList" size="small"></lightning-icon>
                     <span>Filter</span>
                 </button>
                 <lightning-button
-                    if:true={showNewButton}
+                    if:true={isNewActionAvailable}
                     label="New"
                     variant="brand"
                     onclick={handleNewClick}
@@ -370,6 +371,27 @@
                             <lightning-tab label="Files & Notes" value="filesAndNotes" icon-name="utility:file">
                                 <div class="tab-container" role="tabpanel">
                                     <div class="files-container">
+                                        <!-- File Upload Section -->
+                                        <template if:true={selectedRecord}>
+                                            <div class="file-upload-section">
+                                                <div class="upload-header">
+                                                    <h3>Upload Files</h3>
+                                                    <p>Drag and drop files here, or click to browse</p>
+                                                </div>
+                                                <lightning-file-upload
+                                                    label="Upload Files"
+                                                    name="fileUploader"
+                                                    accept={acceptedFormats}
+                                                    record-id={selectedRecord.Id}
+                                                    onuploadfinished={handleUploadFinished}
+                                                    multiple="true">
+                                                </lightning-file-upload>
+                                            </div>
+                                        </template>
+
+                                        <!-- Divider -->
+                                        <div class="section-divider"></div>
+
                                         <!-- Loading state -->
                                         <template if:true={loadingFiles}>
                                             <div class="loading-state">
@@ -388,6 +410,9 @@
                                             
                                             <!-- Files list -->
                                             <template if:true={hasFiles}>
+                                                <div class="files-list-header">
+                                                    <h3>Files & Attachments</h3>
+                                                </div>
                                                 <ul class="files-list">
                                                     <template for:each={files} for:item="file">
                                                         <li key={file.id} class="file-item">
@@ -436,12 +461,25 @@
                                                 </div>
                                             </template>
                                             <template if:true={hasChatterPosts}>
+                                                <div class="activity-header">
+                                                    <h3>Activity Timeline</h3>
+                                                    <p>Recent activity, posts, and communications</p>
+                                                </div>
                                                 <ul class="chatter-posts-list">
                                                     <template for:each={chatterPosts} for:item="post">
-                                                        <li key={post.id} class="chatter-post">
+                                                        <li key={post.id} class="chatter-post" data-type={post.type}>
                                                             <div class="chatter-post-header">
                                                                 <div class="post-avatar">
-                                                                    <lightning-icon icon-name="standard:user" size="small"></lightning-icon>
+                                                                    <lightning-icon 
+                                                                        icon-name={post.iconName} 
+                                                                        size="small" 
+                                                                        if:true={post.iconName}>
+                                                                    </lightning-icon>
+                                                                    <lightning-icon 
+                                                                        icon-name="standard:user" 
+                                                                        size="small" 
+                                                                        if:false={post.iconName}>
+                                                                    </lightning-icon>
                                                                 </div>
                                                                 <div class="post-meta">
                                                                     <div class="post-author">{post.createdByName}</div>
@@ -452,8 +490,12 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div class="chatter-post-title" if:true={post.title}>{post.title}</div>
-                                                            <div class="chatter-post-body">{post.body}</div>
+                                                            <div class="chatter-post-title" if:true={post.title}>
+                                                                <strong>{post.title}</strong>
+                                                            </div>
+                                                            <div class="chatter-post-body" if:true={post.body}>
+                                                                {post.body}
+                                                            </div>
                                                         </li>
                                                     </template>
                                                 </ul>

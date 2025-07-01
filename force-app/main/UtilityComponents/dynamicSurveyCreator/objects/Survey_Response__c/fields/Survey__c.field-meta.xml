@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Survey__c</fullName>
+    <deleteConstraint>Restrict</deleteConstraint>
     <label>Survey</label>
-    <type>Lookup</type>
+    <referenceTo>Survey__c</referenceTo>
     <relationshipLabel>Survey Responses</relationshipLabel>
     <relationshipName>Survey_Responses</relationshipName>
-    <referenceTo>Survey__c</referenceTo>
     <required>true</required>
-    <deleteConstraint>Restrict</deleteConstraint> <!-- Prevent deleting Survey if Responses exist -->
     <trackTrending>false</trackTrending>
-    <externalId>false</externalId>
-</CustomField> 
+    <type>Lookup</type>
+</CustomField>

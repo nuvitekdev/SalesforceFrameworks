@@ -1,6 +1,8 @@
 import { LightningElement, api, track } from 'lwc';
 import saveSurvey from '@salesforce/apex/SurveyController.saveSurvey';
 import createAndSendResponses from '@salesforce/apex/SurveyController.createAndSendResponses';
+import getUserSurveys from '@salesforce/apex/SurveyController.getUserSurveys';
+import getSurveyResponses from '@salesforce/apex/SurveyController.getSurveyResponses';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 // Define reduceErrors function locally
@@ -100,7 +102,8 @@ export default class SurveyCreator extends LightningElement {
         Welcome_Message__c: '',     // Added for completeness if needed
         Thank_You_Message__c: '',  // Added for completeness if needed
         Is_Active__c: true,
-        Expiration_Date__c: null
+        Expiration_Date__c: null,
+        Require_Passcode__c: false
     };
 
     /**
@@ -145,6 +148,41 @@ export default class SurveyCreator extends LightningElement {
      * @track
      */
     @track sentCount = 0;
+
+    /**
+     * Current mode: 'create' for creating surveys, 'view' for viewing surveys and responses
+     * @type {string}
+     * @track
+     */
+    @track currentMode = 'create';
+
+    /**
+     * List of user's surveys with response counts
+     * @type {Array}
+     * @track
+     */
+    @track userSurveys = [];
+
+    /**
+     * Currently selected survey data with responses
+     * @type {Object}
+     * @track
+     */
+    @track selectedSurveyData = null;
+
+    /**
+     * Loading state for survey list
+     * @type {boolean}
+     * @track
+     */
+    @track isLoadingSurveys = false;
+
+    /**
+     * Loading state for survey responses
+     * @type {boolean}
+     * @track
+     */
+    @track isLoadingResponses = false;
 
     // Internal counters for unique keys in loops
     questionKeyCounter = 0;
@@ -297,6 +335,16 @@ export default class SurveyCreator extends LightningElement {
     get showSendButton() { return this.currentStep === 5; } // Only on Created step
     get showCreateAnotherButton() { return this.currentStep === 6; } // Only on Sent Confirmation step
     get showNavButtons() { return this.currentStep <= 4; } // Only show navigation buttons for steps 1-4
+
+    // Mode management getters
+    get isCreateMode() { return this.currentMode === 'create'; }
+    get isViewMode() { return this.currentMode === 'view'; }
+    get isViewingSurveys() { return this.currentMode === 'view' && !this.selectedSurveyData; }
+    get isViewingResponses() { return this.currentMode === 'view' && this.selectedSurveyData; }
+
+    // Button variant getters for mode switcher
+    get createModeVariant() { return this.currentMode === 'create' ? 'brand' : 'neutral'; }
+    get viewModeVariant() { return this.currentMode === 'view' ? 'brand' : 'neutral'; }
 
     get nextButtonLabel() {
         return this.currentStep === 3 ? 'Review' : 'Next';
@@ -772,7 +820,8 @@ export default class SurveyCreator extends LightningElement {
                 Welcome_Message__c: sanitizeString(this.survey.Welcome_Message__c || ''),
                 Thank_You_Message__c: sanitizeString(this.survey.Thank_You_Message__c || ''),
                 Is_Active__c: this.survey.Is_Active__c === true,
-                Expiration_Date__c: this.survey.Expiration_Date__c || null
+                Expiration_Date__c: this.survey.Expiration_Date__c || null,
+                Require_Passcode__c: this.survey.Require_Passcode__c === true
             };
             
         const surveyData = {
@@ -873,35 +922,107 @@ export default class SurveyCreator extends LightningElement {
 
     // --- Post-Send Actions ---
     /**
-     * Resets the component state to create a new survey.
+     * Handles creating another survey by resetting the form
      */
     handleCreateAnother() {
-        // Reset state variables
-        this.currentStep = 1;
+        // Reset all form data
         this.survey = {
             Name: '',
             Description__c: '',
             Welcome_Message__c: '',
             Thank_You_Message__c: '',
             Is_Active__c: true,
-            Expiration_Date__c: null
+            Expiration_Date__c: null,
+            Require_Passcode__c: false
         };
         this.questions = [];
         this.recipientEmails = '';
-        this.isProcessing = false;
-        this.error = null;
+        this.currentStep = 1;
         this.surveyId = null;
         this.sentCount = 0;
-        this.questionKeyCounter = 0;
-        this.optionKeyCounter = 0;
-
-        // Add the initial question back
+        this.error = null;
+        
+        // Create initial empty question
         this.addQuestion();
-
+        
         // Update path indicator
-        this.updatePathClasses();
+        this.forcePathUpdate();
     }
 
+    // Mode switching methods
+    /**
+     * Switches to create mode
+     */
+    switchToCreateMode() {
+        this.currentMode = 'create';
+        this.selectedSurveyData = null;
+        this.error = null;
+        // Reset create mode if needed
+        if (this.currentStep > 4) {
+            this.handleCreateAnother();
+        }
+    }
+
+    /**
+     * Switches to view mode and loads user surveys
+     */
+    switchToViewMode() {
+        this.currentMode = 'view';
+        this.selectedSurveyData = null;
+        this.error = null;
+        this.loadUserSurveys();
+    }
+
+    /**
+     * Loads user surveys with response counts
+     */
+    async loadUserSurveys() {
+        this.isLoadingSurveys = true;
+        this.error = null;
+        
+        try {
+            const result = await getUserSurveys();
+            // Process the surveys to add computed fields
+            this.userSurveys = (result || []).map(surveyItem => ({
+                ...surveyItem,
+                statusText: surveyItem.survey.Is_Active__c ? 'Active' : 'Inactive'
+            }));
+        } catch (error) {
+            console.error('Error loading user surveys:', error);
+            this.error = this.reduceErrors(error).join(', ') || 'Error loading surveys';
+        } finally {
+            this.isLoadingSurveys = false;
+        }
+    }
+
+    /**
+     * Handles clicking on a survey to view its responses
+     */
+    async handleViewSurveyResponses(event) {
+        const surveyId = event.currentTarget.dataset.surveyId;
+        if (!surveyId) return;
+
+        this.isLoadingResponses = true;
+        this.error = null;
+
+        try {
+            const result = await getSurveyResponses({ surveyId });
+            this.selectedSurveyData = result;
+        } catch (error) {
+            console.error('Error loading survey responses:', error);
+            this.error = this.reduceErrors(error).join(', ') || 'Error loading survey responses';
+        } finally {
+            this.isLoadingResponses = false;
+        }
+    }
+
+    /**
+     * Goes back to the survey list from response view
+     */
+    handleBackToSurveyList() {
+        this.selectedSurveyData = null;
+        this.error = null;
+    }
 
     // --- Toast Notification ---
     /**
@@ -1048,4 +1169,5 @@ export default class SurveyCreator extends LightningElement {
         // Call the current implementation to maintain compatibility
         await this.handleSaveSurvey();
     }
-} 
+
+}

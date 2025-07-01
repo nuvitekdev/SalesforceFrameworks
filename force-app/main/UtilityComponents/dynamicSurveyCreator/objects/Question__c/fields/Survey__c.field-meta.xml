@@ -2,13 +2,12 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Survey__c</fullName>
     <label>Survey</label>
-    <type>MasterDetail</type>
+    <referenceTo>Survey__c</referenceTo>
     <relationshipLabel>Questions</relationshipLabel>
     <relationshipName>Questions</relationshipName>
     <relationshipOrder>0</relationshipOrder>
     <reparentableMasterDetail>false</reparentableMasterDetail>
-    <writeRequiresMasterRead>false</writeRequiresMasterRead>
-    <referenceTo>Survey__c</referenceTo>
     <trackTrending>false</trackTrending>
-    <externalId>false</externalId>
-</CustomField> 
+    <type>MasterDetail</type>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+</CustomField>
