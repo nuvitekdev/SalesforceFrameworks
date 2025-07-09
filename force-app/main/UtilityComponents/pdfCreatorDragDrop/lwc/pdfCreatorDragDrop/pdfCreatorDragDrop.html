@@ -509,6 +509,12 @@
                                                onchange={handleGridSnapToggle} />
                                         <span class="slds-m-left_x-small">Grid Snap</span>
                                     </label>
+                                    <label class="grid-snap-toggle slds-m-right_small">
+                                        <input type="checkbox" 
+                                               checked={showGrid} 
+                                               onchange={handleShowGridToggle} />
+                                        <span class="slds-m-left_x-small">Show Grid</span>
+                                    </label>
                                     <lightning-button
                                         label="Add Page"
                                         icon-name="utility:add"
@@ -730,4 +736,4 @@
             </div>
         </template>
     </div>
-</template> 
+</template>

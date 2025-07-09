@@ -54,11 +54,6 @@
                      description="Custom instructions text for the support form"/>
             <property name="countdownDuration" type="Integer" label="Countdown Duration" 
                      description="Number of seconds to count down before recording starts" default="3" min="1" max="5"/>
-                     
-            <supportedFormFactors>
-                <supportedFormFactor type="Large" />
-                <supportedFormFactor type="Small" />
-            </supportedFormFactors>
         </targetConfig>
         
         <targetConfig targets="lightning__UtilityBar">

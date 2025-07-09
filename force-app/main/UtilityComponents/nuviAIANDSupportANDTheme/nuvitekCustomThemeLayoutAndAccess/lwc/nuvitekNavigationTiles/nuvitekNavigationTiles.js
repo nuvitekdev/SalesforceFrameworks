@@ -499,6 +499,7 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
             }
             
             const url = tile.link.trim();
+            console.log('url'+url);
             
             if (url.startsWith('http://') || url.startsWith('https://')) {
                 // External URL
@@ -512,15 +513,8 @@ export default class NuvitekNavigationTiles extends NavigationMixin(LightningEle
                     }
                 });
             } else if (url.startsWith('{') && url.endsWith('}')) {
-                // JSON page reference format
-                try {
-                    const pageRef = JSON.parse(url);
-                    if (pageRef && pageRef.type) {
-                        this[NavigationMixin.Navigate](pageRef);
-                    }
-                } catch (error) {
-                    console.error('Navigation error with JSON page reference:', error);
-                }
+                const pageRef = JSON.parse(url);
+                this[NavigationMixin.Navigate](pageRef);
             } else {
                 // Try to handle as a named page
                 this[NavigationMixin.Navigate]({

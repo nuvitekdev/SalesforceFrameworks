@@ -60,8 +60,9 @@ export default class PdfCreatorDragDrop extends LightningElement {
     @track isLoadingTemplates = false; // Loading state for templates
     
     // Grid snapping configuration
-    gridSnapEnabled = true; // Enable grid snapping by default
+    @track gridSnapEnabled = true; // Enable grid snapping by default
     gridSize = 10; // Grid size in pixels
+    @track showGrid = false; // Show visual grid overlay
     
     // Theme variables
     themeVariablesSet = false;
@@ -69,6 +70,10 @@ export default class PdfCreatorDragDrop extends LightningElement {
     PDFLib = null; // PDF-lib reference
     pdfDoc = null; // Current PDF document
     fieldsFiltered = false; // Flag to prevent infinite re-filtering
+    
+    // Data storage for images and signatures
+    imageData = {}; // Stores base64 image data by placementId
+    signatureData = {}; // Stores base64 signature data by placementId
     
     // Constants for PDF dimensions (in points - 72 points = 1 inch)
     pageSizes = {
@@ -709,12 +714,10 @@ export default class PdfCreatorDragDrop extends LightningElement {
         try {
             this.pdfPages = [];
             for (let i = 0; i < this.pageSetup.pageCount; i++) {
-                const baseClass = i === 0 ? 'pdf-page active' : 'pdf-page hidden';
-                const cssClass = this.gridSnapEnabled ? `${baseClass} show-grid` : baseClass;
                 this.pdfPages.push({
                     pageNumber: i + 1,
                     fields: [],
-                    cssClass: cssClass
+                    cssClass: this.getPageCssClass(i + 1)
                 });
             }
             console.log('Created', this.pdfPages.length, 'PDF page objects:', this.pdfPages);
@@ -1760,8 +1763,22 @@ export default class PdfCreatorDragDrop extends LightningElement {
         // Update the pdfPages array with proper CSS classes
         this.pdfPages = this.pdfPages.map(page => ({
             ...page,
-            cssClass: page.pageNumber === this.currentPageNum ? 'pdf-page active' : 'pdf-page hidden'
+            cssClass: this.getPageCssClass(page.pageNumber)
         }));
+    }
+    
+    // Get CSS class for a page
+    getPageCssClass(pageNumber) {
+        let cssClass = 'pdf-page';
+        if (pageNumber === this.currentPageNum) {
+            cssClass += ' active';
+        } else {
+            cssClass += ' hidden';
+        }
+        if (this.showGrid) {
+            cssClass += ' show-grid';
+        }
+        return cssClass;
     }
     
     // Template input handlers
@@ -1941,7 +1958,7 @@ export default class PdfCreatorDragDrop extends LightningElement {
                 if (i === 0 && this.templateDescription) {
                     page.drawText(`${this.templateDescription}`, {
                         x: 50,
-                        y: dimensions.height - 80,
+                        y: dimensions.height - 50,
                         size: 10,
                         font: helveticaFont,
                         color: this.PDFLib.rgb(0.4, 0.4, 0.4)
@@ -1974,44 +1991,41 @@ export default class PdfCreatorDragDrop extends LightningElement {
                     try {
                         // Handle generic field types first
                         if (field.fieldType === 'GENERIC_SIGNATURE') {
-                            // Draw signature line
-                            page.drawLine({
-                                start: { x: pdfX, y: pdfY },
-                                end: { x: pdfX + fieldWidth, y: pdfY },
-                                thickness: 1,
-                                color: this.PDFLib.rgb(0, 0, 0),
-                                opacity: 0.5
-                            });
-                            
-                            // Add signature label below the line
-                            page.drawText(field.fieldLabel, {
-                                x: pdfX,
-                                y: pdfY - 15,
-                                size: 8,
-                                font: helveticaFont,
-                                color: this.PDFLib.rgb(0.4, 0.4, 0.4)
-                            });
+                            // Draw signature with actual data if available
+                            await this.drawSignatureToPdf(page, field, pdfX, pdfY, fieldWidth, fieldHeight, pdfDoc);
                             
                         } else if (field.fieldType === 'GENERIC_IMAGE') {
-                            // Draw image placeholder rectangle
-                            page.drawRectangle({
-                                x: pdfX,
-                                y: pdfY,
-                                width: fieldWidth,
-                                height: fieldHeight,
-                                borderColor: this.PDFLib.rgb(0.7, 0.7, 0.7),
-                                borderWidth: 1,
-                                color: this.PDFLib.rgb(0.95, 0.95, 0.95)
-                            });
-                            
-                            // Add image icon and label in center
-                            page.drawText('[ ' + field.fieldLabel + ' ]', {
-                                x: pdfX + (fieldWidth / 2) - (field.fieldLabel.length * 3),
-                                y: pdfY + (fieldHeight / 2) - 5,
-                                size: 10,
-                                font: helveticaFont,
-                                color: this.PDFLib.rgb(0.5, 0.5, 0.5)
-                            });
+                            // Check if we have image data for this field
+                            if (this.imageData && this.imageData[field.id]) {
+                                try {
+                                    const imageDataUrl = this.imageData[field.id];
+                                    let embeddedImage;
+                                    
+                                    // Embed image based on type
+                                    if (imageDataUrl.includes('data:image/png')) {
+                                        embeddedImage = await pdfDoc.embedPng(imageDataUrl);
+                                    } else if (imageDataUrl.includes('data:image/jpeg') || imageDataUrl.includes('data:image/jpg')) {
+                                        embeddedImage = await pdfDoc.embedJpg(imageDataUrl);
+                                    }
+                                    
+                                    if (embeddedImage) {
+                                        // Draw the actual image
+                                        page.drawImage(embeddedImage, {
+                                            x: pdfX,
+                                            y: pdfY,
+                                            width: fieldWidth,
+                                            height: fieldHeight
+                                        });
+                                    }
+                                } catch (error) {
+                                    console.error('Error embedding image:', error);
+                                    // Fall back to placeholder
+                                    this.drawImagePlaceholder(page, pdfX, pdfY, fieldWidth, fieldHeight, field, helveticaFont);
+                                }
+                            } else {
+                                // Draw image placeholder if no image uploaded
+                                this.drawImagePlaceholder(page, pdfX, pdfY, fieldWidth, fieldHeight, field, helveticaFont);
+                            }
                             
                         } else if (field.fieldType === 'GENERIC_TITLE') {
                             // Draw title text
@@ -2102,35 +2116,8 @@ export default class PdfCreatorDragDrop extends LightningElement {
                             });
                             
                         } else if (field.fieldType === 'GENERIC_TABLE') {
-                            // Draw table placeholder
-                            page.drawRectangle({
-                                x: pdfX,
-                                y: pdfY,
-                                width: fieldWidth,
-                                height: fieldHeight,
-                                borderColor: this.PDFLib.rgb(0.7, 0.7, 0.7),
-                                borderWidth: 1
-                            });
-                            
-                            // Draw some table lines
-                            const rows = 3;
-                            const rowHeight = fieldHeight / rows;
-                            for (let r = 1; r < rows; r++) {
-                                page.drawLine({
-                                    start: { x: pdfX, y: pdfY + (r * rowHeight) },
-                                    end: { x: pdfX + fieldWidth, y: pdfY + (r * rowHeight) },
-                                    thickness: 0.5,
-                                    color: this.PDFLib.rgb(0.8, 0.8, 0.8)
-                                });
-                            }
-                            
-                            page.drawText('[Table]', {
-                                x: pdfX + 5,
-                                y: pdfY + fieldHeight - 15,
-                                size: 10,
-                                font: helveticaFont,
-                                color: this.PDFLib.rgb(0.6, 0.6, 0.6)
-                            });
+                            // Draw table with actual data if available
+                            await this.drawTableToPdf(page, field, pdfX, pdfY, fieldWidth, fieldHeight, helveticaFont, pdfDoc);
                             
                         } else if (field.fieldType === 'BOOLEAN') {
                             // Create checkbox field
@@ -2635,20 +2622,21 @@ export default class PdfCreatorDragDrop extends LightningElement {
                 const helveticaFont = await pdfDoc.embedFont(this.PDFLib.StandardFonts.Helvetica);
                 const boldFont = await pdfDoc.embedFont(this.PDFLib.StandardFonts.HelveticaBold);
                 
-                // Page header
-                page.drawText(`${this.templateName} - Page ${i + 1} [PREVIEW]`, {
-                    x: 50,
-                    y: dimensions.height - 50,
-                    size: 16,
-                    font: boldFont,
-                    color: this.PDFLib.rgb(0.13, 0.74, 0.76) // Theme primary color
+                // Add date generated at bottom left
+                const dateGenerated = new Date().toLocaleDateString();
+                page.drawText(`Generated: ${dateGenerated}`, {
+                    x: 10,
+                    y: 10,
+                    size: 8,
+                    font: helveticaFont,
+                    color: this.PDFLib.rgb(0.5, 0.5, 0.5)
                 });
                 
                 // Template info on first page - removed Object and Page Size display
                 if (i === 0 && this.templateDescription) {
                     page.drawText(`${this.templateDescription}`, {
                         x: 50,
-                        y: dimensions.height - 80,
+                        y: dimensions.height - 50,
                         size: 10,
                         font: helveticaFont,
                         color: this.PDFLib.rgb(0.4, 0.4, 0.4)
@@ -2681,44 +2669,41 @@ export default class PdfCreatorDragDrop extends LightningElement {
                     try {
                         // Handle generic field types first
                         if (field.fieldType === 'GENERIC_SIGNATURE') {
-                            // Draw signature line
-                            page.drawLine({
-                                start: { x: pdfX, y: pdfY },
-                                end: { x: pdfX + fieldWidth, y: pdfY },
-                                thickness: 1,
-                                color: this.PDFLib.rgb(0, 0, 0),
-                                opacity: 0.5
-                            });
-                            
-                            // Add signature label below the line
-                            page.drawText(field.fieldLabel, {
-                                x: pdfX,
-                                y: pdfY - 15,
-                                size: 8,
-                                font: helveticaFont,
-                                color: this.PDFLib.rgb(0.4, 0.4, 0.4)
-                            });
+                            // Draw signature with actual data if available
+                            await this.drawSignatureToPdf(page, field, pdfX, pdfY, fieldWidth, fieldHeight, pdfDoc);
                             
                         } else if (field.fieldType === 'GENERIC_IMAGE') {
-                            // Draw image placeholder rectangle
-                            page.drawRectangle({
-                                x: pdfX,
-                                y: pdfY,
-                                width: fieldWidth,
-                                height: fieldHeight,
-                                borderColor: this.PDFLib.rgb(0.7, 0.7, 0.7),
-                                borderWidth: 1,
-                                color: this.PDFLib.rgb(0.95, 0.95, 0.95)
-                            });
-                            
-                            // Add image icon and label in center
-                            page.drawText('[ ' + field.fieldLabel + ' ]', {
-                                x: pdfX + (fieldWidth / 2) - (field.fieldLabel.length * 3),
-                                y: pdfY + (fieldHeight / 2) - 5,
-                                size: 10,
-                                font: helveticaFont,
-                                color: this.PDFLib.rgb(0.5, 0.5, 0.5)
-                            });
+                            // Check if we have image data for this field
+                            if (this.imageData && this.imageData[field.id]) {
+                                try {
+                                    const imageDataUrl = this.imageData[field.id];
+                                    let embeddedImage;
+                                    
+                                    // Embed image based on type
+                                    if (imageDataUrl.includes('data:image/png')) {
+                                        embeddedImage = await pdfDoc.embedPng(imageDataUrl);
+                                    } else if (imageDataUrl.includes('data:image/jpeg') || imageDataUrl.includes('data:image/jpg')) {
+                                        embeddedImage = await pdfDoc.embedJpg(imageDataUrl);
+                                    }
+                                    
+                                    if (embeddedImage) {
+                                        // Draw the actual image
+                                        page.drawImage(embeddedImage, {
+                                            x: pdfX,
+                                            y: pdfY,
+                                            width: fieldWidth,
+                                            height: fieldHeight
+                                        });
+                                    }
+                                } catch (error) {
+                                    console.error('Error embedding image:', error);
+                                    // Fall back to placeholder
+                                    this.drawImagePlaceholder(page, pdfX, pdfY, fieldWidth, fieldHeight, field, helveticaFont);
+                                }
+                            } else {
+                                // Draw image placeholder if no image uploaded
+                                this.drawImagePlaceholder(page, pdfX, pdfY, fieldWidth, fieldHeight, field, helveticaFont);
+                            }
                             
                         } else if (field.fieldType === 'GENERIC_TITLE') {
                             // Draw title text
@@ -2809,35 +2794,8 @@ export default class PdfCreatorDragDrop extends LightningElement {
                             });
                             
                         } else if (field.fieldType === 'GENERIC_TABLE') {
-                            // Draw table placeholder
-                            page.drawRectangle({
-                                x: pdfX,
-                                y: pdfY,
-                                width: fieldWidth,
-                                height: fieldHeight,
-                                borderColor: this.PDFLib.rgb(0.7, 0.7, 0.7),
-                                borderWidth: 1
-                            });
-                            
-                            // Draw some table lines
-                            const rows = 3;
-                            const rowHeight = fieldHeight / rows;
-                            for (let r = 1; r < rows; r++) {
-                                page.drawLine({
-                                    start: { x: pdfX, y: pdfY + (r * rowHeight) },
-                                    end: { x: pdfX + fieldWidth, y: pdfY + (r * rowHeight) },
-                                    thickness: 0.5,
-                                    color: this.PDFLib.rgb(0.8, 0.8, 0.8)
-                                });
-                            }
-                            
-                            page.drawText('[Table]', {
-                                x: pdfX + 5,
-                                y: pdfY + fieldHeight - 15,
-                                size: 10,
-                                font: helveticaFont,
-                                color: this.PDFLib.rgb(0.6, 0.6, 0.6)
-                            });
+                            // Draw table with actual data if available
+                            await this.drawTableToPdf(page, field, pdfX, pdfY, fieldWidth, fieldHeight, helveticaFont, pdfDoc);
                             
                         } else if (field.fieldType === 'BOOLEAN') {
                             // Create checkbox field
@@ -3352,16 +3310,15 @@ export default class PdfCreatorDragDrop extends LightningElement {
     handleGridSnapToggle(event) {
         this.gridSnapEnabled = event.target.checked;
         console.log('Grid snap toggled:', this.gridSnapEnabled);
+    }
+    
+    // Show grid toggle handler
+    handleShowGridToggle(event) {
+        this.showGrid = event.target.checked;
+        console.log('Show grid toggled:', this.showGrid);
         
-        // Update all pages to show/hide grid
-        const pageElements = this.template.querySelectorAll('.pdf-page');
-        pageElements.forEach(page => {
-            if (this.gridSnapEnabled) {
-                page.classList.add('show-grid');
-            } else {
-                page.classList.remove('show-grid');
-            }
-        });
+        // Update page classes to show/hide grid
+        this.updatePageClasses();
     }
     
     // Initialize signature canvas for drawing
@@ -3472,4 +3429,183 @@ export default class PdfCreatorDragDrop extends LightningElement {
             reader.readAsDataURL(file);
         }
     }
-} 
+
+    // Helper method to draw image placeholder
+    drawImagePlaceholder(page, x, y, width, height, field, font) {
+        page.drawRectangle({
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            borderColor: this.PDFLib.rgb(0.7, 0.7, 0.7),
+            borderWidth: 1,
+            color: this.PDFLib.rgb(0.95, 0.95, 0.95)
+        });
+        
+        // Add image icon and label in center
+        page.drawText('[ ' + field.fieldLabel + ' ]', {
+            x: x + (width / 2) - (field.fieldLabel.length * 3),
+            y: y + (height / 2) - 5,
+            size: 10,
+            font: font,
+            color: this.PDFLib.rgb(0.5, 0.5, 0.5)
+        });
+    }
+
+    // Helper method to draw table to PDF
+    async drawTableToPdf(page, field, x, y, width, height, font, pdfDoc) {
+        const { rgb } = this.PDFLib;
+        
+        // Try to get table data from DOM
+        const tableElement = this.template.querySelector(`[data-placement-id="${field.id}"] table`);
+        
+        if (tableElement) {
+            // Pre-load bold font if needed
+            let boldFont = font;
+            if (pdfDoc) {
+                try {
+                    boldFont = await pdfDoc.embedFont(this.PDFLib.StandardFonts.HelveticaBold);
+                } catch (error) {
+                    console.error('Error loading bold font:', error);
+                }
+            }
+            
+            // Extract table data from DOM
+            const rows = Array.from(tableElement.querySelectorAll('tr'));
+            const numRows = rows.length;
+            const numCols = rows[0] ? rows[0].querySelectorAll('td, th').length : 3;
+            
+            const cellWidth = width / numCols;
+            const cellHeight = Math.min(height / numRows, 25); // Max 25 points per row
+            
+            // Draw table with actual data
+            for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+                const row = rows[rowIndex];
+                const cells = Array.from(row.querySelectorAll('td, th'));
+                const isHeader = row.parentElement.tagName === 'THEAD';
+                
+                for (let colIndex = 0; colIndex < cells.length; colIndex++) {
+                    const cell = cells[colIndex];
+                    const cellX = x + (colIndex * cellWidth);
+                    const cellY = y + height - ((rowIndex + 1) * cellHeight); // PDF coordinates
+                    
+                    // Draw cell border
+                    page.drawRectangle({
+                        x: cellX,
+                        y: cellY,
+                        width: cellWidth,
+                        height: cellHeight,
+                        borderColor: rgb(0, 0, 0),
+                        borderWidth: 1,
+                        color: isHeader ? rgb(0.94, 0.94, 0.94) : undefined
+                    });
+                    
+                    // Draw cell text
+                    const cellText = cell.textContent || '';
+                    if (cellText) {
+                        const fontSize = isHeader ? 10 : 9;
+                        const textFont = isHeader ? boldFont : font;
+                        
+                        page.drawText(cellText, {
+                            x: cellX + 5,
+                            y: cellY + (cellHeight / 2) - 4,
+                            size: fontSize,
+                            font: textFont,
+                            color: rgb(0, 0, 0),
+                            maxWidth: cellWidth - 10
+                        });
+                    }
+                }
+            }
+        } else {
+            // Draw default table placeholder
+            page.drawRectangle({
+                x: x,
+                y: y,
+                width: width,
+                height: height,
+                borderColor: rgb(0.7, 0.7, 0.7),
+                borderWidth: 1
+            });
+            
+            // Draw sample table structure
+            const rows = 3;
+            const cols = 3;
+            const rowHeight = height / rows;
+            const colWidth = width / cols;
+            
+            // Draw horizontal lines
+            for (let r = 1; r < rows; r++) {
+                page.drawLine({
+                    start: { x: x, y: y + (r * rowHeight) },
+                    end: { x: x + width, y: y + (r * rowHeight) },
+                    thickness: 0.5,
+                    color: rgb(0.8, 0.8, 0.8)
+                });
+            }
+            
+            // Draw vertical lines
+            for (let c = 1; c < cols; c++) {
+                page.drawLine({
+                    start: { x: x + (c * colWidth), y: y },
+                    end: { x: x + (c * colWidth), y: y + height },
+                    thickness: 0.5,
+                    color: rgb(0.8, 0.8, 0.8)
+                });
+            }
+            
+            page.drawText('[Table]', {
+                x: x + 5,
+                y: y + height - 15,
+                size: 10,
+                font: font,
+                color: rgb(0.6, 0.6, 0.6)
+            });
+        }
+    }
+
+    // Helper method to draw signature to PDF
+    async drawSignatureToPdf(page, field, x, y, width, height, pdfDoc) {
+        if (this.signatureData && this.signatureData[field.id]) {
+            try {
+                const signatureDataUrl = this.signatureData[field.id];
+                const signatureImage = await pdfDoc.embedPng(signatureDataUrl);
+                page.drawImage(signatureImage, {
+                    x: x,
+                    y: y,
+                    width: width,
+                    height: height
+                });
+            } catch (error) {
+                console.error('Error drawing signature:', error);
+                // Fall back to signature line
+                this.drawSignatureLine(page, field, x, y, width, height);
+            }
+        } else {
+            // Draw signature line if no signature
+            this.drawSignatureLine(page, field, x, y, width, height);
+        }
+    }
+
+    // Helper method to draw signature line
+    drawSignatureLine(page, field, x, y, width, height) {
+        const { rgb } = this.PDFLib;
+        
+        // Draw signature line
+        page.drawLine({
+            start: { x: x, y: y + (height / 2) },
+            end: { x: x + width, y: y + (height / 2) },
+            thickness: 1,
+            color: rgb(0, 0, 0),
+            opacity: 0.5
+        });
+        
+        // Add signature label below the line (simplified without requiring font)
+        page.drawText(field.fieldLabel || 'Signature', {
+            x: x,
+            y: y + (height / 2) - 15,
+            size: 8,
+            color: rgb(0.4, 0.4, 0.4)
+        });
+    }
+}

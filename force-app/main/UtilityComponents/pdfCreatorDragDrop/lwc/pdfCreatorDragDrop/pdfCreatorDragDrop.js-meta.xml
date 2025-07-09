@@ -28,4 +28,4 @@
             <property name="accentColorRgb" type="String" label="Accent Color RGB" default="213, 223, 35" description="RGB equivalent of Accent Color (e.g., '213, 223, 35') for use in rgba() shadows."/>
         </targetConfig>
     </targetConfigs>
-</LightningComponentBundle> 
+</LightningComponentBundle>

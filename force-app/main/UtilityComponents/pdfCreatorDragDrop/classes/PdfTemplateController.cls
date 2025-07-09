@@ -417,4 +417,4 @@ public with sharing class PdfTemplateController {
         @AuraEnabled public DateTime lastModifiedDate;
         @AuraEnabled public Decimal version;
     }
-} 
+}

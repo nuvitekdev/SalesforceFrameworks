@@ -2247,4 +2247,4 @@ export default class LicenseVisualizerTool extends LightningElement {
         this.showDetailedApiUsage = event.target.checked;
         this.loadApiUsageData();
     }
-} 
+}

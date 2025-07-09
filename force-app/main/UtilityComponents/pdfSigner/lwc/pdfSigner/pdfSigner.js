@@ -248,14 +248,14 @@ export default class PdfSigner extends LightningElement {
             if (this.isDraw && window.SignaturePad) {
                 try {
                     // Always create a new instance to avoid issues
-                        this.signaturePad = new window.SignaturePad(this.canvasElement, {
-                            backgroundColor: 'rgba(255, 255, 255, 0)', // Transparent background
-                            penColor: 'black',
-                            minWidth: 0.5,
-                            maxWidth: 2.5,
-                            throttle: 16, // Adjust for better performance
-                            velocityFilterWeight: 0.7 // Adjust for smoother lines
-                        });
+                    this.signaturePad = new window.SignaturePad(this.canvasElement, {
+                        backgroundColor: 'rgba(255, 255, 255, 0)', // Transparent background
+                        penColor: 'black',
+                        minWidth: 0.5,
+                        maxWidth: 2.5,
+                        throttle: 16, // Adjust for better performance
+                        velocityFilterWeight: 0.7 // Adjust for smoother lines
+                    });
                     
                     console.log('Signature pad initialized');
                 } catch (error) {
@@ -570,7 +570,7 @@ export default class PdfSigner extends LightningElement {
             this.handleClearPdf();
             if (this.signaturePad) {
                 this.signaturePad.off();
-            this.signaturePad = null;
+                this.signaturePad = null;
             }
             this.signatureImage = null;
             this.placedSignatures = [];

@@ -3180,4 +3180,4 @@ public without sharing class LicenseVisualizerController {
         
         return results;
     }
-} 
+}

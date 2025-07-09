@@ -254,7 +254,7 @@
 .step-4-mode .custom-path-item[data-step="0"] .custom-path-number::before,
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-number::before,
 .step-4-mode .custom-path-item[data-step="2"] .custom-path-number::before,
-.step-4-mode .custom-path-item[data-step="3"] .custom-path-number::before /* Added step 3 */ { 
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-number::before /* Added step 3 */ {
     /* Removed content: '\2713'; to prevent duplicate checkmarks - this is now handled in JavaScript */
     content: '';
     font-size: 0;

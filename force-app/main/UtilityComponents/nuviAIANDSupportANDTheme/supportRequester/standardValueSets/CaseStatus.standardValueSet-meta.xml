@@ -8,9 +8,15 @@
         <closed>false</closed>
     </standardValue>
     <standardValue>
-        <fullName>Working</fullName>
+        <fullName>Active</fullName>
         <default>false</default>
-        <label>Working</label>
+        <label>Active</label>
+        <closed>false</closed>
+    </standardValue>
+    <standardValue>
+        <fullName>On Hold</fullName>
+        <default>false</default>
+        <label>On Hold</label>
         <closed>false</closed>
     </standardValue>
     <standardValue>
@@ -24,29 +30,5 @@
         <default>false</default>
         <label>Closed</label>
         <closed>true</closed>
-    </standardValue>
-    <standardValue>
-        <fullName>Pending Response Approval</fullName>
-        <default>false</default>
-        <label>Pending Response Approval</label>
-        <closed>false</closed>
-    </standardValue>
-    <standardValue>
-        <fullName>Pending Approval</fullName>
-        <default>false</default>
-        <label>Pending Approval</label>
-        <closed>false</closed>
-    </standardValue>
-    <standardValue>
-        <fullName>Approved</fullName>
-        <default>false</default>
-        <label>Approved</label>
-        <closed>false</closed>
-    </standardValue>
-    <standardValue>
-        <fullName>Needs Revision</fullName>
-        <default>false</default>
-        <label>Needs Revision</label>
-        <closed>false</closed>
     </standardValue>
 </StandardValueSet>

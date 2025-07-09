@@ -283,13 +283,19 @@
                                                                         </div>
                                                                     </template>
                                                                     <template if:false={field.isAddress}>
-                                                                        <!-- Handle multi-line text with proper formatting -->
-                                                                        <template if:true={field.isMultiLine}>
-                                                                            <pre class="multiline-text">{field.value}</pre>
+                                                                        <!-- Handle rich text fields -->
+                                                                        <template if:true={field.isRichText}>
+                                                                            <lightning-formatted-rich-text value={field.value}></lightning-formatted-rich-text>
                                                                         </template>
-                                                                        <!-- Regular field display -->
-                                                                        <template if:false={field.isMultiLine}>
-                                                                    {field.value}
+                                                                        <template if:false={field.isRichText}>
+                                                                            <!-- Handle multi-line text with proper formatting -->
+                                                                            <template if:true={field.isMultiLine}>
+                                                                                <pre class="multiline-text">{field.value}</pre>
+                                                                            </template>
+                                                                            <!-- Regular field display -->
+                                                                            <template if:false={field.isMultiLine}>
+                                                                                {field.value}
+                                                                            </template>
                                                                         </template>
                                                                     </template>
                                                                 </template>

@@ -787,7 +787,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         }
         
         const params = {
-            objectApiName: this.selectedRecord.attributes.type,
+            objectApiName: this.selectedRecord?.attributes?.type,
             parentId: this.selectedRecord.Id,
             relationshipName: relationshipName,
             fields: fields,
@@ -1910,6 +1910,9 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             // Check if this value has multiple lines for formatting
             const isMultiLine = typeof displayValue === 'string' && 
                 (displayValue.includes('\n') || displayValue.length > 100);
+
+            // Check if this value is a rich text field
+            const isRichText = field.type === 'TEXTAREA' || field.type === 'RICH_TEXT_AREA';
             
             // Generate map URL and detect if we have geolocation
             let hasGeolocation = false;
@@ -1950,7 +1953,8 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 isAddress: isAddress,
                 isMultiLine: isMultiLine,
                 hasGeolocation: hasGeolocation,
-                mapUrl: mapUrl
+                mapUrl: mapUrl,
+                isRichText: isRichText
             });
         });
 
@@ -2786,6 +2790,9 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 } else if (selectedAction.type === 'ScreenAction') { // Other screen actions
                     console.log('🖥️ Handling Screen action');
                     this.handleFlowAction(selectedAction.name, selectedAction.label);
+                } else {
+                    console.log('🔍 Handling Custom action:', selectedAction);
+                    this.handleCustomAction(selectedAction);
                 }
                 // Handle other action types if necessary
             } else {
@@ -2862,6 +2869,11 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         this.flowApiNameToLaunch = flowApiName;
         this.flowLabelToDisplay = flowLabel || 'Run Process';
         this.showFlowModal = true;
+    }
+
+    handleCustomAction(action) {
+        console.log('🔍 Handling Custom action:', action);
+        this.handleNavigationAction(action);
     }
     
     /**
