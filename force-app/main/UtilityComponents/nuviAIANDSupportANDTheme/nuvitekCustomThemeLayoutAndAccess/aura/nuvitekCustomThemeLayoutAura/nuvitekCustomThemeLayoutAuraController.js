@@ -231,5 +231,10 @@
         component.set('v.helpFormOpen', false);
         component.set('v.llmAssistantOpen', false);
         helper.updateComputedProperties(component);
+    },
+    
+    afterRender: function(component, event, helper) {
+        // Inject SVG icons after rendering
+        helper.injectSvgIcons(component);
     }
 })

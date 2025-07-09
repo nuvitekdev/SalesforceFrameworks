@@ -100,6 +100,27 @@
     --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.5);
 }
 
+/* Apply dark theme to body and html when dark theme is active */
+.THIS .nuvitek-theme.theme-dark {
+    background-color: #1d1d1f !important;
+    color: #f5f5f7 !important;
+}
+
+/* Specific dark theme overrides for main sections */
+.THIS .nuvitek-theme.theme-dark .main-content {
+    background-color: #1d1d1f !important;
+}
+
+.THIS .nuvitek-theme.theme-dark .content-container {
+    background-color: #1d1d1f !important;
+}
+
+/* Ensure the entire page background is dark */
+.THIS .nuvitek-theme.theme-dark {
+    background: #1d1d1f !important;
+    min-height: 100vh;
+}
+
 /* ===== SALESFORCE DESIGN SYSTEM OVERRIDE TOKENS ===== */
 .THIS .nuvitek-theme {
     /* Base SLDS overrides */
@@ -135,7 +156,8 @@
 
 /* ===== HEADER STYLES ===== */
 .THIS .site-header {
-    background-color: rgba(255, 255, 255, 0.98);
+    background-color: var(--primary-color);
+    filter: brightness(0.9);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
     position: relative;
     z-index: 100;
@@ -150,17 +172,17 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    background-color: rgba(255, 255, 255, 0.92);
+    background-color: var(--primary-color);
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .THIS .theme-dark .site-header {
-    background-color: rgba(29, 29, 31, 0.95);
+    background-color: var(--header-darkness, rgba(29, 29, 31, 0.95));
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 }
 
 .THIS .theme-dark .site-header.scrolled {
-    background-color: rgba(32, 32, 36, 0.92);
+    background-color: var(--header-darkness-scrolled, rgba(32, 32, 36, 0.92));
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -226,7 +248,7 @@
     width: 120px;
     height: 40px;
     font-weight: 700;
-    color: var(--primary-color);
+    color: #ffffff;
     font-size: 24px;
     transition: transform 0.3s ease, opacity 0.2s ease;
     -webkit-font-smoothing: antialiased;
@@ -265,8 +287,8 @@
     border-radius: 24px;
     font-weight: 600;
     font-size: 16px;
-    color: #222222 !important;
-    /* Force black text in light mode */
+    color: #ffffff !important;
+    /* Force white text on colored background */
     transition: all 0.25s ease;
     position: relative;
     z-index: 2;
@@ -290,9 +312,9 @@
 }
 
 .THIS .nav-item:hover {
-    color: #000000 !important;
-    /* Force black on hover in light mode */
-    background-color: rgba(0, 0, 0, 0.04);
+    color: #ffffff !important;
+    /* Force white on hover */
+    background-color: rgba(255, 255, 255, 0.1);
     transform: translateY(-1px);
 }
 
@@ -328,6 +350,12 @@
     visibility: hidden;
     transform: translateY(10px);
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Dark theme dropdown background */
+.THIS .theme-dark .nav-dropdown {
+    background-color: #2d2d2f;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .THIS .nav-item-container:hover .nav-dropdown {
@@ -367,15 +395,47 @@
     color: #000000 !important;
 }
 
-.THIS .dropdown-indicator {
+.THIS .dropdown-indicator,
+.THIS .dropdown-indicator-svg {
     margin-left: 4px;
     transition: transform 0.2s ease;
     opacity: 0.7;
+    display: inline-block;
 }
 
-.THIS .nav-item-container:hover .dropdown-indicator {
+.THIS .nav-item-container:hover .dropdown-indicator,
+.THIS .nav-item-container:hover .dropdown-indicator-svg {
     transform: rotate(180deg);
     opacity: 1;
+}
+
+/* SVG icon container styles */
+.THIS .dropdown-indicator-svg svg,
+.THIS .search-icon-svg svg,
+.THIS .profile-icon-svg svg,
+.THIS .scroll-icon-svg svg,
+.THIS .cta-icon-svg svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.THIS .search-icon-svg,
+.THIS .profile-icon-svg {
+    display: inline-block;
+    line-height: 0;
+}
+
+.THIS .scroll-icon-svg {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+}
+
+.THIS .cta-icon-svg {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
 }
 
 /* Mobile Menu Button */
@@ -442,6 +502,11 @@
     visibility: hidden;
     overflow: hidden;
     transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+/* Dark theme mobile menu background */
+.THIS .theme-dark .mobile-menu {
+    background-color: rgba(29, 29, 31, 0.98);
 }
 
 .THIS .mobile-menu.open {
@@ -587,22 +652,31 @@
 .THIS .search-input {
     padding: 10px 16px 10px 42px;
     border-radius: 24px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    background-color: #f7f7f7;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
     font-size: 15px;
     width: 240px;
     transition: all 0.3s ease;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     position: relative;
     overflow: hidden;
 }
 
+.THIS .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
 .THIS .search-input:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px rgba(34, 189, 193, 0.1);
-    background-color: #fff;
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.2);
     transform: translateY(-1px);
+}
+
+.THIS .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .THIS .search-button {
@@ -615,7 +689,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #6e6e73;
+    color: rgba(255, 255, 255, 0.8);
     cursor: pointer;
 }
 
@@ -627,16 +701,16 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: var(--background-alt);
-    color: var(--text-color);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
     transition: all 0.3s ease;
     cursor: pointer;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .THIS .profile-icon:hover {
-    background-color: var(--primary-color);
-    color: white;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
     transform: translateY(-2px);
 }
 
@@ -657,6 +731,12 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+}
+
+.THIS .hero-section.layout-split {
+    min-height: 640px;
+    display: flex;
+    align-items: center;
 }
 
 .THIS .hero-overlay {
@@ -710,6 +790,18 @@
     line-height: 1.2;
     font-weight: 600;
     margin-bottom: var(--spacing-md);
+    position: relative;
+    text-align: center;
+    animation: fadeInUp var(--transition-slow) forwards;
+    padding-bottom: 4px;
+}
+
+/* Ensure hero title is large and prominent */
+.THIS .hero-title {
+    font-size: 56px;
+    line-height: 1.2;
+    font-weight: 600;
+    margin-bottom: 24px;
     position: relative;
     text-align: center;
     animation: fadeInUp var(--transition-slow) forwards;
@@ -793,6 +885,22 @@
     /* Ensure text is fully visible */
 }
 
+/* Ensure hero subtitle is properly sized */
+.THIS .hero-subtitle {
+    font-size: 24px;
+    line-height: 1.5;
+    font-weight: 400;
+    margin-bottom: 48px;
+    margin-top: 12px;
+    color: var(--text-secondary);
+    text-align: center;
+    max-width: 700px;
+    animation: fadeInUp var(--transition-slow) forwards;
+    padding-bottom: 4px;
+    opacity: 1;
+    /* Ensure text is fully visible */
+}
+
 /* Enhanced text visibility for hero content */
 .THIS .nuvitek-theme .hero-subtitle {
     color: var(--text-secondary) !important;
@@ -819,7 +927,7 @@
     align-items: center;
     justify-content: center;
     padding: 16px 32px;
-    border-radius: var(--radius-full);
+    border-radius: var(--radius-full, 9999px);
     font-size: var(--font-size-md);
     font-weight: 600;
     text-decoration: none;
@@ -862,7 +970,7 @@
 }
 
 .THIS .theme-dark .cta-button.secondary {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.2);
     color: var(--text-color);
 }
 
@@ -1273,8 +1381,8 @@
 /* ===== FLOATING ACTION BUTTON ===== */
 .THIS .fab {
     position: fixed;
-    bottom: var(--spacing-md);
-    right: var(--spacing-md);
+    bottom: 20px;
+    right: 20px;
     z-index: 99;
 }
 
@@ -1580,11 +1688,11 @@
     }
 
     .THIS .hero-title {
-        font-size: var(--font-size-4xl);
+        font-size: 48px;
     }
 
     .THIS .hero-subtitle {
-        font-size: var(--font-size-lg);
+        font-size: 20px;
     }
     
     /* Fix for scroll indicator on mobile */
@@ -1714,13 +1822,14 @@
     }
 }
 
-/* Add these to your CSS file */
+/* Search results dropdown */
 .THIS .search-results-dropdown {
     position: absolute;
     top: 100%;
     left: 0;
     width: 100%;
-    background-color: white;
+    background-color: var(--background-elevated);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-lg);
     z-index: 200;
@@ -1735,6 +1844,7 @@
     justify-content: center;
     padding: 20px;
     gap: 10px;
+    color: var(--text-secondary);
 }
 
 .THIS .search-loading-spinner {
@@ -1890,7 +2000,7 @@
 .THIS .fab-menu-label {
     background-color: white;
     padding: 8px 14px;
-    border-radius: var(--radius-full);
+    border-radius: var(--radius-full, 9999px);
     box-shadow: var(--shadow-sm);
     font-size: 14px;
     font-weight: 500;

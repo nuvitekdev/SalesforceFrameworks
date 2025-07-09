@@ -3,7 +3,7 @@
  * Handles saving video recordings to Salesforce Files (ContentDocument),
  * and creating support cases
  */
-public with sharing class SupportRequesterController {
+public without sharing class SupportRequesterController {
     
     /**
      * @description Saves a support request recording as a ContentDocument and links it to the specified record

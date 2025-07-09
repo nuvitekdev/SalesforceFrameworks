@@ -46,7 +46,7 @@
     <aura:attribute name="socialLinkUrls" type="String" default="" access="global"/>
     
     <!-- Hero section properties -->
-    <aura:attribute name="showHeroSection" type="Boolean" default="false" access="global"/>
+    <aura:attribute name="showHeroSection" type="Boolean" default="true" access="global"/>
     <aura:attribute name="heroLayout" type="String" default="fullwidth" access="global"/>
     <aura:attribute name="heroBackgroundImage" type="String" access="global"/>
     <aura:attribute name="heroTitle" type="String" default="Experience the Future Today" access="global"/>
@@ -95,6 +95,9 @@
     <aura:attribute name="ensureHomeNavItem" type="Boolean" default="false" access="global"/>
     <aura:attribute name="showFaqSection" type="Boolean" default="false" access="global"/>
     
+    <!-- Test property for identification -->
+    <aura:attribute name="test" type="String" default="Aura Version - Theme Layout" access="global"/>
+    
     <!-- Current year for footer -->
     <aura:attribute name="currentYear" type="Integer"/>
     
@@ -108,6 +111,7 @@
     <aura:attribute name="heroOverlayStyle" type="String"/>
     <aura:attribute name="heroSubtitleStyle" type="String"/>
     <aura:attribute name="videoOverlayStyle" type="String"/>
+    <aura:attribute name="resolvedVideoUrl" type="String"/>
     <aura:attribute name="footerClass" type="String"/>
     <aura:attribute name="scrollIndicatorClass" type="String"/>
     <aura:attribute name="mobileMenuButtonClass" type="String"/>
@@ -132,8 +136,13 @@
     
     <!-- Main Template -->
     <div class="{!v.themeClass}" style="{!v.themeStyle}">
+        <!-- Test Identifier -->
+        <div style="position: fixed; top: 10px; right: 10px; background: var(--primary-color); color: white; padding: 8px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+            {!v.test}
+        </div>
+        
         <!-- Header Section with improved layout -->
-        <div data-f6-region="true" class="{!v.headerClass}" style="{!v.headerStyle}">
+        <header data-f6-region="true" class="{!v.headerClass}" style="{!v.headerStyle}">
             <!-- Default header content shown only when useDefaultHeader is true AND there's content -->
             <aura:if isTrue="{!v.shouldShowHeader}">
                 <div class="header-container" style="{!v.headerContainerStyle}">
@@ -172,7 +181,7 @@
                         <!-- Header Center: Navigation -->
                         <div class="header-center">
                             <aura:if isTrue="{!v.isHeaderNavLoaded}">
-                                <div class="navigation desktop-nav" aria-label="Main Navigation">
+                                <nav class="navigation desktop-nav" aria-label="Main Navigation">
                                     <aura:iteration items="{!v.headerNavItems}" var="navItem">
                                         <div class="nav-item-container">
                                             <a href="{!navItem.target}" class="{!navItem.activeClass}"
@@ -185,7 +194,7 @@
                                                 </aura:if>
                                                 <span>{!navItem.label}</span>
                                                 <aura:if isTrue="{!navItem.hasChildren}">
-                                                    <lightning:icon iconName="utility:chevrondown" size="xx-small" class="dropdown-indicator"/>
+                                                    <span class="dropdown-indicator-svg" data-icon="chevron-down"></span>
                                                 </aura:if>
                                             </a>
 
@@ -208,7 +217,7 @@
                                             </aura:if>
                                         </div>
                                     </aura:iteration>
-                                </div>
+                                </nav>
                             </aura:if>
                         </div>
 
@@ -221,7 +230,7 @@
                                     <input type="text" placeholder="Search..." class="search-input"
                                         aura:id="searchInput" aria-label="Search" onkeyup="{!c.handleSearchKeyup}" />
                                     <button class="search-button" onclick="{!c.handleSearch}" aria-label="Submit search">
-                                        <lightning:icon iconName="utility:search" size="x-small"/>
+                                        <span class="search-icon-svg" data-icon="search"></span>
                                     </button>
                                     
                                     <!-- Search Results Dropdown -->
@@ -270,7 +279,7 @@
                             <!-- Profile icon link -->
                             <aura:if isTrue="{!v.showProfileIcon}">
                                 <a href="{!v.profilePageUrl}" class="profile-icon" aria-label="View profile">
-                                    <lightning:icon iconName="utility:user" size="small"/>
+                                    <span class="profile-icon-svg" data-icon="user"></span>
                                 </a>
                             </aura:if>
                         </div>
@@ -278,7 +287,7 @@
                         <!-- Mobile menu -->
                         <div class="{!v.mobileMenuClass}">
                             <!-- Mobile menu content -->
-                            <div class="mobile-nav">
+                            <nav class="mobile-nav">
                                 <aura:iteration items="{!v.headerNavItems}" var="navItem">
                                     <div class="mobile-nav-item-container">
                                         <a href="{!navItem.target}" class="mobile-nav-item" data-target="{!navItem.target}"
@@ -305,8 +314,8 @@
                                             </div>
                                         </aura:if>
                                     </div>
-                                </aura:iteration>
-                            </div>
+                                                                  </aura:iteration>
+                            </nav>
                         </div>
                     </div>
                 </div>
@@ -317,7 +326,7 @@
                     {!v.header}
                 </div>
             </aura:if>
-        </div>
+        </header>
 
         <!-- Hero Section with layout options -->
         <aura:if isTrue="{!v.showHeroSection}">
@@ -327,7 +336,7 @@
                     <div class="hero-video-container">
                         <aura:if isTrue="{!not(empty(v.backgroundVideoUrl))}">
                             <video class="hero-background-video" autoplay="autoplay" loop="loop" muted="muted" poster="{!v.backgroundVideoFallbackUrl}">
-                                <source src="{!v.backgroundVideoUrl}" type="video/mp4"/>
+                                <source src="{!v.resolvedVideoUrl}" type="video/mp4"/>
                             </video>
                             <div class="hero-video-overlay" style="{!v.videoOverlayStyle}"></div>
                         </aura:if>
@@ -351,7 +360,7 @@
                                 <a href="{!v.heroCTAPrimaryUrl}" class="cta-button primary">
                                     <span class="button-text">{!v.heroCTAPrimaryLabel}</span>
                                     <span class="button-icon">
-                                        <lightning:icon iconName="utility:forward" size="xx-small"/>
+                                        <span class="cta-icon-svg" data-icon="arrow-right"></span>
                                     </span>
                                 </a>
                             </aura:if>
@@ -390,7 +399,7 @@
                 <aura:if isTrue="{!v.isHeroFullscreen}">
                     <div class="{!v.scrollIndicatorClass}" onclick="{!c.handleScrollDown}">
                         <div class="scroll-icon">
-                            <lightning:icon iconName="utility:chevrondown" size="small"/>
+                            <span class="scroll-icon-svg" data-icon="chevron-down"></span>
                         </div>
                     </div>
                 </aura:if>
@@ -528,8 +537,7 @@
         <aura:if isTrue="{!v.showFab}">
             <div class="fab">
                 <button class="fab-button" aria-label="Options" onclick="{!c.handleFabClick}">
-                    <lightning:icon iconName="{!v.fabOptions == 'help_form' ? v.helpFormIcon : (v.fabOptions == 'ai_assistant' ? v.aiAssistantIcon : 'utility:add')}" 
-                                    size="small" alternativeText="FAB Icon"/>
+                    <span class="fab-icon-svg" data-icon="plus"></span>
                 </button>
                 
                 <!-- FAB Menu Options -->
@@ -540,7 +548,7 @@
                             <div class="fab-menu-item">
                                 <span class="fab-menu-label">{!v.helpFormLabel}</span>
                                 <button class="fab-menu-button" onclick="{!c.toggleHelpForm}" aria-label="{!v.helpFormLabel}">
-                                    <lightning:icon iconName="{!v.helpFormIcon}" size="x-small" alternativeText="Help Form Icon"/>
+                                    <span class="fab-menu-icon-svg" data-icon="chat"></span>
                                 </button>
                             </div>
                         </aura:if>
@@ -550,7 +558,7 @@
                             <div class="fab-menu-item">
                                 <span class="fab-menu-label">{!v.aiAssistantLabel}</span>
                                 <button class="fab-menu-button" onclick="{!c.toggleLlmAssistant}" aria-label="{!v.aiAssistantLabel}">
-                                    <lightning:icon iconName="{!v.aiAssistantIcon}" size="x-small" alternativeText="AI Assistant Icon"/>
+                                    <span class="fab-menu-icon-svg" data-icon="einstein"></span>
                                 </button>
                             </div>
                         </aura:if>

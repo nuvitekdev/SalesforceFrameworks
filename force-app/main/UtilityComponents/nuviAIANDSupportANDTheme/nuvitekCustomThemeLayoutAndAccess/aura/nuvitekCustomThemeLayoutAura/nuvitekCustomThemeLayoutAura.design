@@ -20,7 +20,11 @@
     <design:attribute name="headerContainerWidth" label="Header Container Width" description="Header container width percentage" default="100"/>
     <design:attribute name="showProfileIcon" label="Show Profile Icon" description="Display profile icon in header" default="false"/>
     <design:attribute name="profilePageUrl" label="Profile Page URL" description="URL for profile page" default="/profile"/>
-    <design:attribute name="ensureHomeNavItem" label="Ensure Home Nav Item" description="Add Home item if not in navigation" default="false"/>
+    <design:attribute name="ensureHomeNavItem" label="Ensure Home Nav Item" description="Automatically add Home as first nav item if not present" default="false"/>
+    <design:attribute name="showFaqSection" label="Show FAQ Section" description="Display FAQ section" default="false"/>
+    
+    <!-- Test property for identification -->
+    <design:attribute name="test" label="Test/Identification" description="Test property to identify component version" default="Aura Version - Theme Layout"/>
     
     <!-- Footer options -->
     <design:attribute name="useDefaultFooter" label="Use Default Footer" description="Use the built-in footer" default="false"/>
@@ -37,7 +41,7 @@
     <design:attribute name="socialLinkUrls" label="Social Link URLs" description="Comma-separated social link URLs"/>
     
     <!-- Hero section -->
-    <design:attribute name="showHeroSection" label="Show Hero Section" description="Display hero section" default="false"/>
+    <design:attribute name="showHeroSection" label="Show Hero Section" description="Display hero section" default="true"/>
     <design:attribute name="heroLayout" label="Hero Layout" description="Hero section layout (fullwidth or split)" default="fullwidth"/>
     <design:attribute name="heroBackgroundImage" label="Hero Background Image" description="Background image for hero section"/>
     <design:attribute name="heroTitle" label="Hero Title" description="Main hero title" default="Experience the Future Today"/>
