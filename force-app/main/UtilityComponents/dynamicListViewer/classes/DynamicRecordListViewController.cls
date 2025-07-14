@@ -893,6 +893,11 @@ public with sharing class DynamicRecordListViewController {
             }
         }
         
+        // Add hardcoded filter to exclude TEMP - File Upload Case records
+        if (objectApiName == 'Case') {
+            conditions.add('Subject != \'TEMP - File Upload Case\'');
+        }
+        
         // Add search term condition
         if (String.isNotBlank(searchTerm)) {
             List<String> searchConditions = new List<String>();

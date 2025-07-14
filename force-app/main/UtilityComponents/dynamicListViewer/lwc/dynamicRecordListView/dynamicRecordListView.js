@@ -23,9 +23,10 @@ const REQUIRED_FIELDS = ['Id', 'Name']; // Fields always fetched for core functi
 export default class DynamicRecordListView extends NavigationMixin(LightningElement) {
     // --- Public API Properties (Configurable via App Builder or Parent Component) ---
 
-    @api listViewTitle;
     /** Required. The API name of the SObject to display in the list view */
     @api objectApiName;
+    /** Optional. Title to display at the top of the list view */
+    @api listViewTitle;
     /** Required. A comma-separated string of field API names to display as columns */
     @api listViewFields;
     /** Optional. The field API name to use for the main title in the record detail modal */
@@ -347,6 +348,13 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                         return acc;
                     }, { Id: recordId, attributes: { type: objectApiName } });
                     
+                    console.log('🔍 Built recordData:', {
+                        recordData: recordData,
+                        hasAttributes: !!recordData.attributes,
+                        attributesType: recordData.attributes?.type,
+                        recordDataKeys: Object.keys(recordData)
+                    });
+                    
                     // Store the record data
                     this.selectedRecord = recordData;
                     this.allFieldsForSelectedRecord = recordData;
@@ -589,7 +597,19 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * @returns {boolean} True if valid record with required properties
      */
     isValidRecord() {
-        return this.selectedRecord && this.selectedRecord.attributes && this.selectedRecord.Id;
+        const hasSelectedRecord = !!this.selectedRecord;
+        const hasId = this.selectedRecord?.Id;
+        const hasType = this.selectedRecord?.attributes?.type || this.objectApiName;
+        
+        console.log('🔍 isValidRecord check:', {
+            hasSelectedRecord: hasSelectedRecord,
+            hasId: hasId,
+            hasType: hasType,
+            selectedRecord: this.selectedRecord,
+            objectApiName: this.objectApiName
+        });
+        
+        return hasSelectedRecord && hasId && hasType;
     }
 
     /**
@@ -786,15 +806,11 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             return Promise.resolve([]);
         }
         
-        const params = {
-            objectApiName: this.selectedRecord?.attributes?.type,
-            parentId: this.selectedRecord.Id,
-            relationshipName: relationshipName,
-            fields: fields,
-            maxRecords: 50
-        };
+        // Safely get the object type with fallback
+        const objectType = this.selectedRecord?.attributes?.type || this.objectApiName;
         
-        return getRelatedRecords(params).catch(() => []);
+        // Call the Apex method with individual parameters (not an object)
+        return getRelatedRecords(objectType, this.selectedRecord.Id, relationshipName, fields, 50).catch(() => []);
     }
 
     /**
@@ -803,11 +819,9 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * @returns {Promise<Array>} Promise resolving to enriched links
      */
     async enrichContentDocumentLinks(contentLinks) {
-        console.log('Enriching ContentDocumentLinks:', contentLinks);
         
         // Extract unique ContentDocument IDs
         const documentIds = [...new Set(contentLinks.map(link => link.ContentDocumentId))];
-        console.log('Document IDs to fetch:', documentIds);
         
         if (documentIds.length === 0) {
             return contentLinks;
@@ -829,9 +843,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 sortField: 'Id',
                 sortDirection: 'asc'
             });
-            
-            console.log('Fetched ContentDocuments:', contentDocuments);
-            
+                        
             // Create a map of ContentDocument ID to ContentDocument record
             const docMap = new Map();
             if (contentDocuments && contentDocuments.records) {
@@ -884,12 +896,10 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * Format file records for display
      */
     formatFiles(fileLinks) {
-        console.log('Formatting files:', JSON.stringify(fileLinks, null, 2));
         
         return fileLinks.map(link => {
             // Try to extract file information from ContentDocument relationship
             const contentDoc = link.ContentDocument || {};
-            console.log('Processing ContentDocument:', JSON.stringify(contentDoc, null, 2));
             
             let fileType = contentDoc.FileType || 'FILE';
             let fileExtension = contentDoc.FileExtension || '';
@@ -904,9 +914,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             } else if (fileExtension) {
                 title = `File.${fileExtension}`;
             }
-            
-            console.log('Final title for file:', title);
-            
+                        
             // Modern notes have a file type of SNOTE
             if (fileType === 'SNOTE') {
                 fileType = 'Note';
@@ -1056,7 +1064,9 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * Handle Chatter/Activity tab click - Enhanced to load comprehensive activity data
      */
     handleChatterPostsClick() {
+        
         if (!this.isValidRecord()) {
+            console.log('❌ handleChatterPostsClick: Invalid record, aborting');
             this.loadingChatterPosts = false;
             return;
         }
@@ -1064,7 +1074,6 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         this.loadingChatterPosts = true;
         this.chatterPosts = [];
         
-        console.log('Loading activity timeline for record:', this.selectedRecord.Id);
 
         // Load all activity types in parallel with enhanced error handling
         Promise.allSettled([
@@ -1082,59 +1091,66 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             // Process each result, handling both successful and failed requests
             const [feedItems, activityHistories, openActivities, tasks, events, emailMessages, caseComments] = results;
 
-            // Process Feed Items (Chatter posts)
-            if (feedItems.status === 'fulfilled' && feedItems.value && feedItems.value.length > 0) {
-                console.log('Found', feedItems.value.length, 'feed items');
-                allActivities.push(...this.formatChatterPosts(feedItems.value));
+            try {
+                // Process Feed Items (Chatter posts)
+                if (feedItems.status === 'fulfilled' && feedItems.value && feedItems.value.length > 0) {
+                    console.log('Found', feedItems.value.length, 'feed items');
+                    allActivities.push(...this.formatChatterPosts(feedItems.value));
+                }
+
+                // Process Activity Histories (completed activities)
+                if (activityHistories.status === 'fulfilled' && activityHistories.value && activityHistories.value.length > 0) {
+                    console.log('Found', activityHistories.value.length, 'activity histories');
+                    allActivities.push(...this.formatActivityRecords(activityHistories.value));
+                }
+
+                // Process Open Activities (upcoming tasks/events)
+                if (openActivities.status === 'fulfilled' && openActivities.value && openActivities.value.length > 0) {
+                    console.log('Found', openActivities.value.length, 'open activities');
+                    allActivities.push(...this.formatActivityRecords(openActivities.value, 'Open'));
+                }
+
+                // Process Tasks directly (in case they're not included in other queries)
+                if (tasks.status === 'fulfilled' && tasks.value && tasks.value.length > 0) {
+                    console.log('Found', tasks.value.length, 'tasks');
+                    allActivities.push(...this.formatActivityRecords(tasks.value));
+                }
+
+                // Process Events directly
+                if (events.status === 'fulfilled' && events.value && events.value.length > 0) {
+                    console.log('Found', events.value.length, 'events');
+                    allActivities.push(...this.formatActivityRecords(events.value));
+                }
+
+                // Process Email Messages
+                if (emailMessages.status === 'fulfilled' && emailMessages.value && emailMessages.value.length > 0) {
+                    console.log('Found', emailMessages.value.length, 'email messages');
+                    allActivities.push(...this.formatEmailMessages(emailMessages.value));
+                }
+
+                // Process Case Comments (if this is a Case record)
+                if (caseComments.status === 'fulfilled' && caseComments.value && caseComments.value.length > 0) {
+                    console.log('Found', caseComments.value.length, 'case comments');
+                    allActivities.push(...this.formatCaseComments(caseComments.value));
+                }
+
+                // Remove duplicates based on ID (some activities might appear in multiple queries)
+                const uniqueActivities = this.removeDuplicateActivities(allActivities);
+
+                // Sort all activities by date, most recent first
+                uniqueActivities.sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate));
+
+                this.chatterPosts = uniqueActivities;
+                console.log('Loaded', uniqueActivities.length, 'total activities');
+            } catch (processingError) {
+                console.error('Error processing activity data:', processingError);
+                this.handleError(processingError, 'Error processing activity timeline data');
+                this.chatterPosts = [];
             }
-
-            // Process Activity Histories (completed activities)
-            if (activityHistories.status === 'fulfilled' && activityHistories.value && activityHistories.value.length > 0) {
-                console.log('Found', activityHistories.value.length, 'activity histories');
-                allActivities.push(...this.formatActivityRecords(activityHistories.value));
-            }
-
-            // Process Open Activities (upcoming tasks/events)
-            if (openActivities.status === 'fulfilled' && openActivities.value && openActivities.value.length > 0) {
-                console.log('Found', openActivities.value.length, 'open activities');
-                allActivities.push(...this.formatActivityRecords(openActivities.value, 'Open'));
-            }
-
-            // Process Tasks directly (in case they're not included in other queries)
-            if (tasks.status === 'fulfilled' && tasks.value && tasks.value.length > 0) {
-                console.log('Found', tasks.value.length, 'tasks');
-                allActivities.push(...this.formatActivityRecords(tasks.value));
-            }
-
-            // Process Events directly
-            if (events.status === 'fulfilled' && events.value && events.value.length > 0) {
-                console.log('Found', events.value.length, 'events');
-                allActivities.push(...this.formatActivityRecords(events.value));
-            }
-
-            // Process Email Messages
-            if (emailMessages.status === 'fulfilled' && emailMessages.value && emailMessages.value.length > 0) {
-                console.log('Found', emailMessages.value.length, 'email messages');
-                allActivities.push(...this.formatEmailMessages(emailMessages.value));
-            }
-
-            // Process Case Comments (if this is a Case record)
-            if (caseComments.status === 'fulfilled' && caseComments.value && caseComments.value.length > 0) {
-                console.log('Found', caseComments.value.length, 'case comments');
-                allActivities.push(...this.formatCaseComments(caseComments.value));
-            }
-
-            // Remove duplicates based on ID (some activities might appear in multiple queries)
-            const uniqueActivities = this.removeDuplicateActivities(allActivities);
-
-            // Sort all activities by date, most recent first
-            uniqueActivities.sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate));
-
-            this.chatterPosts = uniqueActivities;
-            console.log('Loaded', uniqueActivities.length, 'total activities');
         })
         .catch(error => {
-            this.handleError(error, 'Error loading activity timeline');
+            //console.error('Error loading activity timeline:', error);
+            //this.handleError(error, 'Error loading activity timeline');
             this.chatterPosts = [];
         })
         .finally(() => {
@@ -1148,17 +1164,48 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * @returns {Promise} Promise that resolves with related records or empty array
      */
     fetchRelatedRecords(relationshipName) {
+        console.log('🔍 fetchRelatedRecords called with:', {
+            relationshipName: relationshipName,
+            isValidRecord: this.isValidRecord(),
+            selectedRecord: this.selectedRecord,
+            selectedRecordKeys: this.selectedRecord ? Object.keys(this.selectedRecord) : null,
+            hasAttributes: this.selectedRecord?.attributes ? true : false,
+            attributesKeys: this.selectedRecord?.attributes ? Object.keys(this.selectedRecord.attributes) : null,
+            objectApiName: this.objectApiName
+        });
+        
         if (!this.isValidRecord()) {
+            console.log('❌ fetchRelatedRecords: Invalid record, returning empty array');
             return Promise.resolve([]);
         }
         
-        const params = {
-            objectApiName: this.selectedRecord.attributes.type,
-            parentId: this.selectedRecord.Id,
-            relationshipName: relationshipName
-        };
+        // Safely get the object type with fallback
+        const objectType = this.selectedRecord?.attributes?.type || this.objectApiName;
+        console.log('🔍 fetchRelatedRecords: Using object type:', objectType);
         
-        return getRelatedRecords(params).catch(() => []);
+        console.log('🔍 fetchRelatedRecords: Calling Apex with individual parameters:', {
+            objectApiName: objectType,
+            parentId: this.selectedRecord.Id,
+            relationshipName: relationshipName,
+            fields: null,
+            maxRecords: null
+        });
+        
+        // Call the Apex method with individual parameters (not an object)
+        return getRelatedRecords(objectType, this.selectedRecord.Id, relationshipName, null, null)
+            .then(result => {
+                console.log('🔍 fetchRelatedRecords: Apex returned for', relationshipName, ':', {
+                    resultCount: result?.length || 0,
+                    result: result,
+                    firstRecord: result?.[0],
+                    firstRecordKeys: result?.[0] ? Object.keys(result[0]) : null
+                });
+                return result;
+            })
+            .catch(error => {
+                console.error('❌ fetchRelatedRecords: Error for', relationshipName, ':', error);
+                return [];
+            });
     }
 
     /**
@@ -1298,11 +1345,28 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
      * Format activity records for display
      */
     formatActivityRecords(activities, statusPrefix = '') {
-        return activities.map(activity => {
+        console.log('🔍 formatActivityRecords called with:', {
+            activitiesCount: activities?.length || 0,
+            statusPrefix: statusPrefix,
+            activities: activities
+        });
+        
+        return activities.map((activity, index) => {
+            console.log(`🔍 Processing activity ${index}:`, {
+                activity: activity,
+                hasAttributes: !!activity.attributes,
+                attributesType: activity.attributes?.type,
+                activityKeys: Object.keys(activity || {})
+            });
+            
             const activityDate = activity.ActivityDate ? this.formatDate(activity.ActivityDate) : (activity.CreatedDate || new Date().toISOString());
             const subject = activity.Subject || activity.WhatId || 'Activity';
             const status = activity.Status ? `(${activity.Status})` : '';
             const prefix = statusPrefix ? `${statusPrefix} ` : '';
+            
+            // Safely get the activity type with fallback
+            const activityType = activity.attributes?.type || 'Activity';
+            console.log(`🔍 Activity ${index} type resolved to:`, activityType);
             
             return {
                 id: activity.Id,
@@ -1311,9 +1375,9 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 createdById: activity.OwnerId || activity.CreatedById,
                 createdByName: activity.Owner?.Name || activity.CreatedBy?.Name || 'User',
                 body: activity.Description || activity.Comments || '',
-                type: `${prefix}${activity.attributes.type}`,
+                type: `${prefix}${activityType}`,
                 title: `${subject} ${status}`.trim(),
-                iconName: this.getActivityIcon(activity.attributes.type)
+                iconName: this.getActivityIcon(activityType)
             };
         });
     }
@@ -1587,20 +1651,20 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         // Example: <template if:true={error}><div class="error-panel">{error}</div></template>
          this.error = `${contextMessage}: ${message}`; 
 
-        // Display a toast notification to the user
-        try {
-        this.dispatchEvent(
-            new ShowToastEvent({
-                    title: contextMessage, // Show context in the toast title
-                    message: message,      // Show extracted message in the body
-                    variant: 'error',      // Style as an error toast
-                    mode: 'sticky'         // Keep the toast visible until the user dismisses it
-                })
-            );
-        } catch(toastError) {
-            console.error('Error dispatching toast notification:', toastError);
-            // Fallback if toast fails: maybe update the inline error more prominently
-        }
+        // Display a toast notification to the user - DISABLED
+        // try {
+        // this.dispatchEvent(
+        //     new ShowToastEvent({
+        //             title: contextMessage, // Show context in the toast title
+        //             message: message,      // Show extracted message in the body
+        //             variant: 'error',      // Style as an error toast
+        //             mode: 'sticky'         // Keep the toast visible until the user dismisses it
+        //         })
+        //     );
+        // } catch(toastError) {
+        //     console.error('Error dispatching toast notification:', toastError);
+        //     // Fallback if toast fails: maybe update the inline error more prominently
+        // }
     }
 
 
@@ -1910,9 +1974,6 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
             // Check if this value has multiple lines for formatting
             const isMultiLine = typeof displayValue === 'string' && 
                 (displayValue.includes('\n') || displayValue.length > 100);
-
-            // Check if this value is a rich text field
-            const isRichText = field.type === 'TEXTAREA' || field.type === 'RICH_TEXT_AREA';
             
             // Generate map URL and detect if we have geolocation
             let hasGeolocation = false;
@@ -1953,8 +2014,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 isAddress: isAddress,
                 isMultiLine: isMultiLine,
                 hasGeolocation: hasGeolocation,
-                mapUrl: mapUrl,
-                isRichText: isRichText
+                mapUrl: mapUrl
             });
         });
 
@@ -2372,10 +2432,6 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
 
     // Human-readable object label for the header
     get objectLabel() {
-        if (this.listViewTitle) {
-            return this.listViewTitle;
-        }
-        
         if (!this.objectApiName) return 'Records';
         
         // Simple logic to format the API name for display
@@ -2790,9 +2846,6 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
                 } else if (selectedAction.type === 'ScreenAction') { // Other screen actions
                     console.log('🖥️ Handling Screen action');
                     this.handleFlowAction(selectedAction.name, selectedAction.label);
-                } else {
-                    console.log('🔍 Handling Custom action:', selectedAction);
-                    this.handleCustomAction(selectedAction);
                 }
                 // Handle other action types if necessary
             } else {
@@ -2869,11 +2922,6 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         this.flowApiNameToLaunch = flowApiName;
         this.flowLabelToDisplay = flowLabel || 'Run Process';
         this.showFlowModal = true;
-    }
-
-    handleCustomAction(action) {
-        console.log('🔍 Handling Custom action:', action);
-        this.handleNavigationAction(action);
     }
     
     /**
@@ -2966,13 +3014,7 @@ export default class DynamicRecordListView extends NavigationMixin(LightningElem
         
         console.log('Prepared columns:', this.relatedListColumns);
         
-        getRelatedRecords({
-            objectApiName: this.selectedRecord.attributes.type,
-            parentId: this.selectedRecord.Id,
-            relationshipName: relatedList.relationshipName,
-            fields: fields,
-            maxRecords: 50
-        })
+        getRelatedRecords(this.selectedRecord.attributes.type, this.selectedRecord.Id, relatedList.relationshipName, fields, 50)
         .then(result => {
             console.log('Raw related records result:', result);
             

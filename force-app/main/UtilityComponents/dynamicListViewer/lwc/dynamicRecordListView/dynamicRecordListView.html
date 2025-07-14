@@ -82,13 +82,13 @@
             </div>
         </div>
 
-        <!-- Error state -->
-        <template if:true={error}>
+        <!-- Error state - Hidden from UI -->
+        <!-- <template if:true={error}>
             <div class="error-state">
                 <lightning-icon icon-name="utility:error" size="small"></lightning-icon>
                 <p>{error}</p>
             </div>
-        </template>
+        </template> -->
 
         <!-- Loading state -->
         <template if:true={isLoading}>
@@ -283,19 +283,13 @@
                                                                         </div>
                                                                     </template>
                                                                     <template if:false={field.isAddress}>
-                                                                        <!-- Handle rich text fields -->
-                                                                        <template if:true={field.isRichText}>
-                                                                            <lightning-formatted-rich-text value={field.value}></lightning-formatted-rich-text>
+                                                                        <!-- Handle multi-line text with proper formatting -->
+                                                                        <template if:true={field.isMultiLine}>
+                                                                            <pre class="multiline-text">{field.value}</pre>
                                                                         </template>
-                                                                        <template if:false={field.isRichText}>
-                                                                            <!-- Handle multi-line text with proper formatting -->
-                                                                            <template if:true={field.isMultiLine}>
-                                                                                <pre class="multiline-text">{field.value}</pre>
-                                                                            </template>
-                                                                            <!-- Regular field display -->
-                                                                            <template if:false={field.isMultiLine}>
-                                                                                {field.value}
-                                                                            </template>
+                                                                        <!-- Regular field display -->
+                                                                        <template if:false={field.isMultiLine}>
+                                                                    {field.value}
                                                                         </template>
                                                                     </template>
                                                                 </template>

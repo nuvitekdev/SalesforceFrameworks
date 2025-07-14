@@ -13,8 +13,8 @@
     </targets>
     <targetConfigs>
         <targetConfig targets="lightning__AppPage,lightning__RecordPage,lightning__HomePage,lightningCommunity__Default">
-            <property name="listViewTitle" type="String" label="List View Title" description="Title to display in the list view header" />
             <property name="objectApiName" type="String" label="Object API Name" description="API name of the Salesforce object to display (e.g., Account, Contact, Custom_Object__c)" required="true" />
+            <property name="listViewTitle" type="String" label="List View Title" description="Title to display at the top of the list view" required="false" />
             <property name="listViewFields" type="String" label="List View Fields" description="Comma-separated list of field API names to display as columns (e.g., Phone,Industry,CreatedDate). Note: Id and Name fields are automatically included; you don't need to specify them." required="true" />
             <property name="titleField" type="String" label="Title Field" description="Field to use as the title in record detail view. Name is used by default if left blank. Do not specify if Name is already in List View Fields." />
             <property name="subtitleField" type="String" label="Subtitle Field" description="Field to use as the subtitle in record detail view. Use a field that is not already in List View Fields to avoid errors." />
