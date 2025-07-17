@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Enable_Browser_Tracking__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description
+  >Enables tracking of browser information including user agent, browser type, and device details for security analysis and session management purposes.</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Enable Browser Tracking</label>
+    <type>Checkbox</type>
+</CustomField>

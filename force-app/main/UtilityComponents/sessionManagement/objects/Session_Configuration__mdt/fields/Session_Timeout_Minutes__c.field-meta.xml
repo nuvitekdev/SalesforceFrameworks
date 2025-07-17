@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Session_Timeout_Minutes__c</fullName>
+    <description
+  >Number of minutes before a user session times out due to inactivity. This value determines when inactive sessions are automatically terminated to maintain security.</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Session Timeout Minutes</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <unique>false</unique>
+    <defaultValue>15</defaultValue>
+</CustomField>

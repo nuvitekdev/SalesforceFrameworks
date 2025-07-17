@@ -1,0 +1,98 @@
+.metric-card {
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.metric-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.metric-card.active-sessions {
+  background: #1589ee;
+  color: #ffffff;
+  border-color: #1589ee;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  color: #706e6b;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.active-sessions .metric-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.metric-value {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #080707;
+  line-height: 1;
+}
+
+.active-sessions .metric-value {
+  color: #ffffff;
+}
+
+.data-row {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.data-row:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.data-label {
+  font-weight: 500;
+  color: #080707;
+}
+
+.data-value {
+  color: #706e6b;
+  font-weight: 600;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e5e5e5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #1589ee;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.slds-combobox {
+  min-width: 150px;
+}
+
+h3 {
+  color: #080707;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .metric-value {
+    font-size: 2rem;
+  }
+
+  .metric-card {
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+  }
+}

@@ -1,0 +1,132 @@
+<template>
+  <lightning-card
+    title="Session Monitoring Dashboard"
+    icon-name="standard:dashboard"
+  >
+    <div slot="actions">
+      <lightning-combobox
+        name="timeFrame"
+        label="Time Frame"
+        value={timeFrame}
+        options={timeFrameOptions}
+        onchange={handleTimeFrameChange}
+        variant="label-hidden"
+        class="slds-m-right_small"
+      >
+      </lightning-combobox>
+      <lightning-button-icon
+        icon-name="utility:refresh"
+        alternative-text="Refresh"
+        title="Refresh"
+        onclick={handleRefresh}
+        disabled={isLoading}
+      >
+      </lightning-button-icon>
+    </div>
+
+    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+      <template if:true={isLoading}>
+        <lightning-spinner
+          alternative-text="Loading"
+          size="medium"
+        ></lightning-spinner>
+      </template>
+
+      <template if:false={isLoading}>
+        <!-- Key Metrics -->
+        <div class="slds-grid slds-wrap slds-gutters">
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
+            <div class="metric-card">
+              <div class="metric-label">Total Sessions</div>
+              <div class="metric-value">{totalSessions}</div>
+            </div>
+          </div>
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
+            <div class="metric-card">
+              <div class="metric-label">Unique Users</div>
+              <div class="metric-value">{uniqueUsers}</div>
+            </div>
+          </div>
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
+            <div class="metric-card active-sessions">
+              <div class="metric-label">Active Sessions</div>
+              <div class="metric-value">{activeSessions}</div>
+            </div>
+          </div>
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-4">
+            <div class="metric-card">
+              <div class="metric-label">Avg Duration (min)</div>
+              <div class="metric-value">{avgDuration}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logout Types -->
+        <div class="slds-m-top_large">
+          <h3 class="slds-text-heading_small slds-m-bottom_medium">
+            Logout Types
+          </h3>
+          <template if:true={hasLogoutData}>
+            <div class="slds-box slds-theme_shade">
+              <template for:each={logoutTypeData} for:item="logout">
+                <div key={logout.type} class="data-row slds-m-bottom_small">
+                  <div class="slds-grid slds-grid_align-spread">
+                    <div class="slds-col">
+                      <span class="data-label">{logout.type}</span>
+                    </div>
+                    <div class="slds-col slds-text-align_right">
+                      <span class="data-value"
+                        >{logout.count} ({logout.percentage}%)</span
+                      >
+                    </div>
+                  </div>
+                  <div class="progress-bar slds-m-top_x-small">
+                    <div class="progress-fill" style={logout.style}></div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+          <template if:false={hasLogoutData}>
+            <div class="slds-text-color_weak">
+              No logout data available for this time period
+            </div>
+          </template>
+        </div>
+
+        <!-- Device Types -->
+        <div class="slds-m-top_large">
+          <h3 class="slds-text-heading_small slds-m-bottom_medium">
+            Device Types
+          </h3>
+          <template if:true={hasDeviceData}>
+            <div class="slds-box slds-theme_shade">
+              <template for:each={deviceTypeData} for:item="device">
+                <div key={device.type} class="data-row slds-m-bottom_small">
+                  <div class="slds-grid slds-grid_align-spread">
+                    <div class="slds-col">
+                      <span class="data-label">{device.type}</span>
+                    </div>
+                    <div class="slds-col slds-text-align_right">
+                      <span class="data-value"
+                        >{device.count} ({device.percentage}%)</span
+                      >
+                    </div>
+                  </div>
+                  <div class="progress-bar slds-m-top_x-small">
+                    <div class="progress-fill" style={device.style}></div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+          <template if:false={hasDeviceData}>
+            <div class="slds-text-color_weak">
+              No device data available for this time period
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </lightning-card>
+</template>

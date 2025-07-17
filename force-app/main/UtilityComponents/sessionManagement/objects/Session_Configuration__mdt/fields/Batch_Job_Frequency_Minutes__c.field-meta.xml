@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Batch_Job_Frequency_Minutes__c</fullName>
+    <description
+  >Frequency in minutes for the batch job that monitors and processes session activities. This determines how often the system checks for inactive sessions and performs cleanup operations.</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Batch Job Frequency Minutes</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <unique>false</unique>
+    <defaultValue>5</defaultValue>
+</CustomField>
