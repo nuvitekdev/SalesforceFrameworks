@@ -7,13 +7,13 @@ A comprehensive end-to-end solution for tracking user sessions, monitoring activ
 ### Core Capabilities
 
 - **Real-time Session Tracking**: Monitors all user login events via Change Data Capture (CDC)
-- **Advanced Logout Detection**: Tracks manual logouts, browser closes, and timeouts
+- **Advanced Logout Detection**: Tracks manual logouts, browser closes, and timeouts (where utility bar is present)
 - **Automatic Session Timeout**: Deactivates inactive sessions after configurable timeout (default: 15 minutes)
 - **Concurrent Session Control**: Limits number of active sessions per user
-- **User Activity Monitoring**: Tracks mouse movements, clicks, and keyboard activity via utility bar
+- **User Activity Monitoring**: Tracks mouse movements, clicks, and keyboard activity on Lightning pages with utility bar
 - **Automatic User Deactivation**: Deactivates users with no active sessions
 - **Session Analytics Dashboard**: Comprehensive reporting on session metrics
-- **Browser-based Warnings**: Visual warnings before session timeout
+- **Browser-based Warnings**: Visual warnings before session timeout (on pages with utility bar)
 - **Email Notifications**: Admin alerts for security events
 
 ### Technical Features
@@ -143,15 +143,185 @@ Navigate to **Setup → Custom Metadata Types → Session Configuration → Mana
    - `sessionLogoutTracker`: Advanced logout detection (button clicks and browser close)
    - `sessionTimeoutWarning`: Visual timeout warnings
 
-### How It Works
+## 🔧 How It Works
 
-1. **Login Detection**: When a user logs in, CDC captures the LastLoginDate change and creates a new session record
-2. **Activity Tracking**: The utility bar component monitors mouse movements, clicks, and keyboard activity
-3. **Logout Detection**:
-   - Manual logout: Intercepted by detecting logout button clicks
-   - Browser close: Detected via beforeunload/unload events with 15-minute timeout
-   - Timeout: Sessions inactive for 15 minutes are marked as timed out
-4. **Session Cleanup**: Batch job runs every 5 minutes to clean up stale sessions
+### Complete Session Lifecycle
+
+#### 1. **User Login Detection**
+
+When a user logs into Salesforce:
+
+- Change Data Capture (CDC) detects the `LastLoginDate` field change on the User object
+- `UserChangeEventTrigger` fires and calls `UserChangeEventTriggerHandler`
+- A new `User_Session_Tracking__c` record is created with:
+  - Unique Session ID (UserId + timestamp)
+  - Login time
+  - Expected timeout (login time + 15 minutes)
+  - Session marked as active
+- Any previous active sessions for the user are automatically deactivated
+
+#### 2. **Real-Time Activity Monitoring**
+
+Once logged in, the `sessionActivityTracker` (running invisibly in the utility bar):
+
+- Monitors mouse movements (throttled to every 5 seconds)
+- Tracks clicks, keypresses, and scrolls
+- Updates the `Last_Activity__c` field every 5 minutes
+- Extends the `Expected_Timeout__c` based on activity
+- Ensures sessions stay active while users are working
+
+**⚠️ IMPORTANT LIMITATION:**
+
+- Activity tracking only works on Lightning Experience pages where the utility bar is loaded
+- Does not track activity in:
+  - Salesforce Classic
+  - Setup pages
+  - Developer Console
+  - Report Builder
+  - Email templates
+  - Some modal dialogs
+  - External apps or integrations
+- Users may timeout if working in these areas without returning to standard Lightning pages
+
+#### 3. **Logout Detection Methods**
+
+**A. Manual Logout (User clicks logout button):**
+
+- `sessionLogoutTracker` intercepts clicks on logout buttons/links
+- Detects patterns like "Log Out", "Sign Out", or URLs containing "/logout"
+- Immediately marks session as inactive with `Logout_Type__c = 'Manual'`
+- **Note**: Only detects logout clicks on pages where utility bar is loaded
+
+**B. Browser Close Detection:**
+
+- When user closes browser/tab, `beforeunload` event fires
+- Session info stored in localStorage
+- Session marked for review with 15-minute grace period
+- If user returns within 15 minutes, session continues
+- After 15 minutes, session marked as `Logout_Type__c = 'Browser_Closed'`
+
+**C. Timeout Detection:**
+
+- Page visibility API tracks when user switches tabs/minimizes browser
+- If no activity for 15 minutes, session times out
+- Session marked as `Logout_Type__c = 'Timeout'`
+
+**D. New Login Detection:**
+
+- When user logs in from another location/device
+- Previous sessions automatically closed
+- Marked as `Logout_Type__c = 'New Login'`
+
+#### 4. **Batch Job Processing**
+
+`SessionTimeoutMonitor` runs every 5 minutes to:
+
+- Find sessions past their expected timeout
+- Check for stale sessions (no activity > 15 minutes)
+- Mark dead sessions as timed out
+- Optionally deactivate users with no active sessions
+- Send admin alerts for security events
+
+#### 5. **Session Analytics**
+
+The dashboard component provides:
+
+- Active session count
+- Login/logout patterns
+- Average session duration
+- Logout type distribution
+- Device and browser analytics
+
+### What Happens Behind the Scenes
+
+```
+User Login → CDC Event → Create Session → Start Activity Tracking
+     ↓                                            ↓
+User Works → Mouse/Keyboard Activity → Update Last Activity
+     ↓                                            ↓
+User Logs Out → Detect Logout Type → Mark Session Inactive
+     ↓
+Batch Job → Clean Up → Analytics → Admin Alerts
+```
+
+### Session States
+
+1. **Active Session**: User logged in and actively working
+2. **Extended Session**: Activity detected, timeout extended
+3. **Warning State**: 2 minutes before timeout (warning shown)
+4. **Timed Out**: No activity for 15 minutes
+5. **Closed**: User logged out (manual/browser close/new login)
+
+### Security Features
+
+- **Concurrent Session Control**: Limits active sessions per user
+- **Auto User Deactivation**: Deactivates users after all sessions end
+- **Admin Notifications**: Email alerts for security violations
+- **Audit Trail**: Complete session history for compliance
+- **Real-time Monitoring**: Live dashboard for administrators
+
+### Coverage & Limitations
+
+**✅ Where Session Tracking Works:**
+
+- Lightning Experience pages with utility bar enabled
+- Lightning App pages
+- Record pages (Account, Contact, Opportunity, etc.)
+- Home page
+- List views in Lightning
+- Lightning Communities/Experience Cloud (if utility bar configured)
+
+**❌ Where Session Tracking is LIMITED:**
+
+- Salesforce Classic (login/logout only, no activity tracking)
+- Setup menu pages
+- Developer Console
+- Report/Dashboard builders
+- Email template editors
+- Data Loader and API access
+- Mobile app (limited utility bar support)
+- Visualforce pages (unless embedded in Lightning)
+- External integrations (Outlook, Gmail plugins)
+
+**⚡ Workarounds:**
+
+- Batch job catches inactive sessions every 5 minutes
+- Users working in non-tracked areas should periodically visit Lightning pages
+- Consider shorter timeout for high-security environments
+- Use login tracking for audit even if activity tracking is limited
+
+### Real-World Example
+
+**John's Workday:**
+
+1. **9:00 AM** - John logs into Salesforce
+   - Session created: `005xx000001234_1706234400000`
+   - Status: Active, Timeout set for 9:15 AM
+2. **9:10 AM** - John works on opportunities (mouse movements detected)
+   - Last activity updated
+   - Timeout extended to 9:25 AM
+3. **9:30 AM** - John goes to a meeting without logging out
+   - No activity detected for 15 minutes
+   - Session marked as Timeout
+   - John automatically logged out
+4. **10:00 AM** - John returns and logs in again
+   - New session created
+   - Previous timeout session kept for audit
+5. **12:00 PM** - John clicks "Log Out" for lunch
+   - Session immediately marked as Manual logout
+6. **2:00 PM** - John logs in from mobile while still logged in on desktop
+   - Desktop session marked as "New Login"
+   - Mobile session becomes active
+7. **5:00 PM** - John closes browser without logging out
+   - Session marked for 15-minute grace period
+   - After 15 minutes, marked as "Browser Closed"
+
+**Admin View:**
+
+- Can see all John's sessions for the day
+- Total active time: 5.5 hours
+- Logout types: 1 Manual, 2 Timeout, 1 New Login, 1 Browser Closed
+- Security alert if multiple concurrent sessions detected
 
 ## 📈 Usage Guide
 
