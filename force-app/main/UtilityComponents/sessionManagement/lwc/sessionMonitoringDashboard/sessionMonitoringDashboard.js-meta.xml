@@ -9,30 +9,4 @@
         <target>lightningCommunity__Page</target>
         <target>lightningCommunity__Default</target>
     </targets>
-    <targetConfigs>
-        <targetConfig
-      targets="lightning__AppPage,lightning__HomePage,lightning__RecordPage"
-    >
-            <property
-        name="refreshInterval"
-        type="Integer"
-        label="Auto Refresh Interval (seconds)"
-        default="60"
-        min="30"
-        max="300"
-        description="How often to refresh the dashboard data"
-      />
-        </targetConfig>
-        <targetConfig targets="lightningCommunity__Default">
-            <property
-        name="refreshInterval"
-        type="Integer"
-        label="Auto Refresh Interval (seconds)"
-        default="60"
-        min="30"
-        max="300"
-        description="How often to refresh the dashboard data"
-      />
-        </targetConfig>
-    </targetConfigs>
 </LightningComponentBundle>

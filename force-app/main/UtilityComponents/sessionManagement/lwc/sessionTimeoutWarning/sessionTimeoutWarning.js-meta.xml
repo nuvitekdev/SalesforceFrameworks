@@ -13,15 +13,4 @@
         <target>lightningCommunity__Page</target>
         <target>lightningCommunity__Default</target>
     </targets>
-    <targetConfigs>
-        <targetConfig targets="lightning__UtilityBar">
-            <property
-        name="hideComponent"
-        type="Boolean"
-        label="Hide Component"
-        default="true"
-        description="Hide the component in utility bar"
-      />
-        </targetConfig>
-    </targetConfigs>
 </LightningComponentBundle>

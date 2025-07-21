@@ -31,6 +31,11 @@
                 <default>false</default>
                 <label>Admin Forced</label>
             </value>
+            <value>
+                <fullName>New Login</fullName>
+                <default>false</default>
+                <label>New Login</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

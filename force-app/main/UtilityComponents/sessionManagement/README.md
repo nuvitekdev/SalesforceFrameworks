@@ -6,10 +6,11 @@ A comprehensive end-to-end solution for tracking user sessions, monitoring activ
 
 ### Core Capabilities
 
-- **Real-time Session Tracking**: Monitors all user login/logout events
-- **Automatic Session Timeout**: Deactivates inactive sessions after configurable timeout
+- **Real-time Session Tracking**: Monitors all user login events via Change Data Capture (CDC)
+- **Advanced Logout Detection**: Tracks manual logouts, browser closes, and timeouts
+- **Automatic Session Timeout**: Deactivates inactive sessions after configurable timeout (default: 15 minutes)
 - **Concurrent Session Control**: Limits number of active sessions per user
-- **User Activity Monitoring**: Tracks last activity and extends sessions based on user actions
+- **User Activity Monitoring**: Tracks mouse movements, clicks, and keyboard activity via utility bar
 - **Automatic User Deactivation**: Deactivates users with no active sessions
 - **Session Analytics Dashboard**: Comprehensive reporting on session metrics
 - **Browser-based Warnings**: Visual warnings before session timeout
@@ -17,8 +18,10 @@ A comprehensive end-to-end solution for tracking user sessions, monitoring activ
 
 ### Technical Features
 
-- Platform Event Triggers for real-time processing
-- Batch job for handling browser closures
+- Change Data Capture (CDC) for tracking User login events
+- Enhanced logout tracking component for browser close detection
+- Real-time activity monitoring through utility bar components
+- Batch job for handling stale sessions
 - Custom Metadata for configuration
 - Lightning Web Components for UI
 - Comprehensive test coverage (>75%)
@@ -39,7 +42,13 @@ A comprehensive end-to-end solution for tracking user sessions, monitoring activ
 
 ## 🛠️ Installation
 
-### Step 1: Deploy to Salesforce
+### Step 1: Enable Change Data Capture
+
+1. Go to **Setup → Change Data Capture**
+2. Select **User** object from Available Entities
+3. Move to Selected Entities and Save
+
+### Step 2: Deploy to Salesforce
 
 ```bash
 # Authenticate to your org
@@ -52,13 +61,13 @@ sfdx force:source:deploy -p force-app/main/UtilityComponents/sessionManagement -
 sfdx force:user:permset:assign -n Session_Administrator -u myorg
 ```
 
-### Step 2: Configure Session Settings
+### Step 3: Configure Session Settings
 
 1. Navigate to **Setup → Session Settings**
 2. Enable **"Force logout on session timeout"**
 3. Set **Timeout value** to 15 minutes (or your preference)
 
-### Step 3: Schedule the Batch Job
+### Step 4: Schedule the Batch Job
 
 Execute this anonymous Apex to schedule the session monitor:
 
@@ -66,18 +75,23 @@ Execute this anonymous Apex to schedule the session monitor:
 SessionTimeoutMonitor.scheduleJob();
 ```
 
-### Step 4: Add Components to App
+### Step 5: Add Components to App
 
 1. **Add Activity Tracker to Utility Bar**:
    - Go to App Manager → Edit your app
    - Add "Session Activity Tracker" to Utility Items
    - Set as hidden (runs in background)
 
-2. **Add Warning Component to Utility Bar**:
+2. **Add Logout Tracker to Utility Bar**:
+   - Add "Session Logout Tracker" to Utility Items
+   - Set as hidden (runs in background)
+   - Configure browser close timeout (default: 15 minutes)
+
+3. **Add Warning Component to Utility Bar**:
    - Add "Session Timeout Warning" to Utility Items
    - Set as hidden (shows only when needed)
 
-3. **Add Dashboard to App**:
+4. **Add Dashboard to App**:
    - Create a new Lightning page
    - Add "Session Monitoring Dashboard" component
    - Activate and add to navigation
@@ -111,23 +125,33 @@ Navigate to **Setup → Custom Metadata Types → Session Configuration → Mana
 - Tracks login/logout times and types
 - Includes browser, device, and location data
 - Formula field for session duration
+- Supports multiple logout types: Manual, Timeout, Browser_Closed, Admin_Forced, New Login
 
 ### Components
 
 1. **Apex Classes**:
-   - `SessionMonitoringService`: Core business logic
-   - `LoginEventTriggerHandler`: Handles login events
-   - `LogoutEventStreamTriggerHandler`: Handles logout events
-   - `SessionTimeoutMonitor`: Batch job for timeouts
+   - `SessionMonitoringService`: Core business logic with logout tracking methods
+   - `UserChangeEventTriggerHandler`: Handles CDC events for login detection
+   - `SessionTimeoutMonitor`: Batch job for handling stale sessions
 
 2. **Triggers**:
-   - `LoginEventTrigger`: On LoginEvent platform event
-   - `LogoutEventStreamTrigger`: On LogoutEventStream
+   - `UserChangeEventTrigger`: On UserChangeEvent for CDC-based login tracking
 
 3. **Lightning Web Components**:
    - `sessionMonitoringDashboard`: Analytics dashboard
-   - `sessionActivityTracker`: Background activity monitor
+   - `sessionActivityTracker`: Mouse movement and activity monitoring
+   - `sessionLogoutTracker`: Advanced logout detection (button clicks and browser close)
    - `sessionTimeoutWarning`: Visual timeout warnings
+
+### How It Works
+
+1. **Login Detection**: When a user logs in, CDC captures the LastLoginDate change and creates a new session record
+2. **Activity Tracking**: The utility bar component monitors mouse movements, clicks, and keyboard activity
+3. **Logout Detection**:
+   - Manual logout: Intercepted by detecting logout button clicks
+   - Browser close: Detected via beforeunload/unload events with 15-minute timeout
+   - Timeout: Sessions inactive for 15 minutes are marked as timed out
+4. **Session Cleanup**: Batch job runs every 5 minutes to clean up stale sessions
 
 ## 📈 Usage Guide
 
@@ -182,7 +206,7 @@ Navigate to **Setup → Custom Metadata Types → Session Configuration → Mana
 ### Run All Tests
 
 ```bash
-sfdx force:apex:test:run -n SessionMonitoringServiceTest,SessionTimeoutMonitorTest,SessionTriggerHandlerTest -r human
+sfdx force:apex:test:run -n SessionMonitoringServiceTest,SessionTimeoutMonitorTest,UserChangeEventTriggerHandlerTest -r human
 ```
 
 ### Code Coverage
@@ -196,16 +220,29 @@ sfdx force:apex:test:run -n SessionMonitoringServiceTest,SessionTimeoutMonitorTe
 ### Common Issues
 
 1. **Sessions Not Being Tracked**:
-   - Verify "Force logout on session timeout" is enabled
-   - Check Session Configuration metadata
-   - Ensure triggers are active
+   - Verify Change Data Capture is enabled for User object
+   - Check Session Configuration metadata settings
+   - Ensure UserChangeEventTrigger is active
+   - Verify utility bar components are added to your app
 
-2. **Batch Job Not Running**:
+2. **Logout Not Being Detected**:
+   - Ensure Session Logout Tracker is added to utility bar
+   - Check browser console for errors
+   - Verify logout button detection patterns match your org
+   - Check localStorage for stale session data
+
+3. **Batch Job Not Running**:
    - Check Scheduled Jobs in Setup
    - Verify job is in "Waiting" state
    - Re-run `SessionTimeoutMonitor.scheduleJob()`
 
-3. **Users Not Being Deactivated**:
+4. **Browser Close Not Working**:
+   - Browser close detection has a 15-minute timeout
+   - Check browser console before closing
+   - Ensure JavaScript is enabled
+   - Some browsers may block beforeunload events
+
+5. **Users Not Being Deactivated**:
    - Check Enable_Auto_Deactivation\_\_c setting
    - Verify user has no active sessions
    - Check debug logs for errors
@@ -215,9 +252,24 @@ sfdx force:apex:test:run -n SessionMonitoringServiceTest,SessionTimeoutMonitorTe
 Enable debug logs for these classes:
 
 - SessionMonitoringService
-- LoginEventTriggerHandler
-- LogoutEventStreamTriggerHandler
+- UserChangeEventTriggerHandler
 - SessionTimeoutMonitor
+
+### Browser Console Commands
+
+```javascript
+// Check if logout tracker is initialized
+console.log("[Session Status]", localStorage.getItem("sessionId"));
+
+// Check last activity time
+console.log(
+  "[Last Activity]",
+  new Date(parseInt(localStorage.getItem("lastActivityTime")))
+);
+
+// Force logout (for testing)
+document.dispatchEvent(new CustomEvent("force-logout"));
+```
 
 ## 📝 Maintenance
 

@@ -83,21 +83,24 @@ public with sharing class SessionTimeoutMonitor implements Schedulable, Database
     processedSessions += scope.size();
 
     Set<String> sessionIds = new Set<String>();
+    Set<Id> userIds = new Set<Id>();
     Map<String, User_Session_Tracking__c> sessionMap = new Map<String, User_Session_Tracking__c>();
 
     for (User_Session_Tracking__c session : scope) {
       sessionIds.add(session.Session_Id__c);
+      userIds.add(session.User__c);
       sessionMap.put(session.Session_Id__c, session);
     }
 
     Set<String> activeAuthSessions = new Set<String>();
     try {
       for (AuthSession auth : [
-        SELECT Id, SessionId
+        SELECT Id, LoginHistoryId, SessionSecurityLevel
         FROM AuthSession
-        WHERE SessionId IN :sessionIds AND SessionType != 'ChatterNetworks'
+        WHERE UsersId IN :userIds AND SessionType != 'ChatterNetworks'
       ]) {
-        activeAuthSessions.add(auth.SessionId);
+        // Since we can't directly match SessionId, mark all sessions for these users as potentially active
+        activeAuthSessions.add(auth.Id);
       }
     } catch (Exception e) {
       System.debug(
@@ -109,9 +112,39 @@ public with sharing class SessionTimeoutMonitor implements Schedulable, Database
     List<User_Session_Tracking__c> sessionsToUpdate = new List<User_Session_Tracking__c>();
     Set<Id> affectedUserIds = new Set<Id>();
 
-    for (String sessionId : sessionIds) {
-      if (!activeAuthSessions.contains(sessionId)) {
-        User_Session_Tracking__c session = sessionMap.get(sessionId);
+    // If no active auth sessions found for a user, deactivate their tracked sessions
+    Map<Id, Boolean> userHasActiveAuth = new Map<Id, Boolean>();
+    for (Id userId : userIds) {
+      userHasActiveAuth.put(userId, false);
+    }
+
+    // Mark users with active auth sessions
+    if (!activeAuthSessions.isEmpty()) {
+      for (Id userId : userIds) {
+        userHasActiveAuth.put(userId, true);
+      }
+    }
+
+    // Check for timed out sessions based on last activity
+    DateTime timeoutThreshold = DateTime.now()
+      .addMinutes(-config.Session_Timeout_Minutes__c.intValue());
+
+    for (User_Session_Tracking__c session : scope) {
+      Boolean shouldDeactivate = false;
+
+      // Check if session has timed out based on last activity
+      if (
+        session.Last_Activity__c != null &&
+        session.Last_Activity__c < timeoutThreshold
+      ) {
+        shouldDeactivate = true;
+      }
+      // Or if user has no active auth sessions
+      else if (!userHasActiveAuth.get(session.User__c)) {
+        shouldDeactivate = true;
+      }
+
+      if (shouldDeactivate) {
         session.Is_Active__c = false;
         session.Logout_Time__c = DateTime.now();
         session.Logout_Type__c = 'Timeout';

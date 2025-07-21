@@ -2,6 +2,7 @@ public with sharing class SessionMonitoringService {
   private static Session_Configuration__mdt cachedConfig;
   private static final String DEFAULT_CONFIG_NAME = 'Default';
 
+  @AuraEnabled(cacheable=true)
   public static Session_Configuration__mdt getSessionConfig() {
     if (cachedConfig != null) {
       return cachedConfig;
@@ -377,6 +378,71 @@ public with sharing class SessionMonitoringService {
       throw new AuraHandledException(
         'Error updating activity: ' + e.getMessage()
       );
+    }
+  }
+
+  @AuraEnabled
+  public static String getCurrentUserSessionId() {
+    try {
+      Id currentUserId = UserInfo.getUserId();
+
+      List<User_Session_Tracking__c> activeSessions = [
+        SELECT Id, Session_Id__c
+        FROM User_Session_Tracking__c
+        WHERE User__c = :currentUserId AND Is_Active__c = TRUE
+        ORDER BY Login_Time__c DESC
+        LIMIT 1
+      ];
+
+      if (!activeSessions.isEmpty()) {
+        return activeSessions[0].Session_Id__c;
+      }
+
+      return null;
+    } catch (Exception e) {
+      throw new AuraHandledException(
+        'Error getting session ID: ' + e.getMessage()
+      );
+    }
+  }
+
+  @AuraEnabled
+  public static void logUserLogout(String sessionId, String logoutType) {
+    try {
+      List<User_Session_Tracking__c> sessions = [
+        SELECT Id, Is_Active__c, Logout_Time__c, Logout_Type__c
+        FROM User_Session_Tracking__c
+        WHERE Session_Id__c = :sessionId AND Is_Active__c = TRUE
+        LIMIT 1
+      ];
+
+      if (!sessions.isEmpty()) {
+        User_Session_Tracking__c session = sessions[0];
+        session.Is_Active__c = false;
+        session.Logout_Time__c = DateTime.now();
+        session.Logout_Type__c = logoutType;
+
+        update session;
+
+        // Check if user should be deactivated
+        Session_Configuration__mdt config = getSessionConfig();
+        if (config.Enable_Auto_Deactivation__c) {
+          Id userId = [
+            SELECT User__c
+            FROM User_Session_Tracking__c
+            WHERE Id = :session.Id
+          ]
+          .User__c;
+          Set<Id> userIds = new Set<Id>{ userId };
+          Set<Id> usersWithNoSessions = getUsersWithNoActiveSessions(userIds);
+
+          if (!usersWithNoSessions.isEmpty()) {
+            deactivateUsers(usersWithNoSessions);
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw new AuraHandledException('Error logging logout: ' + e.getMessage());
     }
   }
 }
