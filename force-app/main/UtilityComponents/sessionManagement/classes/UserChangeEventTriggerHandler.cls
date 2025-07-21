@@ -16,28 +16,34 @@ public with sharing class UserChangeEventTriggerHandler {
           event.LastLoginDate != null && hasFieldChanged(event, 'LastLoginDate')
         ) {
           // Get the User Id from the change event
-          Id userId = event.ChangeEventHeader.RecordIds[0];
-          userIds.add(userId);
-
-          // Create a new session tracking record
-          User_Session_Tracking__c session = new User_Session_Tracking__c();
-          session.User__c = userId;
-          session.Session_Id__c = generateSessionId(userId);
-          session.Login_Time__c = event.LastLoginDate;
-          session.Last_Activity__c = event.LastLoginDate;
-          session.Expected_Timeout__c = event.LastLoginDate.addMinutes(
-            Integer.valueOf(config.Session_Timeout_Minutes__c)
-          );
-          session.Is_Active__c = true;
-          session.Session_Type__c = 'Internal'; // Default, can be enhanced
-
-          // Try to capture additional info from event header
           EventBus.ChangeEventHeader header = event.ChangeEventHeader;
-          if (header != null) {
-            session.IP_Address__c = header.CommitUser; // This gives us who made the change
-          }
+          if (
+            header != null &&
+            header.RecordIds != null &&
+            !header.RecordIds.isEmpty()
+          ) {
+            Id userId = header.RecordIds[0];
+            userIds.add(userId);
 
-          sessionsToCreate.add(session);
+            // Create a new session tracking record
+            User_Session_Tracking__c session = new User_Session_Tracking__c();
+            session.User__c = userId;
+            session.Session_Id__c = generateSessionId(userId);
+            session.Login_Time__c = event.LastLoginDate;
+            session.Last_Activity__c = event.LastLoginDate;
+            session.Expected_Timeout__c = event.LastLoginDate.addMinutes(
+              Integer.valueOf(config.Session_Timeout_Minutes__c)
+            );
+            session.Is_Active__c = true;
+            session.Session_Type__c = 'Internal'; // Default, can be enhanced
+
+            // Try to capture additional info from event header
+            if (header != null) {
+              session.IP_Address__c = header.CommitUser; // This gives us who made the change
+            }
+
+            sessionsToCreate.add(session);
+          }
         }
       }
 

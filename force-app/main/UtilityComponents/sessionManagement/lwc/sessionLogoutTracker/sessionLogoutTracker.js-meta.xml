@@ -8,15 +8,4 @@
         <target>lightning__RecordPage</target>
         <target>lightning__HomePage</target>
     </targets>
-    <targetConfigs>
-        <targetConfig targets="lightning__UtilityBar">
-            <property
-        name="browserCloseTimeout"
-        type="Integer"
-        default="15"
-        label="Browser Close Timeout (minutes)"
-        description="Minutes to wait before marking browser-closed sessions as timed out"
-      />
-        </targetConfig>
-    </targetConfigs>
 </LightningComponentBundle>
