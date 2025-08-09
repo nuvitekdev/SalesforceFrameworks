@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Enable_Session_Monitoring__c</fullName>
     <defaultValue>true</defaultValue>
-    <description
-  >Controls whether session monitoring is enabled system-wide. When enabled, user sessions are tracked for activity, concurrent access, and security compliance.</description>
-    <externalId>false</externalId>
+    <description>Controls whether session monitoring is enabled system-wide. When enabled, user sessions are tracked for activity, concurrent access, and security compliance.</description>
     <fieldManageability>DeveloperControlled</fieldManageability>
     <label>Enable Session Monitoring</label>
     <type>Checkbox</type>

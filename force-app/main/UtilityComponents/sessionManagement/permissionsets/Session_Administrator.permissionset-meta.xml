@@ -1,17 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
     <applicationVisibilities>
         <application>standard__LightningService</application>
         <visible>true</visible>
     </applicationVisibilities>
-    <classAccesses>
-        <apexClass>SessionMonitoringService</apexClass>
-        <enabled>true</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>SessionTimeoutMonitor</apexClass>
-        <enabled>true</enabled>
-    </classAccesses>
     <classAccesses>
         <apexClass>LoginEventTriggerHandler</apexClass>
         <enabled>true</enabled>
@@ -20,12 +12,19 @@
         <apexClass>LogoutEventStreamTriggerHandler</apexClass>
         <enabled>true</enabled>
     </classAccesses>
+    <classAccesses>
+        <apexClass>SessionMonitoringService</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SessionTimeoutMonitor</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
     <customMetadataTypeAccesses>
         <enabled>true</enabled>
         <name>Session_Configuration__mdt</name>
     </customMetadataTypeAccesses>
-    <description
-  >Provides full access to session management features including dashboard, configuration, and monitoring capabilities</description>
+    <description>Provides full access to session management features including dashboard, configuration, and monitoring capabilities</description>
     <fieldPermissions>
         <editable>true</editable>
         <field>User_Session_Tracking__c.Browser_Info__c</field>

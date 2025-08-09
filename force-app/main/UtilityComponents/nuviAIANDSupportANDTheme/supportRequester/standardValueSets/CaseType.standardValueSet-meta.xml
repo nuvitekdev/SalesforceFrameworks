@@ -16,4 +16,19 @@
         <default>false</default>
         <label>Question</label>
     </standardValue>
+    <standardValue>
+        <fullName>Security Incident</fullName>
+        <default>false</default>
+        <label>Security Incident</label>
+    </standardValue>
+    <standardValue>
+        <fullName>Security Drill</fullName>
+        <default>false</default>
+        <label>Security Drill</label>
+    </standardValue>
+    <standardValue>
+        <fullName>Security Assessment</fullName>
+        <default>false</default>
+        <label>Security Assessment</label>
+    </standardValue>
 </StandardValueSet>
