@@ -1,4 +1,0 @@
-> git -c user.useConfigOnly=true commit --quiet --allow-empty-message --file -
-.husky/pre-commit: 2: .: cannot open .husky/_/husky.sh
-: No such file
-husky - pre-commit script failed (code 2)
