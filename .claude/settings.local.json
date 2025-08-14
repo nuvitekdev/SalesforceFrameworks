@@ -54,8 +54,10 @@
       "Bash(do echo \"==== $file ====\")",
       "Bash(cat:*)",
       "Bash(done)",
-      "mcp__salesforce-enhanced__salesforce_read_apex"
+      "mcp__salesforce-enhanced__salesforce_read_apex",
+      "Bash(git commit:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }
