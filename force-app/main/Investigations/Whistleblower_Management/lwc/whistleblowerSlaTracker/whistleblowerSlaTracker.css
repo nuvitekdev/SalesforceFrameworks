@@ -1,46 +1,46 @@
 /* Apply additional styles as needed */
 .sla-tracker-card .label {
-    display: block; /* Make sure the label is on its own line */
+  display: block; /* Make sure the label is on its own line */
 }
 
 .sla-tracker-card .status {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.25rem;
-    font-weight: 700;
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  font-weight: 700;
 }
 
 /* Style based on SLA status */
 .sla-tracker-card .status.active {
-    background-color: #ACE1AF; /* Light green for active */
-    color: #004D00; /* Dark green text for contrast */
+  background-color: #ace1af; /* Light green for active */
+  color: #004d00; /* Dark green text for contrast */
 }
 
 .sla-tracker-card .status.breached {
-    background-color: #FFBABA; /* Light red for breached */
-    color: #D8000C; /* Dark red text for contrast */
+  background-color: #ffbaba; /* Light red for breached */
+  color: #d8000c; /* Dark red text for contrast */
 }
 
 .sla-tracker-card .status.met {
-    background-color: #DFF2BF; /* Light yellow for met */
-    color: #4F8A10; /* Dark yellow text for contrast */
+  background-color: #dff2bf; /* Light yellow for met */
+  color: #4f8a10; /* Dark yellow text for contrast */
 }
 
 .sla-tracker-card .status.unknown {
-    background-color: #D3D3D3; /* Light grey for unknown */
-    color: #A9A9A9; /* Dark grey text for contrast */
+  background-color: #d3d3d3; /* Light grey for unknown */
+  color: #a9a9a9; /* Dark grey text for contrast */
 }
 
 .sla-tracker-card .status.error {
-    background-color: #FEEFB3; /* Light orange for error */
-    color: #9F6000; /* Dark orange text for contrast */
+  background-color: #feefb3; /* Light orange for error */
+  color: #9f6000; /* Dark orange text for contrast */
 }
 
 .sla-tracker-card .status.loading {
-    background-color: #BDE5F8; /* Light blue for loading */
-    color: #00529B; /* Dark blue text for contrast */
+  background-color: #bde5f8; /* Light blue for loading */
+  color: #00529b; /* Dark blue text for contrast */
 }
 
 .sla-tracker-card .timer-min-w {
-    min-width: 7rem; /* Ensure consistent width for timer display */
+  min-width: 7rem; /* Ensure consistent width for timer display */
 }

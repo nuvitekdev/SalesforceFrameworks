@@ -1,26 +1,32 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <Workflow xmlns="http://soap.sforce.com/2006/04/metadata">
     <alerts>
-        <fullName>Email_Inform_user_of_denied_report_and_reasoning_Not_in_office_jurisdiction</fullName>
-        <description>Email: Inform user of denied report and reasoning - Not in office jurisdiction</description>
+        <fullName
+    >Email_Inform_user_of_denied_report_and_reasoning_Not_in_office_jurisdiction</fullName>
+        <description
+    >Email: Inform user of denied report and reasoning - Not in office jurisdiction</description>
         <protected>false</protected>
         <recipients>
             <field>Reporter__c</field>
             <type>userLookup</type>
         </recipients>
         <senderType>CurrentUser</senderType>
-        <template>unfiled$public/Whistlerblower_Denied_Not_in_Office_Jurisdiction</template>
+        <template
+    >unfiled$public/Whistlerblower_Denied_Not_in_Office_Jurisdiction</template>
     </alerts>
     <alerts>
-        <fullName>Email_Inform_user_of_denied_report_and_reasoning_Not_in_office_priority</fullName>
-        <description>Email: Inform user of denied report and reasoning - Not in office priority</description>
+        <fullName
+    >Email_Inform_user_of_denied_report_and_reasoning_Not_in_office_priority</fullName>
+        <description
+    >Email: Inform user of denied report and reasoning - Not in office priority</description>
         <protected>false</protected>
         <recipients>
             <field>Reporter__c</field>
             <type>userLookup</type>
         </recipients>
         <senderType>CurrentUser</senderType>
-        <template>unfiled$public/Whistlerblower_Denied_Not_in_Office_Priority</template>
+        <template
+    >unfiled$public/Whistlerblower_Denied_Not_in_Office_Priority</template>
     </alerts>
     <alerts>
         <fullName>Send_Response_via_Email</fullName>

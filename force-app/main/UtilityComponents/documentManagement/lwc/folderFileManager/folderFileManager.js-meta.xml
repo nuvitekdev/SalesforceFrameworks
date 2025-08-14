@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>63.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Folder File Manager</masterLabel>
-    <description>Component to manage folders and files for a record with customizable folder structures</description>
+    <description
+  >Component to manage folders and files for a record with customizable folder structures</description>
     <targets>
         <target>lightning__RecordPage</target>
         <target>lightningCommunity__Page</target>
@@ -11,19 +12,85 @@
     </targets>
     <targetConfigs>
         <targetConfig targets="lightning__RecordPage">
-            <property name="title" type="String" label="Component Title" default="File Manager" description="The title to display for the component"/>
-            <property name="allowDelete" type="Boolean" label="Allow File Deletion" default="false" description="Whether users can delete files"/>
-            <property name="folderStructureMetadata" type="String" label="Folder Structure Metadata" default="Default_Structure" description="The developer name of the Custom Metadata record that defines the folder structure"/>
-            <property name="primaryColor" type="String" default="#22BDC1" label="Primary Color" description="Primary accent color for buttons, icons and interactive elements"/>
-            <property name="accentColor" type="String" default="#D5DF23" label="Accent Color" description="Secondary accent color for gradients and decorations"/>
+            <property
+        name="title"
+        type="String"
+        label="Component Title"
+        default="File Manager"
+        description="The title to display for the component"
+      />
+            <property
+        name="allowDelete"
+        type="Boolean"
+        label="Allow File Deletion"
+        default="false"
+        description="Whether users can delete files"
+      />
+            <property
+        name="folderStructureMetadata"
+        type="String"
+        label="Folder Structure Metadata"
+        default="Default_Structure"
+        description="The developer name of the Custom Metadata record that defines the folder structure"
+      />
+            <property
+        name="primaryColor"
+        type="String"
+        default="#22BDC1"
+        label="Primary Color"
+        description="Primary accent color for buttons, icons and interactive elements"
+      />
+            <property
+        name="accentColor"
+        type="String"
+        default="#D5DF23"
+        label="Accent Color"
+        description="Secondary accent color for gradients and decorations"
+      />
         </targetConfig>
         <targetConfig targets="lightningCommunity__Default">
-            <property name="title" type="String" label="Component Title" default="File Manager" description="The title to display for the component"/>
-            <property name="allowDelete" type="Boolean" label="Allow File Deletion" default="false" description="Whether users can delete files"/>
-            <property name="recordId" type="String" label="Record ID" required="true" description="The record ID to associate files with (required for Experience Cloud)"/>
-            <property name="folderStructureMetadata" type="String" label="Folder Structure Metadata" default="Default_Structure" description="The developer name of the Custom Metadata record that defines the folder structure"/>
-            <property name="primaryColor" type="String" default="#22BDC1" label="Primary Color" description="Primary accent color for buttons, icons and interactive elements"/>
-            <property name="accentColor" type="String" default="#D5DF23" label="Accent Color" description="Secondary accent color for gradients and decorations"/>
+            <property
+        name="title"
+        type="String"
+        label="Component Title"
+        default="File Manager"
+        description="The title to display for the component"
+      />
+            <property
+        name="allowDelete"
+        type="Boolean"
+        label="Allow File Deletion"
+        default="false"
+        description="Whether users can delete files"
+      />
+            <property
+        name="recordId"
+        type="String"
+        label="Record ID"
+        required="true"
+        description="The record ID to associate files with (required for Experience Cloud)"
+      />
+            <property
+        name="folderStructureMetadata"
+        type="String"
+        label="Folder Structure Metadata"
+        default="Default_Structure"
+        description="The developer name of the Custom Metadata record that defines the folder structure"
+      />
+            <property
+        name="primaryColor"
+        type="String"
+        default="#22BDC1"
+        label="Primary Color"
+        description="Primary accent color for buttons, icons and interactive elements"
+      />
+            <property
+        name="accentColor"
+        type="String"
+        default="#D5DF23"
+        label="Accent Color"
+        description="Secondary accent color for gradients and decorations"
+      />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

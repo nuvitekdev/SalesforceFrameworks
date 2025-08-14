@@ -76,7 +76,7 @@ The PDF Template Creator can be added to:
 ### Installation
 
 1. Deploy all component files using Salesforce CLI or your preferred deployment method
-2. Ensure the custom objects (PDF_Template__c and PDF_Template_Field__c) are created
+2. Ensure the custom objects (PDF_Template**c and PDF_Template_Field**c) are created
 3. Assign appropriate permissions to users who will create templates
 
 ### Configuration
@@ -90,18 +90,21 @@ The PDF Template Creator can be added to:
 ### Usage Guide
 
 #### Step 1: Setup
+
 1. Select the Salesforce object for your template
 2. Choose page size (A4, Letter, Legal)
 3. Select orientation (Portrait or Landscape)
 4. Set initial number of pages
 
 #### Step 2: Select Fields
+
 1. Browse all available fields from the selected object
 2. Use search to find specific fields
 3. Filter by field type (Text, Number, Date, etc.)
 4. Select fields to include in your template
 
 #### Step 3: Design
+
 1. **Manual Placement**: Drag fields from the palette onto the PDF page
    - Position fields precisely where needed
    - Resize field containers as required
@@ -123,6 +126,7 @@ The PDF Template Creator can be added to:
 4. Navigate between pages and add additional pages as needed
 
 #### Step 4: Save
+
 1. Name your template
 2. Add an optional description
 3. Save the template for future use
@@ -146,12 +150,14 @@ pdfCreatorDragDrop/
 
 ### Data Model
 
-**PDF_Template__c**
+**PDF_Template\_\_c**
+
 - Stores template metadata
 - Tracks versions and status
 - Links to object API names
 
-**PDF_Template_Field__c**
+**PDF_Template_Field\_\_c**
+
 - Stores field placements
 - Maintains positioning data
 - Preserves formatting options
@@ -175,6 +181,7 @@ pdfCreatorDragDrop/
 ## Recent Enhancements
 
 ### Version 2.0 Features
+
 - ✅ **Auto-Create Functionality**: Automatically arrange all selected fields with intelligent layout
 - ✅ **Generic Elements Library**: Pre-built elements for common document structures
 - ✅ **Grid Snapping**: 10px grid for precise field alignment with visual grid lines
@@ -231,6 +238,7 @@ pdfCreatorDragDrop/
 ## Contributing
 
 We welcome contributions! Please submit pull requests with:
+
 - Clear descriptions of changes
 - Test coverage for new features
 - Documentation updates
@@ -238,6 +246,7 @@ We welcome contributions! Please submit pull requests with:
 ## Support
 
 For issues or questions:
+
 1. Check the troubleshooting guide
 2. Review existing issues on GitHub
 3. Contact your system administrator
@@ -248,4 +257,4 @@ This component is available under the MIT License. See LICENSE.md for details.
 
 ---
 
-*Developed by Nuvitek - Empowering businesses with innovative Salesforce solutions.* 
+_Developed by Nuvitek - Empowering businesses with innovative Salesforce solutions._

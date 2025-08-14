@@ -1,136 +1,138 @@
 /* PDF Signer Component - Modern Nuvitek Style */
 :host {
-    display: block;
-    /* Local Theme variable defaults (can be overridden by JS from target config) */
-    --theme-primary-color: #22BDC1;
-    --theme-accent-color: #D5DF23;
-    --theme-primary-color-rgb: 34, 189, 193;
-    --theme-accent-color-rgb: 213, 223, 35;
-    
-    /* Standard variables for component structure (using defaults) */
-    --primary-color: #22BDC1;
-    --primary-color-rgb: 34, 189, 193;
-    --primary-dark: #1a9599;
-    --primary-light: #63d1d4;
-    --accent-color: #D5DF23;
-    --accent-color-rgb: 213, 223, 35;
-    --accent-dark: #b8c11e;
-    --accent-light: #e1e95c;
-    --text-color: #1d1d1f;
-    --text-secondary: #6e6e73;
-    --text-tertiary: #a1a1a6;
-    --background: #ffffff;
-    --background-alt: #f5f5f7;
-    --background-elevated: #fbfbfd;
-    --border-color: rgba(0, 0, 0, 0.1);
-    --border-subtle: rgba(0, 0, 0, 0.05);
+  display: block;
+  /* Local Theme variable defaults (can be overridden by JS from target config) */
+  --theme-primary-color: #22bdc1;
+  --theme-accent-color: #d5df23;
+  --theme-primary-color-rgb: 34, 189, 193;
+  --theme-accent-color-rgb: 213, 223, 35;
 
-    /* Shadows */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
-    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.15);
+  /* Standard variables for component structure (using defaults) */
+  --primary-color: #22bdc1;
+  --primary-color-rgb: 34, 189, 193;
+  --primary-dark: #1a9599;
+  --primary-light: #63d1d4;
+  --accent-color: #d5df23;
+  --accent-color-rgb: 213, 223, 35;
+  --accent-dark: #b8c11e;
+  --accent-light: #e1e95c;
+  --text-color: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #a1a1a6;
+  --background: #ffffff;
+  --background-alt: #f5f5f7;
+  --background-elevated: #fbfbfd;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-subtle: rgba(0, 0, 0, 0.05);
 
-    /* Border radius */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 20px;
-    --radius-xl: 28px;
-    
-    /* Transitions */
-    --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --transition-slow: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
-    
-    /* Typography */
-    --font-size-xs: 12px;
-    --font-size-sm: 14px;
-    --font-size-md: 16px;
-    --font-size-lg: 20px;
-    --font-size-xl: 24px;
-    --font-size-xxl: 32px;
-    
-    /* Spacing */
-    --spacing-xs: 8px;
-    --spacing-sm: 16px;
-    --spacing-md: 24px;
-    --spacing-lg: 48px;
-    --spacing-xl: 64px;
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.15);
+
+  /* Border radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* Transitions */
+  --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-slow: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+
+  /* Typography */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 24px;
+  --font-size-xxl: 32px;
+
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 48px;
+  --spacing-xl: 64px;
 }
 
 .pdf-signer-container {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Salesforce Sans', Arial, sans-serif;
-    color: var(--text-color); /* Use local text color */
-    background-color: transparent;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    line-height: 1.5;
-    animation: fadeIn var(--transition-medium);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Salesforce Sans",
+    Arial, sans-serif;
+  color: var(--text-color); /* Use local text color */
+  background-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  animation: fadeIn var(--transition-medium);
 }
 
 /* Step styling (uses local vars for structure) */
 .step-section {
-    background: var(--background-elevated);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    animation: fadeIn var(--transition-medium);
-    padding: var(--spacing-md);
-    transition: all var(--transition-medium);
-    margin-bottom: var(--spacing-md);
+  background: var(--background-elevated);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  animation: fadeIn var(--transition-medium);
+  padding: var(--spacing-md);
+  transition: all var(--transition-medium);
+  margin-bottom: var(--spacing-md);
 }
 
 .step-section:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
 /* Custom Path Component Styling */
 .custom-path-container {
-    margin-bottom: var(--spacing-md);
-    padding: var(--spacing-sm) 0;
-    /* Ensure container allows for full width */
-    box-sizing: border-box;
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  /* Ensure container allows for full width */
+  box-sizing: border-box;
 }
 
 .custom-path {
-    display: flex;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    position: relative;
-    justify-content: space-between;
-    align-items: flex-start;
-    width: 100%;
-    /* Remove margin, let flexbox handle spacing */
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  /* Remove margin, let flexbox handle spacing */
 }
 
 .custom-path-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    flex-grow: 1; /* Use flex-grow for even spacing */
-    flex-basis: 0; /* Allows flex-grow to work properly */
-    z-index: 1;
-    text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex-grow: 1; /* Use flex-grow for even spacing */
+  flex-basis: 0; /* Allows flex-grow to work properly */
+  z-index: 1;
+  text-align: center;
 }
 
 /* Common style for the line */
 .custom-path-item:not(:first-child)::before {
-    content: '';
-    position: absolute;
-    height: 2px;
-    background-color: var(--border-color); /* Default line color */
-    /* Calculate width to span the gap BETWEEN indicators */
-    /* 100% of the item width MINUS the width of one indicator */
-    width: calc(100% - 44px);
-    top: 21px; /* Vertically centered with the indicator (44px height / 2 - 1px line height) */
-    /* Position starts just after the previous indicator's center */
-    /* (-50% of width = center of previous item) + (22px = half indicator width) */
-    left: calc(-50% + 22px);
-    z-index: 0; /* Behind the indicator */
-    transition: background-color var(--transition-fast);
+  content: "";
+  position: absolute;
+  height: 2px;
+  background-color: var(--border-color); /* Default line color */
+  /* Calculate width to span the gap BETWEEN indicators */
+  /* 100% of the item width MINUS the width of one indicator */
+  width: calc(100% - 44px);
+  top: 21px; /* Vertically centered with the indicator (44px height / 2 - 1px line height) */
+  /* Position starts just after the previous indicator's center */
+  /* (-50% of width = center of previous item) + (22px = half indicator width) */
+  left: calc(-50% + 22px);
+  z-index: 0; /* Behind the indicator */
+  transition: background-color var(--transition-fast);
 }
 
 /* Change line color to primary when the step *before* it is completed */
@@ -143,47 +145,47 @@
 .step-4-mode .custom-path-item[data-step="1"]::before,
 .step-4-mode .custom-path-item[data-step="2"]::before,
 .step-4-mode .custom-path-item[data-step="3"]::before,
-.step-4-mode .custom-path-item[data-step="4"]::before /* Added for line before success step */ { 
-    background-color: var(--theme-primary-color);
+.step-4-mode .custom-path-item[data-step="4"]::before /* Added for line before success step */ {
+  background-color: var(--theme-primary-color);
 }
 
 .custom-path-indicator {
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-sm);
-    background-color: var(--background-alt); /* Default background */
-    color: var(--text-secondary); /* Default text color */
-    margin-bottom: var(--spacing-xs);
-    position: relative; /* Keep relative for z-index */
-    z-index: 1; /* Ensure indicator is above the line */
-    border: 1px solid var(--border-color);
-    font-weight: 500;
-    font-size: var(--font-size-md);
-    transition: all var(--transition-fast);
-    box-shadow: var(--shadow-sm);
-    cursor: default; /* Change to default instead of pointer */
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background-color: var(--background-alt); /* Default background */
+  color: var(--text-secondary); /* Default text color */
+  margin-bottom: var(--spacing-xs);
+  position: relative; /* Keep relative for z-index */
+  z-index: 1; /* Ensure indicator is above the line */
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+  font-size: var(--font-size-md);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  cursor: default; /* Change to default instead of pointer */
 }
 
 .custom-path-indicator:hover {
-    transform: none; /* Remove hover transform effect */
-    box-shadow: var(--shadow-sm); /* Keep same shadow */
+  transform: none; /* Remove hover transform effect */
+  box-shadow: var(--shadow-sm); /* Keep same shadow */
 }
 
 .custom-path-number {
-    font-weight: 600;
+  font-weight: 600;
 }
 
 .custom-path-label {
-    font-size: var(--font-size-xs);
-    color: var(--text-secondary); /* Default label color */
-    text-align: center;
-    transition: color var(--transition-fast);
-    font-weight: 500;
-    margin-top: var(--spacing-xs);
-    padding: 0 4px; /* Add padding to prevent overlap */
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary); /* Default label color */
+  text-align: center;
+  transition: color var(--transition-fast);
+  font-weight: 500;
+  margin-top: var(--spacing-xs);
+  padding: 0 4px; /* Add padding to prevent overlap */
 }
 
 /* Default/Future State Indicator Styling */
@@ -194,11 +196,11 @@
 .step-1-mode .custom-path-item[data-step="1"] .custom-path-indicator,
 .step-2-mode .custom-path-item[data-step="2"] .custom-path-indicator,
 .step-3-mode .custom-path-item[data-step="3"] .custom-path-indicator,
-.step-4-mode .custom-path-item[data-step="4"] .custom-path-indicator /* Highlight step 4 indicator on success */ { 
-    background-color: var(--theme-accent-color);
-    color: white; /* Assuming accent is dark enough for white text */
-    border-color: transparent;
-    box-shadow: 0 2px 12px rgba(var(--theme-accent-color-rgb), 0.4);
+.step-4-mode .custom-path-item[data-step="4"] .custom-path-indicator /* Highlight step 4 indicator on success */ {
+  background-color: var(--theme-accent-color);
+  color: white; /* Assuming accent is dark enough for white text */
+  border-color: transparent;
+  box-shadow: 0 2px 12px rgba(var(--theme-accent-color-rgb), 0.4);
 }
 
 /* Current step Label Styling */
@@ -206,9 +208,9 @@
 .step-1-mode .custom-path-item[data-step="1"] .custom-path-label,
 .step-2-mode .custom-path-item[data-step="2"] .custom-path-label,
 .step-3-mode .custom-path-item[data-step="3"] .custom-path-label,
-.step-4-mode .custom-path-item[data-step="4"] .custom-path-label /* Highlight step 4 label on success */ { 
-    color: var(--text-color);
-    font-weight: 600;
+.step-4-mode .custom-path-item[data-step="4"] .custom-path-label /* Highlight step 4 label on success */ {
+  color: var(--text-color);
+  font-weight: 600;
 }
 
 /* Completed step Indicator Styling (Primary Color) */
@@ -221,12 +223,12 @@
 .step-4-mode .custom-path-item[data-step="0"] .custom-path-indicator,
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-indicator,
 .step-4-mode .custom-path-item[data-step="2"] .custom-path-indicator,
-.step-4-mode .custom-path-item[data-step="3"] .custom-path-indicator /* Added step 3 */ { 
-    background-color: var(--theme-primary-color);
-    color: white; /* Assuming primary is dark enough for white text */
-    border-color: transparent;
-    opacity: 0.9;
-    box-shadow: none;
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-indicator /* Added step 3 */ {
+  background-color: var(--theme-primary-color);
+  color: white; /* Assuming primary is dark enough for white text */
+  border-color: transparent;
+  opacity: 0.9;
+  box-shadow: none;
 }
 
 /* Completed step Label Styling */
@@ -239,9 +241,9 @@
 .step-4-mode .custom-path-item[data-step="0"] .custom-path-label,
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-label,
 .step-4-mode .custom-path-item[data-step="2"] .custom-path-label,
-.step-4-mode .custom-path-item[data-step="3"] .custom-path-label /* Added step 3 */ { 
-    color: var(--text-secondary); /* Keep label color standard for completed */
-    font-weight: 500; /* Reset font weight */
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-label /* Added step 3 */ {
+  color: var(--text-secondary); /* Keep label color standard for completed */
+  font-weight: 500; /* Reset font weight */
 }
 
 /* Change number to checkmark for completed steps - DISABLED to prevent duplicate checkmarks */
@@ -255,9 +257,9 @@
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-number::before,
 .step-4-mode .custom-path-item[data-step="2"] .custom-path-number::before,
 .step-4-mode .custom-path-item[data-step="3"] .custom-path-number::before /* Added step 3 */ {
-    /* Removed content: '\2713'; to prevent duplicate checkmarks - this is now handled in JavaScript */
-    content: '';
-    font-size: 0;
+  /* Removed content: '\2713'; to prevent duplicate checkmarks - this is now handled in JavaScript */
+  content: "";
+  font-size: 0;
 }
 
 /* Hide the original number when checkmark is shown */
@@ -271,771 +273,799 @@
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-number,
 .step-4-mode .custom-path-item[data-step="2"] .custom-path-number,
 .step-4-mode .custom-path-item[data-step="3"] .custom-path-number {
-    /* No need to set font-size: 0 since we're handling the display in JavaScript */
+  /* No need to set font-size: 0 since we're handling the display in JavaScript */
 }
 
 .custom-path-number::before {
-    display: inline-block;
+  display: inline-block;
 }
 
 /* Responsive styling for custom path */
 @media (max-width: 768px) {
-    .custom-path-item:not(:first-child)::before {
-        /* Adjust line width and positioning for smaller indicator */
-        width: calc(100% - 36px);
-        top: 17px; /* Re-center line (36px / 2 - 1px) */
-        left: calc(-50% + 18px); /* Re-position line start */
-    }
+  .custom-path-item:not(:first-child)::before {
+    /* Adjust line width and positioning for smaller indicator */
+    width: calc(100% - 36px);
+    top: 17px; /* Re-center line (36px / 2 - 1px) */
+    left: calc(-50% + 18px); /* Re-position line start */
+  }
 
-    .custom-path-indicator {
-        width: 36px;
-        height: 36px;
-        font-size: var(--font-size-sm);
-    }
+  .custom-path-indicator {
+    width: 36px;
+    height: 36px;
+    font-size: var(--font-size-sm);
+  }
 
-    .custom-path-label {
-        font-size: 10px;
-    }
+  .custom-path-label {
+    font-size: 10px;
+  }
 }
 
 @media (max-width: 480px) {
-    .custom-path-item:not(:first-child)::before {
-        /* Adjust line width and positioning for smallest indicator */
-        width: calc(100% - 30px);
-        top: 14px; /* Re-center line (30px / 2 - 1px) */
-        left: calc(-50% + 15px); /* Re-position line start */
-    }
+  .custom-path-item:not(:first-child)::before {
+    /* Adjust line width and positioning for smallest indicator */
+    width: calc(100% - 30px);
+    top: 14px; /* Re-center line (30px / 2 - 1px) */
+    left: calc(-50% + 15px); /* Re-position line start */
+  }
 
-    .custom-path-indicator {
-        width: 30px;
-        height: 30px;
-        font-size: 11px;
-        border-radius: 6px;
-    }
+  .custom-path-indicator {
+    width: 30px;
+    height: 30px;
+    font-size: 11px;
+    border-radius: 6px;
+  }
 
-    .custom-path-label {
-        font-size: 9px;
-    }
+  .custom-path-label {
+    font-size: 9px;
+  }
 }
 
 /* PDF viewer controls container (Uses local vars) */
 .pdf-viewer-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-md);
-    flex-wrap: wrap;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-xs);
-    background-color: var(--background-alt);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  background-color: var(--background-alt);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .pdf-viewer-controls lightning-button-group {
-    box-shadow: var(--shadow-sm);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 
 /* Page indicator (Uses local vars) */
 .page-indicator {
-    display: inline-block;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background-color: var(--background-elevated);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    color: var(--text-color);
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-fast);
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--background-elevated);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-color);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
 }
 
 /* PDF preview container for iframe (Uses local vars) */
 .iframe-container {
-    width: 100%;
-    position: relative;
-    margin: var(--spacing-md) 0;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    /* Default aspect ratio for A4 portrait, will be overridden in JS */
-    padding-bottom: 141.42%; 
-    transition: padding-bottom var(--transition-medium);
-    box-shadow: var(--shadow-md);
+  width: 100%;
+  position: relative;
+  margin: var(--spacing-md) 0;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  /* Default aspect ratio for A4 portrait, will be overridden in JS */
+  padding-bottom: 141.42%;
+  transition: padding-bottom var(--transition-medium);
+  box-shadow: var(--shadow-md);
 }
 
 /* When PDF is landscape, adjust aspect ratio (fallback, will be overridden in JS) */
 .iframe-container.landscape {
-    padding-bottom: 70.71%;
+  padding-bottom: 70.71%;
 }
 
 .pdf-iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
-    z-index: 1;
-    /* Hide iframe scrollbars in step 3 */
-    overflow: hidden !important;
-    /* Additional PDF viewer settings */
-    transform-origin: top left;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  z-index: 1;
+  /* Hide iframe scrollbars in step 3 */
+  overflow: hidden !important;
+  /* Additional PDF viewer settings */
+  transform-origin: top left;
 }
 
 /* Step 3 specific style to ensure no scrollbars */
 .step-3-mode .pdf-iframe {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
 .step-3-mode .pdf-iframe::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 /* PDF Overlay for signature placement */
 .pdf-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-    cursor: pointer;
-    background-color: transparent;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  cursor: pointer;
+  background-color: transparent;
 }
 
 /* Font for signature text */
 @font-face {
-    font-family: 'SignatureFont';
-    src: url('/resource/signature/GreatVibes-Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: block;
+  font-family: "SignatureFont";
+  src: url("/resource/signature/GreatVibes-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
 }
 
 /* Signature Type Selection (Uses local vars) */
 .signature-type-selector {
-    margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
 }
 
 .slds-radio_button-group {
-    border: none;
-    background: var(--background-alt);
-    border-radius: var(--radius-md);
-    padding: 4px;
-    box-shadow: var(--shadow-sm);
+  border: none;
+  background: var(--background-alt);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  box-shadow: var(--shadow-sm);
 }
 
 .slds-radio_button {
-    background: transparent;
-    border: none;
+  background: transparent;
+  border: none;
 }
 
 .slds-radio_button__label {
-    background: transparent;
-    color: var(--text-color);
-    border: none;
-    padding: 8px 16px;
-    font-weight: 500;
-    transition: all var(--transition-fast);
-    border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-color);
+  border: none;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-sm);
 }
 
 /* Checked state uses --theme-* var */
 .slds-radio_button [type="radio"]:checked + .slds-radio_button__label {
-    background: var(--theme-primary-color);
-    color: white; /* Assuming primary is dark enough for white text */
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-sm);
+  background: var(--theme-primary-color);
+  color: white; /* Assuming primary is dark enough for white text */
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Text Input (Uses local vars, focus uses --theme-* var) */
 .text-input-container {
-    margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
 }
 
 lightning-input.signature-text-input {
-    --sds-c-input-radius-border: var(--radius-sm);
-    --sds-c-input-color-border: var(--border-color);
-    --sds-c-input-color-border-focus: var(--theme-primary-color);
-    --sds-c-input-shadow-focus: 0 0 0 1px var(--theme-primary-color);
-    --sds-c-input-text-color: var(--text-color);
-    margin-bottom: var(--spacing-xs);
+  --sds-c-input-radius-border: var(--radius-sm);
+  --sds-c-input-color-border: var(--border-color);
+  --sds-c-input-color-border-focus: var(--theme-primary-color);
+  --sds-c-input-shadow-focus: 0 0 0 1px var(--theme-primary-color);
+  --sds-c-input-text-color: var(--text-color);
+  margin-bottom: var(--spacing-xs);
 }
 
 /* Signature Canvas (Uses local vars, hover border uses --theme-* var) */
 .signature-pad-container {
-    margin: var(--spacing-md) 0;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    background-color: white;
-    position: relative;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-fast);
+  margin: var(--spacing-md) 0;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
 }
 
 .signature-pad-container:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--theme-primary-color);
+  box-shadow: var(--shadow-md);
+  border-color: var(--theme-primary-color);
 }
 
 .signature-pad {
-    width: 100%;
-    min-height: 180px;
-    background-color: white;
-    border-radius: var(--radius-sm);
-    cursor: crosshair;
+  width: 100%;
+  min-height: 180px;
+  background-color: white;
+  border-radius: var(--radius-sm);
+  cursor: crosshair;
 }
 
 /* Action Buttons (Clear uses local, Save uses --theme-* var) */
 .signature-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: var(--spacing-md);
-    gap: var(--spacing-sm);
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 lightning-button.clear-button button {
-    --sds-c-button-neutral-color-background: transparent;
-    --sds-c-button-neutral-color-border: transparent;
-    --sds-c-button-text-color: var(--text-secondary);
-    --sds-c-button-shadow: none;
-    transition: all var(--transition-fast);
+  --sds-c-button-neutral-color-background: transparent;
+  --sds-c-button-neutral-color-border: transparent;
+  --sds-c-button-text-color: var(--text-secondary);
+  --sds-c-button-shadow: none;
+  transition: all var(--transition-fast);
 }
 
 lightning-button.clear-button button:hover {
-    --sds-c-button-color-background-hover: rgba(var(--theme-primary-color-rgb), 0.05);
-    --sds-c-button-text-color-hover: var(--theme-primary-color);
-    transform: translateY(-1px);
+  --sds-c-button-color-background-hover: rgba(
+    var(--theme-primary-color-rgb),
+    0.05
+  );
+  --sds-c-button-text-color-hover: var(--theme-primary-color);
+  transform: translateY(-1px);
 }
 
 lightning-button.save-button button {
-    background-color: var(--theme-primary-color);
-    border-color: var(--theme-primary-color);
-    color: white; /* Assuming primary is dark enough for white text */
-    border-radius: var(--radius-sm);
-    transition: all var(--transition-fast);
+  background-color: var(--theme-primary-color);
+  border-color: var(--theme-primary-color);
+  color: white; /* Assuming primary is dark enough for white text */
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
 }
 
 lightning-button.save-button button:hover {
-    background-color: var(--theme-primary-color);
-    filter: brightness(90%);
-    border-color: var(--theme-primary-color);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+  background-color: var(--theme-primary-color);
+  filter: brightness(90%);
+  border-color: var(--theme-primary-color);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Signature Palette (Uses local vars) */
 .signature-palette {
-    text-align: center;
-    background-color: var(--background-alt);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-fast);
+  text-align: center;
+  background-color: var(--background-alt);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
 }
 
 .signature-palette:hover {
-    box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-md);
 }
 
 .signature-thumbnail {
-    max-width: 200px;
-    max-height: 80px;
-    cursor: grab;
-    background-color: white;
-    padding: var(--spacing-xs);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-fast);
+  max-width: 200px;
+  max-height: 80px;
+  cursor: grab;
+  background-color: white;
+  padding: var(--spacing-xs);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
 }
 
 .signature-thumbnail:hover {
-    transform: scale(1.02);
-    box-shadow: var(--shadow-md);
+  transform: scale(1.02);
+  box-shadow: var(--shadow-md);
 }
 
 .signature-thumbnail:active {
-    cursor: grabbing;
-    transform: scale(0.98);
+  cursor: grabbing;
+  transform: scale(0.98);
 }
 
 .hint {
-    font-size: var(--font-size-xs);
-    color: var(--text-secondary);
-    font-style: italic;
-    margin-top: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: var(--spacing-xs);
 }
 
 /* Placed signature styles (Uses --theme-* var for border) */
 .signature-placement {
-    position: absolute;
-    cursor: move;
-    background-color: transparent;
-    padding: 5px;
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow var(--transition-fast), transform var(--transition-fast);
-    border: 1px dashed rgba(var(--theme-primary-color-rgb), 0.3);
+  position: absolute;
+  cursor: move;
+  background-color: transparent;
+  padding: 5px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+  border: 1px dashed rgba(var(--theme-primary-color-rgb), 0.3);
 }
 
 .signature-placement:hover {
-    box-shadow: var(--shadow-md);
-    transform: scale(1.01);
-    border: 1px dashed rgba(var(--theme-primary-color-rgb), 0.8);
-    z-index: 15;
+  box-shadow: var(--shadow-md);
+  transform: scale(1.01);
+  border: 1px dashed rgba(var(--theme-primary-color-rgb), 0.8);
+  z-index: 15;
 }
 
 /* Remove signature button (Uses local vars) */
 .remove-sig {
-    position: absolute;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%) scale(0.9);
-    background-color: #f44336; /* Keep explicit red */
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    text-align: center;
-    line-height: 20px;
-    cursor: pointer;
-    box-shadow: var(--shadow-sm);
-    font-size: 10px;
-    z-index: 12;
-    opacity: 0.8;
-    transition: all var(--transition-fast);
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  background-color: #f44336; /* Keep explicit red */
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  line-height: 20px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  font-size: 10px;
+  z-index: 12;
+  opacity: 0.8;
+  transition: all var(--transition-fast);
 }
 
 .remove-sig:hover {
-    transform: translateX(-50%) scale(1.1);
-    opacity: 1;
-    box-shadow: var(--shadow-md);
+  transform: translateX(-50%) scale(1.1);
+  opacity: 1;
+  box-shadow: var(--shadow-md);
 }
 
 /* Resize handles (Uses --theme-* vars) */
 .resize-handle {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: var(--theme-primary-color);
-    border-radius: 50%;
-    z-index: 11;
-    transition: transform var(--transition-fast), background-color var(--transition-fast);
-    opacity: 0.7;
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: var(--theme-primary-color);
+  border-radius: 50%;
+  z-index: 11;
+  transition:
+    transform var(--transition-fast),
+    background-color var(--transition-fast);
+  opacity: 0.7;
 }
 
 .resize-handle:hover {
-    transform: scale(1.2);
-    opacity: 1;
-    background-color: var(--theme-accent-color);
+  transform: scale(1.2);
+  opacity: 1;
+  background-color: var(--theme-accent-color);
 }
 
 .resize-nw {
-    top: -5px;
-    left: -5px;
-    cursor: nw-resize;
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
 }
 
 .resize-ne {
-    top: -5px;
-    right: -5px;
-    cursor: ne-resize;
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
 }
 
 .resize-sw {
-    bottom: -5px;
-    left: -5px;
-    cursor: sw-resize;
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
 }
 
 .resize-se {
-    bottom: -5px;
-    right: -5px;
-    cursor: se-resize;
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
 }
 
 /* Multi-page view styling (Uses local vars) */
 .pdf-pages-container {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-    margin: var(--spacing-md) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin: var(--spacing-md) 0;
 }
 
 .pdf-page-card {
-    position: relative;
-    margin: 0 auto;
-    box-shadow: var(--shadow-md);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    max-width: 100%;
-    transition: all var(--transition-fast);
+  position: relative;
+  margin: 0 auto;
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  max-width: 100%;
+  transition: all var(--transition-fast);
 }
 
 .pdf-page-card:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
 .page-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 5;
-    cursor: pointer;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  cursor: pointer;
 }
 
 .page-number {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    padding: 3px 8px;
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    z-index: 6;
-    transition: all var(--transition-fast);
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  z-index: 6;
+  transition: all var(--transition-fast);
 }
 
 /* Page number hover uses --theme-* var */
 .pdf-page-card:hover .page-number {
-    background: var(--theme-primary-color);
+  background: var(--theme-primary-color);
 }
 
 /* Step 1: File Upload styling (Uses local vars, hover/drag uses --theme-* vars) */
 .file-upload-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-lg);
-    border: 2px dashed var(--border-color);
-    border-radius: var(--radius-md);
-    background-color: var(--background-alt);
-    transition: all var(--transition-fast);
-    position: relative;
-    min-height: 250px;
-    cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--background-alt);
+  transition: all var(--transition-fast);
+  position: relative;
+  min-height: 250px;
+  cursor: pointer;
 }
 
 .file-upload-container:hover {
-    border-color: var(--theme-primary-color);
-    background-color: rgba(var(--theme-primary-color-rgb), 0.05);
+  border-color: var(--theme-primary-color);
+  background-color: rgba(var(--theme-primary-color-rgb), 0.05);
 }
 
 .file-upload-container.dragover {
-    border-color: var(--theme-primary-color);
-    background-color: rgba(var(--theme-primary-color-rgb), 0.1);
-    transform: scale(1.01);
-    box-shadow: var(--shadow-md);
+  border-color: var(--theme-primary-color);
+  background-color: rgba(var(--theme-primary-color-rgb), 0.1);
+  transform: scale(1.01);
+  box-shadow: var(--shadow-md);
 }
 
 /* Properly hide the file input */
 .file-input-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Visual elements are now clickable */
 .file-upload-icon,
 .file-upload-text {
-    z-index: 1; 
+  z-index: 1;
 }
 
 /* Icon uses --theme-* var */
 .file-upload-icon {
-    font-size: 48px;
-    color: var(--theme-primary-color);
-    margin-bottom: var(--spacing-sm);
+  font-size: 48px;
+  color: var(--theme-primary-color);
+  margin-bottom: var(--spacing-sm);
 }
 
 /* Text uses local vars */
 .file-upload-text {
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-md);
-    text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
+  text-align: center;
 }
 
 /* Success page styling (Uses local vars mostly, button uses --theme-* var) */
 .success-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: var(--spacing-lg) var(--spacing-md);
-    animation: fadeIn var(--transition-medium), slideIn var(--transition-medium);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--spacing-lg) var(--spacing-md);
+  animation:
+    fadeIn var(--transition-medium),
+    slideIn var(--transition-medium);
 }
 
 .success-icon {
-    color: #4bca81; /* Keep explicit success green */
-    background-color: rgba(75, 202, 129, 0.1);
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: var(--spacing-md);
-    animation: pulse 2s infinite; /* Uses local pulse definition */
+  color: #4bca81; /* Keep explicit success green */
+  background-color: rgba(75, 202, 129, 0.1);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-md);
+  animation: pulse 2s infinite; /* Uses local pulse definition */
 }
 
 .success-title {
-    font-size: var(--font-size-xl);
-    font-weight: 600;
-    color: var(--text-color);
-    margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: var(--spacing-sm);
 }
 
 .success-message {
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-lg);
-    max-width: 480px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+  max-width: 480px;
 }
 
 .success-actions {
-    margin-top: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
 }
 
 .sign-another-button button {
-    background-color: var(--theme-primary-color);
-    border-color: var(--theme-primary-color);
-    padding: 0 var(--spacing-md);
-    height: 44px;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    transition: all var(--transition-fast);
-    color: white; /* Assuming primary is dark enough for white text */
+  background-color: var(--theme-primary-color);
+  border-color: var(--theme-primary-color);
+  padding: 0 var(--spacing-md);
+  height: 44px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  color: white; /* Assuming primary is dark enough for white text */
 }
 
 .sign-another-button button:hover {
-    background-color: var(--theme-primary-color);
-    filter: brightness(90%);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+  background-color: var(--theme-primary-color);
+  filter: brightness(90%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Animation (Defines pulse using --theme-*) */
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideIn {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(var(--theme-primary-color-rgb), 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(var(--theme-primary-color-rgb), 0); }
-    100% { box-shadow: 0 0 0 0 rgba(var(--theme-primary-color-rgb), 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--theme-primary-color-rgb), 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--theme-primary-color-rgb), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--theme-primary-color-rgb), 0);
+  }
 }
 
 /* Button styling (Clear uses local, hover uses --theme-*) */
 .clear-pdf-button button {
-    --sds-c-button-neutral-color-background: transparent;
-    --sds-c-button-neutral-color-border: transparent;
-    --sds-c-button-text-color: var(--text-secondary);
-    --sds-c-button-shadow: none;
-    transition: all var(--transition-fast);
+  --sds-c-button-neutral-color-background: transparent;
+  --sds-c-button-neutral-color-border: transparent;
+  --sds-c-button-text-color: var(--text-secondary);
+  --sds-c-button-shadow: none;
+  transition: all var(--transition-fast);
 }
 
 .clear-pdf-button button:hover {
-    --sds-c-button-color-background-hover: rgba(var(--theme-primary-color-rgb), 0.05);
-    --sds-c-button-text-color-hover: var(--theme-primary-color);
-    transform: translateY(-1px);
+  --sds-c-button-color-background-hover: rgba(
+    var(--theme-primary-color-rgb),
+    0.05
+  );
+  --sds-c-button-text-color-hover: var(--theme-primary-color);
+  transform: translateY(-1px);
 }
 
 lightning-button.clear-button button {
-    /* Styles for the clear signature button */
-    border-color: var(--border-color);
-    color: var(--text-secondary);
-    border-radius: var(--radius-sm);
-    transition: all var(--transition-fast);
+  /* Styles for the clear signature button */
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
 }
 
 lightning-button.clear-button button:hover {
-    background-color: var(--background-alt);
-    border-color: #ea001e;
-    color: #ea001e;
-    transform: translateY(-1px);
+  background-color: var(--background-alt);
+  border-color: #ea001e;
+  color: #ea001e;
+  transform: translateY(-1px);
 }
 
 /* Destructive button for clear modal */
 lightning-button.confirm-button[variant="destructive"] button {
-    background-color: #ea001e;
-    border-color: #ea001e;
-    color: white;
-    border-radius: var(--radius-sm);
-    transition: all var(--transition-fast);
+  background-color: #ea001e;
+  border-color: #ea001e;
+  color: white;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
 }
 
 lightning-button.confirm-button[variant="destructive"] button:hover {
-    background-color: #ba0516;
-    border-color: #ba0516;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+  background-color: #ba0516;
+  border-color: #ba0516;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Add this to the appropriate section in the CSS file */
 
 .upload-spinner-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
-    z-index: 10;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 8px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
 }
 
 .signature-date {
-    font-family: Arial, sans-serif;
-    font-size: 11px;
-    color: #333;
-    text-align: center;
-    margin-top: 5px;
-    line-height: 1.3;
-    padding: 8px 4px;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: #333;
+  text-align: center;
+  margin-top: 5px;
+  line-height: 1.3;
+  padding: 8px 4px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .signature-date .date-time {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .signature-date .user-id {
-    font-size: 9px;
-    color: #666;
+  font-size: 9px;
+  color: #666;
 }
 
 /* Signature Confirmation Modal */
 .signature-confirmation-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 15;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn var(--transition-fast);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 15;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn var(--transition-fast);
 }
 
 .modal-content {
-    background-color: var(--background);
-    border-radius: var(--radius-md);
-    width: 90%;
-    max-width: 500px;
-    box-shadow: var(--shadow-xl);
-    animation: slideIn var(--transition-medium);
-    overflow: hidden;
+  background-color: var(--background);
+  border-radius: var(--radius-md);
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--shadow-xl);
+  animation: slideIn var(--transition-medium);
+  overflow: hidden;
 }
 
 .modal-header {
-    padding: var(--spacing-md);
-    background-color: var(--background-alt);
-    border-bottom: 1px solid var(--border-color);
+  padding: var(--spacing-md);
+  background-color: var(--background-alt);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .modal-body {
-    padding: var(--spacing-md);
+  padding: var(--spacing-md);
 }
 
 .modal-footer {
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    justify-content: flex-end;
-    background-color: var(--background-alt);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  background-color: var(--background-alt);
 }
 
 .warning-text {
-    margin-top: var(--spacing-sm);
-    color: #ea001e;
-    font-weight: 500;
+  margin-top: var(--spacing-sm);
+  color: #ea001e;
+  font-weight: 500;
 }
 
 .signature-preview {
-    margin: var(--spacing-md) 0;
-    padding: var(--spacing-sm);
-    background-color: var(--background-alt);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    text-align: center;
+  margin: var(--spacing-md) 0;
+  padding: var(--spacing-sm);
+  background-color: var(--background-alt);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  text-align: center;
 }
 
 .signature-preview img {
-    max-width: 100%;
-    max-height: 80px;
-    margin: 0 auto;
-    display: block;
+  max-width: 100%;
+  max-height: 80px;
+  margin: 0 auto;
+  display: block;
 }
 
 .signature-date {
-    font-family: Arial, sans-serif;
-    font-size: 11px;
-    color: #333;
-    text-align: center;
-    margin-top: 5px;
-    line-height: 1.3;
-    padding: 8px 4px;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: #333;
+  text-align: center;
+  margin-top: 5px;
+  line-height: 1.3;
+  padding: 8px 4px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .signature-date .date-time {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .signature-date .user-id {
-    font-size: 9px;
-    color: #666;
+  font-size: 9px;
+  color: #666;
 }
 
 /* Save Spinner Container */
 .save-spinner-container {
-    position: absolute; /* Changed back to absolute */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.85); /* Slightly more opaque */
-    z-index: 20; /* Lowered z-index slightly */
-    display: flex;
-    flex-direction: column; /* Stack spinner and text */
-    justify-content: center;
-    align-items: center;
-    border-radius: var(--radius-lg); /* Added back border-radius */
-    animation: fadeIn var(--transition-fast);
+  position: absolute; /* Changed back to absolute */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.85); /* Slightly more opaque */
+  z-index: 20; /* Lowered z-index slightly */
+  display: flex;
+  flex-direction: column; /* Stack spinner and text */
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--radius-lg); /* Added back border-radius */
+  animation: fadeIn var(--transition-fast);
 }
 
 .spinner-text {
-    color: var(--text-secondary);
-    font-weight: 500;
+  color: var(--text-secondary);
+  font-weight: 500;
 }

@@ -90,7 +90,7 @@ The Signature Capture component can be added to:
 ### Usage
 
 1. **Select Mode**: Choose between "Draw" or "Type" signature.
-2. **Create Signature**: 
+2. **Create Signature**:
    - In Draw mode: Use mouse or touch to draw signature on the canvas.
    - In Type mode: Type your name in the input field to create a stylized signature.
 3. **Clear**: Use the clear button to reset and try again if needed.
@@ -135,4 +135,4 @@ This component is available under the MIT License. See LICENSE.md for details.
 
 ---
 
-*Developed by Nuvitek - Transforming business through innovative Salesforce solutions.* 
+_Developed by Nuvitek - Transforming business through innovative Salesforce solutions._

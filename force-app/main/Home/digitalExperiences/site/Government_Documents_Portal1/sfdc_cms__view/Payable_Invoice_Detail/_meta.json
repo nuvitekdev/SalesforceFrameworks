@@ -1,5 +1,5 @@
 {
-  "apiName" : "Payable_Invoice_Detail",
-  "type" : "sfdc_cms__view",
-  "path" : "views"
+  "apiName": "Payable_Invoice_Detail",
+  "type": "sfdc_cms__view",
+  "path": "views"
 }

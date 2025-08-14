@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
     <flexiPageRegions>
         <itemInstances>
@@ -9,7 +9,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>richTextValue</name>
-                    <value>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 24px; color: rgb(0, 0, 0);&quot;&gt;Government Documents Application&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px; color: rgb(0, 0, 0);&quot;&gt;The Government Documents application provides secure management, tracking, and archival of official records. Ensure compliance, manage retention schedules, handle FOIA requests, and facilitate secure document sharing and approvals.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</value>
+                    <value
+          >&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 24px; color: rgb(0, 0, 0);&quot;&gt;Government Documents Application&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px; color: rgb(0, 0, 0);&quot;&gt;The Government Documents application provides secure management, tracking, and archival of official records. Ensure compliance, manage retention schedules, handle FOIA requests, and facilitate secure document sharing and approvals.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</value>
                 </componentInstanceProperties>
                 <componentName>flexipage:richText</componentName>
                 <identifier>flexipage_richText</identifier>
@@ -21,8 +22,10 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>runtime_approval_process:pendingApprovalCard</componentName>
-                <identifier>runtime_approval_process_pendingApprovalCard</identifier>
+                <componentName
+        >runtime_approval_process:pendingApprovalCard</componentName>
+                <identifier
+        >runtime_approval_process_pendingApprovalCard</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
@@ -37,7 +40,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>contextPrompt</name>
-                    <value>your job is to speak within the context of Government Documents</value>
+                    <value
+          >your job is to speak within the context of Government Documents</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>defaultModelName</name>
@@ -73,7 +77,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>colors</name>
-                    <value>#6200EA, #00BCD4, #FF6D00, #D50000, #1565C0, #8E24AA, #2E7D32, #455A64, #FFAB00</value>
+                    <value
+          >#6200EA, #00BCD4, #FF6D00, #D50000, #1565C0, #8E24AA, #2E7D32, #455A64, #FFAB00</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>columns</name>
@@ -81,15 +86,18 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>descriptions</name>
-                    <value>Manage the complete lifecycle of permits and licenses with automated verification plus inspection scheduling and renewal tracking, Streamline business entity registrations with document validation plus certificate generation and compliance verification, Centralize document intake and routing with classification tools plus workflow automation and secure archiving, Automate procurement processes with vendor management plus budget verification and comprehensive spend analytics, Create and manage contracts with template libraries plus approval workflows and milestone tracking features, Manage the complete procurement lifecycle with vendor evaluation plus award determination and performance monitoring, Plan IT investments with cost estimation tools plus benefit analysis and decision support visualizations, Ensure policy compliance in decision-making with risk evaluation plus meeting management and audit support, Verify qualifications with secure document verification plus background check integration and credential tracking</value>
+                    <value
+          >Manage the complete lifecycle of permits and licenses with automated verification plus inspection scheduling and renewal tracking, Streamline business entity registrations with document validation plus certificate generation and compliance verification, Centralize document intake and routing with classification tools plus workflow automation and secure archiving, Automate procurement processes with vendor management plus budget verification and comprehensive spend analytics, Create and manage contracts with template libraries plus approval workflows and milestone tracking features, Manage the complete procurement lifecycle with vendor evaluation plus award determination and performance monitoring, Plan IT investments with cost estimation tools plus benefit analysis and decision support visualizations, Ensure policy compliance in decision-making with risk evaluation plus meeting management and audit support, Verify qualifications with secure document verification plus background check integration and credential tracking</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>icons</name>
-                    <value>utility:approval, utility:company, utility:file, utility:moneybag, utility:contract, utility:cart, utility:strategy, utility:hierarchy, utility:identity</value>
+                    <value
+          >utility:approval, utility:company, utility:file, utility:moneybag, utility:contract, utility:cart, utility:strategy, utility:hierarchy, utility:identity</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>links</name>
-                    <value>/one/one.app?source=aloha#/n/page1, /one/one.app?source=aloha#/n/page2, /one/one.app?source=aloha#/n/page3, /one/one.app?source=aloha#/n/Purchasing_and_Invoice_App_Page, /one/one.app?source=aloha#/n/page2, /one/one.app?source=aloha#/n/page3, /one/one.app?source=aloha#/n/page1, /one/one.app?source=aloha#/n/page2, /one/one.app?source=aloha#/n/page3</value>
+                    <value
+          >/one/one.app?source=aloha#/n/page1, /one/one.app?source=aloha#/n/page2, /one/one.app?source=aloha#/n/page3, /one/one.app?source=aloha#/n/Purchasing_and_Invoice_App_Page, /one/one.app?source=aloha#/n/page2, /one/one.app?source=aloha#/n/page3, /one/one.app?source=aloha#/n/page1, /one/one.app?source=aloha#/n/page2, /one/one.app?source=aloha#/n/page3</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>primaryColor</name>
@@ -104,7 +112,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>titles</name>
-                    <value>Permit &amp; Licensing Center, Business Registration Portal, Applications Hub, Purchasing &amp; Invoicing, Contract Management, Acquisition Workspace, Investment Planning, Governance Framework, Credentialing System</value>
+                    <value
+          >Permit &amp; Licensing Center, Business Registration Portal, Applications Hub, Purchasing &amp; Invoicing, Contract Management, Acquisition Workspace, Investment Planning, Governance Framework, Credentialing System</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
                 <identifier>c_nuvitekNavigationTiles</identifier>

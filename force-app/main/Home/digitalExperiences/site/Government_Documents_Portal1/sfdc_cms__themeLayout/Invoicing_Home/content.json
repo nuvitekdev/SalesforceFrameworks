@@ -1,154 +1,169 @@
 {
-  "type" : "sfdc_cms__themeLayout",
-  "title" : "Invoicing Home",
-  "contentBody" : {
-    "component" : {
-      "attributes" : {
-        "accentColor" : "#D5DF23",
-        "aiAssistantIcon" : "utility:einstein",
-        "aiAssistantLabel" : "AI Assistant",
-        "applyThemeToSlots" : true,
-        "backgroundVideoDarkness" : 35,
-        "backgroundVideoFallbackUrl" : "null",
-        "backgroundVideoUrl" : "Invoicing_Portal_Background_Hero_Video",
-        "companyName" : "Nuvitek",
-        "ensureHomeNavItem" : true,
-        "fabOptions" : "both",
-        "fabUrl" : "null",
-        "footerColumnCount" : 3,
-        "footerColumnMenus" : "",
-        "footerColumnTitles" : "Products, Resources, Company",
-        "footerLegalText" : "All rights reserved. Terms and conditions apply.",
-        "footerNavigationMenuName" : "null",
-        "footerStyle" : "minimal",
-        "footerTagline" : "Delivering innovative solutions since 2012",
-        "globalThemeOverride" : true,
-        "headerContainerWidth" : 100,
-        "headerNavigationMenuName" : "",
-        "headerSticky" : false,
-        "headerVariant" : "standard",
-        "helpFormIcon" : "utility:chat",
-        "helpFormLabel" : "Help Request",
-        "heroBackgroundDarkness" : 30,
-        "heroBackgroundImage" : "null",
-        "heroCTAPrimaryLabel" : "",
-        "heroCTAPrimaryUrl" : "",
-        "heroCTASecondaryLabel" : "",
-        "heroCTASecondaryUrl" : "",
-        "heroLayout" : "split",
-        "heroSubtitle" : "Fast, accurate invoice processing that puts you back in control of your payments",
-        "heroTitle" : "Streamline Your Invoice Workflow",
-        "logoAltText" : "",
-        "logoUrl" : "",
-        "primaryColor" : "#22BDC1",
-        "profilePageUrl" : "/profile",
-        "searchObjects" : "Account,Contact",
-        "showBackgroundVideo" : true,
-        "showFab" : false,
-        "showHeroSection" : true,
-        "showProfileIcon" : true,
-        "showSearchInHeader" : true,
-        "socialLinkTitles" : "Facebook, Twitter, LinkedIn, Instagram",
-        "socialLinkUrls" : "",
-        "socialLinksCount" : 0,
-        "textColor" : "#1d1d1f",
-        "themeName" : "dark",
-        "useDefaultFooter" : true,
-        "useDefaultHeader" : true
+  "type": "sfdc_cms__themeLayout",
+  "title": "Invoicing Home",
+  "contentBody": {
+    "component": {
+      "attributes": {
+        "accentColor": "#D5DF23",
+        "aiAssistantIcon": "utility:einstein",
+        "aiAssistantLabel": "AI Assistant",
+        "applyThemeToSlots": true,
+        "backgroundVideoDarkness": 35,
+        "backgroundVideoFallbackUrl": "null",
+        "backgroundVideoUrl": "Invoicing_Portal_Background_Hero_Video",
+        "companyName": "Nuvitek",
+        "ensureHomeNavItem": true,
+        "fabOptions": "both",
+        "fabUrl": "null",
+        "footerColumnCount": 3,
+        "footerColumnMenus": "",
+        "footerColumnTitles": "Products, Resources, Company",
+        "footerLegalText": "All rights reserved. Terms and conditions apply.",
+        "footerNavigationMenuName": "null",
+        "footerStyle": "minimal",
+        "footerTagline": "Delivering innovative solutions since 2012",
+        "globalThemeOverride": true,
+        "headerContainerWidth": 100,
+        "headerNavigationMenuName": "",
+        "headerSticky": false,
+        "headerVariant": "standard",
+        "helpFormIcon": "utility:chat",
+        "helpFormLabel": "Help Request",
+        "heroBackgroundDarkness": 30,
+        "heroBackgroundImage": "null",
+        "heroCTAPrimaryLabel": "",
+        "heroCTAPrimaryUrl": "",
+        "heroCTASecondaryLabel": "",
+        "heroCTASecondaryUrl": "",
+        "heroLayout": "split",
+        "heroSubtitle": "Fast, accurate invoice processing that puts you back in control of your payments",
+        "heroTitle": "Streamline Your Invoice Workflow",
+        "logoAltText": "",
+        "logoUrl": "",
+        "primaryColor": "#22BDC1",
+        "profilePageUrl": "/profile",
+        "searchObjects": "Account,Contact",
+        "showBackgroundVideo": true,
+        "showFab": false,
+        "showHeroSection": true,
+        "showProfileIcon": true,
+        "showSearchInHeader": true,
+        "socialLinkTitles": "Facebook, Twitter, LinkedIn, Instagram",
+        "socialLinkUrls": "",
+        "socialLinksCount": 0,
+        "textColor": "#1d1d1f",
+        "themeName": "dark",
+        "useDefaultFooter": true,
+        "useDefaultHeader": true
       },
-      "children" : [ {
-        "children" : [ {
-          "attributes" : {
-            "backgroundImageConfig" : "",
-            "backgroundImageOverlay" : "rgba(0,0,0,0)",
-            "componentSpacerSize" : "",
-            "layoutDirectionDesktop" : "row",
-            "layoutDirectionMobile" : "column",
-            "layoutDirectionTablet" : "column",
-            "maxContentWidth" : "",
-            "sectionColumnGutterWidth" : "",
-            "sectionConfig" : "{\"UUID\":\"27d47e64-d55b-42d0-965b-9f68790b9c88\",\"columns\":[{\"UUID\":\"01c91d4e-fb21-470e-a5de-300337a2c6f6\",\"columnName\":\"Column 1\",\"columnKey\":\"headerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
-            "sectionMinHeight" : "",
-            "sectionVerticalAlign" : "flex-start"
-          },
-          "children" : [ {
-            "id" : "01c91d4e-fb21-470e-a5de-300337a2c6f6",
-            "name" : "headerSection",
-            "title" : "Theme Header",
-            "type" : "region"
-          } ],
-          "definition" : "community_layout:section",
-          "id" : "27d47e64-d55b-42d0-965b-9f68790b9c88",
-          "type" : "component"
-        } ],
-        "id" : "dd58f6ba-4e35-4229-ab74-c1bc9dbc00e8",
-        "name" : "header",
-        "title" : "Theme Header",
-        "type" : "region"
-      }, {
-        "children" : [ {
-          "attributes" : {
-            "backgroundImageConfig" : "",
-            "backgroundImageOverlay" : "rgba(0,0,0,0)",
-            "componentSpacerSize" : "",
-            "layoutDirectionDesktop" : "row",
-            "layoutDirectionMobile" : "column",
-            "layoutDirectionTablet" : "column",
-            "maxContentWidth" : "",
-            "sectionColumnGutterWidth" : "",
-            "sectionConfig" : "{\"UUID\":\"11064bad-6416-4221-b881-c43f80345e0c\",\"columns\":[{\"UUID\":\"47d34dad-34c6-4cb4-b60e-f0638d6708d4\",\"columnName\":\"Column 1\",\"columnKey\":\"footerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
-            "sectionMinHeight" : "",
-            "sectionVerticalAlign" : "flex-start"
-          },
-          "children" : [ {
-            "id" : "47d34dad-34c6-4cb4-b60e-f0638d6708d4",
-            "name" : "footerSection",
-            "title" : "Theme Footer",
-            "type" : "region"
-          } ],
-          "definition" : "community_layout:section",
-          "id" : "11064bad-6416-4221-b881-c43f80345e0c",
-          "type" : "component"
-        } ],
-        "id" : "4ca1b44c-e120-4753-83e4-98c0517f6ecf",
-        "name" : "footer",
-        "title" : "Theme Footer",
-        "type" : "region"
-      }, {
-        "id" : "f0d690a5-3597-41fe-917f-6663418f1997",
-        "name" : "default",
-        "type" : "region"
-      }, {
-        "children" : [ {
-          "attributes" : {
-            "alignment" : "center",
-            "dxpStyle" : {
-              "margin" : {
-                "bottom" : "60px",
-                "left" : "60px",
-                "right" : "60px",
-                "top" : "60px"
-              }
-            },
-            "fit" : "cover",
-            "height" : 206,
-            "imageInfo" : "{\"imageInfoV1\":{\"url\":\"/sfsites/c/cms/delivery/media/MCPWGQKN4XBZHEZBQL6JBCJ5EEVY?lastModifiedDate=Thu Mar 20 21:00:44 GMT 2025\",\"altText\":\"\",\"contentKey\":\"MCPWGQKN4XBZHEZBQL6JBCJ5EEVY\",\"contentType\":null}}",
-            "overlayColor" : "rgba(255, 255, 255, 0)",
-            "position" : "center center",
-            "width" : 100
-          },
-          "definition" : "dxp_base:image",
-          "id" : "bf047551-2f2b-4276-ad88-4402a125ee80",
-          "type" : "component"
-        } ],
-        "id" : "8c40ce74-f2b9-4628-a75b-d387e2828ad3",
-        "name" : "hero-media",
-        "type" : "region"
-      } ],
-      "definition" : "c:nuvitekCustomThemeLayout",
-      "id" : "7649d44f-f2cf-416f-9056-82e4a399926f",
-      "type" : "component"
+      "children": [
+        {
+          "children": [
+            {
+              "attributes": {
+                "backgroundImageConfig": "",
+                "backgroundImageOverlay": "rgba(0,0,0,0)",
+                "componentSpacerSize": "",
+                "layoutDirectionDesktop": "row",
+                "layoutDirectionMobile": "column",
+                "layoutDirectionTablet": "column",
+                "maxContentWidth": "",
+                "sectionColumnGutterWidth": "",
+                "sectionConfig": "{\"UUID\":\"27d47e64-d55b-42d0-965b-9f68790b9c88\",\"columns\":[{\"UUID\":\"01c91d4e-fb21-470e-a5de-300337a2c6f6\",\"columnName\":\"Column 1\",\"columnKey\":\"headerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+                "sectionMinHeight": "",
+                "sectionVerticalAlign": "flex-start"
+              },
+              "children": [
+                {
+                  "id": "01c91d4e-fb21-470e-a5de-300337a2c6f6",
+                  "name": "headerSection",
+                  "title": "Theme Header",
+                  "type": "region"
+                }
+              ],
+              "definition": "community_layout:section",
+              "id": "27d47e64-d55b-42d0-965b-9f68790b9c88",
+              "type": "component"
+            }
+          ],
+          "id": "dd58f6ba-4e35-4229-ab74-c1bc9dbc00e8",
+          "name": "header",
+          "title": "Theme Header",
+          "type": "region"
+        },
+        {
+          "children": [
+            {
+              "attributes": {
+                "backgroundImageConfig": "",
+                "backgroundImageOverlay": "rgba(0,0,0,0)",
+                "componentSpacerSize": "",
+                "layoutDirectionDesktop": "row",
+                "layoutDirectionMobile": "column",
+                "layoutDirectionTablet": "column",
+                "maxContentWidth": "",
+                "sectionColumnGutterWidth": "",
+                "sectionConfig": "{\"UUID\":\"11064bad-6416-4221-b881-c43f80345e0c\",\"columns\":[{\"UUID\":\"47d34dad-34c6-4cb4-b60e-f0638d6708d4\",\"columnName\":\"Column 1\",\"columnKey\":\"footerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+                "sectionMinHeight": "",
+                "sectionVerticalAlign": "flex-start"
+              },
+              "children": [
+                {
+                  "id": "47d34dad-34c6-4cb4-b60e-f0638d6708d4",
+                  "name": "footerSection",
+                  "title": "Theme Footer",
+                  "type": "region"
+                }
+              ],
+              "definition": "community_layout:section",
+              "id": "11064bad-6416-4221-b881-c43f80345e0c",
+              "type": "component"
+            }
+          ],
+          "id": "4ca1b44c-e120-4753-83e4-98c0517f6ecf",
+          "name": "footer",
+          "title": "Theme Footer",
+          "type": "region"
+        },
+        {
+          "id": "f0d690a5-3597-41fe-917f-6663418f1997",
+          "name": "default",
+          "type": "region"
+        },
+        {
+          "children": [
+            {
+              "attributes": {
+                "alignment": "center",
+                "dxpStyle": {
+                  "margin": {
+                    "bottom": "60px",
+                    "left": "60px",
+                    "right": "60px",
+                    "top": "60px"
+                  }
+                },
+                "fit": "cover",
+                "height": 206,
+                "imageInfo": "{\"imageInfoV1\":{\"url\":\"/sfsites/c/cms/delivery/media/MCPWGQKN4XBZHEZBQL6JBCJ5EEVY?lastModifiedDate=Thu Mar 20 21:00:44 GMT 2025\",\"altText\":\"\",\"contentKey\":\"MCPWGQKN4XBZHEZBQL6JBCJ5EEVY\",\"contentType\":null}}",
+                "overlayColor": "rgba(255, 255, 255, 0)",
+                "position": "center center",
+                "width": 100
+              },
+              "definition": "dxp_base:image",
+              "id": "bf047551-2f2b-4276-ad88-4402a125ee80",
+              "type": "component"
+            }
+          ],
+          "id": "8c40ce74-f2b9-4628-a75b-d387e2828ad3",
+          "name": "hero-media",
+          "type": "region"
+        }
+      ],
+      "definition": "c:nuvitekCustomThemeLayout",
+      "id": "7649d44f-f2cf-416f-9056-82e4a399926f",
+      "type": "component"
     }
   },
-  "urlName" : "invoicing-home"
+  "urlName": "invoicing-home"
 }

@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Permission_to_use_Aggrieved_s_name__c</fullName>
-    <inlineHelpText>Permission to use Aggrieved&apos;s name in inquiry/informal EEO process</inlineHelpText>
+    <inlineHelpText
+  >Permission to use Aggrieved&apos;s name in inquiry/informal EEO process</inlineHelpText>
     <label>Permission to use Aggrieved&apos;s name</label>
     <required>false</required>
     <trackHistory>false</trackHistory>

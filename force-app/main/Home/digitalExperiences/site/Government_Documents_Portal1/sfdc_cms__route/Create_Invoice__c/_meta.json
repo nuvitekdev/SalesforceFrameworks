@@ -1,6 +1,6 @@
 {
-  "apiName" : "Create_Invoice__c",
-  "type" : "sfdc_cms__route",
-  "parentId" : "sfdc_cms__route/Invoice__c",
-  "path" : "routes"
+  "apiName": "Create_Invoice__c",
+  "type": "sfdc_cms__route",
+  "parentId": "sfdc_cms__route/Invoice__c",
+  "path": "routes"
 }

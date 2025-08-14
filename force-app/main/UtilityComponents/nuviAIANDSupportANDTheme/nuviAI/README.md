@@ -137,17 +137,20 @@ The NuviAI Assistant component can be added to:
 ### 1. Natural Language Conversations
 
 **What it does:**
+
 - Engage in natural language conversations with AI models
 - Ask questions about specific records or general topics
 - Get contextual responses based on current record data
 
 **How to use:**
+
 1. Type your question in the text area
 2. Click "Ask Question"
 3. View the AI response in the conversation area
 4. Continue the conversation with follow-up questions
 
 **Example questions:**
+
 - "What are the key details about this account?"
 - "Draft an email to follow up on this opportunity"
 - "What's unusual about this case compared to others?"
@@ -158,6 +161,7 @@ The NuviAI Assistant component can be added to:
 ### 2. Comprehensive Record Analysis
 
 **What it analyzes:**
+
 - **All Record Fields**: Standard and custom fields, formula fields, roll-ups
 - **Related Records**: Child and parent relationships (configurable)
 - **Field History**: Changes over time, who made changes, when
@@ -171,17 +175,20 @@ The NuviAI Assistant component can be added to:
   - **Leads**: Campaign history, conversion status
 
 **How to use:**
+
 1. Navigate to any record page
 2. Click "Analyze Record"
 3. Wait for comprehensive analysis
 4. Review insights and recommendations
 
 **Configuration options:**
+
 - Set "Related Objects" to include specific child objects
 - Enable "Document Analysis" to process attachments
 - Configure "Analysis Field" to save summaries
 
 **Example output:**
+
 ```
 ACCOUNT ANALYSIS - Acme Corporation
 
@@ -231,6 +238,7 @@ RECOMMENDATIONS:
 ### 3. 🆕 Standards Comparison & Compliance Validation
 
 **What it does:**
+
 - Compare any content against predefined rules, standards, or criteria
 - Validate compliance with organizational policies
 - Screen applications, proposals, or documents
@@ -239,6 +247,7 @@ RECOMMENDATIONS:
 - **Manual comparison** when users need to input content on-demand
 
 **How to configure:**
+
 1. Enable "Comparison" in component settings
 2. Define your rules in "Comparison Rules (TO)" field
 3. Use JSON format for complex criteria or plain text for simple rules
@@ -248,6 +257,7 @@ RECOMMENDATIONS:
 **Rule formats:**
 
 **JSON Format (Structured):**
+
 ```json
 {
   "position": "Senior Salesforce Developer",
@@ -271,6 +281,7 @@ RECOMMENDATIONS:
 ```
 
 **Plain Text Format (Simple):**
+
 ```
 Grant Application Requirements:
 • Project must serve underserved communities
@@ -286,6 +297,7 @@ Grant Application Requirements:
 **How to use:**
 
 **Manual Comparison (when "Compare From" is empty):**
+
 1. Click "Compare to Standards"
 2. Enter or paste content to evaluate:
    - Resume text
@@ -297,12 +309,14 @@ Grant Application Requirements:
 4. Review detailed analysis
 
 **Automatic Comparison (when "Compare From" has content):**
+
 1. Content is automatically compared when component loads
 2. Results appear in banner immediately
 3. No user input required
 4. Perfect for Flow integration or programmatic use
 
 **Example output:**
+
 ```
 MEETS STANDARDS ✓
 
@@ -333,6 +347,7 @@ Improvement Recommendations:
 ```
 
 **Use cases:**
+
 - **HR**: Screen resumes against job requirements
 - **Procurement**: Evaluate vendor proposals against RFP criteria
 - **Compliance**: Check documents against regulatory standards
@@ -344,17 +359,20 @@ Improvement Recommendations:
 ### 4. Anomaly Detection & Alerts
 
 **What it does:**
+
 - Automatically scans records for unusual patterns
 - Identifies potential issues or inconsistencies
 - Provides real-time alerts when anomalies are detected
 - Integrates with document analysis for comprehensive checking
 
 **When it runs:**
+
 - Automatically when component loads (if enabled)
 - When model selection changes
 - Can include document analysis if PDFs are attached
 
 **What it looks for:**
+
 - Unusual field values or combinations
 - Missing required information
 - Inconsistent data patterns
@@ -362,17 +380,18 @@ Improvement Recommendations:
 - Document content that doesn't match record data
 
 **Example alerts:**
+
 ```
 ⚠️ POTENTIAL ISSUES DETECTED
 
-Document Anomaly: The attached contract shows a different company name 
-than the Account record. Contract shows "ACME Corp" but Account name 
+Document Anomaly: The attached contract shows a different company name
+than the Account record. Contract shows "ACME Corp" but Account name
 is "ACME Corporation Ltd."
 
-Data Inconsistency: Last activity date is 6 months ago but Opportunity 
+Data Inconsistency: Last activity date is 6 months ago but Opportunity
 close date is next week. This may indicate stale data or missed updates.
 
-Missing Information: High-value opportunity ($500K) is missing key 
+Missing Information: High-value opportunity ($500K) is missing key
 stakeholder contacts and decision maker information.
 ```
 
@@ -381,17 +400,20 @@ stakeholder contacts and decision maker information.
 ### 5. Document Analysis & Data Extraction
 
 **What it does:**
+
 - Process PDF documents attached to records
 - Extract structured data and map to Salesforce fields
 - Analyze document content for insights
 - Integrate with record analysis for complete context
 
 **How to configure:**
+
 1. Enable "Document Analysis"
 2. Set "Document Analysis Fields" to comma-separated field API names
 3. Component will extract data and suggest field updates
 
 **Example workflow:**
+
 1. Upload invoice PDF to record
 2. Click "Analyze Documents"
 3. AI extracts: Invoice number, amount, date, vendor
@@ -400,6 +422,7 @@ stakeholder contacts and decision maker information.
 6. Fields are automatically updated
 
 **Field extraction example:**
+
 ```
 EXTRACTED DATA FROM DOCUMENTS:
 
@@ -424,6 +447,7 @@ Vendor Name: Acme Supplies Inc
 ### 6. Image & Vision Analysis
 
 **What it does:**
+
 - Process images (JPG, PNG, GIF) attached to records
 - Extract text using OCR capabilities
 - Analyze visual content and diagrams
@@ -432,17 +456,20 @@ Vendor Name: Acme Supplies Inc
 **Two analysis modes:**
 
 **"Analyze Images" button:**
+
 - Processes only image files
 - Detailed visual analysis
 - Text extraction from images
 - Suitability assessment for each image
 
 **"Analyze Record" button:**
+
 - Processes ALL attachments including images
 - Combines vision analysis with record data
 - Comprehensive document analysis
 
 **Example image analysis:**
+
 ```
 IMAGE ANALYSIS RESULTS:
 
@@ -472,6 +499,7 @@ SUITABILITY ASSESSMENT:
 ### 7. Conversation Management
 
 **Features:**
+
 - **Message History**: Maintains up to 50 recent messages
 - **Auto-Summarization**: Creates summaries when conversations get long
 - **Message Limits**: Prevents memory overflow with intelligent pruning
@@ -479,6 +507,7 @@ SUITABILITY ASSESSMENT:
 - **Expandable View**: Toggle conversation history visibility
 
 **Memory management:**
+
 - Keeps last 50 messages in active memory
 - Auto-generates summaries for longer conversations
 - Combines recent messages with summary for context
@@ -489,27 +518,30 @@ SUITABILITY ASSESSMENT:
 ### 8. Analysis Saving & Field Integration
 
 **What it does:**
+
 - Save AI analysis directly to Salesforce record fields
 - Character limit enforcement (600 characters)
 - Field validation and permission checking
 - Synopsis generation for easy consumption
 
 **How it works:**
+
 1. After analysis, modal appears if field is configured
 2. AI generates concise synopsis (under 600 characters)
 3. User reviews and can save to designated field
 4. Record is automatically refreshed
 
 **Synopsis example:**
+
 ```
 RECORD SYNOPSIS (487/600 characters):
 
-The record shows a high-value technology account with strong 
-engagement and multiple active opportunities totaling $750K. 
-Recent activity indicates imminent Enterprise License decision. 
-Key relationships established across executive, financial, and 
-technical stakeholders. Implementation concerns noted in Chatter 
-require addressing. Recommendation: Schedule executive review 
+The record shows a high-value technology account with strong
+engagement and multiple active opportunities totaling $750K.
+Recent activity indicates imminent Enterprise License decision.
+Key relationships established across executive, financial, and
+technical stakeholders. Implementation concerns noted in Chatter
+require addressing. Recommendation: Schedule executive review
 and follow up on contract negotiations timing.
 ```
 
@@ -518,6 +550,7 @@ and follow up on contract negotiations timing.
 ### 9. Performance & Optimization
 
 **Features:**
+
 - **Caching**: Color calculations, style generation, and record context
 - **Memory Management**: Automatic cleanup and cache limits
 - **Debounced Inputs**: Prevents excessive API calls
@@ -526,6 +559,7 @@ and follow up on contract negotiations timing.
 - **Loading States**: Clear indicators for all async operations
 
 **Technical optimizations:**
+
 - Advanced color caching system
 - Memoized expensive operations
 - Intelligent conversation pruning
@@ -537,6 +571,7 @@ and follow up on contract negotiations timing.
 ### 10. Multi-Model Support
 
 **Supported providers:**
+
 - **OpenAI**: GPT-4, GPT-4-Turbo, GPT-4-Vision
 - **Anthropic**: Claude-3, Claude-2
 - **Google**: Gemini Pro, Gemini Vision
@@ -544,6 +579,7 @@ and follow up on contract negotiations timing.
 - **OpenRouter**: Various open-source models
 
 **Model selection:**
+
 - Dropdown selector (can be hidden)
 - Default model configuration
 - Automatic model switching for vision tasks
@@ -554,6 +590,7 @@ and follow up on contract negotiations timing.
 ## 🎯 Use Case Examples
 
 ### HR: Resume Screening
+
 ```json
 {
   "position": "Senior Salesforce Developer",
@@ -572,6 +609,7 @@ and follow up on contract negotiations timing.
 ```
 
 ### Procurement: Vendor Evaluation
+
 ```json
 {
   "rfp_requirements": {
@@ -585,6 +623,7 @@ and follow up on contract negotiations timing.
 ```
 
 ### Compliance: Document Review
+
 ```
 Regulatory Compliance Checklist:
 • All required signatures present
@@ -600,13 +639,16 @@ Regulatory Compliance Checklist:
 ## 📋 Deployment Scenarios
 
 ### Scenario 1: HR Department - Resume Screening
+
 **Configuration:**
+
 - Enable Comparison: ✓
 - Comparison Rules: Job requirements JSON
 - Enable Document Analysis: ✓
 - Document Analysis Fields: `Resume_Score__c,Skills_Match__c,Experience_Years__c`
 
 **Workflow:**
+
 1. Recruiter uploads resume to candidate record
 2. Click "Compare to Standards"
 3. Paste resume text or reference attached document
@@ -614,14 +656,17 @@ Regulatory Compliance Checklist:
 5. Save analysis to candidate record
 
 ### Scenario 2: Procurement - RFP Evaluation
+
 **Configuration:**
-- Enable Comparison: ✓ 
+
+- Enable Comparison: ✓
 - Comparison Rules (TO): RFP requirements and scoring criteria
 - Compare From (Source): (empty for manual comparison)
 - Related Objects: `Quote,Contract,Vendor_Reference__c`
 - Analysis Field: `Evaluation_Summary__c`
 
 **Workflow:**
+
 1. Upload vendor proposal to opportunity
 2. Click "Analyze Record" for comprehensive review
 3. Use "Compare to Standards" for specific RFP compliance
@@ -629,26 +674,32 @@ Regulatory Compliance Checklist:
 5. Reference in vendor selection process
 
 **Alternative Automated Workflow (using Flow):**
+
 1. Flow extracts proposal content to text variable
 2. Sets "Compare From" field with proposal content
 3. Component automatically compares against RFP rules
 4. Results appear in banner without user input
 
 ### Scenario 3: Sales - Deal Analysis
+
 **Configuration:**
+
 - Enable Anomaly Detection: ✓
 - Related Objects: `Contact,OpportunityLineItem,Quote`
 - Analysis Field: `Deal_Assessment__c`
 - Enable Document Analysis: ✓
 
 **Workflow:**
+
 1. Component automatically flags unusual deal patterns
 2. "Analyze Record" provides comprehensive deal overview
 3. Process attached contracts and proposals
 4. Save deal assessment for management review
 
 ### Scenario 4: Compliance - Document Review
+
 **Configuration:**
+
 - Enable Comparison: ✓
 - Comparison Rules (TO): Regulatory requirements checklist
 - Compare From (Source): (empty for manual, or set via Flow for automatic)
@@ -656,12 +707,14 @@ Regulatory Compliance Checklist:
 - Document Analysis Fields: `Compliance_Status__c,Review_Date__c`
 
 **Manual Workflow:**
+
 1. Upload compliance documents to record
-2. "Compare to Standards" against regulatory requirements  
+2. "Compare to Standards" against regulatory requirements
 3. Extract key data to compliance fields
 4. Generate compliance summary for auditors
 
 **Automated Flow Workflow:**
+
 1. Flow processes uploaded documents
 2. Extracts document content to text variable
 3. Sets "Compare From" with extracted content
@@ -676,11 +729,12 @@ Regulatory Compliance Checklist:
 - **Apex Controller**: `LLMController.cls`
 - **Component Configuration**: 15+ configurable properties
 - **Multi-Provider Support**: OpenAI, Anthropic, Google, DeepSeek, OpenRouter
-- **Custom Metadata**: LLM_Configuration__mdt for provider settings
+- **Custom Metadata**: LLM_Configuration\_\_mdt for provider settings
 
 ### Core Architecture
 
 **Frontend (LWC):**
+
 - Modern JavaScript with ES6+ features
 - Advanced caching and memory management
 - Responsive design with Apple-inspired UI
@@ -688,6 +742,7 @@ Regulatory Compliance Checklist:
 - Optimized DOM manipulation
 
 **Backend (Apex):**
+
 - Comprehensive record analysis engine
 - Multi-provider API integration
 - Document processing and Vision API support
@@ -698,24 +753,28 @@ Regulatory Compliance Checklist:
 ### Advanced Features Implementation
 
 **Standards Comparison:**
+
 - JSON and plain text rule parsing
 - Structured comparison prompts
 - Detailed gap analysis generation
 - Compliance scoring and recommendations
 
 **Document Analysis:**
+
 - PDF to base64 conversion
 - Vision API integration for all document types
 - Field mapping and extraction
 - Data validation and suggestion system
 
 **Anomaly Detection:**
+
 - Real-time pattern analysis
 - Historical data comparison
 - Document consistency checking
 - Automated alert generation
 
 **Performance Optimizations:**
+
 - Color calculation caching
 - Conversation history pruning
 - Debounced input handling
@@ -736,16 +795,20 @@ Regulatory Compliance Checklist:
 ### Common Issues
 
 #### 1. **Model Not Available**
+
 **Symptoms:** "Model not found" or connection errors
 **Solutions:**
+
 - Verify API credentials in Named Credentials
 - Check usage limits with AI provider
 - Ensure network connectivity to AI service
-- Confirm LLM_Configuration__mdt records are properly set up
+- Confirm LLM_Configuration\_\_mdt records are properly set up
 
 #### 2. **Comparison Feature Not Working**
+
 **Symptoms:** "Compare to Standards" button not visible or auto-comparison not running
 **Solutions:**
+
 - Verify "Enable Comparison" is checked in component settings
 - Ensure "Comparison Rules (TO)" field is not empty
 - Check that rules are in valid JSON format (if using JSON)
@@ -754,40 +817,50 @@ Regulatory Compliance Checklist:
 - Confirm user has access to the component and related data
 
 #### 3. **Document Analysis Failures**
+
 **Symptoms:** PDF processing errors or incomplete extraction
 **Solutions:**
+
 - Ensure documents are under 3MB size limit
 - Check file format is supported (PDF, JPG, PNG, GIF)
 - Verify OpenAI Vision API configuration
 - Confirm documents are properly attached to record
 
 #### 4. **Anomaly Detection Not Running**
+
 **Symptoms:** No alerts or banner appearing
 **Solutions:**
+
 - Verify "Enable Anomaly Detection" is checked
 - Ensure component is on a record page with data
 - Check that selected LLM model is properly configured
 - Confirm user has read access to record and related data
 
 #### 5. **Performance Issues**
+
 **Symptoms:** Slow response times or timeouts
 **Solutions:**
+
 - Limit "Related Objects" to essential objects only
 - Reduce number of PDF documents (max 3 recommended)
 - Use more specific prompts for complex questions
 - Consider using faster models for simple operations
 
 #### 6. **Field Saving Issues**
+
 **Symptoms:** Cannot save analysis to record field
 **Solutions:**
+
 - Verify "Analysis Field API Name" is correct
 - Check user has edit permissions on the field
 - Ensure field exists on the current object
 - Confirm field can accept the data type being saved
 
 #### 7. **Memory or Browser Issues**
+
 **Symptoms:** Component becomes unresponsive
 **Solutions:**
+
 - Refresh the page to clear component cache
 - Check browser console for JavaScript errors
 - Clear browser cache and cookies
@@ -804,18 +877,21 @@ Regulatory Compliance Checklist:
 ### Best Practices
 
 #### For Standards Comparison:
+
 - Keep rules specific and measurable
 - Use JSON for complex multi-criteria evaluations
 - Test rules with sample content first
 - Update rules based on feedback and results
 
 #### For Document Analysis:
+
 - Upload clear, high-resolution documents
 - Ensure text is readable and well-contrasted
 - Limit to essential documents for analysis
 - Use consistent document formats when possible
 
 #### For Anomaly Detection:
+
 - Configure related objects thoughtfully
 - Review alerts regularly to tune sensitivity
 - Train users on interpreting anomaly results
@@ -831,4 +907,4 @@ This component is available under the MIT License. See LICENSE.md for details.
 
 ---
 
-*Developed by Nuvitek - Transforming business through innovative Salesforce solutions.* 
+_Developed by Nuvitek - Transforming business through innovative Salesforce solutions._

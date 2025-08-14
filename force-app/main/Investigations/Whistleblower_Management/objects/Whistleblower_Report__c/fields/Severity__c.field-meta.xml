@@ -1,8 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Severity__c</fullName>
-    <description>A numerical value indicating the severity or urgency of the report.</description>
-    <inlineHelpText>A numerical value indicating the severity or urgency of the report.</inlineHelpText>
+    <description
+  >A numerical value indicating the severity or urgency of the report.</description>
+    <inlineHelpText
+  >A numerical value indicating the severity or urgency of the report.</inlineHelpText>
     <label>Severity</label>
     <required>false</required>
     <trackFeedHistory>true</trackFeedHistory>

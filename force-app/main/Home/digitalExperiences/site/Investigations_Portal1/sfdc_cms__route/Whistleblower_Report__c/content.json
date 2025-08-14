@@ -1,12 +1,12 @@
 {
-  "type" : "sfdc_cms__route",
-  "title" : "Whistleblower Report",
-  "contentBody" : {
-    "activeViewId" : "Whistleblower_Report",
-    "configurationTags" : [ ],
-    "pageAccess" : "UseParent",
-    "routeType" : "custom-whistleblower-report",
-    "urlPrefix" : "whistleblower-report"
+  "type": "sfdc_cms__route",
+  "title": "Whistleblower Report",
+  "contentBody": {
+    "activeViewId": "Whistleblower_Report",
+    "configurationTags": [],
+    "pageAccess": "UseParent",
+    "routeType": "custom-whistleblower-report",
+    "urlPrefix": "whistleblower-report"
   },
-  "urlName" : "whistleblower-report"
+  "urlName": "whistleblower-report"
 }

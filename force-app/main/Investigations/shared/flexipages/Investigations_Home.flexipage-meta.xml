@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
     <flexiPageRegions>
         <itemInstances>
@@ -9,7 +9,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>richTextValue</name>
-                    <value>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 24px; color: rgb(0, 0, 0);&quot;&gt;Investigations Application&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px; color: rgb(0, 0, 0);&quot;&gt;The Investigations application provides comprehensive case management tools for oversight, compliance, and security functions. From initial intake to final resolution, our secure platform safeguards sensitive information while enabling thorough investigations across multiple domains including OIG, EEO, law enforcement, legal counsel, and whistleblower protection. With advanced evidence tracking, interview management, and compliance reporting, investigators can efficiently pursue cases while maintaining proper documentation and audit trails.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</value>
+                    <value
+          >&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 24px; color: rgb(0, 0, 0);&quot;&gt;Investigations Application&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px; color: rgb(0, 0, 0);&quot;&gt;The Investigations application provides comprehensive case management tools for oversight, compliance, and security functions. From initial intake to final resolution, our secure platform safeguards sensitive information while enabling thorough investigations across multiple domains including OIG, EEO, law enforcement, legal counsel, and whistleblower protection. With advanced evidence tracking, interview management, and compliance reporting, investigators can efficiently pursue cases while maintaining proper documentation and audit trails.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</value>
                 </componentInstanceProperties>
                 <componentName>flexipage:richText</componentName>
                 <identifier>flexipage_richText</identifier>
@@ -21,8 +22,10 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>runtime_approval_process:pendingApprovalCard</componentName>
-                <identifier>runtime_approval_process_pendingApprovalCard</identifier>
+                <componentName
+        >runtime_approval_process:pendingApprovalCard</componentName>
+                <identifier
+        >runtime_approval_process_pendingApprovalCard</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
@@ -37,7 +40,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>contextPrompt</name>
-                    <value>your job is to speak within the context of Investigations</value>
+                    <value
+          >your job is to speak within the context of Investigations</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>defaultModelName</name>
@@ -111,7 +115,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>colors</name>
-                    <value>#3A7CA5, #4D9DE0, #2E8B57, #1F6AA6, #7E56B3, #F77E30</value>
+                    <value
+          >#3A7CA5, #4D9DE0, #2E8B57, #1F6AA6, #7E56B3, #F77E30</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>columns</name>
@@ -119,15 +124,18 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>descriptions</name>
-                    <value>Comprehensive platform for investigating fraud waste and misconduct with secure case management tools, Streamlined system for managing discrimination complaints plus investigation tracking with compliance reporting, Advanced portal for managing facility security including access requests clearance tracking and incident reporting, Powerful case management system for law enforcement investigations evidence management and legal coordination, Complete legal advisory hub for case management document control and deadline tracking with research tools, Secure confidential system for reporting misconduct with anonymous options plus protected investigation channels</value>
+                    <value
+          >Comprehensive platform for investigating fraud waste and misconduct with secure case management tools, Streamlined system for managing discrimination complaints plus investigation tracking with compliance reporting, Advanced portal for managing facility security including access requests clearance tracking and incident reporting, Powerful case management system for law enforcement investigations evidence management and legal coordination, Complete legal advisory hub for case management document control and deadline tracking with research tools, Secure confidential system for reporting misconduct with anonymous options plus protected investigation channels</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>icons</name>
-                    <value>utility:identity, utility:checkin, utility:lock, utility:record, utility:contract, utility:alert</value>
+                    <value
+          >utility:identity, utility:checkin, utility:lock, utility:record, utility:contract, utility:alert</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>links</name>
-                    <value>/one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=OIG, /one/one.app?source=aloha#/n/EEO_Resolution_Hub, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=Physical_Security, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=Law_Enforcement, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=General_Counsel, /one/one.app?source=aloha#/n/Whistleblower_Home</value>
+                    <value
+          >/one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=OIG, /one/one.app?source=aloha#/n/EEO_Resolution_Hub, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=Physical_Security, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=Law_Enforcement, /one/one.app?source=aloha#/sObject/Investigation__c/list?filterName=General_Counsel, /one/one.app?source=aloha#/n/Whistleblower_Home</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>primaryColor</name>
@@ -141,7 +149,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>titles</name>
-                    <value>Inspector General Office, EEO Compliance Center, Physical Security Portal, Law Enforcement Operations, General Counsel Hub, Whistleblower Protection</value>
+                    <value
+          >Inspector General Office, EEO Compliance Center, Physical Security Portal, Law Enforcement Operations, General Counsel Hub, Whistleblower Protection</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
                 <identifier>c_nuvitekNavigationTiles</identifier>

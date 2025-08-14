@@ -1,5 +1,5 @@
 {
-  "apiName" : "Whistleblower_Report",
-  "type" : "sfdc_cms__view",
-  "path" : "views"
+  "apiName": "Whistleblower_Report",
+  "type": "sfdc_cms__view",
+  "path": "views"
 }

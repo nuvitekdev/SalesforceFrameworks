@@ -1,12 +1,12 @@
 {
-  "type" : "sfdc_cms__route",
-  "title" : "Payable Invoice Detail",
-  "contentBody" : {
-    "activeViewId" : "Payable_Invoice_Detail",
-    "configurationTags" : [ ],
-    "pageAccess" : "UseParent",
-    "routeType" : "detail-Payable_Invoice__c",
-    "urlPrefix" : "payable-invoice"
+  "type": "sfdc_cms__route",
+  "title": "Payable Invoice Detail",
+  "contentBody": {
+    "activeViewId": "Payable_Invoice_Detail",
+    "configurationTags": [],
+    "pageAccess": "UseParent",
+    "routeType": "detail-Payable_Invoice__c",
+    "urlPrefix": "payable-invoice"
   },
-  "urlName" : "payable-invoice-detail"
+  "urlName": "payable-invoice-detail"
 }

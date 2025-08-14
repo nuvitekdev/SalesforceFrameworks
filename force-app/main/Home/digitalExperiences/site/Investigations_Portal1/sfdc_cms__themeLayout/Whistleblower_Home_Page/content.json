@@ -1,140 +1,155 @@
 {
-  "type" : "sfdc_cms__themeLayout",
-  "title" : "Whistleblower Home Page",
-  "contentBody" : {
-    "component" : {
-      "attributes" : {
-        "accentColor" : "#D5DF23",
-        "aiAssistantIcon" : "utility:einstein",
-        "aiAssistantLabel" : "AI Assistant",
-        "applyThemeToSlots" : true,
-        "backgroundVideoDarkness" : 35,
-        "backgroundVideoFallbackUrl" : "",
-        "backgroundVideoUrl" : "",
-        "companyName" : "Nuvitek",
-        "ensureHomeNavItem" : true,
-        "fabOptions" : "both",
-        "fabUrl" : "",
-        "footerColumnCount" : 3,
-        "footerColumnMenus" : "",
-        "footerColumnTitles" : "Products, Resources, Company",
-        "footerLegalText" : "All rights reserved. Terms and conditions apply.",
-        "footerNavigationMenuName" : "",
-        "footerStyle" : "minimal",
-        "footerTagline" : "Delivering innovative solutions since 2010",
-        "globalThemeOverride" : true,
-        "headerContainerWidth" : 100,
-        "headerNavigationMenuName" : "",
-        "headerSticky" : false,
-        "headerVariant" : "standard",
-        "helpFormIcon" : "utility:chat",
-        "helpFormLabel" : "Help Request",
-        "heroBackgroundDarkness" : -30,
-        "heroBackgroundImage" : "Whistleblower_HomePage_HeroImage",
-        "heroCTAPrimaryLabel" : "",
-        "heroCTAPrimaryUrl" : "",
-        "heroCTASecondaryLabel" : "",
-        "heroCTASecondaryUrl" : "",
-        "heroLayout" : "split",
-        "heroSubtitle" : "Secure anonymous reporting with ironclad identity protection—turning critical intelligence into organizational accountability without compromising whistleblower safety",
-        "heroTitle" : "Confidential Intelligence, Absolute Protection",
-        "logoAltText" : "",
-        "logoUrl" : "",
-        "primaryColor" : "#22BDC1",
-        "profilePageUrl" : "/profile",
-        "searchObjects" : "Account,Contact",
-        "showBackgroundVideo" : false,
-        "showFab" : false,
-        "showHeroSection" : true,
-        "showProfileIcon" : false,
-        "showSearchInHeader" : true,
-        "socialLinkTitles" : "Facebook, Twitter, LinkedIn, Instagram",
-        "socialLinkUrls" : "",
-        "socialLinksCount" : 0,
-        "textColor" : "#1d1d1f",
-        "themeName" : "light",
-        "useDefaultFooter" : true,
-        "useDefaultHeader" : true
+  "type": "sfdc_cms__themeLayout",
+  "title": "Whistleblower Home Page",
+  "contentBody": {
+    "component": {
+      "attributes": {
+        "accentColor": "#D5DF23",
+        "aiAssistantIcon": "utility:einstein",
+        "aiAssistantLabel": "AI Assistant",
+        "applyThemeToSlots": true,
+        "backgroundVideoDarkness": 35,
+        "backgroundVideoFallbackUrl": "",
+        "backgroundVideoUrl": "",
+        "companyName": "Nuvitek",
+        "ensureHomeNavItem": true,
+        "fabOptions": "both",
+        "fabUrl": "",
+        "footerColumnCount": 3,
+        "footerColumnMenus": "",
+        "footerColumnTitles": "Products, Resources, Company",
+        "footerLegalText": "All rights reserved. Terms and conditions apply.",
+        "footerNavigationMenuName": "",
+        "footerStyle": "minimal",
+        "footerTagline": "Delivering innovative solutions since 2010",
+        "globalThemeOverride": true,
+        "headerContainerWidth": 100,
+        "headerNavigationMenuName": "",
+        "headerSticky": false,
+        "headerVariant": "standard",
+        "helpFormIcon": "utility:chat",
+        "helpFormLabel": "Help Request",
+        "heroBackgroundDarkness": -30,
+        "heroBackgroundImage": "Whistleblower_HomePage_HeroImage",
+        "heroCTAPrimaryLabel": "",
+        "heroCTAPrimaryUrl": "",
+        "heroCTASecondaryLabel": "",
+        "heroCTASecondaryUrl": "",
+        "heroLayout": "split",
+        "heroSubtitle": "Secure anonymous reporting with ironclad identity protection—turning critical intelligence into organizational accountability without compromising whistleblower safety",
+        "heroTitle": "Confidential Intelligence, Absolute Protection",
+        "logoAltText": "",
+        "logoUrl": "",
+        "primaryColor": "#22BDC1",
+        "profilePageUrl": "/profile",
+        "searchObjects": "Account,Contact",
+        "showBackgroundVideo": false,
+        "showFab": false,
+        "showHeroSection": true,
+        "showProfileIcon": false,
+        "showSearchInHeader": true,
+        "socialLinkTitles": "Facebook, Twitter, LinkedIn, Instagram",
+        "socialLinkUrls": "",
+        "socialLinksCount": 0,
+        "textColor": "#1d1d1f",
+        "themeName": "light",
+        "useDefaultFooter": true,
+        "useDefaultHeader": true
       },
-      "children" : [ {
-        "children" : [ {
-          "attributes" : {
-            "backgroundImageConfig" : "",
-            "backgroundImageOverlay" : "rgba(0,0,0,0)",
-            "componentSpacerSize" : "",
-            "dxpStyle" : { },
-            "layoutDirectionDesktop" : "row",
-            "layoutDirectionMobile" : "column",
-            "layoutDirectionTablet" : "column",
-            "maxContentWidth" : "",
-            "sectionColumnGutterWidth" : "",
-            "sectionConfig" : "{\"UUID\":\"f706e6ed-1765-4bdb-a784-b0aea9a6be59\",\"columns\":[{\"UUID\":\"a0baa0a1-2111-4060-a44e-90f610bbd460\",\"columnName\":\"Column 1\",\"columnKey\":\"headerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
-            "sectionMinHeight" : "",
-            "sectionVerticalAlign" : "flex-start"
-          },
-          "children" : [ {
-            "id" : "a0baa0a1-2111-4060-a44e-90f610bbd460",
-            "name" : "headerSection",
-            "title" : "Theme Header",
-            "type" : "region"
-          } ],
-          "definition" : "community_layout:section",
-          "id" : "f706e6ed-1765-4bdb-a784-b0aea9a6be59",
-          "type" : "component"
-        } ],
-        "id" : "65d1ed2c-69fc-41bd-9273-a17a3b309a79",
-        "name" : "header",
-        "title" : "Theme Header",
-        "type" : "region"
-      }, {
-        "children" : [ {
-          "attributes" : {
-            "backgroundImageConfig" : "",
-            "backgroundImageOverlay" : "rgba(0,0,0,0)",
-            "componentSpacerSize" : "",
-            "dxpStyle" : { },
-            "layoutDirectionDesktop" : "row",
-            "layoutDirectionMobile" : "column",
-            "layoutDirectionTablet" : "column",
-            "maxContentWidth" : "",
-            "sectionColumnGutterWidth" : "",
-            "sectionConfig" : "{\"UUID\":\"67413de9-36c9-4187-8897-75c2457b6a74\",\"columns\":[{\"UUID\":\"decce42c-759e-4a89-ae45-2a2f68fdc0ee\",\"columnName\":\"Column 1\",\"columnKey\":\"footerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
-            "sectionMinHeight" : "",
-            "sectionVerticalAlign" : "flex-start"
-          },
-          "children" : [ {
-            "id" : "decce42c-759e-4a89-ae45-2a2f68fdc0ee",
-            "name" : "footerSection",
-            "title" : "Theme Footer",
-            "type" : "region"
-          } ],
-          "definition" : "community_layout:section",
-          "id" : "67413de9-36c9-4187-8897-75c2457b6a74",
-          "type" : "component"
-        } ],
-        "id" : "247835fd-3f6c-44f9-b91b-138d09f821f5",
-        "name" : "footer",
-        "title" : "Theme Footer",
-        "type" : "region"
-      }, {
-        "id" : "bcf71185-d782-47ae-85ab-600b45ecb4b6",
-        "name" : "default",
-        "type" : "region"
-      }, {
-        "children" : [ {
-          "attributes" : { },
-          "definition" : "c:whistleblowerNewsFeed",
-          "id" : "58e974e3-55c1-4ee1-90f6-016059432684",
-          "type" : "component"
-        } ],
-        "id" : "3c52276f-e1ad-4d6b-9e80-a35eebf0e038",
-        "name" : "hero-media",
-        "type" : "region"
-      } ],
-      "definition" : "c:nuvitekCustomThemeLayout",
-      "id" : "9e260341-5f3e-49ef-9d42-b646e5973570",
-      "type" : "component"
+      "children": [
+        {
+          "children": [
+            {
+              "attributes": {
+                "backgroundImageConfig": "",
+                "backgroundImageOverlay": "rgba(0,0,0,0)",
+                "componentSpacerSize": "",
+                "dxpStyle": {},
+                "layoutDirectionDesktop": "row",
+                "layoutDirectionMobile": "column",
+                "layoutDirectionTablet": "column",
+                "maxContentWidth": "",
+                "sectionColumnGutterWidth": "",
+                "sectionConfig": "{\"UUID\":\"f706e6ed-1765-4bdb-a784-b0aea9a6be59\",\"columns\":[{\"UUID\":\"a0baa0a1-2111-4060-a44e-90f610bbd460\",\"columnName\":\"Column 1\",\"columnKey\":\"headerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+                "sectionMinHeight": "",
+                "sectionVerticalAlign": "flex-start"
+              },
+              "children": [
+                {
+                  "id": "a0baa0a1-2111-4060-a44e-90f610bbd460",
+                  "name": "headerSection",
+                  "title": "Theme Header",
+                  "type": "region"
+                }
+              ],
+              "definition": "community_layout:section",
+              "id": "f706e6ed-1765-4bdb-a784-b0aea9a6be59",
+              "type": "component"
+            }
+          ],
+          "id": "65d1ed2c-69fc-41bd-9273-a17a3b309a79",
+          "name": "header",
+          "title": "Theme Header",
+          "type": "region"
+        },
+        {
+          "children": [
+            {
+              "attributes": {
+                "backgroundImageConfig": "",
+                "backgroundImageOverlay": "rgba(0,0,0,0)",
+                "componentSpacerSize": "",
+                "dxpStyle": {},
+                "layoutDirectionDesktop": "row",
+                "layoutDirectionMobile": "column",
+                "layoutDirectionTablet": "column",
+                "maxContentWidth": "",
+                "sectionColumnGutterWidth": "",
+                "sectionConfig": "{\"UUID\":\"67413de9-36c9-4187-8897-75c2457b6a74\",\"columns\":[{\"UUID\":\"decce42c-759e-4a89-ae45-2a2f68fdc0ee\",\"columnName\":\"Column 1\",\"columnKey\":\"footerSection\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+                "sectionMinHeight": "",
+                "sectionVerticalAlign": "flex-start"
+              },
+              "children": [
+                {
+                  "id": "decce42c-759e-4a89-ae45-2a2f68fdc0ee",
+                  "name": "footerSection",
+                  "title": "Theme Footer",
+                  "type": "region"
+                }
+              ],
+              "definition": "community_layout:section",
+              "id": "67413de9-36c9-4187-8897-75c2457b6a74",
+              "type": "component"
+            }
+          ],
+          "id": "247835fd-3f6c-44f9-b91b-138d09f821f5",
+          "name": "footer",
+          "title": "Theme Footer",
+          "type": "region"
+        },
+        {
+          "id": "bcf71185-d782-47ae-85ab-600b45ecb4b6",
+          "name": "default",
+          "type": "region"
+        },
+        {
+          "children": [
+            {
+              "attributes": {},
+              "definition": "c:whistleblowerNewsFeed",
+              "id": "58e974e3-55c1-4ee1-90f6-016059432684",
+              "type": "component"
+            }
+          ],
+          "id": "3c52276f-e1ad-4d6b-9e80-a35eebf0e038",
+          "name": "hero-media",
+          "type": "region"
+        }
+      ],
+      "definition": "c:nuvitekCustomThemeLayout",
+      "id": "9e260341-5f3e-49ef-9d42-b646e5973570",
+      "type": "component"
     }
   },
-  "urlName" : "whistleblower-home-page"
+  "urlName": "whistleblower-home-page"
 }

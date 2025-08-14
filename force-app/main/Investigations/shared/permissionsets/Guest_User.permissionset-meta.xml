@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
     <classAccesses>
         <apexClass>WhistleblowerController</apexClass>
@@ -178,11 +178,15 @@
     </fieldPermissions>
     <flowAccesses>
         <enabled>true</enabled>
-        <flow>Whistleblower_Report_Submission</flow>
+        <flow>
+Whistleblower_Report_Submission;
+    </flow>
     </flowAccesses>
     <flowAccesses>
         <enabled>true</enabled>
-        <flow>Whistleblower_Support_Create</flow>
+        <flow>
+Whistleblower_Support_Create;
+    </flow>
     </flowAccesses>
     <hasActivationRequired>false</hasActivationRequired>
     <label>Guest User</label>

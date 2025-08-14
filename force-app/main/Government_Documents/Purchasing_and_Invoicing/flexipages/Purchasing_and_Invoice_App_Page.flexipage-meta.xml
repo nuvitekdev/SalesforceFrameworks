@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
     <flexiPageRegions>
         <itemInstances>
@@ -9,7 +9,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>richTextValue</name>
-                    <value>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Purchasing &amp;amp; Invoicing Center&lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 12px;&quot;&gt;Welcome to the Purchasing and Invoicing center. Please use the links below to access invoicing functionalities.&lt;/span&gt;&lt;/p&gt;</value>
+                    <value
+          >&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 16px;&quot;&gt;Purchasing &amp;amp; Invoicing Center&lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;font-size: 12px;&quot;&gt;Welcome to the Purchasing and Invoicing center. Please use the links below to access invoicing functionalities.&lt;/span&gt;&lt;/p&gt;</value>
                 </componentInstanceProperties>
                 <componentName>flexipage:richText</componentName>
                 <identifier>flexipage_richText</identifier>
@@ -30,15 +31,18 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>descriptions</name>
-                    <value>Create and View Federal Contracts, Input new invoice information, View and Create Invoices, View and Approve/Reject Invoices, Invoice Certifications</value>
+                    <value
+          >Create and View Federal Contracts, Input new invoice information, View and Create Invoices, View and Approve/Reject Invoices, Invoice Certifications</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>icons</name>
-                    <value>utility:record,utility:info, utility:success, utility:approval, utility:settings</value>
+                    <value
+          >utility:record,utility:info, utility:success, utility:approval, utility:settings</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>links</name>
-                    <value>/one/one.app?source=aloha#/sObject/Federal_Contract__c/list?filterName=All, /one/one.app?source=aloha#/n/New_Invoice_Entry, /one/one.app?source=aloha#/sObject/Payable_Invoice__c/list?filterName=All_Payable_Invoices, /one/one.app?source=aloha#/n/Approve_Invoice_Payments, /one/one.app?source=aloha#/n/Certify_Invoice_Payments</value>
+                    <value
+          >/one/one.app?source=aloha#/sObject/Federal_Contract__c/list?filterName=All, /one/one.app?source=aloha#/n/New_Invoice_Entry, /one/one.app?source=aloha#/sObject/Payable_Invoice__c/list?filterName=All_Payable_Invoices, /one/one.app?source=aloha#/n/Approve_Invoice_Payments, /one/one.app?source=aloha#/n/Certify_Invoice_Payments</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>primaryColor</name>
@@ -53,7 +57,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>titles</name>
-                    <value>View Contracts, New Invoice Entry, Invoices, Approval Requests, Invoice Certifications</value>
+                    <value
+          >View Contracts, New Invoice Entry, Invoices, Approval Requests, Invoice Certifications</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
                 <identifier>c_nuvitekNavigationTiles</identifier>
@@ -73,7 +78,8 @@
                     <name>hideOnError</name>
                     <value>false</value>
                 </componentInstanceProperties>
-                <componentName>desktopDashboards:embeddedDashboard</componentName>
+                <componentName
+        >desktopDashboards:embeddedDashboard</componentName>
                 <identifier>desktopDashboards_embeddedDashboard</identifier>
             </componentInstance>
         </itemInstances>

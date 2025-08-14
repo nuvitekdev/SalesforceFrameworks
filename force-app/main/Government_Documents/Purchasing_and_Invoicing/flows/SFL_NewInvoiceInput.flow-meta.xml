@@ -1,5 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Flow xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8" ?>
+<Flow
+  xmlns="http://soap.sforce.com/2006/04/metadata"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
     <apiVersion>63.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <assignments>
@@ -8,10 +11,12 @@
         <locationX>176</locationX>
         <locationY>890</locationY>
         <assignmentItems>
-            <assignToReference>coll_sObj_PayableInvoiceLineItems</assignToReference>
+            <assignToReference
+      >coll_sObj_PayableInvoiceLineItems</assignToReference>
             <operator>Add</operator>
             <value>
-                <elementReference>var_sObj_PayableInvoiceLineItem</elementReference>
+                <elementReference
+        >var_sObj_PayableInvoiceLineItem</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -24,10 +29,12 @@
         <locationX>176</locationX>
         <locationY>566</locationY>
         <assignmentItems>
-            <assignToReference>coll_sObj_FederalContractLineItems</assignToReference>
+            <assignToReference
+      >coll_sObj_FederalContractLineItems</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>GET_FederalContractLineItems</elementReference>
+                <elementReference
+        >GET_FederalContractLineItems</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -40,42 +47,48 @@
         <locationX>176</locationX>
         <locationY>242</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_PayableInvoice.Invoice_Date__c</assignToReference>
+            <assignToReference
+      >var_sObj_PayableInvoice.Invoice_Date__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Invoice_Date</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_PayableInvoice.Period_Start_Date__c</assignToReference>
+            <assignToReference
+      >var_sObj_PayableInvoice.Period_Start_Date__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Period_Start_Date</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_PayableInvoice.Period_End_Date__c</assignToReference>
+            <assignToReference
+      >var_sObj_PayableInvoice.Period_End_Date__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Period_End_Date</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_PayableInvoice.Federal_Contract__c</assignToReference>
+            <assignToReference
+      >var_sObj_PayableInvoice.Federal_Contract__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>var_sObj_FederalContract.Id</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_PayableInvoice.Invoice_Number__c</assignToReference>
+            <assignToReference
+      >var_sObj_PayableInvoice.Invoice_Number__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Invoice_Number</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_PayableInvoice.Contract_Period__c</assignToReference>
+            <assignToReference
+      >var_sObj_PayableInvoice.Contract_Period__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Contract_Period</elementReference>
@@ -91,28 +104,32 @@
         <locationX>176</locationX>
         <locationY>1430</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_InvoicePayment.Payable_Invoice__c</assignToReference>
+            <assignToReference
+      >var_sObj_InvoicePayment.Payable_Invoice__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>var_sObj_PayableInvoice.Id</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_InvoicePayment.Notes__c</assignToReference>
+            <assignToReference
+      >var_sObj_InvoicePayment.Notes__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Notes</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_InvoicePayment.Certifier__c</assignToReference>
+            <assignToReference
+      >var_sObj_InvoicePayment.Certifier__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>var_sObj_User.Id</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_InvoicePayment.Status__c</assignToReference>
+            <assignToReference
+      >var_sObj_InvoicePayment.Status__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <stringValue>Pending Certification</stringValue>
@@ -128,21 +145,25 @@
         <locationX>176</locationX>
         <locationY>782</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_PayableInvoiceLineItem.Amount_to_be_Paid__c</assignToReference>
+            <assignToReference
+      >var_sObj_PayableInvoiceLineItem.Amount_to_be_Paid__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Amount_to_be_Paid</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_PayableInvoiceLineItem.Federal_Contract_Line_Item__c</assignToReference>
+            <assignToReference
+      >var_sObj_PayableInvoiceLineItem.Federal_Contract_Line_Item__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>ContractLineItems.firstSelectedRow.Id</elementReference>
+                <elementReference
+        >ContractLineItems.firstSelectedRow.Id</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_PayableInvoiceLineItem.Payable_Invoice__c</assignToReference>
+            <assignToReference
+      >var_sObj_PayableInvoiceLineItem.Payable_Invoice__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>var_sObj_PayableInvoice.Id</elementReference>
@@ -178,7 +199,8 @@
             <name>DEC_AdditionalLineItems_Yes</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Do_you_have_additional_CLINs_to_add</leftValueReference>
+                <leftValueReference
+        >Do_you_have_additional_CLINs_to_add</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <elementReference>choice_Yes</elementReference>
@@ -194,7 +216,8 @@
             <name>DEC_AdditionalLineItems_No</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Do_you_have_additional_CLINs_to_add</leftValueReference>
+                <leftValueReference
+        >Do_you_have_additional_CLINs_to_add</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <elementReference>choice_No</elementReference>
@@ -219,8 +242,8 @@
     <dynamicChoiceSets>
         <name>choice_ContractPeriod</name>
         <dataType>Picklist</dataType>
-        <displayField xsi:nil="true"/>
-        <object xsi:nil="true"/>
+        <displayField xsi:nil="true" />
+        <object xsi:nil="true" />
         <picklistField>Contract_Period__c</picklistField>
         <picklistObject>Payable_Invoice_Line_Item__c</picklistObject>
     </dynamicChoiceSets>
@@ -230,19 +253,23 @@
         <displayField>Contract_Number__c</displayField>
         <object>Federal_Contract__c</object>
         <outputAssignments>
-            <assignToReference>var_sObj_FederalContract.Contract_End_Date__c</assignToReference>
+            <assignToReference
+      >var_sObj_FederalContract.Contract_End_Date__c</assignToReference>
             <field>Contract_End_Date__c</field>
         </outputAssignments>
         <outputAssignments>
-            <assignToReference>var_sObj_FederalContract.Contract_Start_Date__c</assignToReference>
+            <assignToReference
+      >var_sObj_FederalContract.Contract_Start_Date__c</assignToReference>
             <field>Contract_Start_Date__c</field>
         </outputAssignments>
         <outputAssignments>
-            <assignToReference>var_sObj_FederalContract.Contracted_Company__c</assignToReference>
+            <assignToReference
+      >var_sObj_FederalContract.Contracted_Company__c</assignToReference>
             <field>Contracted_Company__c</field>
         </outputAssignments>
         <outputAssignments>
-            <assignToReference>var_sObj_FederalContract.Contracting_Department__c</assignToReference>
+            <assignToReference
+      >var_sObj_FederalContract.Contracting_Department__c</assignToReference>
             <field>Contracting_Department__c</field>
         </outputAssignments>
         <outputAssignments>
@@ -266,7 +293,8 @@
         <dataType>Date</dataType>
         <expression>TODAY()</expression>
     </formulas>
-    <interviewLabel>SFL_NewInvoiceInput {!$Flow.CurrentDateTime}</interviewLabel>
+    <interviewLabel
+  >SFL_NewInvoiceInput {!$Flow.CurrentDateTime}</interviewLabel>
     <label>SFL_NewInvoiceInput</label>
     <processMetadataValues>
         <name>BuilderType</name>
@@ -322,7 +350,8 @@
         <label>GET_FederalContractLineItems</label>
         <locationX>176</locationX>
         <locationY>458</locationY>
-        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <assignNullValuesIfNoRecordsFound
+    >false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>ASSIGN_FederalContractLineItems</targetReference>
         </connector>
@@ -362,14 +391,16 @@
                     <dataType>String</dataType>
                     <fieldText>Assign Invoice for PM Authorization</fieldText>
                     <fieldType>DropdownBox</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <fields>
                     <name>Notes</name>
                     <fieldText>Notes</fieldText>
                     <fieldType>LargeTextArea</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>false</isRequired>
                 </fields>
                 <inputParameters>
@@ -406,7 +437,8 @@
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>ConfirmationText</name>
-                    <fieldText>&lt;p&gt;Your new Payable Invoice, related line items, and Invoice Payment have been created. When you click next, you will be redirected to the newly created Payable Invoice record.&lt;/p&gt;</fieldText>
+                    <fieldText
+          >&lt;p&gt;Your new Payable Invoice, related line items, and Invoice Payment have been created. When you click next, you will be redirected to the newly created Payable Invoice record.&lt;/p&gt;</fieldText>
                     <fieldType>DisplayText</fieldType>
                 </fields>
                 <inputParameters>
@@ -443,7 +475,8 @@
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>ContractLineItemsText</name>
-                    <fieldText>&lt;p&gt;Please select one of the following Federal Contract Line Items that is associated with the invoice.&lt;/p&gt;</fieldText>
+                    <fieldText
+          >&lt;p&gt;Please select one of the following Federal Contract Line Items that is associated with the invoice.&lt;/p&gt;</fieldText>
                     <fieldType>DisplayText</fieldType>
                 </fields>
                 <fields>
@@ -457,7 +490,8 @@
                     <inputParameters>
                         <name>label</name>
                         <value>
-                            <stringValue>Federal Contract Line Items</stringValue>
+                            <stringValue
+              >Federal Contract Line Items</stringValue>
                         </value>
                     </inputParameters>
                     <inputParameters>
@@ -481,7 +515,8 @@
                     <inputParameters>
                         <name>tableData</name>
                         <value>
-                            <elementReference>coll_sObj_FederalContractLineItems</elementReference>
+                            <elementReference
+              >coll_sObj_FederalContractLineItems</elementReference>
                         </value>
                     </inputParameters>
                     <inputParameters>
@@ -499,10 +534,12 @@
                     <inputParameters>
                         <name>columns</name>
                         <value>
-                            <stringValue>[{&quot;apiName&quot;:&quot;CLIN__c&quot;,&quot;guid&quot;:&quot;column-f849&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:false,&quot;customHeaderLabel&quot;:&quot;&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:0,&quot;label&quot;:&quot;CLIN&quot;,&quot;type&quot;:&quot;text&quot;},{&quot;apiName&quot;:&quot;Amount__c&quot;,&quot;guid&quot;:&quot;column-1de1&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:false,&quot;customHeaderLabel&quot;:&quot;&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:1,&quot;label&quot;:&quot;Amount&quot;,&quot;type&quot;:&quot;currency&quot;}]</stringValue>
+                            <stringValue
+              >[{&quot;apiName&quot;:&quot;CLIN__c&quot;,&quot;guid&quot;:&quot;column-f849&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:false,&quot;customHeaderLabel&quot;:&quot;&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:0,&quot;label&quot;:&quot;CLIN&quot;,&quot;type&quot;:&quot;text&quot;},{&quot;apiName&quot;:&quot;Amount__c&quot;,&quot;guid&quot;:&quot;column-1de1&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:false,&quot;customHeaderLabel&quot;:&quot;&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:1,&quot;label&quot;:&quot;Amount&quot;,&quot;type&quot;:&quot;currency&quot;}]</stringValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -511,7 +548,8 @@
                     <dataType>Currency</dataType>
                     <fieldText>Amount to be Paid</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <scale>2</scale>
                 </fields>
@@ -528,10 +566,12 @@
         </fields>
         <fields>
             <name>New_Invoice_Entry_Additional_Contract_Line_Items</name>
-            <fieldText>New Invoice Entry - Additional Contract Line Items</fieldText>
+            <fieldText
+      >New Invoice Entry - Additional Contract Line Items</fieldText>
             <fieldType>RegionContainer</fieldType>
             <fields>
-                <name>New_Invoice_Entry_Additional_Contract_Line_Items_Column1</name>
+                <name
+        >New_Invoice_Entry_Additional_Contract_Line_Items_Column1</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>Do_you_have_additional_CLINs_to_add</name>
@@ -540,7 +580,8 @@
                     <dataType>String</dataType>
                     <fieldText>Do you have additional CLINs to add?</fieldText>
                     <fieldType>RadioButtons</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -577,7 +618,8 @@
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>UploadFilesText</name>
-                    <fieldText>&lt;p&gt;Please upload documents related to this invoice. Potential related document types could be:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Invoice&lt;/li&gt;&lt;li&gt;SF-182&lt;/li&gt;&lt;li&gt;Vendor Quote&lt;/li&gt;&lt;li&gt;Other&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;At least one document must be provided.&lt;/p&gt;</fieldText>
+                    <fieldText
+          >&lt;p&gt;Please upload documents related to this invoice. Potential related document types could be:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Invoice&lt;/li&gt;&lt;li&gt;SF-182&lt;/li&gt;&lt;li&gt;Vendor Quote&lt;/li&gt;&lt;li&gt;Other&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;At least one document must be provided.&lt;/p&gt;</fieldText>
                     <fieldType>DisplayText</fieldType>
                 </fields>
                 <inputParameters>
@@ -604,7 +646,8 @@
                     <inputParameters>
                         <name>recordId</name>
                         <value>
-                            <elementReference>var_sObj_PayableInvoice.Id</elementReference>
+                            <elementReference
+              >var_sObj_PayableInvoice.Id</elementReference>
                         </value>
                     </inputParameters>
                     <inputParameters>
@@ -625,7 +668,8 @@
                             <booleanValue>false</booleanValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -667,7 +711,8 @@
                     <dataType>String</dataType>
                     <fieldText>Related Federal Contract</fieldText>
                     <fieldType>DropdownBox</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -693,7 +738,8 @@
                     <dataType>String</dataType>
                     <fieldText>Invoice Number</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <fields>
@@ -701,7 +747,8 @@
                     <dataType>Date</dataType>
                     <fieldText>Period Start Date</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -723,7 +770,8 @@
                     </defaultValue>
                     <fieldText>Invoice Date</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <fields>
@@ -731,7 +779,8 @@
                     <dataType>Date</dataType>
                     <fieldText>Period End Date</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -758,7 +807,8 @@
                     <dataType>String</dataType>
                     <fieldText>Contract Period</fieldText>
                     <fieldType>DropdownBox</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -785,7 +835,8 @@
         <allowPause>false</allowPause>
         <fields>
             <name>RedirectionText</name>
-            <fieldText>&lt;p&gt;Please wait while the system redirects you.&lt;/p&gt;</fieldText>
+            <fieldText
+      >&lt;p&gt;Please wait while the system redirects you.&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
         </fields>
         <fields>
@@ -795,10 +846,12 @@
             <inputParameters>
                 <name>recordId</name>
                 <value>
-                    <elementReference>var_sObj_PayableInvoice.Id</elementReference>
+                    <elementReference
+          >var_sObj_PayableInvoice.Id</elementReference>
                 </value>
             </inputParameters>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <inputsOnNextNavToAssocScrn
+      >UseStoredValues</inputsOnNextNavToAssocScrn>
             <isRequired>true</isRequired>
             <storeOutputAutomatically>true</storeOutputAutomatically>
         </fields>

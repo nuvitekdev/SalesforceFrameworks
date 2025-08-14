@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
     <flexiPageRegions>
         <itemInstances>
@@ -13,15 +13,18 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>descriptions</name>
-                    <value>Manage whistleblower cases and reports, View related investigations, View actions taken on reports, Resources for whistleblower support and assistance</value>
+                    <value
+          >Manage whistleblower cases and reports, View related investigations, View actions taken on reports, Resources for whistleblower support and assistance</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>icons</name>
-                    <value>utility:announcement, utility:case, utility:success, utility:help</value>
+                    <value
+          >utility:announcement, utility:case, utility:success, utility:help</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>links</name>
-                    <value>/lightning/o/Whistleblower_Report__c/list, /lightning/o/Investigation__c/list, /lightning/o/Action_Taken__c/list, /lightning/o/Whistleblower_Support__c/list</value>
+                    <value
+          >/lightning/o/Whistleblower_Report__c/list, /lightning/o/Investigation__c/list, /lightning/o/Action_Taken__c/list, /lightning/o/Whistleblower_Support__c/list</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>tileStyle</name>
@@ -29,7 +32,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>titles</name>
-                    <value>Whistleblower Reports, Investigations, Actions Taken, Whistleblower Support</value>
+                    <value
+          >Whistleblower Reports, Investigations, Actions Taken, Whistleblower Support</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
                 <identifier>c_nuvitekNavigationTiles</identifier>
@@ -41,8 +45,10 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>runtime_approval_process:pendingApprovalCard</componentName>
-                <identifier>runtime_approval_process_pendingApprovalCard</identifier>
+                <componentName
+        >runtime_approval_process:pendingApprovalCard</componentName>
+                <identifier
+        >runtime_approval_process_pendingApprovalCard</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
@@ -125,7 +131,8 @@
                     <name>hideOnError</name>
                     <value>true</value>
                 </componentInstanceProperties>
-                <componentName>desktopDashboards:embeddedDashboard</componentName>
+                <componentName
+        >desktopDashboards:embeddedDashboard</componentName>
                 <identifier>desktopDashboards_embeddedDashboard</identifier>
                 <visibilityRule>
                     <criteria>
@@ -146,7 +153,8 @@
                     <name>hideOnError</name>
                     <value>true</value>
                 </componentInstanceProperties>
-                <componentName>desktopDashboards:embeddedDashboard</componentName>
+                <componentName
+        >desktopDashboards:embeddedDashboard</componentName>
                 <identifier>desktopDashboards_embeddedDashboard2</identifier>
                 <visibilityRule>
                     <criteria>

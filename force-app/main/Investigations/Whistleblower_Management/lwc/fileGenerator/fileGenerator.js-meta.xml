@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>58.0</apiVersion>
     <isExposed>true</isExposed>
@@ -7,9 +7,21 @@
     </targets>
     <targetConfigs>
         <targetConfig targets="lightning__FlowScreen">
-            <property name="textListString" label="Text List: JSON String with Array of { label, value }" type="String" />
-            <property name="urlListString" label="Url List: JSON String with Array of { label, value }" type="String" />
-            <property name="desiredFileTypes" label="Desired File Types: A comma-separated string indicating desired file types.  Options: json, text, markdown (casing doesn't matter)." type="String" />
+            <property
+        name="textListString"
+        label="Text List: JSON String with Array of { label, value }"
+        type="String"
+      />
+            <property
+        name="urlListString"
+        label="Url List: JSON String with Array of { label, value }"
+        type="String"
+      />
+            <property
+        name="desiredFileTypes"
+        label="Desired File Types: A comma-separated string indicating desired file types.  Options: json, text, markdown (casing doesn't matter)."
+        type="String"
+      />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

@@ -1,12 +1,12 @@
 {
-  "type" : "sfdc_cms__route",
-  "title" : "Whistleblower Support",
-  "contentBody" : {
-    "activeViewId" : "Whistleblower_Support",
-    "configurationTags" : [ ],
-    "pageAccess" : "UseParent",
-    "routeType" : "custom-whistleblower-support",
-    "urlPrefix" : "whistleblower-support"
+  "type": "sfdc_cms__route",
+  "title": "Whistleblower Support",
+  "contentBody": {
+    "activeViewId": "Whistleblower_Support",
+    "configurationTags": [],
+    "pageAccess": "UseParent",
+    "routeType": "custom-whistleblower-support",
+    "urlPrefix": "whistleblower-support"
   },
-  "urlName" : "whistleblower-support"
+  "urlName": "whistleblower-support"
 }

@@ -1,10 +1,12 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
-        <members>Federal_Contract_Line_Item__c.Federal_Contract_Line_Item_Compact_Layout</members>
+        <members
+    >Federal_Contract_Line_Item__c.Federal_Contract_Line_Item_Compact_Layout</members>
         <members>Federal_Contract__c.Federal_Contract_Compact_Layout</members>
         <members>Invoice_Payment__c.Invoice_Payment_Compact_Layout</members>
-        <members>Payable_Invoice_Line_Item__c.Payable_Invoice_Line_Item_Compact_Layout</members>
+        <members
+    >Payable_Invoice_Line_Item__c.Payable_Invoice_Line_Item_Compact_Layout</members>
         <members>Payable_Invoice__c.Payable_Invoice_Compact_Layout</members>
         <name>CompactLayout</name>
     </types>
@@ -49,10 +51,12 @@
         <name>GlobalValueSet</name>
     </types>
     <types>
-        <members>Federal_Contract_Line_Item__c-Federal Contract Line Item Layout</members>
+        <members
+    >Federal_Contract_Line_Item__c-Federal Contract Line Item Layout</members>
         <members>Federal_Contract__c-Federal Contract Layout</members>
         <members>Invoice_Payment__c-Invoice Payment Layout</members>
-        <members>Payable_Invoice_Line_Item__c-Payable Invoice Line Item Layout</members>
+        <members
+    >Payable_Invoice_Line_Item__c-Payable Invoice Line Item Layout</members>
         <members>Payable_Invoice__c-Payable Invoice Layout</members>
         <name>Layout</name>
     </types>

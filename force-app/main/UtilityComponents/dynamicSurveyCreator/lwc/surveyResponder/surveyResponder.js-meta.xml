@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>57.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Survey Responder</masterLabel>
-    <description>Displays a survey to respondents and collects their answers</description>
+    <description
+  >Displays a survey to respondents and collects their answers</description>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__RecordPage</target>
@@ -12,21 +13,95 @@
         <target>lightningCommunity__Default</target>
     </targets>
     <targetConfigs>
-        <targetConfig targets="lightning__AppPage,lightning__HomePage,lightning__RecordPage">
-            <property name="surveyId" type="String" label="Survey ID" description="ID of the survey to display" required="false" />
-            <property name="primaryColor" type="String" label="Primary Color" description="Primary theme color for the survey" default="#22BDC1" />
-            <property name="accentColor" type="String" label="Accent Color" description="Secondary accent color for the survey" default="#D5DF23" />
-            <property name="textColor" type="String" label="Text Color" description="Main text color" default="#1d1d1f" />
-            <property name="backgroundColor" type="String" label="Background Color" description="Content background color" default="#ffffff" />
-            <property name="allowMultipleSubmissions" type="Boolean" label="Allow Multiple Submissions" description="If checked, allows multiple submissions from the same device" default="false" />
+        <targetConfig
+      targets="lightning__AppPage,lightning__HomePage,lightning__RecordPage"
+    >
+            <property
+        name="surveyId"
+        type="String"
+        label="Survey ID"
+        description="ID of the survey to display"
+        required="false"
+      />
+            <property
+        name="primaryColor"
+        type="String"
+        label="Primary Color"
+        description="Primary theme color for the survey"
+        default="#22BDC1"
+      />
+            <property
+        name="accentColor"
+        type="String"
+        label="Accent Color"
+        description="Secondary accent color for the survey"
+        default="#D5DF23"
+      />
+            <property
+        name="textColor"
+        type="String"
+        label="Text Color"
+        description="Main text color"
+        default="#1d1d1f"
+      />
+            <property
+        name="backgroundColor"
+        type="String"
+        label="Background Color"
+        description="Content background color"
+        default="#ffffff"
+      />
+            <property
+        name="allowMultipleSubmissions"
+        type="Boolean"
+        label="Allow Multiple Submissions"
+        description="If checked, allows multiple submissions from the same device"
+        default="false"
+      />
         </targetConfig>
         <targetConfig targets="lightningCommunity__Default">
-            <property name="surveyId" type="String" label="Survey ID" description="ID of the survey to display" required="false" />
-            <property name="primaryColor" type="String" label="Primary Color" description="Primary theme color for the survey" default="#22BDC1" />
-            <property name="accentColor" type="String" label="Accent Color" description="Secondary accent color for the survey" default="#D5DF23" />
-            <property name="textColor" type="String" label="Text Color" description="Main text color" default="#1d1d1f" />
-            <property name="backgroundColor" type="String" label="Background Color" description="Content background color" default="#ffffff" />
-            <property name="allowMultipleSubmissions" type="Boolean" label="Allow Multiple Submissions" description="If checked, allows multiple submissions from the same device" default="false" />
+            <property
+        name="surveyId"
+        type="String"
+        label="Survey ID"
+        description="ID of the survey to display"
+        required="false"
+      />
+            <property
+        name="primaryColor"
+        type="String"
+        label="Primary Color"
+        description="Primary theme color for the survey"
+        default="#22BDC1"
+      />
+            <property
+        name="accentColor"
+        type="String"
+        label="Accent Color"
+        description="Secondary accent color for the survey"
+        default="#D5DF23"
+      />
+            <property
+        name="textColor"
+        type="String"
+        label="Text Color"
+        description="Main text color"
+        default="#1d1d1f"
+      />
+            <property
+        name="backgroundColor"
+        type="String"
+        label="Background Color"
+        description="Content background color"
+        default="#ffffff"
+      />
+            <property
+        name="allowMultipleSubmissions"
+        type="Boolean"
+        label="Allow Multiple Submissions"
+        description="If checked, allows multiple submissions from the same device"
+        default="false"
+      />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

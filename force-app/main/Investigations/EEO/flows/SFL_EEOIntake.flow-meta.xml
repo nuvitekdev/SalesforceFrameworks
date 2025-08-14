@@ -1,5 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Flow xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8" ?>
+<Flow
+  xmlns="http://soap.sforce.com/2006/04/metadata"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
     <apiVersion>63.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <assignments>
@@ -8,10 +11,12 @@
         <locationX>50</locationX>
         <locationY>2378</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_discrimPersonContact.AccountId</assignToReference>
+            <assignToReference
+      >var_sObj_discrimPersonContact.AccountId</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>var_sObj_PlaceOfEmployment.Id</elementReference>
+                <elementReference
+        >var_sObj_PlaceOfEmployment.Id</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -24,80 +29,94 @@
         <locationX>314</locationX>
         <locationY>242</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_AggrievedPerson.FirstName</assignToReference>
+            <assignToReference
+      >var_sObj_AggrievedPerson.FirstName</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>AggrievedPersonName.firstName</elementReference>
+                <elementReference
+        >AggrievedPersonName.firstName</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_AggrievedPerson.LastName</assignToReference>
+            <assignToReference
+      >var_sObj_AggrievedPerson.LastName</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>AggrievedPersonName.lastName</elementReference>
+                <elementReference
+        >AggrievedPersonName.lastName</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_AggrievedPerson.HomePhone</assignToReference>
+            <assignToReference
+      >var_sObj_AggrievedPerson.HomePhone</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>PersonalPhone.value</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_AggrievedPerson.Phone</assignToReference>
+            <assignToReference
+      >var_sObj_AggrievedPerson.Phone</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>OfficePhone.value</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_AggrievedPerson.Title</assignToReference>
+            <assignToReference
+      >var_sObj_AggrievedPerson.Title</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Job_Title_Series_Grade</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_AggrievedPerson.MailingStreet</assignToReference>
+            <assignToReference
+      >var_sObj_AggrievedPerson.MailingStreet</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>HomeAddress.street</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_AggrievedPerson.MailingCity</assignToReference>
+            <assignToReference
+      >var_sObj_AggrievedPerson.MailingCity</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>HomeAddress.city</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_AggrievedPerson.MailingState</assignToReference>
+            <assignToReference
+      >var_sObj_AggrievedPerson.MailingState</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>HomeAddress.province</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_AggrievedPerson.MailingCountry</assignToReference>
+            <assignToReference
+      >var_sObj_AggrievedPerson.MailingCountry</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>HomeAddress.country</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_AggrievedPerson.MailingPostalCode</assignToReference>
+            <assignToReference
+      >var_sObj_AggrievedPerson.MailingPostalCode</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>HomeAddress.postalCode</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_AggrievedPerson.Email</assignToReference>
+            <assignToReference
+      >var_sObj_AggrievedPerson.Email</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>var_sObj_AggrievedPerson.Email</elementReference>
+                <elementReference
+        >var_sObj_AggrievedPerson.Email</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -110,63 +129,72 @@
         <locationX>314</locationX>
         <locationY>458</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Aggrieved_Person_del__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Aggrieved_Person_del__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>var_sObj_AggrievedPerson.Id</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Job_Title_Series_Grade__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Job_Title_Series_Grade__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Job_Title_Series_Grade</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Personal_Phone__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Personal_Phone__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>PersonalPhone.value</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Office_Phone__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Office_Phone__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>OfficePhone.value</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Home_Address__Street__s</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Home_Address__Street__s</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>HomeAddress.street</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Home_Address__City__s</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Home_Address__City__s</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>HomeAddress.city</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Home_Address__StateCode__s</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Home_Address__StateCode__s</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>HomeAddress.provinceCode</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Home_Address__CountryCode__s</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Home_Address__CountryCode__s</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>HomeAddress.countryCode</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Home_Address__PostalCode__s</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Home_Address__PostalCode__s</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>HomeAddress.postalCode</elementReference>
@@ -182,10 +210,12 @@
         <locationX>314</locationX>
         <locationY>1106</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Permission_to_use_Aggrieved_s_name__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Permission_to_use_Aggrieved_s_name__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>Permission_to_use_Aggrieved_s_name</elementReference>
+                <elementReference
+        >Permission_to_use_Aggrieved_s_name</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -198,7 +228,8 @@
         <locationX>314</locationX>
         <locationY>4814</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Basis__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Basis__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>BasisPicklist</elementReference>
@@ -214,10 +245,12 @@
         <locationX>314</locationX>
         <locationY>5246</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Details_of_Allegation_s_Issue_s__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Details_of_Allegation_s_Issue_s__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>Details_of_Allegation_s_Issue_s</elementReference>
+                <elementReference
+        >Details_of_Allegation_s_Issue_s</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -230,14 +263,17 @@
         <locationX>314</locationX>
         <locationY>5030</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Claim_s_of_Alleged_Discrimination__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Claim_s_of_Alleged_Discrimination__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>Claim_s_of_Alleged_Discrimination</elementReference>
+                <elementReference
+        >Claim_s_of_Alleged_Discrimination</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Date_of_Incident__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Date_of_Incident__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Date_of_Incident</elementReference>
@@ -253,10 +289,12 @@
         <locationX>314</locationX>
         <locationY>5462</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Remedial_Corrective_Action_Sought__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Remedial_Corrective_Action_Sought__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>What_remedial_or_corrective_action_is_the_Aggrieved_seeking</elementReference>
+                <elementReference
+        >What_remedial_or_corrective_action_is_the_Aggrieved_seeking</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -269,14 +307,17 @@
         <locationX>314</locationX>
         <locationY>2378</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_AccountDiscrimPlaceOfEmploy.Name</assignToReference>
+            <assignToReference
+      >var_sObj_AccountDiscrimPlaceOfEmploy.Name</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>Place_of_Employment_DiscrimPerson1</elementReference>
+                <elementReference
+        >Place_of_Employment_DiscrimPerson1</elementReference>
             </value>
         </assignmentItems>
         <connector>
-            <targetReference>CREATE_DiscrimPerson1PlaceOfEmploy</targetReference>
+            <targetReference
+      >CREATE_DiscrimPerson1PlaceOfEmploy</targetReference>
         </connector>
     </assignments>
     <assignments>
@@ -285,35 +326,42 @@
         <locationX>314</locationX>
         <locationY>2786</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_discrimPersonContact.Title</assignToReference>
+            <assignToReference
+      >var_sObj_discrimPersonContact.Title</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Position_Title</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_discrimPersonContact.Phone</assignToReference>
+            <assignToReference
+      >var_sObj_discrimPersonContact.Phone</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>PhoneDiscrimPerson1.value</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_discrimPersonContact.Email</assignToReference>
+            <assignToReference
+      >var_sObj_discrimPersonContact.Email</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>EmailAddressDiscrimPerson1.value</elementReference>
+                <elementReference
+        >EmailAddressDiscrimPerson1.value</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_discrimPersonContact.FirstName</assignToReference>
+            <assignToReference
+      >var_sObj_discrimPersonContact.FirstName</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>DiscrimPersonName1.firstName</elementReference>
+                <elementReference
+        >DiscrimPersonName1.firstName</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_discrimPersonContact.LastName</assignToReference>
+            <assignToReference
+      >var_sObj_discrimPersonContact.LastName</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>DiscrimPersonName1.lastName</elementReference>
@@ -329,17 +377,21 @@
         <locationX>314</locationX>
         <locationY>3002</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_DiscrimPersonJctObj.EEO_Intake_Questionnaire__c</assignToReference>
+            <assignToReference
+      >var_sObj_DiscrimPersonJctObj.EEO_Intake_Questionnaire__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>var_sObj_EEOIntakeQuestionnaire.Id</elementReference>
+                <elementReference
+        >var_sObj_EEOIntakeQuestionnaire.Id</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_DiscrimPersonJctObj.Alleged_Discriminating_Person__c</assignToReference>
+            <assignToReference
+      >var_sObj_DiscrimPersonJctObj.Alleged_Discriminating_Person__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>var_sObj_discrimPersonContact.Id</elementReference>
+                <elementReference
+        >var_sObj_discrimPersonContact.Id</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -352,35 +404,42 @@
         <locationX>314</locationX>
         <locationY>890</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Place_of_Employment__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Place_of_Employment__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>var_sObj_PlaceOfEmployment.Id</elementReference>
+                <elementReference
+        >var_sObj_PlaceOfEmployment.Id</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Employment_Status__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Employment_Status__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Employment_Status</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Date_Last_Employed_at_Department__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Date_Last_Employed_at_Department__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>Date_Last_Employed_at_Department</elementReference>
+                <elementReference
+        >Date_Last_Employed_at_Department</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Initial_Contact_Date__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Initial_Contact_Date__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Initial_Contact_Date</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Initial_Interview_Date__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Initial_Interview_Date__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Initial_Interview_Date</elementReference>
@@ -396,7 +455,8 @@
         <locationX>314</locationX>
         <locationY>3650</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_WitnessPlaceOfEmploy.Name</assignToReference>
+            <assignToReference
+      >var_sObj_WitnessPlaceOfEmploy.Name</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Place_of_Employment_Witness</elementReference>
@@ -412,10 +472,12 @@
         <locationX>314</locationX>
         <locationY>2594</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_discrimPersonContact.AccountId</assignToReference>
+            <assignToReference
+      >var_sObj_discrimPersonContact.AccountId</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>var_sObj_AccountDiscrimPlaceOfEmploy.Id</elementReference>
+                <elementReference
+        >var_sObj_AccountDiscrimPlaceOfEmploy.Id</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -428,7 +490,8 @@
         <locationX>314</locationX>
         <locationY>6002</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.OwnerId</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.OwnerId</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>GET_ADRQueue.Id</elementReference>
@@ -444,7 +507,8 @@
         <locationX>50</locationX>
         <locationY>6002</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.OwnerId</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.OwnerId</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>GET_CounselingQueue.Id</elementReference>
@@ -460,10 +524,12 @@
         <locationX>314</locationX>
         <locationY>5678</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Resolution_Path_Selected__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Resolution_Path_Selected__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>Which_Resolution_Path_does_the_Aggrieved_want_to_proceed_with</elementReference>
+                <elementReference
+        >Which_Resolution_Path_does_the_Aggrieved_want_to_proceed_with</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -476,7 +542,8 @@
         <locationX>314</locationX>
         <locationY>674</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_PlaceOfEmployment.Name</assignToReference>
+            <assignToReference
+      >var_sObj_PlaceOfEmployment.Name</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Place_of_Employment</elementReference>
@@ -492,10 +559,12 @@
         <locationX>50</locationX>
         <locationY>3650</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_WitnessContact.AccountId</assignToReference>
+            <assignToReference
+      >var_sObj_WitnessContact.AccountId</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>var_sObj_PlaceOfEmployment.Id</elementReference>
+                <elementReference
+        >var_sObj_PlaceOfEmployment.Id</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -508,10 +577,12 @@
         <locationX>314</locationX>
         <locationY>3866</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_WitnessContact.AccountId</assignToReference>
+            <assignToReference
+      >var_sObj_WitnessContact.AccountId</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>var_sObj_WitnessPlaceOfEmploy.Id</elementReference>
+                <elementReference
+        >var_sObj_WitnessPlaceOfEmploy.Id</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -524,10 +595,12 @@
         <locationX>314</locationX>
         <locationY>1322</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Does_the_Aggrieved_have_a_Representative__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Does_the_Aggrieved_have_a_Representative__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>Does_the_Aggrieved_have_a_Representative</elementReference>
+                <elementReference
+        >Does_the_Aggrieved_have_a_Representative</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -540,14 +613,17 @@
         <locationX>94</locationX>
         <locationY>1646</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_Representative.FirstName</assignToReference>
+            <assignToReference
+      >var_sObj_Representative.FirstName</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>RepresentativeName.firstName</elementReference>
+                <elementReference
+        >RepresentativeName.firstName</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_Representative.LastName</assignToReference>
+            <assignToReference
+      >var_sObj_Representative.LastName</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>RepresentativeName.lastName</elementReference>
@@ -571,42 +647,52 @@
             <assignToReference>var_sObj_Representative.Email</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>RepresentativeEmailAddress.value</elementReference>
+                <elementReference
+        >RepresentativeEmailAddress.value</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_Representative.MailingStreet</assignToReference>
+            <assignToReference
+      >var_sObj_Representative.MailingStreet</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>RepresentativeAddress.street</elementReference>
+                <elementReference
+        >RepresentativeAddress.street</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_Representative.MailingCity</assignToReference>
+            <assignToReference
+      >var_sObj_Representative.MailingCity</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>RepresentativeAddress.city</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_Representative.MailingStateCode</assignToReference>
+            <assignToReference
+      >var_sObj_Representative.MailingStateCode</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>RepresentativeAddress.provinceCode</elementReference>
+                <elementReference
+        >RepresentativeAddress.provinceCode</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_Representative.MailingCountryCode</assignToReference>
+            <assignToReference
+      >var_sObj_Representative.MailingCountryCode</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>RepresentativeAddress.countryCode</elementReference>
+                <elementReference
+        >RepresentativeAddress.countryCode</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_Representative.MailingPostalCode</assignToReference>
+            <assignToReference
+      >var_sObj_Representative.MailingPostalCode</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>RepresentativeAddress.postalCode</elementReference>
+                <elementReference
+        >RepresentativeAddress.postalCode</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -619,59 +705,72 @@
         <locationX>94</locationX>
         <locationY>1862</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Is_the_Representative_an_attorney__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Is_the_Representative_an_attorney__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>Is_the_Representative_an_attorney</elementReference>
+                <elementReference
+        >Is_the_Representative_an_attorney</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Representative__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Representative__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>var_sObj_Representative.Id</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Representative_Phone__c</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Representative_Phone__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>RepresentativePhone.value</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Home_Address__Street__s</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Home_Address__Street__s</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>RepresentativeAddress.street</elementReference>
+                <elementReference
+        >RepresentativeAddress.street</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Representative_Mailing_Address__City__s</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Representative_Mailing_Address__City__s</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>RepresentativeAddress.city</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Representative_Mailing_Address__StateCode__s</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Representative_Mailing_Address__StateCode__s</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>RepresentativeAddress.provinceCode</elementReference>
+                <elementReference
+        >RepresentativeAddress.provinceCode</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Home_Address__CountryCode__s</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Home_Address__CountryCode__s</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>RepresentativeAddress.countryCode</elementReference>
+                <elementReference
+        >RepresentativeAddress.countryCode</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_EEOIntakeQuestionnaire.Representative_Mailing_Address__PostalCode__s</assignToReference>
+            <assignToReference
+      >var_sObj_EEOIntakeQuestionnaire.Representative_Mailing_Address__PostalCode__s</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>RepresentativeAddress.postalCode</elementReference>
+                <elementReference
+        >RepresentativeAddress.postalCode</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -705,14 +804,16 @@
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_WitnessContact.FirstName</assignToReference>
+            <assignToReference
+      >var_sObj_WitnessContact.FirstName</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>WitnessName.firstName</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_WitnessContact.LastName</assignToReference>
+            <assignToReference
+      >var_sObj_WitnessContact.LastName</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>WitnessName.lastName</elementReference>
@@ -728,14 +829,17 @@
         <locationX>314</locationX>
         <locationY>4274</locationY>
         <assignmentItems>
-            <assignToReference>var_sObj_WitnesJctObj.EEO_Intake_Questionnaire__c</assignToReference>
+            <assignToReference
+      >var_sObj_WitnesJctObj.EEO_Intake_Questionnaire__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>var_sObj_EEOIntakeQuestionnaire.Id</elementReference>
+                <elementReference
+        >var_sObj_EEOIntakeQuestionnaire.Id</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>var_sObj_WitnesJctObj.Witness__c</assignToReference>
+            <assignToReference
+      >var_sObj_WitnesJctObj.Witness__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>var_sObj_WitnessContact.Id</elementReference>
@@ -764,7 +868,8 @@
     <customProperties>
         <name>ScreenProgressIndicator</name>
         <value>
-            <stringValue>{&quot;location&quot;:&quot;top&quot;,&quot;type&quot;:&quot;simple&quot;}</stringValue>
+            <stringValue
+      >{&quot;location&quot;:&quot;top&quot;,&quot;type&quot;:&quot;simple&quot;}</stringValue>
         </value>
     </customProperties>
     <decisions>
@@ -777,7 +882,8 @@
             <name>DEC_AddtlDiscrimPersons_Yes</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Are_there_additional_Discriminating_Person_s_to_add</leftValueReference>
+                <leftValueReference
+        >Are_there_additional_Discriminating_Person_s_to_add</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <elementReference>choice_Yes</elementReference>
@@ -793,7 +899,8 @@
             <name>DEC_AddtlDiscrimPersons_No</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Are_there_additional_Discriminating_Person_s_to_add</leftValueReference>
+                <leftValueReference
+        >Are_there_additional_Discriminating_Person_s_to_add</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <elementReference>choice_No</elementReference>
@@ -815,7 +922,8 @@
             <name>DEC_AddtlWitnesses_Yes</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Do_you_have_additional_witnesses_to_add</leftValueReference>
+                <leftValueReference
+        >Do_you_have_additional_witnesses_to_add</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <elementReference>choice_Yes</elementReference>
@@ -831,7 +939,8 @@
             <name>DEC_AddtlWitnesses_No</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Do_you_have_additional_witnesses_to_add</leftValueReference>
+                <leftValueReference
+        >Do_you_have_additional_witnesses_to_add</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <elementReference>choice_No</elementReference>
@@ -853,7 +962,8 @@
             <name>DEC_Representation_Yes</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Does_the_Aggrieved_have_a_Representative</leftValueReference>
+                <leftValueReference
+        >Does_the_Aggrieved_have_a_Representative</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <stringValue>Yes</stringValue>
@@ -868,7 +978,8 @@
             <name>DEC_Representation_No</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Does_the_Aggrieved_have_a_Representative</leftValueReference>
+                <leftValueReference
+        >Does_the_Aggrieved_have_a_Representative</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <stringValue>No</stringValue>
@@ -890,7 +1001,8 @@
             <name>DEC_ResolutionPath_Counseling</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Which_Resolution_Path_does_the_Aggrieved_want_to_proceed_with</leftValueReference>
+                <leftValueReference
+        >Which_Resolution_Path_does_the_Aggrieved_want_to_proceed_with</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <stringValue>EEO Counseling</stringValue>
@@ -905,10 +1017,12 @@
             <name>DEC_ResolutionPath_ADR</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Which_Resolution_Path_does_the_Aggrieved_want_to_proceed_with</leftValueReference>
+                <leftValueReference
+        >Which_Resolution_Path_does_the_Aggrieved_want_to_proceed_with</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
-                    <stringValue>Alternative Dispute Resolution (ADR)</stringValue>
+                    <stringValue
+          >Alternative Dispute Resolution (ADR)</stringValue>
                 </rightValue>
             </conditions>
             <connector>
@@ -927,14 +1041,16 @@
             <name>DEC_SamePlaceEmploy_Yes</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Same_place_of_employment_as_Aggrieved</leftValueReference>
+                <leftValueReference
+        >Same_place_of_employment_as_Aggrieved</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <elementReference>choice_Yes</elementReference>
                 </rightValue>
             </conditions>
             <connector>
-                <targetReference>ASSIGN_AccountToDiscrimPersonContact</targetReference>
+                <targetReference
+        >ASSIGN_AccountToDiscrimPersonContact</targetReference>
             </connector>
             <label>DEC_SamePlaceEmploy_Yes</label>
         </rules>
@@ -942,14 +1058,16 @@
             <name>DEC_SamePlaceEmploy_No</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Same_place_of_employment_as_Aggrieved</leftValueReference>
+                <leftValueReference
+        >Same_place_of_employment_as_Aggrieved</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <elementReference>choice_No</elementReference>
                 </rightValue>
             </conditions>
             <connector>
-                <targetReference>ASSIGN_DiscrimPerson1PlaceOfEmploy</targetReference>
+                <targetReference
+        >ASSIGN_DiscrimPerson1PlaceOfEmploy</targetReference>
             </connector>
             <label>DEC_SamePlaceEmploy_No</label>
         </rules>
@@ -964,7 +1082,8 @@
             <name>DEC_WitnessSamePlaceOfEmploy_Yes</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Same_place_of_employment_as_Aggrieved_Witness</leftValueReference>
+                <leftValueReference
+        >Same_place_of_employment_as_Aggrieved_Witness</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <elementReference>choice_Yes</elementReference>
@@ -979,7 +1098,8 @@
             <name>DEC_WitnessSamePlaceOfEmploy_No</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Same_place_of_employment_as_Aggrieved_Witness</leftValueReference>
+                <leftValueReference
+        >Same_place_of_employment_as_Aggrieved_Witness</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <elementReference>choice_No</elementReference>
@@ -994,62 +1114,64 @@
     <dynamicChoiceSets>
         <name>choice_Basis</name>
         <dataType>Multipicklist</dataType>
-        <displayField xsi:nil="true"/>
-        <object xsi:nil="true"/>
+        <displayField xsi:nil="true" />
+        <object xsi:nil="true" />
         <picklistField>Basis__c</picklistField>
         <picklistObject>EEO_Intake_Questionnaire__c</picklistObject>
     </dynamicChoiceSets>
     <dynamicChoiceSets>
         <name>choice_Claims</name>
         <dataType>Multipicklist</dataType>
-        <displayField xsi:nil="true"/>
-        <object xsi:nil="true"/>
+        <displayField xsi:nil="true" />
+        <object xsi:nil="true" />
         <picklistField>Claim_s_of_Alleged_Discrimination__c</picklistField>
         <picklistObject>EEO_Intake_Questionnaire__c</picklistObject>
     </dynamicChoiceSets>
     <dynamicChoiceSets>
         <name>choice_EmploymentStatus</name>
         <dataType>Picklist</dataType>
-        <displayField xsi:nil="true"/>
-        <object xsi:nil="true"/>
+        <displayField xsi:nil="true" />
+        <object xsi:nil="true" />
         <picklistField>Employment_Status__c</picklistField>
         <picklistObject>EEO_Intake_Questionnaire__c</picklistObject>
     </dynamicChoiceSets>
     <dynamicChoiceSets>
         <name>choice_HasRepresentative</name>
         <dataType>Picklist</dataType>
-        <displayField xsi:nil="true"/>
-        <object xsi:nil="true"/>
-        <picklistField>Does_the_Aggrieved_have_a_Representative__c</picklistField>
+        <displayField xsi:nil="true" />
+        <object xsi:nil="true" />
+        <picklistField
+    >Does_the_Aggrieved_have_a_Representative__c</picklistField>
         <picklistObject>EEO_Intake_Questionnaire__c</picklistObject>
     </dynamicChoiceSets>
     <dynamicChoiceSets>
         <name>choice_PermUseName</name>
         <dataType>Picklist</dataType>
-        <displayField xsi:nil="true"/>
-        <object xsi:nil="true"/>
+        <displayField xsi:nil="true" />
+        <object xsi:nil="true" />
         <picklistField>Permission_to_use_Aggrieved_s_name__c</picklistField>
         <picklistObject>EEO_Intake_Questionnaire__c</picklistObject>
     </dynamicChoiceSets>
     <dynamicChoiceSets>
         <name>choice_RepIsAtty</name>
         <dataType>Picklist</dataType>
-        <displayField xsi:nil="true"/>
-        <object xsi:nil="true"/>
+        <displayField xsi:nil="true" />
+        <object xsi:nil="true" />
         <picklistField>Is_the_Representative_an_attorney__c</picklistField>
         <picklistObject>EEO_Intake_Questionnaire__c</picklistObject>
     </dynamicChoiceSets>
     <dynamicChoiceSets>
         <name>choice_ResolutionPath</name>
         <dataType>Picklist</dataType>
-        <displayField xsi:nil="true"/>
-        <object xsi:nil="true"/>
+        <displayField xsi:nil="true" />
+        <object xsi:nil="true" />
         <picklistField>Resolution_Path_Selected__c</picklistField>
         <picklistObject>EEO_Intake_Questionnaire__c</picklistObject>
     </dynamicChoiceSets>
     <environments>Default</environments>
     <interviewLabel>SFL_ {!$Flow.CurrentDateTime}</interviewLabel>
-    <isAdditionalPermissionRequiredToRun>true</isAdditionalPermissionRequiredToRun>
+    <isAdditionalPermissionRequiredToRun
+  >true</isAdditionalPermissionRequiredToRun>
     <label>SFL_EEOIntake</label>
     <processMetadataValues>
         <name>BuilderType</name>
@@ -1076,7 +1198,8 @@
         <locationX>314</locationX>
         <locationY>350</locationY>
         <connector>
-            <targetReference>ASSIGN_AggrievedPersonDetailsEEOForm</targetReference>
+            <targetReference
+      >ASSIGN_AggrievedPersonDetailsEEOForm</targetReference>
         </connector>
         <inputReference>var_sObj_AggrievedPerson</inputReference>
     </recordCreates>
@@ -1086,7 +1209,8 @@
         <locationX>314</locationX>
         <locationY>2486</locationY>
         <connector>
-            <targetReference>ASSIGN_NewPlOfEmployToDiscrimPerson</targetReference>
+            <targetReference
+      >ASSIGN_NewPlOfEmployToDiscrimPerson</targetReference>
         </connector>
         <inputReference>var_sObj_AccountDiscrimPlaceOfEmploy</inputReference>
     </recordCreates>
@@ -1175,7 +1299,8 @@
         <label>GET_ADRQueue</label>
         <locationX>314</locationX>
         <locationY>5894</locationY>
-        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <assignNullValuesIfNoRecordsFound
+    >false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>ASSIGN_OwnerADRQueue</targetReference>
         </connector>
@@ -1203,7 +1328,8 @@
         <label>GET_CounselingQueue</label>
         <locationX>50</locationX>
         <locationY>5894</locationY>
-        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <assignNullValuesIfNoRecordsFound
+    >false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>ASSIGN_OwnerCounselingQueue</targetReference>
         </connector>
@@ -1255,13 +1381,16 @@
                 <name>Additional_Discriminating_Person_s_Column1</name>
                 <fieldType>Region</fieldType>
                 <fields>
-                    <name>Are_there_additional_Discriminating_Person_s_to_add</name>
+                    <name
+          >Are_there_additional_Discriminating_Person_s_to_add</name>
                     <choiceReferences>choice_Yes</choiceReferences>
                     <choiceReferences>choice_No</choiceReferences>
                     <dataType>String</dataType>
-                    <fieldText>Are there additional Discriminating Person(s) to add?</fieldText>
+                    <fieldText
+          >Are there additional Discriminating Person(s) to add?</fieldText>
                     <fieldType>RadioButtons</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -1301,9 +1430,11 @@
                     <choiceReferences>choice_Yes</choiceReferences>
                     <choiceReferences>choice_No</choiceReferences>
                     <dataType>String</dataType>
-                    <fieldText>Do you have additional witnesses to add?</fieldText>
+                    <fieldText
+          >Do you have additional witnesses to add?</fieldText>
                     <fieldType>RadioButtons</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -1329,14 +1460,16 @@
         <allowFinish>true</allowFinish>
         <allowPause>false</allowPause>
         <connector>
-            <targetReference>ASSIGN_AggrievedPersonDetailContact</targetReference>
+            <targetReference
+      >ASSIGN_AggrievedPersonDetailContact</targetReference>
         </connector>
         <fields>
             <name>Aggrieved_Person_Contact_Information_Section</name>
             <fieldText>Aggrieved Person Contact Information</fieldText>
             <fieldType>RegionContainer</fieldType>
             <fields>
-                <name>Aggrieved_Person_Contact_Information_Section_Column1</name>
+                <name
+        >Aggrieved_Person_Contact_Information_Section_Column1</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>AggrievedPersonName</name>
@@ -1354,7 +1487,8 @@
                             <stringValue>Aggrieved Person Name</stringValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -1363,7 +1497,8 @@
                     <dataType>String</dataType>
                     <fieldText>Job Title/Series/Grade</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <fields>
@@ -1382,7 +1517,8 @@
                             <booleanValue>true</booleanValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -1402,7 +1538,8 @@
                             <booleanValue>true</booleanValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -1434,7 +1571,8 @@
                             <booleanValue>true</booleanValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -1454,7 +1592,8 @@
                             <booleanValue>true</booleanValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -1494,9 +1633,11 @@
                     <name>Permission_to_use_Aggrieved_s_name</name>
                     <choiceReferences>choice_PermUseName</choiceReferences>
                     <dataType>String</dataType>
-                    <fieldText>Permission to use Aggrieved&apos;s name</fieldText>
+                    <fieldText
+          >Permission to use Aggrieved&apos;s name</fieldText>
                     <fieldType>DropdownBox</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -1537,7 +1678,8 @@
                     <dataType>String</dataType>
                     <fieldText>Basis</fieldText>
                     <fieldType>MultiSelectPicklist</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>false</isRequired>
                 </fields>
                 <inputParameters>
@@ -1578,7 +1720,8 @@
                     <dataType>String</dataType>
                     <fieldText>Claim(s) of Alleged Discrimination</fieldText>
                     <fieldType>MultiSelectPicklist</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <fields>
@@ -1586,7 +1729,8 @@
                     <dataType>Date</dataType>
                     <fieldText>Date of Incident</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -1623,7 +1767,8 @@
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>ConfirmationText</name>
-                    <fieldText>&lt;p&gt;Your EEO Initial Intake Questionnaire has been submitted. You can view the questionnaire from the questionnaire list.&lt;/p&gt;</fieldText>
+                    <fieldText
+          >&lt;p&gt;Your EEO Initial Intake Questionnaire has been submitted. You can view the questionnaire from the questionnaire list.&lt;/p&gt;</fieldText>
                     <fieldType>DisplayText</fieldType>
                 </fields>
                 <inputParameters>
@@ -1659,10 +1804,13 @@
                 <name>Remedial_Corrective_Action_Column1</name>
                 <fieldType>Region</fieldType>
                 <fields>
-                    <name>What_remedial_or_corrective_action_is_the_Aggrieved_seeking</name>
-                    <fieldText>What remedial or corrective action is the Aggrieved seeking?</fieldText>
+                    <name
+          >What_remedial_or_corrective_action_is_the_Aggrieved_seeking</name>
+                    <fieldText
+          >What remedial or corrective action is the Aggrieved seeking?</fieldText>
                     <fieldType>LargeTextArea</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -1701,7 +1849,8 @@
                     <name>Details_of_Allegation_s_Issue_s</name>
                     <fieldText>Details of Allegation(s)/Issue(s)</fieldText>
                     <fieldType>LargeTextArea</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -1746,7 +1895,8 @@
                             <booleanValue>false</booleanValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -1755,9 +1905,11 @@
                     <choiceReferences>choice_Yes</choiceReferences>
                     <choiceReferences>choice_No</choiceReferences>
                     <dataType>String</dataType>
-                    <fieldText>Same place of employment as Aggrieved?</fieldText>
+                    <fieldText
+          >Same place of employment as Aggrieved?</fieldText>
                     <fieldType>RadioButtons</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <fields>
@@ -1765,12 +1917,14 @@
                     <dataType>String</dataType>
                     <fieldText>Place of Employment</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>false</isRequired>
                     <visibilityRule>
                         <conditionLogic>and</conditionLogic>
                         <conditions>
-                            <leftValueReference>Same_place_of_employment_as_Aggrieved</leftValueReference>
+                            <leftValueReference
+              >Same_place_of_employment_as_Aggrieved</leftValueReference>
                             <operator>EqualTo</operator>
                             <rightValue>
                                 <elementReference>choice_No</elementReference>
@@ -1794,7 +1948,8 @@
             <dataType>String</dataType>
             <fieldText>Position/Title</fieldText>
             <fieldType>InputField</fieldType>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <inputsOnNextNavToAssocScrn
+      >UseStoredValues</inputsOnNextNavToAssocScrn>
             <isRequired>true</isRequired>
         </fields>
         <fields>
@@ -1813,7 +1968,8 @@
                     <booleanValue>true</booleanValue>
                 </value>
             </inputParameters>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <inputsOnNextNavToAssocScrn
+      >UseStoredValues</inputsOnNextNavToAssocScrn>
             <isRequired>true</isRequired>
             <storeOutputAutomatically>true</storeOutputAutomatically>
         </fields>
@@ -1833,7 +1989,8 @@
                     <booleanValue>true</booleanValue>
                 </value>
             </inputParameters>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <inputsOnNextNavToAssocScrn
+      >UseStoredValues</inputsOnNextNavToAssocScrn>
             <isRequired>true</isRequired>
             <storeOutputAutomatically>true</storeOutputAutomatically>
         </fields>
@@ -1859,12 +2016,15 @@
                 <name>EEO_Counseling_or_ADR_section_Column1</name>
                 <fieldType>Region</fieldType>
                 <fields>
-                    <name>Which_Resolution_Path_does_the_Aggrieved_want_to_proceed_with</name>
+                    <name
+          >Which_Resolution_Path_does_the_Aggrieved_want_to_proceed_with</name>
                     <choiceReferences>choice_ResolutionPath</choiceReferences>
                     <dataType>String</dataType>
-                    <fieldText>Which Resolution Path does the Aggrieved want to proceed with?</fieldText>
+                    <fieldText
+          >Which Resolution Path does the Aggrieved want to proceed with?</fieldText>
                     <fieldType>DropdownBox</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -1893,18 +2053,22 @@
             <targetReference>ASSIGN_PlaceOfEmployment</targetReference>
         </connector>
         <fields>
-            <name>Aggrieved_Person_Contact_Information_Employment_Information</name>
-            <fieldText>Aggrieved Person Contact Information - Employment Information</fieldText>
+            <name
+      >Aggrieved_Person_Contact_Information_Employment_Information</name>
+            <fieldText
+      >Aggrieved Person Contact Information - Employment Information</fieldText>
             <fieldType>RegionContainer</fieldType>
             <fields>
-                <name>Aggrieved_Person_Contact_Information_Employment_Information_Column1</name>
+                <name
+        >Aggrieved_Person_Contact_Information_Employment_Information_Column1</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>Place_of_Employment</name>
                     <dataType>String</dataType>
                     <fieldText>Place of Employment</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <fields>
@@ -1913,7 +2077,8 @@
                     <dataType>String</dataType>
                     <fieldText>Employment Status</fieldText>
                     <fieldType>DropdownBox</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <fields>
@@ -1921,7 +2086,8 @@
                     <dataType>Date</dataType>
                     <fieldText>Date Last Employed at Department</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -1936,18 +2102,22 @@
             <regionContainerType>SectionWithHeader</regionContainerType>
         </fields>
         <fields>
-            <name>Aggrieved_Person_Contact_Information_Initial_Contact_Dates</name>
-            <fieldText>Aggrieved Person Contact Information - Initial Contact Dates</fieldText>
+            <name
+      >Aggrieved_Person_Contact_Information_Initial_Contact_Dates</name>
+            <fieldText
+      >Aggrieved Person Contact Information - Initial Contact Dates</fieldText>
             <fieldType>RegionContainer</fieldType>
             <fields>
-                <name>Aggrieved_Person_Contact_Information_Initial_Contact_Dates_Column1</name>
+                <name
+        >Aggrieved_Person_Contact_Information_Initial_Contact_Dates_Column1</name>
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>Initial_Contact_Date</name>
                     <dataType>Date</dataType>
                     <fieldText>Initial Contact Date</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <fields>
@@ -1955,7 +2125,8 @@
                     <dataType>Date</dataType>
                     <fieldText>Initial Interview Date</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -1982,7 +2153,8 @@
         <allowPause>false</allowPause>
         <fields>
             <name>RecordConfirmationText</name>
-            <fieldText>&lt;p&gt;You will be redirected to the created questionnaire shortly.&lt;/p&gt;</fieldText>
+            <fieldText
+      >&lt;p&gt;You will be redirected to the created questionnaire shortly.&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
         </fields>
         <fields>
@@ -1992,10 +2164,12 @@
             <inputParameters>
                 <name>recordId</name>
                 <value>
-                    <elementReference>var_sObj_EEOIntakeQuestionnaire.Id</elementReference>
+                    <elementReference
+          >var_sObj_EEOIntakeQuestionnaire.Id</elementReference>
                 </value>
             </inputParameters>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <inputsOnNextNavToAssocScrn
+      >UseStoredValues</inputsOnNextNavToAssocScrn>
             <isRequired>true</isRequired>
             <storeOutputAutomatically>true</storeOutputAutomatically>
         </fields>
@@ -2022,11 +2196,14 @@
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>Does_the_Aggrieved_have_a_Representative</name>
-                    <choiceReferences>choice_HasRepresentative</choiceReferences>
+                    <choiceReferences
+          >choice_HasRepresentative</choiceReferences>
                     <dataType>String</dataType>
-                    <fieldText>Does the Aggrieved have a Representative?</fieldText>
+                    <fieldText
+          >Does the Aggrieved have a Representative?</fieldText>
                     <fieldType>DropdownBox</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>false</isRequired>
                 </fields>
                 <inputParameters>
@@ -2067,7 +2244,8 @@
                     <dataType>String</dataType>
                     <fieldText>Is the Representative an attorney?</fieldText>
                     <fieldType>DropdownBox</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <fields>
@@ -2086,7 +2264,8 @@
                             <stringValue>Representative Name</stringValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -2095,7 +2274,8 @@
                     <dataType>String</dataType>
                     <fieldText>Representative&apos;s Title</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <fields>
@@ -2114,7 +2294,8 @@
                             <booleanValue>true</booleanValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -2134,7 +2315,8 @@
                             <booleanValue>true</booleanValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -2145,7 +2327,8 @@
                     <inputParameters>
                         <name>label</name>
                         <value>
-                            <stringValue>Representative Email Address</stringValue>
+                            <stringValue
+              >Representative Email Address</stringValue>
                         </value>
                     </inputParameters>
                     <inputParameters>
@@ -2154,7 +2337,8 @@
                             <booleanValue>true</booleanValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -2206,7 +2390,8 @@
                             <stringValue>Witness Name</stringValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -2215,9 +2400,11 @@
                     <choiceReferences>choice_Yes</choiceReferences>
                     <choiceReferences>choice_No</choiceReferences>
                     <dataType>String</dataType>
-                    <fieldText>Same place of employment as Aggrieved?</fieldText>
+                    <fieldText
+          >Same place of employment as Aggrieved?</fieldText>
                     <fieldType>RadioButtons</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <fields>
@@ -2225,12 +2412,14 @@
                     <dataType>String</dataType>
                     <fieldText>Place of Employment</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>false</isRequired>
                     <visibilityRule>
                         <conditionLogic>and</conditionLogic>
                         <conditions>
-                            <leftValueReference>Same_place_of_employment_as_Aggrieved_Witness</leftValueReference>
+                            <leftValueReference
+              >Same_place_of_employment_as_Aggrieved_Witness</leftValueReference>
                             <operator>EqualTo</operator>
                             <rightValue>
                                 <elementReference>choice_No</elementReference>
@@ -2243,7 +2432,8 @@
                     <dataType>String</dataType>
                     <fieldText>Position/Title</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <fields>
@@ -2256,7 +2446,8 @@
                             <booleanValue>true</booleanValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -2270,7 +2461,8 @@
                             <booleanValue>true</booleanValue>
                         </value>
                     </inputParameters>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                     <storeOutputAutomatically>true</storeOutputAutomatically>
                 </fields>
@@ -2292,7 +2484,8 @@
         <locationX>188</locationX>
         <locationY>0</locationY>
         <connector>
-            <targetReference>Aggrieved_Person_Contact_Information</targetReference>
+            <targetReference
+      >Aggrieved_Person_Contact_Information</targetReference>
         </connector>
     </start>
     <status>Active</status>

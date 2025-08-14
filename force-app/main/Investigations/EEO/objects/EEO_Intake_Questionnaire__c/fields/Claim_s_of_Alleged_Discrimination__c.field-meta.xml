@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Claim_s_of_Alleged_Discrimination__c</fullName>
     <label>Claim(s) of Alleged Discrimination</label>
@@ -81,12 +81,14 @@
                 <label>Harassment-Sexual</label>
             </value>
             <value>
-                <fullName>Harassment-Hostile Work Environment (non-sexual)</fullName>
+                <fullName
+        >Harassment-Hostile Work Environment (non-sexual)</fullName>
                 <default>false</default>
                 <label>Harassment-Hostile Work Environment (non-sexual)</label>
             </value>
             <value>
-                <fullName>Harassment-Hostile Work Environment (sexual)</fullName>
+                <fullName
+        >Harassment-Hostile Work Environment (sexual)</fullName>
                 <default>false</default>
                 <label>Harassment-Hostile Work Environment (sexual)</label>
             </value>
@@ -101,7 +103,8 @@
                 <label>Harassment-Pay Including Overtime</label>
             </value>
             <value>
-                <fullName>Harassment- Performance Evaluation/ Appraisal</fullName>
+                <fullName
+        >Harassment- Performance Evaluation/ Appraisal</fullName>
                 <default>false</default>
                 <label>Harassment- Performance Evaluation/ Appraisal</label>
             </value>
@@ -121,9 +124,11 @@
                 <label>Reassignment-Directed</label>
             </value>
             <value>
-                <fullName>Reassignment-Reasonable Accommodation – Disability</fullName>
+                <fullName
+        >Reassignment-Reasonable Accommodation – Disability</fullName>
                 <default>false</default>
-                <label>Reassignment-Reasonable Accommodation – Disability</label>
+                <label
+        >Reassignment-Reasonable Accommodation – Disability</label>
             </value>
             <value>
                 <fullName>Reassignment-Reinstatement</fullName>
@@ -141,9 +146,11 @@
                 <label>Reassignment-Retirement</label>
             </value>
             <value>
-                <fullName>Reassignment-Sex Stereotyping (LGBT- related discrimination only)</fullName>
+                <fullName
+        >Reassignment-Sex Stereotyping (LGBT- related discrimination only)</fullName>
                 <default>false</default>
-                <label>Reassignment-Sex Stereotyping (LGBT- related discrimination only)</label>
+                <label
+        >Reassignment-Sex Stereotyping (LGBT- related discrimination only)</label>
             </value>
             <value>
                 <fullName>Reassignment-Telework</fullName>

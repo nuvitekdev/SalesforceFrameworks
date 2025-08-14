@@ -1,71 +1,73 @@
 .carousel-container {
-    overflow: hidden;
-    width: 100%;
-    position: relative;
+  overflow: hidden;
+  width: 100%;
+  position: relative;
 }
 
 .carousel {
-    display: flex;
-    transition: transform 1.5s ease-in-out;
+  display: flex;
+  transition: transform 1.5s ease-in-out;
 }
 
 .carousel-slide {
-    flex: 0 0 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly; /* Adjust spacing to content */
+  flex: 0 0 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly; /* Adjust spacing to content */
 }
 
 .news-image {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .text-container {
-    padding: 10px; /* Adjust padding for text container */
+  padding: 10px; /* Adjust padding for text container */
 }
 
-.news-title, .news-description, .news-source {
-    margin: 5px 0; /* Adjust margin for text */
+.news-title,
+.news-description,
+.news-source {
+  margin: 5px 0; /* Adjust margin for text */
 }
 
 .news-title {
-    font-weight: bold;
-    font-size: 1.25rem; /* Adjust font size for title */
+  font-weight: bold;
+  font-size: 1.25rem; /* Adjust font size for title */
 }
 
 .news-description {
-    font-size: 1rem; /* Adjust font size for description */
+  font-size: 1rem; /* Adjust font size for description */
 }
 
 .news-source {
-    font-size: 0.875rem; /* Adjust font size for source */
-    text-align: right;
+  font-size: 0.875rem; /* Adjust font size for source */
+  text-align: right;
 }
 
 .carousel-navigation {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px 0; /* Adjust padding for navigation area */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0; /* Adjust padding for navigation area */
 }
 
 .nav-arrow {
-    background-color: transparent;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #0070d2; /* You can change the color as needed */
-    margin: 0 20px; /* Space between arrows */
+  background-color: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #0070d2; /* You can change the color as needed */
+  margin: 0 20px; /* Space between arrows */
 }
 
 /* Optional: Add responsiveness to the carousel */
 @media (max-width: 768px) {
-    .news-title {
-        font-size: 1rem; /* Smaller font size on mobile */
-    }
+  .news-title {
+    font-size: 1rem; /* Smaller font size on mobile */
+  }
 }

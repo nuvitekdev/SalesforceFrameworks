@@ -144,4 +144,4 @@ This component is available under the MIT License. See LICENSE.md for details.
 
 ---
 
-*Developed by Nuvitek - Transforming business through innovative Salesforce solutions.* 
+_Developed by Nuvitek - Transforming business through innovative Salesforce solutions._

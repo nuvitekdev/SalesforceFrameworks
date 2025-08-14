@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>59.0</apiVersion>
     <decisions>
@@ -11,14 +11,16 @@
             <name>Inconclusive_or_Unsubstantial</name>
             <conditionLogic>or</conditionLogic>
             <conditions>
-                <leftValueReference>$Record.Status_Reason__c</leftValueReference>
+                <leftValueReference
+        >$Record.Status_Reason__c</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <stringValue>Unsubstantial</stringValue>
                 </rightValue>
             </conditions>
             <conditions>
-                <leftValueReference>$Record.Status_Reason__c</leftValueReference>
+                <leftValueReference
+        >$Record.Status_Reason__c</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <stringValue>Inconclusive</stringValue>
@@ -50,14 +52,16 @@
                 </rightValue>
             </conditions>
             <conditions>
-                <leftValueReference>$Record__Prior.Status__c</leftValueReference>
+                <leftValueReference
+        >$Record__Prior.Status__c</leftValueReference>
                 <operator>NotEqualTo</operator>
                 <rightValue>
                     <stringValue>Active</stringValue>
                 </rightValue>
             </conditions>
             <connector>
-                <targetReference>Update_Investigation_Start_Date</targetReference>
+                <targetReference
+        >Update_Investigation_Start_Date</targetReference>
             </connector>
             <label>Set Active</label>
         </rules>
@@ -72,7 +76,8 @@
                 </rightValue>
             </conditions>
             <conditions>
-                <leftValueReference>$Record__Prior.Status__c</leftValueReference>
+                <leftValueReference
+        >$Record__Prior.Status__c</leftValueReference>
                 <operator>NotEqualTo</operator>
                 <rightValue>
                     <stringValue>Closed</stringValue>
@@ -85,7 +90,8 @@
         </rules>
     </decisions>
     <environments>Default</environments>
-    <interviewLabel>Investigation On Create {!$Flow.CurrentDateTime}</interviewLabel>
+    <interviewLabel
+  >Investigation On Create {!$Flow.CurrentDateTime}</interviewLabel>
     <label>Investigation On Update</label>
     <loops>
         <name>Loop_Related_Actions</name>
@@ -122,7 +128,8 @@
         <label>Get Related Actions Taken</label>
         <locationX>182</locationX>
         <locationY>731</locationY>
-        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <assignNullValuesIfNoRecordsFound
+    >false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>Loop_Related_Actions</targetReference>
         </connector>

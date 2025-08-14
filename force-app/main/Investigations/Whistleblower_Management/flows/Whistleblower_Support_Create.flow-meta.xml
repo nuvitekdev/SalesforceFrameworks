@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <actionCalls>
         <name>SendEmail</name>
@@ -54,14 +54,16 @@
             <assignToReference>WhistleblowerReportId</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>Whistleblower_Report_Selection</elementReference>
+                <elementReference
+        >Whistleblower_Report_Selection</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
             <assignToReference>WhistleblowerReportName</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>Whistleblower_Report_for_Authenticated.Name</elementReference>
+                <elementReference
+        >Whistleblower_Report_for_Authenticated.Name</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -95,7 +97,8 @@
         <name>EmailBody</name>
         <dataType>String</dataType>
         <value>
-            <stringValue>We have received your support ticket and it will undergo evaluation now.    Any updates to your support ticket can be found in the portal.  To view your support tickets in the portal, click &quot;View Submissions &amp; Results&quot; in the navigation menu and then click, &quot;Support Cases&quot;.  Updates to your support cases will also be sent to you view email.    Helpful Links  Portal Login: https://nuvitekllc--benhuttdev.sandbox.my.site.com/wbr/login  Support Tickets: https://nuvitekllc--benhuttdev.sandbox.my.site.com/wbr/s/recordlist/Whistleblower_Support__c/00B5C0000045qALUAY    NOTE: We will send you an email now to confirm your support ticket submission along with the information above.</stringValue>
+            <stringValue
+      >We have received your support ticket and it will undergo evaluation now.    Any updates to your support ticket can be found in the portal.  To view your support tickets in the portal, click &quot;View Submissions &amp; Results&quot; in the navigation menu and then click, &quot;Support Cases&quot;.  Updates to your support cases will also be sent to you view email.    Helpful Links  Portal Login: https://nuvitekllc--benhuttdev.sandbox.my.site.com/wbr/login  Support Tickets: https://nuvitekllc--benhuttdev.sandbox.my.site.com/wbr/s/recordlist/Whistleblower_Support__c/00B5C0000045qALUAY    NOTE: We will send you an email now to confirm your support ticket submission along with the information above.</stringValue>
         </value>
     </constants>
     <decisions>
@@ -111,7 +114,8 @@
             <name>Is_Anonymous</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>New_Whistleblower_Support.Anonymous__c</leftValueReference>
+                <leftValueReference
+        >New_Whistleblower_Support.Anonymous__c</leftValueReference>
                 <operator>EqualTo</operator>
                 <rightValue>
                     <booleanValue>false</booleanValue>
@@ -176,10 +180,13 @@
     <formulas>
         <name>WhistleblowerReportNameFormula</name>
         <dataType>String</dataType>
-        <expression>&apos;Whistleblower Report:&apos; + &apos; &apos; + {!WhistleblowerReportName}</expression>
+        <expression
+    >&apos;Whistleblower Report:&apos; + &apos; &apos; + {!WhistleblowerReportName}</expression>
     </formulas>
-    <interviewLabel>Whistleblower Support Create {!$Flow.CurrentDateTime}</interviewLabel>
-    <isAdditionalPermissionRequiredToRun>true</isAdditionalPermissionRequiredToRun>
+    <interviewLabel
+  >Whistleblower Support Create {!$Flow.CurrentDateTime}</interviewLabel>
+    <isAdditionalPermissionRequiredToRun
+  >true</isAdditionalPermissionRequiredToRun>
     <label>Whistleblower Support Create</label>
     <processMetadataValues>
         <name>BuilderType</name>
@@ -222,7 +229,8 @@
         <label>New Whistleblower Support</label>
         <locationX>314</locationX>
         <locationY>242</locationY>
-        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <assignNullValuesIfNoRecordsFound
+    >false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>Is_Anonymous_Submitter</targetReference>
         </connector>
@@ -243,7 +251,8 @@
         <label>Whistleblower Records</label>
         <locationX>314</locationX>
         <locationY>458</locationY>
-        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <assignNullValuesIfNoRecordsFound
+    >false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>Copy_1_of_Anonymous_Screen</targetReference>
         </connector>
@@ -264,9 +273,11 @@
         <label>Whistleblower Report</label>
         <locationX>50</locationX>
         <locationY>566</locationY>
-        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <assignNullValuesIfNoRecordsFound
+    >false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>Copy_1_of_Assign_Whistleblower_Record</targetReference>
+            <targetReference
+      >Copy_1_of_Assign_Whistleblower_Record</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>
@@ -285,7 +296,8 @@
         <label>Whistleblower Report for Authenticated</label>
         <locationX>314</locationX>
         <locationY>674</locationY>
-        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <assignNullValuesIfNoRecordsFound
+    >false</assignNullValuesIfNoRecordsFound>
         <connector>
             <targetReference>Update_Support_Record_Reporter</targetReference>
         </connector>
@@ -294,7 +306,8 @@
             <field>Id</field>
             <operator>EqualTo</operator>
             <value>
-                <elementReference>Whistleblower_Report_Selection</elementReference>
+                <elementReference
+        >Whistleblower_Report_Selection</elementReference>
             </value>
         </filters>
         <getFirstRecordOnly>true</getFirstRecordOnly>
@@ -314,13 +327,15 @@
             <field>Id</field>
             <operator>EqualTo</operator>
             <value>
-                <elementReference>New_Whistleblower_Support.Id</elementReference>
+                <elementReference
+        >New_Whistleblower_Support.Id</elementReference>
             </value>
         </filters>
         <inputAssignments>
             <field>Reporter__c</field>
             <value>
-                <elementReference>Whistleblower_Report_for_Authenticated.Reporter__c</elementReference>
+                <elementReference
+        >Whistleblower_Report_for_Authenticated.Reporter__c</elementReference>
             </value>
         </inputAssignments>
         <object>Whistleblower_Support__c</object>
@@ -338,13 +353,15 @@
             <field>Id</field>
             <operator>EqualTo</operator>
             <value>
-                <elementReference>New_Whistleblower_Support.Id</elementReference>
+                <elementReference
+        >New_Whistleblower_Support.Id</elementReference>
             </value>
         </filters>
         <inputAssignments>
             <field>Name</field>
             <value>
-                <elementReference>WhistleblowerReportNameFormula</elementReference>
+                <elementReference
+        >WhistleblowerReportNameFormula</elementReference>
             </value>
         </inputAssignments>
         <inputAssignments>
@@ -381,12 +398,14 @@
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>DisplayTextUniqueIdInstructions</name>
-                    <fieldText>&lt;p&gt;&lt;strong&gt;Locate your Unique Identifier:&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;em&gt;&lt;u&gt;&lt;span class=&quot;ql-cursor&quot;&gt;﻿&lt;/span&gt;&lt;/u&gt;&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;background-color: rgb(255, 255, 255); color: rgb(68, 68, 68);&quot;&gt;Your Unique Identifier was shown to you upon submitting your report. At that time, it was also emailed to you, and there was an option to download your Unique Identifier to your computer. If you did not download this file, refer to your email to find your Unique Identifier.&lt;/span&gt;&lt;/p&gt;</fieldText>
+                    <fieldText
+          >&lt;p&gt;&lt;strong&gt;Locate your Unique Identifier:&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;em&gt;&lt;u&gt;&lt;span class=&quot;ql-cursor&quot;&gt;﻿&lt;/span&gt;&lt;/u&gt;&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;background-color: rgb(255, 255, 255); color: rgb(68, 68, 68);&quot;&gt;Your Unique Identifier was shown to you upon submitting your report. At that time, it was also emailed to you, and there was an option to download your Unique Identifier to your computer. If you did not download this file, refer to your email to find your Unique Identifier.&lt;/span&gt;&lt;/p&gt;</fieldText>
                     <fieldType>DisplayText</fieldType>
                 </fields>
                 <fields>
                     <name>DisplayTextUniqueIdentifierIntro</name>
-                    <fieldText>&lt;p&gt;&lt;strong&gt;Enter your Unique Identifier below:&lt;/strong&gt;&lt;/p&gt;</fieldText>
+                    <fieldText
+          >&lt;p&gt;&lt;strong&gt;Enter your Unique Identifier below:&lt;/strong&gt;&lt;/p&gt;</fieldText>
                     <fieldType>DisplayText</fieldType>
                 </fields>
                 <inputParameters>
@@ -411,7 +430,8 @@
                     <dataType>String</dataType>
                     <fieldText>Unique Identifier</fieldText>
                     <fieldType>InputField</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>true</isRequired>
                 </fields>
                 <inputParameters>
@@ -470,7 +490,8 @@
         <allowFinish>true</allowFinish>
         <allowPause>true</allowPause>
         <connector>
-            <targetReference>Whistleblower_Report_for_Authenticated</targetReference>
+            <targetReference
+      >Whistleblower_Report_for_Authenticated</targetReference>
         </connector>
         <fields>
             <name>Copy_1_of_Anonymous_Screen_Section1</name>
@@ -480,7 +501,8 @@
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>DisplayReport</name>
-                    <fieldText>&lt;p&gt;&lt;strong&gt;Select A Report:&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 12px;&quot;&gt;The dropdown to the right contains a list of all reports that you have submitted, so select the report you&apos;re inquiring about:&lt;/span&gt;&lt;/p&gt;</fieldText>
+                    <fieldText
+          >&lt;p&gt;&lt;strong&gt;Select A Report:&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 12px;&quot;&gt;The dropdown to the right contains a list of all reports that you have submitted, so select the report you&apos;re inquiring about:&lt;/span&gt;&lt;/p&gt;</fieldText>
                     <fieldType>DisplayText</fieldType>
                 </fields>
                 <inputParameters>
@@ -496,11 +518,13 @@
                 <fieldType>Region</fieldType>
                 <fields>
                     <name>Whistleblower_Report_Selection</name>
-                    <choiceReferences>WhistleblowerRecordChoices</choiceReferences>
+                    <choiceReferences
+          >WhistleblowerRecordChoices</choiceReferences>
                     <dataType>String</dataType>
                     <fieldText>Whistleblower Report Selection</fieldText>
                     <fieldType>DropdownBox</fieldType>
-                    <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+                    <inputsOnNextNavToAssocScrn
+          >UseStoredValues</inputsOnNextNavToAssocScrn>
                     <isRequired>false</isRequired>
                 </fields>
                 <inputParameters>
@@ -535,7 +559,8 @@
                     <elementReference>Whistleblower_Support</elementReference>
                 </value>
             </inputParameters>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <inputsOnNextNavToAssocScrn
+      >UseStoredValues</inputsOnNextNavToAssocScrn>
             <isRequired>true</isRequired>
             <storeOutputAutomatically>true</storeOutputAutomatically>
         </fields>
@@ -555,7 +580,8 @@
         </connector>
         <fields>
             <name>DisplayText_Confirmation</name>
-            <fieldText>&lt;p&gt;&lt;strong style=&quot;color: rgb(45, 163, 6);&quot;&gt;We have received your support ticket and it will undergo evaluation now.&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Any updates to your support ticket can be found in the portal.  To view your support tickets in the portal, click &quot;View Submissions &amp;amp; Results&quot; in the navigation menu and then click, &quot;Support Cases&quot;.  Updates to your support cases will also be sent to you view email.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;em&gt;&lt;u&gt;Helpful Links&lt;/u&gt;&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Portal Login:&lt;/strong&gt; &lt;a href=&quot;https://nuvitekllc--benhuttdev.sandbox.my.site.com/wbr/login&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;https://nuvitekllc--benhuttdev.sandbox.my.site.com/wbr/login&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Support Tickets: &lt;/strong&gt;&lt;a href=&quot;https://nuvitekllc--benhuttdev.sandbox.my.site.com/wbr/s/recordlist/Whistleblower_Support__c/00B5C0000045qALUAY&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;https://nuvitekllc--benhuttdev.sandbox.my.site.com/wbr/s/recordlist/Whistleblower_Support__c/00B5C0000045qALUAY&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;NOTE: We will send you an email now to confirm your support ticket submission along with the information above.&lt;/em&gt;&lt;/p&gt;</fieldText>
+            <fieldText
+      >&lt;p&gt;&lt;strong style=&quot;color: rgb(45, 163, 6);&quot;&gt;We have received your support ticket and it will undergo evaluation now.&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Any updates to your support ticket can be found in the portal.  To view your support tickets in the portal, click &quot;View Submissions &amp;amp; Results&quot; in the navigation menu and then click, &quot;Support Cases&quot;.  Updates to your support cases will also be sent to you view email.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;em&gt;&lt;u&gt;Helpful Links&lt;/u&gt;&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Portal Login:&lt;/strong&gt; &lt;a href=&quot;https://nuvitekllc--benhuttdev.sandbox.my.site.com/wbr/login&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;https://nuvitekllc--benhuttdev.sandbox.my.site.com/wbr/login&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Support Tickets: &lt;/strong&gt;&lt;a href=&quot;https://nuvitekllc--benhuttdev.sandbox.my.site.com/wbr/s/recordlist/Whistleblower_Support__c/00B5C0000045qALUAY&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;https://nuvitekllc--benhuttdev.sandbox.my.site.com/wbr/s/recordlist/Whistleblower_Support__c/00B5C0000045qALUAY&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;NOTE: We will send you an email now to confirm your support ticket submission along with the information above.&lt;/em&gt;&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
         </fields>
         <nextOrFinishButtonLabel>Finish</nextOrFinishButtonLabel>
@@ -575,14 +601,16 @@
         </connector>
         <fields>
             <name>DisplayTextQuestion</name>
-            <fieldText>&lt;p&gt;&lt;strong&gt;Question / Concern&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;In the box below, describe your question or concern in as much detail as possible and we will get back to you as quick as possible.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;NOTE: You will always be able to find our response to the support ticket you are currently creating by navigating to your support tickets in the portal and checking for any updated responses on the record.  Additionally, if you are a Non-Anonymous user and you have opted for email and (or) text updates, you will be notified of a response in that way as well.&lt;/em&gt;&lt;/p&gt;</fieldText>
+            <fieldText
+      >&lt;p&gt;&lt;strong&gt;Question / Concern&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;In the box below, describe your question or concern in as much detail as possible and we will get back to you as quick as possible.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;em&gt;NOTE: You will always be able to find our response to the support ticket you are currently creating by navigating to your support tickets in the portal and checking for any updated responses on the record.  Additionally, if you are a Non-Anonymous user and you have opted for email and (or) text updates, you will be notified of a response in that way as well.&lt;/em&gt;&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
         </fields>
         <fields>
             <name>Question_Details</name>
             <fieldText>Question Details</fieldText>
             <fieldType>LargeTextArea</fieldType>
-            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <inputsOnNextNavToAssocScrn
+      >UseStoredValues</inputsOnNextNavToAssocScrn>
             <isRequired>true</isRequired>
         </fields>
         <showFooter>true</showFooter>

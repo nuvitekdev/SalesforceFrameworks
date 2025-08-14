@@ -1,21 +1,41 @@
 <template>
-    <lightning-card title="Response Time Tracker" icon-name="custom:custom63" class="slds-var-p-horizontal_small slds-var-p-vertical_medium sla-tracker-card">
-        <div class="slds-grid slds-wrap">
-            <template if:true={recordId}>
-                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-var-p-around_small" style="text-align: center;">
-                    <span class="label slds-text-heading_small slds-text-color_weak" style="margin-bottom: 7px;">SLA Status:</span>
-                    <p class={statusClass}>{slaStatus}</p>
-                </div>
-                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-var-p-around_small" style="text-align: center;">
-                    <span class="label slds-text-heading_small slds-text-color_weak">Time Until SLA Breach:</span>
-                    <p class="value slds-text-heading_medium slds-m-top_x-small">{timeUntilSLABreach}</p>
-                </div>
-            </template>
-            <template if:false={recordId}>
-                <div class="slds-col slds-size_1-of-1 slds-text-body_regular slds-var-p-around_medium">
-                    Select a record to view its SLA status.
-                </div>
-            </template>
+  <lightning-card
+    title="Response Time Tracker"
+    icon-name="custom:custom63"
+    class="slds-var-p-horizontal_small slds-var-p-vertical_medium sla-tracker-card"
+  >
+    <div class="slds-grid slds-wrap">
+      <template if:true={recordId}>
+        <div
+          class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-var-p-around_small"
+          style="text-align: center"
+        >
+          <span
+            class="label slds-text-heading_small slds-text-color_weak"
+            style="margin-bottom: 7px"
+            >SLA Status:</span
+          >
+          <p class={statusClass}>{slaStatus}</p>
         </div>
-    </lightning-card>
+        <div
+          class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-var-p-around_small"
+          style="text-align: center"
+        >
+          <span class="label slds-text-heading_small slds-text-color_weak"
+            >Time Until SLA Breach:</span
+          >
+          <p class="value slds-text-heading_medium slds-m-top_x-small">
+            {timeUntilSLABreach}
+          </p>
+        </div>
+      </template>
+      <template if:false={recordId}>
+        <div
+          class="slds-col slds-size_1-of-1 slds-text-body_regular slds-var-p-around_medium"
+        >
+          Select a record to view its SLA status.
+        </div>
+      </template>
+    </div>
+  </lightning-card>
 </template>

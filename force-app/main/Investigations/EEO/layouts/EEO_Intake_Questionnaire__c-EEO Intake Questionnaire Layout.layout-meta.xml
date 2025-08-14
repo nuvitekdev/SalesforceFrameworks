@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <Layout xmlns="http://soap.sforce.com/2006/04/metadata">
     <excludeButtons>Submit</excludeButtons>
     <layoutSections>
@@ -224,9 +224,9 @@
         <detailHeading>false</detailHeading>
         <editHeading>true</editHeading>
         <label>Custom Links</label>
-        <layoutColumns/>
-        <layoutColumns/>
-        <layoutColumns/>
+        <layoutColumns />
+        <layoutColumns />
+        <layoutColumns />
         <style>CustomLinks</style>
     </layoutSections>
     <relatedLists>
@@ -235,7 +235,8 @@
         <fields>Account.ACC_NAME</fields>
         <fields>Contact.CNTC_TITLE</fields>
         <fields>Contact.CNTC_PHONE1</fields>
-        <relatedList>Alleged_Discriminating_Person__c.EEO_Intake_Questionnaire__c</relatedList>
+        <relatedList
+    >Alleged_Discriminating_Person__c.EEO_Intake_Questionnaire__c</relatedList>
     </relatedLists>
     <relatedLists>
         <fields>Contact.CNTC_FIRST_NAME</fields>

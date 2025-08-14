@@ -1,440 +1,534 @@
 <template>
-    <div class="support-requester-container" data-theme={themeClass}>
-        <div class={layoutClass}>
-            <!-- Support Request Section -->
-            <div class="support-form-section">
-                <!-- Header with title -->
-                <div class="support-header">
-                    <div class="support-title">{componentTitle}</div>
-                    <template if:true={recording}>
-                        <div class="recording-indicator">
-                            <div class="recording-dot"></div>
-                            <span>Recording</span>
-                        </div>
-                    </template>
-                </div>
-                
-                <!-- Main form content -->
-                <div class="form-content">
-                    <!-- Case Information Form -->
-                    <div class="case-form">
-                        <div class="form-field">
-                            <label for="caseSubject">Subject</label>
-                            <input 
-                                type="text" 
-                                id="caseSubject" 
-                                class="form-input" 
-                                placeholder="Brief description of your issue"
-                                value={caseSubject}
-                                onchange={handleSubjectChange} 
-                                required>
-                        </div>
-                        
-                        <div class="form-field">
-                            <label for="caseDescription">Description</label>
-                            <textarea 
-                                id="caseDescription" 
-                                class="form-textarea" 
-                                placeholder="Please describe your issue in detail"
-                                onchange={handleDescriptionChange}
-                                required>
-                            </textarea>
-                        </div>
-                        
-                        <div class="form-field">
-                            <label for="casePriority">Priority</label>
-                            <div class="select-container">
-                                <select 
-                                    id="casePriority" 
-                                    class="form-select"
-                                    onchange={handlePriorityChange}>
-                                    <option value="Low">Low</option>
-                                    <option value="Medium" selected>Medium</option>
-                                    <option value="High">High</option>
-                                    <option value="Critical">Critical</option>
-                                </select>
-                                <div class="select-arrow">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="appContext">Application Context</label>
-                            <input 
-                                type="text" 
-                                id="appContext" 
-                                class="form-input" 
-                                placeholder="Enter the application you need support with"
-                                value={appContext}
-                                onchange={handleAppContextChange}
-                            />
-                        </div>
-                        
-                        <!-- User Contact Information Section -->
-                        <div class="form-section-divider">
-                            <div class="divider-label">Contact Information</div>
-                        </div>
-                        
-                        <!-- Name Field - For all users but will be auto-populated for authenticated users -->
-                        <div class="form-field">
-                            <label for="userName">Name</label>
-                            <input 
-                                type="text" 
-                                id="suppliedName" 
-                                class="form-input" 
-                                placeholder="Your name"
-                                value={suppliedName}
-                                onchange={handleSuppliedNameChange}
-                                disabled={isNameFieldDisabled}
-                                required={isNameFieldRequired}
-                            />
-                        </div>
-                        
-                        <!-- Email Field -->
-                        <div class="form-field">
-                            <label for="userEmail">Email</label>
-                            <input 
-                                type="email" 
-                                id="userEmail" 
-                                class="form-input" 
-                                placeholder="Your email address"
-                                value={userEmail}
-                                onchange={handleEmailChange}
-                                required
-                            />
-                        </div>
-                        
-                        <!-- Phone Field -->
-                        <div class="form-field">
-                            <label for="userPhone">Phone</label>
-                            <input 
-                                type="tel" 
-                                id="userPhone" 
-                                class="form-input" 
-                                placeholder="Your phone number"
-                                value={userPhone}
-                                onchange={handlePhoneChange}
-                            />
-                        </div>
-                        
-                        <!-- Contact/User Fields - Only shown for portal users -->
-                        <template if:true={isPortalUser}>
-                            <div class="form-field">
-                                <label for="contactName">Contact</label>
-                                <input 
-                                    type="text" 
-                                    id="contactName" 
-                                    class="form-input" 
-                                    value={contactName}
-                                    disabled
-                                />
-                                <input type="hidden" id="contactId" value={contactId} />
-                            </div>
-                        </template>
-                        
-                        <!-- Internal User Field - Only shown for internal users -->
-                        <template if:false={isPortalUser}>
-                            <div class="form-field">
-                                <label for="userName">Submitted By</label>
-                                <input 
-                                    type="text" 
-                                    id="userName" 
-                                    class="form-input" 
-                                    value={userName}
-                                    disabled
-                                />
-                                <input type="hidden" id="userId" value={userId} />
-                            </div>
-                        </template>
-                    </div>
-                    
-                    <!-- Media Capture Section -->
-                    <template if:true={showMediaSection}>
-                        <!-- Instructions above media sections -->
-                        <template if:true={showInstructions}>
-                            <div class="instructions-container media-instructions">
-                                <div class="instructions-header">
-                                    <lightning-icon icon-name="utility:info" alternative-text="Information" size="small"></lightning-icon>
-                                    <h3>{instructionsTitle}</h3>
-                                </div>
-                                <div class="instructions-content">
-                                    <lightning-formatted-rich-text 
-                                        value={instructionsTextFormatted}>
-                                    </lightning-formatted-rich-text>
-                                </div>
-                            </div>
-                        </template>
-
-                        <div class="media-sections-container">
-                            <!-- Screen Recording Section - Directly shown when enabled -->
-                            <template if:true={enableScreenRecording}>
-                                <div class="recorder-section">
-                                    <div class="recorder-label">Screen Recording</div>
-                                    
-                                    <!-- Video container -->
-                                    <div class="video-container">
-                                        <!-- Permission error state -->
-                                        <template if:true={permissionDenied}>
-                                            <div class="permission-error">
-                                                <lightning-icon icon-name="utility:error" alternative-text="Error" size="medium" class="error-icon"></lightning-icon>
-                                                <div class="error-message">{errorMessage}</div>
-                                                <lightning-button
-                                                    label="Try Again"
-                                                    onclick={handleRetryPermissions}
-                                                    variant="brand"
-                                                    class="retry-button">
-                                                </lightning-button>
-                                            </div>
-                                        </template>
-                                        
-                                        <!-- Live preview or recorded preview -->
-                                        <template if:true={showVideo}>
-                                            <video 
-                                                class="video-element" 
-                                                autoplay
-                                                muted={streamActive}
-                                                controls={showPreview}
-                                                src={videoUrl}
-                                                playsinline
-                                            ></video>
-                                        </template>
-                                        
-                                        <!-- Countdown overlay -->
-                                        <template if:true={showCountdown}>
-                                            <div class="countdown-overlay">
-                                                <div class="countdown-number">{countdown}</div>
-                                            </div>
-                                        </template>
-                                        
-                                        <!-- No video state -->
-                                        <template if:false={showVideo}>
-                                            <div class="no-video">
-                                                <lightning-icon icon-name="utility:video" alternative-text="Video" size="medium"></lightning-icon>
-                                                <p>Click Record to start</p>
-                                            </div>
-                                        </template>
-                                    </div>
-                                    
-                                    <!-- Recording timer progress -->
-                                    <template if:true={recording}>
-                                        <div class="timer-container">
-                                            <div class="timer-progress">
-                                                <div class="timer-bar" lwc:dom="manual"></div>
-                                            </div>
-                                            <div class="timer-display">{recordingTimeFormatted}</div>
-                                        </div>
-                                    </template>
-                                    
-                                    <!-- Recording controls -->
-                                    <div class="controls-container">
-                                        <!-- Primary Button: Record/Stop -->
-                                        <div class="primary-action">
-                                            <lightning-button
-                                                variant={recordButtonVariant}
-                                                label={recordButtonLabel}
-                                                onclick={handleRecordClick}
-                                                disabled={recordButtonDisabled}
-                                                class="control-button">
-                                            </lightning-button>
-                                        </div>
-                                        
-                                        <!-- Action buttons (only show when there's a preview) -->
-                                        <template if:true={showPreview}>
-                                            <div class="action-buttons">
-                                                <lightning-button
-                                                    variant="neutral"
-                                                    label="Discard"
-                                                    onclick={handleDiscardClick}
-                                                    disabled={isProcessing}
-                                                    class="control-button discard-button">
-                                                </lightning-button>
-                                                
-                                                <!-- Download button -->
-                                                <template if:true={showDownloadButton}>
-                                                    <lightning-button
-                                                        variant="neutral"
-                                                        label="Download"
-                                                        onclick={handleDownloadClick}
-                                                        disabled={isProcessing}
-                                                        class="control-button download-button">
-                                                    </lightning-button>
-                                                </template>
-                                            </div>
-                                        </template>
-                                    </div>
-                                </div>
-                            </template>
-                            
-                            <!-- Screenshot Section - Directly shown when enabled -->
-                            <template if:true={enableScreenshot}>
-                                <div class="recorder-section">
-                                    <div class="recorder-label">Screenshot</div>
-                                    
-                                    <!-- Screenshot container -->
-                                    <div class="video-container">
-                                        <!-- Permission error state -->
-                                        <template if:true={screenshotPermissionDenied}>
-                                            <div class="permission-error">
-                                                <lightning-icon icon-name="utility:error" alternative-text="Error" size="medium" class="error-icon"></lightning-icon>
-                                                <div class="error-message">{screenshotErrorMessage}</div>
-                                                <lightning-button
-                                                    label="Try Again"
-                                                    onclick={handleRetryScreenshotPermissions}
-                                                    variant="brand"
-                                                    class="retry-button">
-                                                </lightning-button>
-                                            </div>
-                                        </template>
-                                        
-                                        <!-- Screenshot preview -->
-                                        <template if:true={showScreenshot}>
-                                            <img 
-                                                class="screenshot-element" 
-                                                src={screenshotUrl}
-                                                alt="Screen Capture"
-                                            />
-                                        </template>
-                                        
-                                        <!-- No screenshot state -->
-                                        <template if:false={showScreenshot}>
-                                            <div class="no-video">
-                                                <lightning-icon icon-name="utility:photo" alternative-text="Screenshot" size="medium"></lightning-icon>
-                                                <p>Click Capture to take a screenshot</p>
-                                            </div>
-                                        </template>
-                                    </div>
-                                    
-                                    <!-- Screenshot controls -->
-                                    <div class="controls-container">
-                                        <!-- Primary Button: Screenshot -->
-                                        <div class="primary-action">
-                                            <lightning-button
-                                                variant="brand"
-                                                label="Capture Screenshot"
-                                                onclick={handleTakeScreenshot}
-                                                disabled={screenshotButtonDisabled}
-                                                class="control-button">
-                                            </lightning-button>
-                                        </div>
-                                        
-                                        <!-- Screenshot discard button -->
-                                        <template if:true={showScreenshot}>
-                                            <div class="action-buttons">
-                                                <lightning-button
-                                                    variant="neutral"
-                                                    label="Discard"
-                                                    onclick={handleDiscardScreenshot}
-                                                    disabled={isProcessing}
-                                                    class="control-button discard-button">
-                                                </lightning-button>
-                                            </div>
-                                        </template>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                    </template>
-                    
-                    <!-- Submit button -->
-                    <div class="submit-container">
-                        <lightning-button
-                            label="Submit Support Request"
-                            variant="brand"
-                            onclick={handleSubmitCase}
-                            disabled={isSubmitDisabled}
-                            class="submit-button">
-                        </lightning-button>
-                    </div>
-                    
-                    <!-- Loading spinner -->
-                    <template if:true={isProcessing}>
-                        <div class="spinner-container">
-                            <lightning-spinner alternative-text="Processing" size="medium"></lightning-spinner>
-                        </div>
-                    </template>
-                    
-                    <!-- Error message display -->
-                    <template if:true={errorMessage}>
-                        <div class="error-container">
-                            <div class="error-text">{errorMessage}</div>
-                        </div>
-                    </template>
-                </div>
+  <div class="support-requester-container" data-theme={themeClass}>
+    <div class={layoutClass}>
+      <!-- Support Request Section -->
+      <div class="support-form-section">
+        <!-- Header with title -->
+        <div class="support-header">
+          <div class="support-title">{componentTitle}</div>
+          <template if:true={recording}>
+            <div class="recording-indicator">
+              <div class="recording-dot"></div>
+              <span>Recording</span>
             </div>
-            
-            <!-- FAQ Section -->
-            <template if:true={showFaqSection}>
-                <div class="faq-section">
-                    <div class="faq-header">
-                        <div class="faq-title">{faqHeaderTitle}</div>
-                    </div>
-                    
-                    <!-- Dynamic FAQ content -->
-                    <div class="faq-content">
-                        <template if:true={faqItems.length}>
-                            <div class="faq-list">
-                                <template for:each={faqItems} for:item="faq" for:index="index">
-                                    <div key={faq.id} class="faq-item">
-                                        <div class="faq-question" onclick={handleToggleFaq} data-index={index}>
-                                            <span>{faq.question}</span>
-                                            <div class="faq-toggle">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class={faq.iconClass}>
-                                                    <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <div class={faq.answerClass}>
-                                            <p>{faq.answer}</p>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                        <template if:false={faqItems.length}>
-                            <div class="no-faq-items">
-                                <p>No FAQ items available.</p>
-                            </div>
-                        </template>
-                    </div>
+          </template>
+        </div>
+
+        <!-- Main form content -->
+        <div class="form-content">
+          <!-- Case Information Form -->
+          <div class="case-form">
+            <div class="form-field">
+              <label for="caseSubject">Subject</label>
+              <input
+                type="text"
+                id="caseSubject"
+                class="form-input"
+                placeholder="Brief description of your issue"
+                value={caseSubject}
+                onchange={handleSubjectChange}
+                required
+              />
+            </div>
+
+            <div class="form-field">
+              <label for="caseDescription">Description</label>
+              <textarea
+                id="caseDescription"
+                class="form-textarea"
+                placeholder="Please describe your issue in detail"
+                onchange={handleDescriptionChange}
+                required
+              >
+              </textarea>
+            </div>
+
+            <div class="form-field">
+              <label for="casePriority">Priority</label>
+              <div class="select-container">
+                <select
+                  id="casePriority"
+                  class="form-select"
+                  onchange={handlePriorityChange}
+                >
+                  <option value="Low">Low</option>
+                  <option value="Medium" selected>Medium</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
+                </select>
+                <div class="select-arrow">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M6 9L12 15L18 9"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
                 </div>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="appContext">Application Context</label>
+              <input
+                type="text"
+                id="appContext"
+                class="form-input"
+                placeholder="Enter the application you need support with"
+                value={appContext}
+                onchange={handleAppContextChange}
+              />
+            </div>
+
+            <!-- User Contact Information Section -->
+            <div class="form-section-divider">
+              <div class="divider-label">Contact Information</div>
+            </div>
+
+            <!-- Name Field - For all users but will be auto-populated for authenticated users -->
+            <div class="form-field">
+              <label for="userName">Name</label>
+              <input
+                type="text"
+                id="suppliedName"
+                class="form-input"
+                placeholder="Your name"
+                value={suppliedName}
+                onchange={handleSuppliedNameChange}
+                disabled={isNameFieldDisabled}
+                required={isNameFieldRequired}
+              />
+            </div>
+
+            <!-- Email Field -->
+            <div class="form-field">
+              <label for="userEmail">Email</label>
+              <input
+                type="email"
+                id="userEmail"
+                class="form-input"
+                placeholder="Your email address"
+                value={userEmail}
+                onchange={handleEmailChange}
+                required
+              />
+            </div>
+
+            <!-- Phone Field -->
+            <div class="form-field">
+              <label for="userPhone">Phone</label>
+              <input
+                type="tel"
+                id="userPhone"
+                class="form-input"
+                placeholder="Your phone number"
+                value={userPhone}
+                onchange={handlePhoneChange}
+              />
+            </div>
+
+            <!-- Contact/User Fields - Only shown for portal users -->
+            <template if:true={isPortalUser}>
+              <div class="form-field">
+                <label for="contactName">Contact</label>
+                <input
+                  type="text"
+                  id="contactName"
+                  class="form-input"
+                  value={contactName}
+                  disabled
+                />
+                <input type="hidden" id="contactId" value={contactId} />
+              </div>
             </template>
+
+            <!-- Internal User Field - Only shown for internal users -->
+            <template if:false={isPortalUser}>
+              <div class="form-field">
+                <label for="userName">Submitted By</label>
+                <input
+                  type="text"
+                  id="userName"
+                  class="form-input"
+                  value={userName}
+                  disabled
+                />
+                <input type="hidden" id="userId" value={userId} />
+              </div>
+            </template>
+          </div>
+
+          <!-- Media Capture Section -->
+          <template if:true={showMediaSection}>
+            <!-- Instructions above media sections -->
+            <template if:true={showInstructions}>
+              <div class="instructions-container media-instructions">
+                <div class="instructions-header">
+                  <lightning-icon
+                    icon-name="utility:info"
+                    alternative-text="Information"
+                    size="small"
+                  ></lightning-icon>
+                  <h3>{instructionsTitle}</h3>
+                </div>
+                <div class="instructions-content">
+                  <lightning-formatted-rich-text
+                    value={instructionsTextFormatted}
+                  >
+                  </lightning-formatted-rich-text>
+                </div>
+              </div>
+            </template>
+
+            <div class="media-sections-container">
+              <!-- Screen Recording Section - Directly shown when enabled -->
+              <template if:true={enableScreenRecording}>
+                <div class="recorder-section">
+                  <div class="recorder-label">Screen Recording</div>
+
+                  <!-- Video container -->
+                  <div class="video-container">
+                    <!-- Permission error state -->
+                    <template if:true={permissionDenied}>
+                      <div class="permission-error">
+                        <lightning-icon
+                          icon-name="utility:error"
+                          alternative-text="Error"
+                          size="medium"
+                          class="error-icon"
+                        ></lightning-icon>
+                        <div class="error-message">{errorMessage}</div>
+                        <lightning-button
+                          label="Try Again"
+                          onclick={handleRetryPermissions}
+                          variant="brand"
+                          class="retry-button"
+                        >
+                        </lightning-button>
+                      </div>
+                    </template>
+
+                    <!-- Live preview or recorded preview -->
+                    <template if:true={showVideo}>
+                      <video
+                        class="video-element"
+                        autoplay
+                        muted={streamActive}
+                        controls={showPreview}
+                        src={videoUrl}
+                        playsinline
+                      ></video>
+                    </template>
+
+                    <!-- Countdown overlay -->
+                    <template if:true={showCountdown}>
+                      <div class="countdown-overlay">
+                        <div class="countdown-number">{countdown}</div>
+                      </div>
+                    </template>
+
+                    <!-- No video state -->
+                    <template if:false={showVideo}>
+                      <div class="no-video">
+                        <lightning-icon
+                          icon-name="utility:video"
+                          alternative-text="Video"
+                          size="medium"
+                        ></lightning-icon>
+                        <p>Click Record to start</p>
+                      </div>
+                    </template>
+                  </div>
+
+                  <!-- Recording timer progress -->
+                  <template if:true={recording}>
+                    <div class="timer-container">
+                      <div class="timer-progress">
+                        <div class="timer-bar" lwc:dom="manual"></div>
+                      </div>
+                      <div class="timer-display">{recordingTimeFormatted}</div>
+                    </div>
+                  </template>
+
+                  <!-- Recording controls -->
+                  <div class="controls-container">
+                    <!-- Primary Button: Record/Stop -->
+                    <div class="primary-action">
+                      <lightning-button
+                        variant={recordButtonVariant}
+                        label={recordButtonLabel}
+                        onclick={handleRecordClick}
+                        disabled={recordButtonDisabled}
+                        class="control-button"
+                      >
+                      </lightning-button>
+                    </div>
+
+                    <!-- Action buttons (only show when there's a preview) -->
+                    <template if:true={showPreview}>
+                      <div class="action-buttons">
+                        <lightning-button
+                          variant="neutral"
+                          label="Discard"
+                          onclick={handleDiscardClick}
+                          disabled={isProcessing}
+                          class="control-button discard-button"
+                        >
+                        </lightning-button>
+
+                        <!-- Download button -->
+                        <template if:true={showDownloadButton}>
+                          <lightning-button
+                            variant="neutral"
+                            label="Download"
+                            onclick={handleDownloadClick}
+                            disabled={isProcessing}
+                            class="control-button download-button"
+                          >
+                          </lightning-button>
+                        </template>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </template>
+
+              <!-- Screenshot Section - Directly shown when enabled -->
+              <template if:true={enableScreenshot}>
+                <div class="recorder-section">
+                  <div class="recorder-label">Screenshot</div>
+
+                  <!-- Screenshot container -->
+                  <div class="video-container">
+                    <!-- Permission error state -->
+                    <template if:true={screenshotPermissionDenied}>
+                      <div class="permission-error">
+                        <lightning-icon
+                          icon-name="utility:error"
+                          alternative-text="Error"
+                          size="medium"
+                          class="error-icon"
+                        ></lightning-icon>
+                        <div class="error-message">
+                          {screenshotErrorMessage}
+                        </div>
+                        <lightning-button
+                          label="Try Again"
+                          onclick={handleRetryScreenshotPermissions}
+                          variant="brand"
+                          class="retry-button"
+                        >
+                        </lightning-button>
+                      </div>
+                    </template>
+
+                    <!-- Screenshot preview -->
+                    <template if:true={showScreenshot}>
+                      <img
+                        class="screenshot-element"
+                        src={screenshotUrl}
+                        alt="Screen Capture"
+                      />
+                    </template>
+
+                    <!-- No screenshot state -->
+                    <template if:false={showScreenshot}>
+                      <div class="no-video">
+                        <lightning-icon
+                          icon-name="utility:photo"
+                          alternative-text="Screenshot"
+                          size="medium"
+                        ></lightning-icon>
+                        <p>Click Capture to take a screenshot</p>
+                      </div>
+                    </template>
+                  </div>
+
+                  <!-- Screenshot controls -->
+                  <div class="controls-container">
+                    <!-- Primary Button: Screenshot -->
+                    <div class="primary-action">
+                      <lightning-button
+                        variant="brand"
+                        label="Capture Screenshot"
+                        onclick={handleTakeScreenshot}
+                        disabled={screenshotButtonDisabled}
+                        class="control-button"
+                      >
+                      </lightning-button>
+                    </div>
+
+                    <!-- Screenshot discard button -->
+                    <template if:true={showScreenshot}>
+                      <div class="action-buttons">
+                        <lightning-button
+                          variant="neutral"
+                          label="Discard"
+                          onclick={handleDiscardScreenshot}
+                          disabled={isProcessing}
+                          class="control-button discard-button"
+                        >
+                        </lightning-button>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+
+          <!-- Submit button -->
+          <div class="submit-container">
+            <lightning-button
+              label="Submit Support Request"
+              variant="brand"
+              onclick={handleSubmitCase}
+              disabled={isSubmitDisabled}
+              class="submit-button"
+            >
+            </lightning-button>
+          </div>
+
+          <!-- Loading spinner -->
+          <template if:true={isProcessing}>
+            <div class="spinner-container">
+              <lightning-spinner
+                alternative-text="Processing"
+                size="medium"
+              ></lightning-spinner>
+            </div>
+          </template>
+
+          <!-- Error message display -->
+          <template if:true={errorMessage}>
+            <div class="error-container">
+              <div class="error-text">{errorMessage}</div>
+            </div>
+          </template>
         </div>
+      </div>
+
+      <!-- FAQ Section -->
+      <template if:true={showFaqSection}>
+        <div class="faq-section">
+          <div class="faq-header">
+            <div class="faq-title">{faqHeaderTitle}</div>
+          </div>
+
+          <!-- Dynamic FAQ content -->
+          <div class="faq-content">
+            <template if:true={faqItems.length}>
+              <div class="faq-list">
+                <template for:each={faqItems} for:item="faq" for:index="index">
+                  <div key={faq.id} class="faq-item">
+                    <div
+                      class="faq-question"
+                      onclick={handleToggleFaq}
+                      data-index={index}
+                    >
+                      <span>{faq.question}</span>
+                      <div class="faq-toggle">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          class={faq.iconClass}
+                        >
+                          <path
+                            d="M6 9L12 15L18 9"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          ></path>
+                        </svg>
+                      </div>
+                    </div>
+                    <div class={faq.answerClass}>
+                      <p>{faq.answer}</p>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <template if:false={faqItems.length}>
+              <div class="no-faq-items">
+                <p>No FAQ items available.</p>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
     </div>
-    
-    <!-- Success Modal -->
-    <template if:true={showSuccessModal}>
-        <div class="modal-backdrop success-backdrop"></div>
-        <div class="modal-container success-modal">
-            <div class="modal-content">
-                <div class="success-icon">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.709 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18457 2.99721 7.13633 4.39828 5.49707C5.79935 3.85782 7.69279 2.71538 9.79619 2.24015C11.8996 1.76491 14.1003 1.98234 16.07 2.86" stroke="#22BDC1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                        <path d="M22 4L12 14.01L9 11.01" stroke="#22BDC1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
-                </div>
-                <h2 class="success-title">Support Request Submitted</h2>
-                <p class="success-message">Your support request has been successfully submitted. A support agent will review your case soon.</p>
-                <p class="case-number">Case Number: {createdCaseNumber}</p>
-                <button class="modal-button ok-button" onclick={handleSuccessModalClose}>OK</button>
-            </div>
+  </div>
+
+  <!-- Success Modal -->
+  <template if:true={showSuccessModal}>
+    <div class="modal-backdrop success-backdrop"></div>
+    <div class="modal-container success-modal">
+      <div class="modal-content">
+        <div class="success-icon">
+          <svg
+            width="64"
+            height="64"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.709 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18457 2.99721 7.13633 4.39828 5.49707C5.79935 3.85782 7.69279 2.71538 9.79619 2.24015C11.8996 1.76491 14.1003 1.98234 16.07 2.86"
+              stroke="#22BDC1"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+            <path
+              d="M22 4L12 14.01L9 11.01"
+              stroke="#22BDC1"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
         </div>
-    </template>
-    
-    <!-- Toast Message -->
-    <template if:true={showToast}>
-        <div class="toast-container">
-            <div class={toastClass}>
-                <div class="toast-icon">
-                    <lightning-icon icon-name={toastIcon} size="small"></lightning-icon>
-                </div>
-                <div class="toast-content">
-                    <h3 class="toast-title">{toastTitle}</h3>
-                    <p class="toast-message">{toastMessage}</p>
-                </div>
-            </div>
+        <h2 class="success-title">Support Request Submitted</h2>
+        <p class="success-message">
+          Your support request has been successfully submitted. A support agent
+          will review your case soon.
+        </p>
+        <p class="case-number">Case Number: {createdCaseNumber}</p>
+        <button
+          class="modal-button ok-button"
+          onclick={handleSuccessModalClose}
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  </template>
+
+  <!-- Toast Message -->
+  <template if:true={showToast}>
+    <div class="toast-container">
+      <div class={toastClass}>
+        <div class="toast-icon">
+          <lightning-icon icon-name={toastIcon} size="small"></lightning-icon>
         </div>
-    </template>
+        <div class="toast-content">
+          <h3 class="toast-title">{toastTitle}</h3>
+          <p class="toast-message">{toastMessage}</p>
+        </div>
+      </div>
+    </div>
+  </template>
 </template>

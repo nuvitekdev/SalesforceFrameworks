@@ -1,276 +1,286 @@
 /* PDF Creator Component - Modern Nuvitek Style (Matching pdfSigner) */
 :host {
-    display: block;
-    
-    /* Custom scrollbar styling */
-    --scrollbar-width: 8px;
-    --scrollbar-thumb-color: rgba(0, 0, 0, 0.2);
-    --scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.3);
-    --scrollbar-track-color: rgba(0, 0, 0, 0.05);
-    /* Local Theme variable defaults (can be overridden by JS from target config) */
-    --theme-primary-color: #22BDC1;
-    --theme-accent-color: #D5DF23;
-    --theme-primary-color-rgb: 34, 189, 193;
-    --theme-accent-color-rgb: 213, 223, 35;
-    
-    /* Standard variables for component structure (using defaults) */
-    --primary-color: #22BDC1;
-    --primary-color-rgb: 34, 189, 193;
-    --primary-dark: #1a9599;
-    --primary-light: #63d1d4;
-    --accent-color: #D5DF23;
-    --accent-color-rgb: 213, 223, 35;
-    --accent-dark: #b8c11e;
-    --accent-light: #e1e95c;
-    --text-color: #1d1d1f;
-    --text-secondary: #6e6e73;
-    --text-tertiary: #a1a1a6;
-    --background: #ffffff;
-    --background-alt: #f5f5f7;
-    --background-elevated: #fbfbfd;
-    --border-color: rgba(0, 0, 0, 0.1);
-    --border-subtle: rgba(0, 0, 0, 0.05);
+  display: block;
 
-    /* Shadows */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
-    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.15);
+  /* Custom scrollbar styling */
+  --scrollbar-width: 8px;
+  --scrollbar-thumb-color: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.3);
+  --scrollbar-track-color: rgba(0, 0, 0, 0.05);
+  /* Local Theme variable defaults (can be overridden by JS from target config) */
+  --theme-primary-color: #22bdc1;
+  --theme-accent-color: #d5df23;
+  --theme-primary-color-rgb: 34, 189, 193;
+  --theme-accent-color-rgb: 213, 223, 35;
 
-    /* Border radius */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 20px;
-    --radius-xl: 28px;
-    
-    /* Transitions */
-    --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --transition-slow: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
-    
-    /* Typography */
-    --font-size-xs: 12px;
-    --font-size-sm: 14px;
-    --font-size-md: 16px;
-    --font-size-lg: 20px;
-    --font-size-xl: 24px;
-    --font-size-xxl: 32px;
-    
-    /* Spacing */
-    --spacing-xs: 8px;
-    --spacing-sm: 16px;
-    --spacing-md: 24px;
-    --spacing-lg: 48px;
-    --spacing-xl: 64px;
+  /* Standard variables for component structure (using defaults) */
+  --primary-color: #22bdc1;
+  --primary-color-rgb: 34, 189, 193;
+  --primary-dark: #1a9599;
+  --primary-light: #63d1d4;
+  --accent-color: #d5df23;
+  --accent-color-rgb: 213, 223, 35;
+  --accent-dark: #b8c11e;
+  --accent-light: #e1e95c;
+  --text-color: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #a1a1a6;
+  --background: #ffffff;
+  --background-alt: #f5f5f7;
+  --background-elevated: #fbfbfd;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-subtle: rgba(0, 0, 0, 0.05);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.15);
+
+  /* Border radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* Transitions */
+  --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-slow: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+
+  /* Typography */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 24px;
+  --font-size-xxl: 32px;
+
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 48px;
+  --spacing-xl: 64px;
 }
 
 .pdf-creator-container {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Salesforce Sans', Arial, sans-serif;
-    color: var(--text-color);
-    background-color: transparent;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    line-height: 1.5;
-    animation: fadeIn var(--transition-medium);
-    position: relative;
-    overflow: visible; /* Allow dropdowns to show within bounds */
-    z-index: 1;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Salesforce Sans",
+    Arial, sans-serif;
+  color: var(--text-color);
+  background-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  animation: fadeIn var(--transition-medium);
+  position: relative;
+  overflow: visible; /* Allow dropdowns to show within bounds */
+  z-index: 1;
 }
 
 /* Step styling (uses local vars for structure) */
 .step-section {
-    background: var(--background-elevated);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    animation: fadeIn var(--transition-medium);
-    padding: var(--spacing-md);
-    transition: all var(--transition-medium);
-    margin-bottom: var(--spacing-md);
-    position: relative;
-    overflow: visible; /* Allow dropdown to show but contain within step */
-    z-index: 2; /* Higher than container but lower than dropdown */
+  background: var(--background-elevated);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  animation: fadeIn var(--transition-medium);
+  padding: var(--spacing-md);
+  transition: all var(--transition-medium);
+  margin-bottom: var(--spacing-md);
+  position: relative;
+  overflow: visible; /* Allow dropdown to show but contain within step */
+  z-index: 2; /* Higher than container but lower than dropdown */
 }
 
 .step-section:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
 /* Step 0 specific container adjustments for dropdown */
 .step-section.step-0-mode {
-    overflow: visible; /* Allow dropdown to show within this container */
-    position: relative;
-    z-index: 2;
-    /* Add padding bottom to ensure dropdown space */
-    padding-bottom: 60px;
+  overflow: visible; /* Allow dropdown to show within this container */
+  position: relative;
+  z-index: 2;
+  /* Add padding bottom to ensure dropdown space */
+  padding-bottom: 60px;
 }
 
 /* Form group container - ensure it can contain dropdown */
 .form-group {
-    position: relative;
-    margin-bottom: var(--spacing-md);
-    z-index: 10; /* Higher than step section */
+  position: relative;
+  margin-bottom: var(--spacing-md);
+  z-index: 10; /* Higher than step section */
 }
 
 /* Combobox specific styling - contain dropdown within component */
 .form-group lightning-combobox {
-    display: block;
-    position: relative;
-    z-index: 10;
-    /* Ensure container doesn't overflow */
-    overflow: visible;
+  display: block;
+  position: relative;
+  z-index: 10;
+  /* Ensure container doesn't overflow */
+  overflow: visible;
 }
 
 /* Additional constraints for step-0 to prevent dropdown overflow */
 .step-0-mode .form-group lightning-combobox {
-    margin-bottom: 20px; /* Extra space for dropdown */
+  margin-bottom: 20px; /* Extra space for dropdown */
 }
 
 .step-0-mode .form-group lightning-combobox .slds-dropdown {
-    /* Even more restrictive height in step-0 to stay within bounds */
-    max-height: min(20vh, 150px) !important;
-    /* Ensure it doesn't go past the container */
-    bottom: auto !important;
-    top: 100% !important;
+  /* Even more restrictive height in step-0 to stay within bounds */
+  max-height: min(20vh, 150px) !important;
+  /* Ensure it doesn't go past the container */
+  bottom: auto !important;
+  top: 100% !important;
 }
 
 /* Dropdown container - responsive height based on available space */
 .form-group lightning-combobox .slds-dropdown {
-    max-height: min(25vh, 200px) !important; /* Reduced height - responsive to viewport with smaller max */
-    overflow-y: auto !important;
-    position: absolute !important; /* Use absolute within component */
-    z-index: 1000 !important; /* High but not extreme */
-    width: 100% !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: var(--radius-sm) !important;
-    box-shadow: var(--shadow-lg) !important;
-    background: var(--background) !important;
-    margin-top: 4px !important; /* Small gap from input */
-    /* Add constraints to prevent overflow */
-    max-width: 100% !important;
-    box-sizing: border-box !important;
+  max-height: min(
+    25vh,
+    200px
+  ) !important; /* Reduced height - responsive to viewport with smaller max */
+  overflow-y: auto !important;
+  position: absolute !important; /* Use absolute within component */
+  z-index: 1000 !important; /* High but not extreme */
+  width: 100% !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: var(--shadow-lg) !important;
+  background: var(--background) !important;
+  margin-top: 4px !important; /* Small gap from input */
+  /* Add constraints to prevent overflow */
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 /* Enhanced dropdown visibility and interaction */
-.slds-dropdown-trigger_click.slds-is-open .slds-dropdown, 
+.slds-dropdown-trigger_click.slds-is-open .slds-dropdown,
 .slds-dropdown-trigger--click.slds-is-open .slds-dropdown {
-    display: block;
-    visibility: visible;
-    opacity: 1;
-    height: 300px;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  height: 300px;
 }
 
 /* Ensure combobox input is properly visible and functional */
 .form-group lightning-combobox .slds-combobox .slds-input {
-    background-color: white !important;
-    color: var(--text-color) !important;
-    border: 1px solid var(--border-color) !important;
-    padding: 8px 12px !important;
-    font-size: 14px !important;
-    line-height: 1.4 !important;
-    z-index: 10 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: block !important;
-    -webkit-text-fill-color: var(--text-color) !important; /* Fix for webkit browsers */
+  background-color: white !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--border-color) !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  z-index: 10 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  -webkit-text-fill-color: var(
+    --text-color
+  ) !important; /* Fix for webkit browsers */
 }
 
 /* Focus state for input */
 .form-group lightning-combobox .slds-combobox .slds-input:focus {
-    border-color: var(--theme-primary-color) !important;
-    box-shadow: 0 0 0 1px var(--theme-primary-color) !important;
-    outline: none !important;
-    background-color: white !important;
-    color: var(--text-color) !important;
-    -webkit-text-fill-color: var(--text-color) !important;
+  border-color: var(--theme-primary-color) !important;
+  box-shadow: 0 0 0 1px var(--theme-primary-color) !important;
+  outline: none !important;
+  background-color: white !important;
+  color: var(--text-color) !important;
+  -webkit-text-fill-color: var(--text-color) !important;
 }
 
 /* Placeholder text styling */
 .form-group lightning-combobox .slds-combobox .slds-input::placeholder {
-    color: var(--text-tertiary) !important;
-    opacity: 0.7 !important;
-    -webkit-text-fill-color: var(--text-tertiary) !important;
+  color: var(--text-tertiary) !important;
+  opacity: 0.7 !important;
+  -webkit-text-fill-color: var(--text-tertiary) !important;
 }
 
 /* When typing in the combobox */
-.form-group lightning-combobox .slds-combobox .slds-input[aria-expanded="true"] {
-    color: var(--text-color) !important;
-    -webkit-text-fill-color: var(--text-color) !important;
+.form-group
+  lightning-combobox
+  .slds-combobox
+  .slds-input[aria-expanded="true"] {
+  color: var(--text-color) !important;
+  -webkit-text-fill-color: var(--text-color) !important;
 }
 
 /* Dropdown options styling */
 .form-group lightning-combobox .slds-listbox__option {
-    padding: 8px 12px !important;
-    transition: background-color var(--transition-fast) !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    cursor: pointer !important;
-    border: none !important;
-    color: var(--text-color) !important;
+  padding: 8px 12px !important;
+  transition: background-color var(--transition-fast) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  cursor: pointer !important;
+  border: none !important;
+  color: var(--text-color) !important;
 }
 
 .form-group lightning-combobox .slds-listbox__option:hover {
-    background-color: var(--background-alt) !important;
+  background-color: var(--background-alt) !important;
 }
 
 .form-group lightning-combobox .slds-listbox__option[aria-selected="true"] {
-    background-color: var(--theme-primary-color) !important;
-    color: white !important;
+  background-color: var(--theme-primary-color) !important;
+  color: white !important;
 }
 
 /* Ensure dropdown trigger button works */
 .form-group lightning-combobox .slds-combobox .slds-button {
-    z-index: 10 !important;
+  z-index: 10 !important;
 }
 
 /* Make sure the combobox container doesn't interfere */
 .form-group lightning-combobox .slds-combobox {
-    position: relative !important;
-    z-index: 10 !important;
+  position: relative !important;
+  z-index: 10 !important;
 }
 
 /* Custom Path Component Styling (copied from pdfSigner) */
 .custom-path-container {
-    margin-bottom: var(--spacing-md);
-    padding: var(--spacing-sm) 0;
-    box-sizing: border-box;
-    z-index: 1; /* Lower than dropdown */
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  box-sizing: border-box;
+  z-index: 1; /* Lower than dropdown */
 }
 
 .custom-path {
-    display: flex;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    position: relative;
-    justify-content: space-between;
-    align-items: flex-start;
-    width: 100%;
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
 }
 
 .custom-path-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    flex-grow: 1;
-    flex-basis: 0;
-    z-index: 1;
-    text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex-grow: 1;
+  flex-basis: 0;
+  z-index: 1;
+  text-align: center;
 }
 
 .custom-path-item:not(:first-child)::before {
-    content: '';
-    position: absolute;
-    height: 2px;
-    background-color: var(--border-color);
-    width: calc(100% - 44px);
-    top: 21px;
-    left: calc(-50% + 22px);
-    z-index: 0;
-    transition: background-color var(--transition-fast);
+  content: "";
+  position: absolute;
+  height: 2px;
+  background-color: var(--border-color);
+  width: calc(100% - 44px);
+  top: 21px;
+  left: calc(-50% + 22px);
+  z-index: 0;
+  transition: background-color var(--transition-fast);
 }
 
 /* Change line color to primary when the step before it is completed */
@@ -283,47 +293,47 @@
 .step-4-mode .custom-path-item[data-step="1"]::before,
 .step-4-mode .custom-path-item[data-step="2"]::before,
 .step-4-mode .custom-path-item[data-step="3"]::before,
-.step-4-mode .custom-path-item[data-step="4"]::before { 
-    background-color: var(--theme-primary-color);
+.step-4-mode .custom-path-item[data-step="4"]::before {
+  background-color: var(--theme-primary-color);
 }
 
 .custom-path-indicator {
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-sm);
-    background-color: var(--background-alt);
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-xs);
-    position: relative;
-    z-index: 1;
-    border: 1px solid var(--border-color);
-    font-weight: 500;
-    font-size: var(--font-size-md);
-    transition: all var(--transition-fast);
-    box-shadow: var(--shadow-sm);
-    cursor: default;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background-color: var(--background-alt);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+  position: relative;
+  z-index: 1;
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+  font-size: var(--font-size-md);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  cursor: default;
 }
 
 .custom-path-indicator:hover {
-    transform: none;
-    box-shadow: var(--shadow-sm);
+  transform: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .custom-path-number {
-    font-weight: 600;
+  font-weight: 600;
 }
 
 .custom-path-label {
-    font-size: var(--font-size-xs);
-    color: var(--text-secondary);
-    text-align: center;
-    transition: color var(--transition-fast);
-    font-weight: 500;
-    margin-top: var(--spacing-xs);
-    padding: 0 4px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  text-align: center;
+  transition: color var(--transition-fast);
+  font-weight: 500;
+  margin-top: var(--spacing-xs);
+  padding: 0 4px;
 }
 
 /* Current step Indicator Styling (Accent Color) */
@@ -331,11 +341,11 @@
 .step-1-mode .custom-path-item[data-step="1"] .custom-path-indicator,
 .step-2-mode .custom-path-item[data-step="2"] .custom-path-indicator,
 .step-3-mode .custom-path-item[data-step="3"] .custom-path-indicator,
-.step-4-mode .custom-path-item[data-step="4"] .custom-path-indicator { 
-    background-color: var(--theme-accent-color);
-    color: white;
-    border-color: transparent;
-    box-shadow: 0 2px 12px rgba(var(--theme-accent-color-rgb), 0.4);
+.step-4-mode .custom-path-item[data-step="4"] .custom-path-indicator {
+  background-color: var(--theme-accent-color);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 12px rgba(var(--theme-accent-color-rgb), 0.4);
 }
 
 /* Current step Label Styling */
@@ -343,9 +353,9 @@
 .step-1-mode .custom-path-item[data-step="1"] .custom-path-label,
 .step-2-mode .custom-path-item[data-step="2"] .custom-path-label,
 .step-3-mode .custom-path-item[data-step="3"] .custom-path-label,
-.step-4-mode .custom-path-item[data-step="4"] .custom-path-label { 
-    color: var(--text-color);
-    font-weight: 600;
+.step-4-mode .custom-path-item[data-step="4"] .custom-path-label {
+  color: var(--text-color);
+  font-weight: 600;
 }
 
 /* Completed step Indicator Styling (Primary Color) */
@@ -358,12 +368,12 @@
 .step-4-mode .custom-path-item[data-step="0"] .custom-path-indicator,
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-indicator,
 .step-4-mode .custom-path-item[data-step="2"] .custom-path-indicator,
-.step-4-mode .custom-path-item[data-step="3"] .custom-path-indicator { 
-    background-color: var(--theme-primary-color);
-    color: white;
-    border-color: transparent;
-    opacity: 0.9;
-    box-shadow: none;
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-indicator {
+  background-color: var(--theme-primary-color);
+  color: white;
+  border-color: transparent;
+  opacity: 0.9;
+  box-shadow: none;
 }
 
 /* Completed step Label Styling */
@@ -376,945 +386,973 @@
 .step-4-mode .custom-path-item[data-step="0"] .custom-path-label,
 .step-4-mode .custom-path-item[data-step="1"] .custom-path-label,
 .step-4-mode .custom-path-item[data-step="2"] .custom-path-label,
-.step-4-mode .custom-path-item[data-step="3"] .custom-path-label { 
-    color: var(--text-secondary);
-    font-weight: 500;
+.step-4-mode .custom-path-item[data-step="3"] .custom-path-label {
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 /* Loading & Save Spinners */
 .loading-spinner-container,
 .save-spinner-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.9);
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn var(--transition-fast);
-    border-radius: var(--radius-lg); /* Match the step-section border radius */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn var(--transition-fast);
+  border-radius: var(--radius-lg); /* Match the step-section border radius */
 }
 
 .spinner-text {
-    color: var(--text-secondary);
-    font-weight: 500;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 /* Field Selection Step Styling */
 .field-filters {
-    background: var(--background-alt);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+  background: var(--background-alt);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .field-counter {
-    display: inline-block;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background-color: var(--background-elevated);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    color: var(--text-color);
-    box-shadow: var(--shadow-sm);
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--background-elevated);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .category-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-xs);
-    align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  align-items: center;
 }
 
 .slds-checkbox_button {
-    margin-right: var(--spacing-xs);
+  margin-right: var(--spacing-xs);
 }
 
 .field-list-container {
-    background: var(--background);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
-    overflow: hidden;
+  background: var(--background);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
 }
 
 .field-list-header {
-    background: var(--background-alt);
-    border-bottom: 1px solid var(--border-color);
+  background: var(--background-alt);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .field-list {
-    max-height: 400px;
-    overflow-y: auto;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .field-item {
-    background: var(--background);
-    border-bottom: 1px solid var(--border-subtle);
-    transition: all var(--transition-fast);
+  background: var(--background);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: all var(--transition-fast);
 }
 
 .field-item:hover {
-    background: var(--background-alt);
+  background: var(--background-alt);
 }
 
 .field-label {
-    font-weight: 500;
-    color: var(--text-color);
+  font-weight: 500;
+  color: var(--text-color);
 }
 
 .field-api-name {
-    color: var(--text-tertiary);
+  color: var(--text-tertiary);
 }
 
 .field-type-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    background: var(--background-alt);
-    color: var(--text-secondary);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    font-weight: 500;
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--background-alt);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
 }
 
 .required-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    background: #fef3e2;
-    color: #f2690d;
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    font-weight: 600;
+  display: inline-block;
+  padding: 2px 8px;
+  background: #fef3e2;
+  color: #f2690d;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
 }
 
 /* Design Step Styling */
 .design-section {
-    min-height: 600px;
+  min-height: 600px;
 }
 
 .design-container {
-    min-height: 500px;
-    height: 100%;
+  min-height: 500px;
+  height: 100%;
 }
 
 /* Ensure the column containing field palette has proper height */
 .design-container .slds-col.slds-size_1-of-1.slds-medium-size_3-of-12 {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .field-palette {
-    background: var(--background);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+  background: var(--background);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .draggable-fields-list {
-    max-height: 200px;
-    overflow-y: auto;
-    margin-top: var(--spacing-xs);
-    padding-right: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: var(--spacing-xs);
+  padding-right: 4px;
 }
 
 /* Custom scrollbar for field lists */
 .draggable-fields-list::-webkit-scrollbar,
 .generic-fields-list::-webkit-scrollbar {
-    width: var(--scrollbar-width);
+  width: var(--scrollbar-width);
 }
 
 .draggable-fields-list::-webkit-scrollbar-track,
 .generic-fields-list::-webkit-scrollbar-track {
-    background: var(--scrollbar-track-color);
-    border-radius: 4px;
+  background: var(--scrollbar-track-color);
+  border-radius: 4px;
 }
 
 .draggable-fields-list::-webkit-scrollbar-thumb,
 .generic-fields-list::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb-color);
-    border-radius: 4px;
+  background: var(--scrollbar-thumb-color);
+  border-radius: 4px;
 }
 
 .draggable-fields-list::-webkit-scrollbar-thumb:hover,
 .generic-fields-list::-webkit-scrollbar-thumb:hover {
-    background: var(--scrollbar-thumb-hover-color);
+  background: var(--scrollbar-thumb-hover-color);
 }
 
 .draggable-field {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background: var(--background-alt);
-    border-radius: var(--radius-sm);
-    margin-bottom: var(--spacing-xs);
-    cursor: grab;
-    transition: all var(--transition-fast);
-    display: flex;
-    align-items: center;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--background-alt);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-xs);
+  cursor: grab;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
 }
 
 .draggable-field:hover {
-    background: var(--background-elevated);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--theme-primary-color);
+  background: var(--background-elevated);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--theme-primary-color);
 }
 
 .draggable-field:active {
-    cursor: grabbing;
-    transform: scale(0.98);
+  cursor: grabbing;
+  transform: scale(0.98);
 }
 
 .draggable-field.dragging {
-    opacity: 0.5;
+  opacity: 0.5;
 }
 
 .field-name {
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    color: var(--text-color);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-color);
 }
 
 /* Page Controls */
 .page-controls {
-    background: var(--background);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+  background: var(--background);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .page-indicator {
-    display: inline-block;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background-color: var(--background-elevated);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    color: var(--text-color);
-    box-shadow: var(--shadow-sm);
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--background-elevated);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-color);
+  box-shadow: var(--shadow-sm);
 }
 
 /* PDF Design Area */
 .pdf-design-area {
-    background: var(--background-alt);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
-    min-height: 600px;
-    position: relative;
-    box-shadow: var(--shadow-md);
+  background: var(--background-alt);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  min-height: 600px;
+  position: relative;
+  box-shadow: var(--shadow-md);
 }
 
 /* Ensure right column also has proper height */
 .design-container .slds-col.slds-size_1-of-1.slds-medium-size_9-of-12 {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .pdf-page {
-    background: white;
-    box-shadow: var(--shadow-lg);
-    position: relative;
-    margin: 0 auto;
-    border-radius: var(--radius-sm);
-    transition: all var(--transition-fast);
+  background: white;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  margin: 0 auto;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
 }
 
 /* Default A4 portrait dimensions */
 .pdf-page {
-    width: 595px;
-    height: 842px;
-    max-width: 100%;
+  width: 595px;
+  height: 842px;
+  max-width: 100%;
 }
 
 /* Responsive scaling */
 @media (max-width: 768px) {
-    .pdf-page {
-        transform: scale(0.6);
-        transform-origin: top center;
-    }
+  .pdf-page {
+    transform: scale(0.6);
+    transform-origin: top center;
+  }
 }
 
 @media (max-width: 480px) {
-    .pdf-page {
-        transform: scale(0.4);
-        transform-origin: top center;
-    }
+  .pdf-page {
+    transform: scale(0.4);
+    transform-origin: top center;
+  }
 }
 
 .pdf-page.hidden {
-    display: none;
+  display: none;
 }
 
 .pdf-page.drag-over {
-    border: 2px dashed var(--theme-primary-color);
-    background: rgba(var(--theme-primary-color-rgb), 0.05);
+  border: 2px dashed var(--theme-primary-color);
+  background: rgba(var(--theme-primary-color-rgb), 0.05);
 }
 
 /* Grid snapping visual grid */
 .pdf-page.show-grid {
-    background-image: 
-        linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-    background-size: 10px 10px; /* Grid size */
-    background-position: 0 0;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 10px 10px; /* Grid size */
+  background-position: 0 0;
 }
 
 /* Grid snap toggle styling */
 .grid-snap-toggle {
-    display: inline-flex;
-    align-items: center;
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-    cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
 }
 
 .grid-snap-toggle input[type="checkbox"] {
-    cursor: pointer;
-    margin-right: 4px;
+  cursor: pointer;
+  margin-right: 4px;
 }
 
 .grid-snap-toggle:hover {
-    color: var(--text-color);
+  color: var(--text-color);
 }
 
 /* Signature field styling */
 .signature-field-container canvas {
-    touch-action: none; /* Prevent scrolling while drawing */
-    user-select: none;
+  touch-action: none; /* Prevent scrolling while drawing */
+  user-select: none;
 }
 
 .signature-field-container button {
-    transition: all var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .signature-field-container button:hover {
-    background-color: #e0e0e0;
-    transform: translateY(-1px);
+  background-color: #e0e0e0;
+  transform: translateY(-1px);
 }
 
 /* Image field styling */
 .image-field-container {
-    cursor: pointer;
-    transition: all var(--transition-fast);
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
 .image-field-container:hover {
-    background-color: #eee !important;
-    border-color: var(--theme-primary-color) !important;
+  background-color: #eee !important;
+  border-color: var(--theme-primary-color) !important;
 }
 
 .image-field-container img {
-    object-fit: contain;
-    pointer-events: none;
+  object-fit: contain;
+  pointer-events: none;
 }
 
 /* Placed Fields - Updated for actual form elements */
 .placed-field {
-    position: absolute;
-    background: rgba(255, 255, 255, 0.95);
-    border: 2px solid var(--theme-primary-color);
-    border-radius: var(--radius-sm);
-    padding: 4px;
-    cursor: move;
-    transition: all var(--transition-fast);
-    min-width: 50px;
-    min-height: 30px;
-    box-sizing: border-box;
-    box-shadow: var(--shadow-sm);
+  position: absolute;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid var(--theme-primary-color);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  cursor: move;
+  transition: all var(--transition-fast);
+  min-width: 50px;
+  min-height: 30px;
+  box-sizing: border-box;
+  box-shadow: var(--shadow-sm);
 }
 
 .placed-field:hover {
-    box-shadow: var(--shadow-lg);
-    background: rgba(255, 255, 255, 1);
-    z-index: 10;
-    border-color: var(--theme-accent-color);
-    transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+  background: rgba(255, 255, 255, 1);
+  z-index: 10;
+  border-color: var(--theme-accent-color);
+  transform: translateY(-1px);
 }
 
 .placed-field.selected {
-    border-color: var(--theme-accent-color);
-    border-width: 3px;
-    box-shadow: 0 0 0 3px rgba(var(--theme-accent-color-rgb), 0.2);
+  border-color: var(--theme-accent-color);
+  border-width: 3px;
+  box-shadow: 0 0 0 3px rgba(var(--theme-accent-color-rgb), 0.2);
 }
 
 .field-content {
-    pointer-events: none;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .field-content .field-label {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text-color);
-    margin-bottom: 2px;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 2px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .field-form-element {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    pointer-events: auto; /* Allow interaction with form elements */
+  flex: 1;
+  display: flex;
+  align-items: center;
+  pointer-events: auto; /* Allow interaction with form elements */
 }
 
 /* Style form elements within placed fields */
 .field-form-element input,
 .field-form-element textarea,
 .field-form-element select {
-    font-family: Arial, sans-serif;
-    color: #333;
-    background-color: #fff;
-    transition: all var(--transition-fast);
+  font-family: Arial, sans-serif;
+  color: #333;
+  background-color: #fff;
+  transition: all var(--transition-fast);
 }
 
 .field-form-element input:focus,
 .field-form-element textarea:focus,
 .field-form-element select:focus {
-    border-color: var(--theme-primary-color) !important;
-    box-shadow: 0 0 0 1px var(--theme-primary-color) !important;
-    outline: none;
+  border-color: var(--theme-primary-color) !important;
+  box-shadow: 0 0 0 1px var(--theme-primary-color) !important;
+  outline: none;
 }
 
 /* Specific styling for different field types */
 .field-form-element input[type="checkbox"] {
-    cursor: pointer;
-    margin: 0 auto;
-    display: block;
+  cursor: pointer;
+  margin: 0 auto;
+  display: block;
 }
 
 .field-form-element textarea {
-    font-family: Arial, sans-serif;
-    line-height: 1.3;
+  font-family: Arial, sans-serif;
+  line-height: 1.3;
 }
 
 .field-form-element select {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .field-form-element select[multiple] {
-    padding: 2px;
+  padding: 2px;
 }
 
 /* Ensure form elements don't interfere with drag operations */
 .placed-field.dragging .field-form-element {
-    pointer-events: none;
+  pointer-events: none;
 }
 
 /* Field Controls - Updated positioning */
 .field-controls {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    display: none;
-    z-index: 15;
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  display: none;
+  z-index: 15;
 }
 
 .placed-field:hover .field-controls {
-    display: block;
+  display: block;
 }
 
 .remove-field {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: #f44336;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    text-align: center;
-    line-height: 18px;
-    cursor: pointer;
-    font-size: 12px;
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-fast);
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  line-height: 18px;
+  cursor: pointer;
+  font-size: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
 }
 
 .remove-field:hover {
-    transform: scale(1.1);
-    box-shadow: var(--shadow-md);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
 }
 
 .resize-handle {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background: var(--theme-primary-color);
-    border: none;
-    border-radius: 50%;
-    cursor: se-resize;
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-fast);
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--theme-primary-color);
+  border: none;
+  border-radius: 50%;
+  cursor: se-resize;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
 }
 
 .resize-se {
-    bottom: -5px;
-    right: -5px;
+  bottom: -5px;
+  right: -5px;
 }
 
 .resize-handle:hover {
-    transform: scale(1.2);
-    background: var(--theme-accent-color);
+  transform: scale(1.2);
+  background: var(--theme-accent-color);
 }
 
 /* Template Info Section */
 .template-info-section {
-    background: var(--background);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
+  background: var(--background);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
 }
 
 /* Success Page */
 .success-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: var(--spacing-lg) var(--spacing-md);
-    animation: fadeIn var(--transition-medium), slideIn var(--transition-medium);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--spacing-lg) var(--spacing-md);
+  animation:
+    fadeIn var(--transition-medium),
+    slideIn var(--transition-medium);
 }
 
 .success-icon {
-    color: #4bca81;
-    background-color: rgba(75, 202, 129, 0.1);
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: var(--spacing-md);
-    animation: pulse 2s infinite;
+  color: #4bca81;
+  background-color: rgba(75, 202, 129, 0.1);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-md);
+  animation: pulse 2s infinite;
 }
 
 .success-title {
-    font-size: var(--font-size-xl);
-    font-weight: 600;
-    color: var(--text-color);
-    margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: var(--spacing-sm);
 }
 
 .success-message {
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-lg);
-    max-width: 480px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+  max-width: 480px;
 }
 
 /* Button Styling */
 .next-btn button,
 .save-button button,
 .start-over-button button {
-    background-color: var(--theme-primary-color);
-    border-color: var(--theme-primary-color);
-    padding: 0 var(--spacing-md);
-    height: 44px;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    transition: all var(--transition-fast);
-    color: white;
+  background-color: var(--theme-primary-color);
+  border-color: var(--theme-primary-color);
+  padding: 0 var(--spacing-md);
+  height: 44px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  color: white;
 }
 
 .next-btn button:hover,
 .save-button button:hover,
 .start-over-button button:hover {
-    background-color: var(--theme-primary-color);
-    filter: brightness(90%);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+  background-color: var(--theme-primary-color);
+  filter: brightness(90%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Success page button styling */
 .success-actions lightning-button {
-    margin: 0 var(--spacing-xs);
+  margin: 0 var(--spacing-xs);
 }
 
 .success-actions lightning-button[variant="brand"] button {
-    background-color: var(--theme-primary-color);
-    border-color: var(--theme-primary-color);
-    padding: 0 var(--spacing-md);
-    height: 44px;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    transition: all var(--transition-fast);
-    color: white;
+  background-color: var(--theme-primary-color);
+  border-color: var(--theme-primary-color);
+  padding: 0 var(--spacing-md);
+  height: 44px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  color: white;
 }
 
 .success-actions lightning-button[variant="brand"] button:hover {
-    background-color: var(--theme-primary-color);
-    filter: brightness(90%);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+  background-color: var(--theme-primary-color);
+  filter: brightness(90%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .success-actions lightning-button[variant="neutral"] button {
-    background-color: transparent;
-    border-color: var(--border-color);
-    color: var(--text-secondary);
-    padding: 0 var(--spacing-md);
-    height: 44px;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    transition: all var(--transition-fast);
+  background-color: transparent;
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+  padding: 0 var(--spacing-md);
+  height: 44px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: all var(--transition-fast);
 }
 
 .success-actions lightning-button[variant="neutral"] button:hover {
-    background-color: var(--background-alt);
-    border-color: var(--theme-primary-color);
-    color: var(--theme-primary-color);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+  background-color: var(--background-alt);
+  border-color: var(--theme-primary-color);
+  color: var(--theme-primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Animations */
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideIn {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(var(--theme-primary-color-rgb), 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(var(--theme-primary-color-rgb), 0); }
-    100% { box-shadow: 0 0 0 0 rgba(var(--theme-primary-color-rgb), 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--theme-primary-color-rgb), 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--theme-primary-color-rgb), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--theme-primary-color-rgb), 0);
+  }
 }
 
 /* Palette header styling */
 .palette-header {
-    margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
 }
 
 .palette-header lightning-button {
-    margin-top: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
 }
 
 /* Selected fields container */
 .selected-fields-container {
-    margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
 }
 
 /* Generic Fields Section */
 .generic-fields-section {
-    border-top: 1px solid var(--border-color);
-    padding-top: var(--spacing-md);
-    margin-top: var(--spacing-sm);
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0; /* Important for flex children */
-    overflow: hidden; /* Prevent overflow */
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Important for flex children */
+  overflow: hidden; /* Prevent overflow */
 }
 
 .generic-fields-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-    overflow-y: auto;
-    max-height: 250px;
-    padding-right: 4px; /* Space for scrollbar */
-    min-height: 0; /* Important for proper scrolling */
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  overflow-y: auto;
+  max-height: 250px;
+  padding-right: 4px; /* Space for scrollbar */
+  min-height: 0; /* Important for proper scrolling */
 }
 
 .generic-field {
-    background: var(--background-elevated);
-    border-style: dashed;
+  background: var(--background-elevated);
+  border-style: dashed;
 }
 
 .generic-field:hover {
-    background: var(--theme-accent-color);
-    color: white;
-    border-color: var(--theme-accent-color);
-    border-style: solid;
+  background: var(--theme-accent-color);
+  color: white;
+  border-color: var(--theme-accent-color);
+  border-style: solid;
 }
 
 .generic-field:hover .field-name {
-    color: white;
+  color: white;
 }
 
 /* Auto-place button styling */
 .field-palette lightning-button.slds-width_full {
-    margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
 }
 
 lightning-button.slds-width_full button {
-    width: 100%;
-    background-color: var(--theme-primary-color);
-    border-color: var(--theme-primary-color);
-    color: white;
-    font-weight: 500;
+  width: 100%;
+  background-color: var(--theme-primary-color);
+  border-color: var(--theme-primary-color);
+  color: white;
+  font-weight: 500;
 }
 
 lightning-button.slds-width_full button:hover {
-    background-color: var(--theme-primary-color);
-    filter: brightness(90%);
+  background-color: var(--theme-primary-color);
+  filter: brightness(90%);
 }
 
 /* Responsive styling */
 @media (max-width: 768px) {
-    .design-container {
-        flex-direction: column;
-    }
-    
-    .field-palette {
-        max-height: 350px;
-        margin-bottom: var(--spacing-md);
-    }
-    
-    .draggable-fields-list {
-        max-height: 120px;
-    }
-    
-    .generic-fields-list {
-        max-height: 150px;
-    }
-    
-    .custom-path-item:not(:first-child)::before {
-        width: calc(100% - 36px);
-        top: 17px;
-        left: calc(-50% + 18px);
-    }
+  .design-container {
+    flex-direction: column;
+  }
 
-    .custom-path-indicator {
-        width: 36px;
-        height: 36px;
-        font-size: var(--font-size-sm);
-    }
+  .field-palette {
+    max-height: 350px;
+    margin-bottom: var(--spacing-md);
+  }
 
-    .custom-path-label {
-        font-size: 10px;
-    }
+  .draggable-fields-list {
+    max-height: 120px;
+  }
+
+  .generic-fields-list {
+    max-height: 150px;
+  }
+
+  .custom-path-item:not(:first-child)::before {
+    width: calc(100% - 36px);
+    top: 17px;
+    left: calc(-50% + 18px);
+  }
+
+  .custom-path-indicator {
+    width: 36px;
+    height: 36px;
+    font-size: var(--font-size-sm);
+  }
+
+  .custom-path-label {
+    font-size: 10px;
+  }
 }
 
 @media (max-width: 480px) {
-    .custom-path-item:not(:first-child)::before {
-        width: calc(100% - 30px);
-        top: 14px;
-        left: calc(-50% + 15px);
-    }
+  .custom-path-item:not(:first-child)::before {
+    width: calc(100% - 30px);
+    top: 14px;
+    left: calc(-50% + 15px);
+  }
 
-    .custom-path-indicator {
-        width: 30px;
-        height: 30px;
-        font-size: 11px;
-        border-radius: 6px;
-    }
+  .custom-path-indicator {
+    width: 30px;
+    height: 30px;
+    font-size: 11px;
+    border-radius: 6px;
+  }
 
-    .custom-path-label {
-        font-size: 9px;
-    }
-    
-    .field-item {
-        font-size: var(--font-size-sm);
-    }
-    
-    .field-list {
-        max-height: 300px;
-    }
+  .custom-path-label {
+    font-size: 9px;
+  }
+
+  .field-item {
+    font-size: var(--font-size-sm);
+  }
+
+  .field-list {
+    max-height: 300px;
+  }
 }
 
 /* Form styling for general inputs */
 lightning-combobox:not(.form-group lightning-combobox) {
-    --sds-c-input-radius-border: var(--radius-sm);
-    --sds-c-input-color-border: var(--border-color);
-    --sds-c-input-color-border-focus: var(--theme-primary-color);
-    --sds-c-input-shadow-focus: 0 0 0 1px var(--theme-primary-color);
+  --sds-c-input-radius-border: var(--radius-sm);
+  --sds-c-input-color-border: var(--border-color);
+  --sds-c-input-color-border-focus: var(--theme-primary-color);
+  --sds-c-input-shadow-focus: 0 0 0 1px var(--theme-primary-color);
 }
 
 /* Template Management Styling */
 .create-template-section,
 .manage-templates-section {
-    animation: fadeIn var(--transition-medium);
+  animation: fadeIn var(--transition-medium);
 }
 
 .templates-grid {
-    display: grid;
-    gap: var(--spacing-md);
+  display: grid;
+  gap: var(--spacing-md);
 }
 
 .template-card {
-    background: var(--background);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
-    cursor: pointer;
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  cursor: pointer;
 }
 
 .template-card:hover {
-    border-color: var(--theme-primary-color);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+  border-color: var(--theme-primary-color);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .template-info {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: var(--spacing-xs);
-    margin-top: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
 }
 
 .template-info .slds-badge {
-    background-color: var(--theme-primary-color);
-    color: white;
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    font-weight: 500;
+  background-color: var(--theme-primary-color);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
 }
 
 /* Template mode radio buttons */
 .form-group lightning-radio-group[type="button"] {
-    --sds-c-radio-button-color-background: var(--background-alt);
-    --sds-c-radio-button-color-border: var(--border-color);
+  --sds-c-radio-button-color-background: var(--background-alt);
+  --sds-c-radio-button-color-border: var(--border-color);
 }
 
-.form-group lightning-radio-group[type="button"] .slds-radio_button input:checked + .slds-radio_button__label {
-    background-color: var(--theme-primary-color);
-    border-color: var(--theme-primary-color);
-    color: white;
+.form-group
+  lightning-radio-group[type="button"]
+  .slds-radio_button
+  input:checked
+  + .slds-radio_button__label {
+  background-color: var(--theme-primary-color);
+  border-color: var(--theme-primary-color);
+  color: white;
 }
 
 /* Empty state styling */
 .slds-illustration {
-    opacity: 0.8;
+  opacity: 0.8;
 }
 
 .slds-illustration lightning-icon {
-    color: var(--text-tertiary);
+  color: var(--text-tertiary);
 }
 
 /* Template action buttons */
 .template-card lightning-button-group lightning-button[variant="brand"] button {
-    background-color: var(--theme-primary-color);
-    border-color: var(--theme-primary-color);
-    color: white;
-    font-size: var(--font-size-xs);
-    padding: 4px 8px;
-    min-height: 28px;
+  background-color: var(--theme-primary-color);
+  border-color: var(--theme-primary-color);
+  color: white;
+  font-size: var(--font-size-xs);
+  padding: 4px 8px;
+  min-height: 28px;
 }
 
-.template-card lightning-button-group lightning-button[variant="neutral"] button {
-    background-color: transparent;
-    border-color: var(--border-color);
-    color: var(--text-secondary);
-    font-size: var(--font-size-xs);
-    padding: 4px 8px;
-    min-height: 28px;
+.template-card
+  lightning-button-group
+  lightning-button[variant="neutral"]
+  button {
+  background-color: transparent;
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  padding: 4px 8px;
+  min-height: 28px;
 }
 
-.template-card lightning-button-group lightning-button[variant="neutral"] button:hover {
-    background-color: var(--background-alt);
-    border-color: var(--theme-primary-color);
-    color: var(--theme-primary-color);
+.template-card
+  lightning-button-group
+  lightning-button[variant="neutral"]
+  button:hover {
+  background-color: var(--background-alt);
+  border-color: var(--theme-primary-color);
+  color: var(--theme-primary-color);
 }
 
 /* Template management responsive adjustments */
 @media (max-width: 768px) {
-    .templates-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .template-card .slds-grid {
-        flex-direction: column;
-        gap: var(--spacing-sm);
-    }
-    
-    .template-card .slds-col:last-child {
-        text-align: left !important;
-    }
-    
-    .template-info {
-        justify-content: flex-start;
-    }
-    
-    .form-group {
-        margin-bottom: var(--spacing-md);
-    }
-    
-    /* Responsive dropdown height for tablets */
-    .form-group lightning-combobox .slds-dropdown {
-        max-height: min(20vh, 160px) !important; /* Smaller on tablets */
-    }
+  .templates-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .template-card .slds-grid {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .template-card .slds-col:last-child {
+    text-align: left !important;
+  }
+
+  .template-info {
+    justify-content: flex-start;
+  }
+
+  .form-group {
+    margin-bottom: var(--spacing-md);
+  }
+
+  /* Responsive dropdown height for tablets */
+  .form-group lightning-combobox .slds-dropdown {
+    max-height: min(20vh, 160px) !important; /* Smaller on tablets */
+  }
 }
 
 @media (max-width: 480px) {
-    /* Mobile-specific dropdown adjustments */
-    .form-group lightning-combobox .slds-dropdown {
-        max-height: min(18vh, 120px) !important; /* Even smaller on mobile */
-    }
-    
-    .step-section.step-0-mode {
-        padding-bottom: 40px; /* Reduced padding on mobile */
-    }
+  /* Mobile-specific dropdown adjustments */
+  .form-group lightning-combobox .slds-dropdown {
+    max-height: min(18vh, 120px) !important; /* Even smaller on mobile */
+  }
+
+  .step-section.step-0-mode {
+    padding-bottom: 40px; /* Reduced padding on mobile */
+  }
 }
 
 /* Preview Step Styling */
 .template-summary-section {
-    background: var(--background);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
-    margin-bottom: var(--spacing-md);
+  background: var(--background);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-md);
 }
 
 .pdf-preview-section {
-    background: var(--background);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
-    margin-bottom: var(--spacing-md);
+  background: var(--background);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-md);
 }
 
 .pdf-preview-container {
-    position: relative;
-    width: 100%;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    background: var(--background-alt);
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--background-alt);
 }
 
 .pdf-preview-iframe {
-    width: 100%;
-    height: 600px;
-    border: none;
-    display: block;
+  width: 100%;
+  height: 600px;
+  border: none;
+  display: block;
 }
 
 .preview-loading {
-    min-height: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: var(--background-alt);
-    border-radius: var(--radius-sm);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: var(--background-alt);
+  border-radius: var(--radius-sm);
 }
 
 .no-preview-message {
-    min-height: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: var(--background-alt);
-    border-radius: var(--radius-sm);
-    color: var(--text-tertiary);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: var(--background-alt);
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
 }
 
 .no-preview-message lightning-icon {
-    color: var(--text-tertiary);
-    opacity: 0.6;
+  color: var(--text-tertiary);
+  opacity: 0.6;
 }

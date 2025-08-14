@@ -1,90 +1,115 @@
 <template>
-    <!-- Styling element -->
-    <div class="file-display-styles"></div>
-    
-    <div class="file-display-container">
-        <!-- No Record Error Message -->
-        <template if:true={showNoRecordError}>
-            <div class="slds-card">
-                <div class="no-files-message">
-                    <lightning-icon icon-name="utility:error" size="large" class="empty-state-icon slds-m-bottom_medium"></lightning-icon>
-                    <p class="slds-text-heading_small slds-m-bottom_x-small">No Record Context Found</p>
-                    <p class="slds-text-body_small">This component can only be used on record pages or with a specified record ID.</p>
-                </div>
-            </div>
-        </template>
+  <!-- Styling element -->
+  <div class="file-display-styles"></div>
 
-        <!-- Main component when record is available -->
-        <template if:false={showNoRecordError}>
-            <div class="slds-card">
-                <!-- Spinner for loading states -->
-                <div if:true={showSpinner} class="spinner-overlay">
-                    <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
-                </div>
-                
-                <!-- File Display Header -->
-                <div class="files-header">
-                    <div class="slds-media slds-media_center slds-has-flexi-truncate">
-                        <div class="slds-media__figure">
-                            <lightning-icon icon-name="standard:document" alternative-text="Files" size="medium"></lightning-icon>
-                        </div>
-                        <div class="slds-media__body">
-                            <h2 class="header-text">Files</h2>
-                        </div>
-                        
-                        <div class="slds-no-flex header-actions">
-                            <!-- Refresh button -->
-                            <lightning-button-icon 
-                                icon-name="utility:refresh" 
-                                variant="border-filled" 
-                                alternative-text="Refresh" 
-                                title="Refresh"
-                                onclick={handleRefreshClick}
-                                class="refresh-button slds-m-right_small">
-                            </lightning-button-icon>
-                            
-                            <!-- Upload button -->
-                            <template if:true={allowUpload}>
-                                <lightning-file-upload
-                                    label="Upload Files"
-                                    name="fileUploader"
-                                    accept={acceptedFormats}
-                                    record-id={effectiveRecordId}
-                                    onuploadfinished={handleUploadFinished}
-                                    multiple>
-                                </lightning-file-upload>
-                            </template>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Card Body -->
-                <div class="slds-card__body">
-                    <!-- No files message -->
-                    <div if:true={showNoFilesMessage} class="no-files-message">
-                        <lightning-icon icon-name="utility:file" size="large" class="empty-state-icon slds-m-bottom_medium"></lightning-icon>
-                        <p class="slds-text-heading_small slds-m-bottom_x-small">No files found for this record</p>
-                        <template if:true={allowUpload}>
-                            <p class="slds-text-body_small">Upload a file to get started</p>
-                        </template>
-                    </div>
-                    
-                    <!-- Files data table -->
-                    <div if:false={showNoFilesMessage} class="table-container">
-                        <lightning-datatable
-                            key-field="Id"
-                            data={files}
-                            columns={columns}
-                            sorted-by={sortedBy}
-                            sorted-direction={sortDirection}
-                            onsort={onHandleSort}
-                            onrowaction={handleRowAction}
-                            hide-checkbox-column
-                            resize-column-disabled>
-                        </lightning-datatable>
-                    </div>
-                </div>
+  <div class="file-display-container">
+    <!-- No Record Error Message -->
+    <template if:true={showNoRecordError}>
+      <div class="slds-card">
+        <div class="no-files-message">
+          <lightning-icon
+            icon-name="utility:error"
+            size="large"
+            class="empty-state-icon slds-m-bottom_medium"
+          ></lightning-icon>
+          <p class="slds-text-heading_small slds-m-bottom_x-small">
+            No Record Context Found
+          </p>
+          <p class="slds-text-body_small">
+            This component can only be used on record pages or with a specified
+            record ID.
+          </p>
+        </div>
+      </div>
+    </template>
+
+    <!-- Main component when record is available -->
+    <template if:false={showNoRecordError}>
+      <div class="slds-card">
+        <!-- Spinner for loading states -->
+        <div if:true={showSpinner} class="spinner-overlay">
+          <lightning-spinner
+            alternative-text="Loading"
+            size="medium"
+          ></lightning-spinner>
+        </div>
+
+        <!-- File Display Header -->
+        <div class="files-header">
+          <div class="slds-media slds-media_center slds-has-flexi-truncate">
+            <div class="slds-media__figure">
+              <lightning-icon
+                icon-name="standard:document"
+                alternative-text="Files"
+                size="medium"
+              ></lightning-icon>
             </div>
-        </template>
-    </div>
+            <div class="slds-media__body">
+              <h2 class="header-text">Files</h2>
+            </div>
+
+            <div class="slds-no-flex header-actions">
+              <!-- Refresh button -->
+              <lightning-button-icon
+                icon-name="utility:refresh"
+                variant="border-filled"
+                alternative-text="Refresh"
+                title="Refresh"
+                onclick={handleRefreshClick}
+                class="refresh-button slds-m-right_small"
+              >
+              </lightning-button-icon>
+
+              <!-- Upload button -->
+              <template if:true={allowUpload}>
+                <lightning-file-upload
+                  label="Upload Files"
+                  name="fileUploader"
+                  accept={acceptedFormats}
+                  record-id={effectiveRecordId}
+                  onuploadfinished={handleUploadFinished}
+                  multiple
+                >
+                </lightning-file-upload>
+              </template>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="slds-card__body">
+          <!-- No files message -->
+          <div if:true={showNoFilesMessage} class="no-files-message">
+            <lightning-icon
+              icon-name="utility:file"
+              size="large"
+              class="empty-state-icon slds-m-bottom_medium"
+            ></lightning-icon>
+            <p class="slds-text-heading_small slds-m-bottom_x-small">
+              No files found for this record
+            </p>
+            <template if:true={allowUpload}>
+              <p class="slds-text-body_small">Upload a file to get started</p>
+            </template>
+          </div>
+
+          <!-- Files data table -->
+          <div if:false={showNoFilesMessage} class="table-container">
+            <lightning-datatable
+              key-field="Id"
+              data={files}
+              columns={columns}
+              sorted-by={sortedBy}
+              sorted-direction={sortDirection}
+              onsort={onHandleSort}
+              onrowaction={handleRowAction}
+              hide-checkbox-column
+              resize-column-disabled
+            >
+            </lightning-datatable>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
 </template>

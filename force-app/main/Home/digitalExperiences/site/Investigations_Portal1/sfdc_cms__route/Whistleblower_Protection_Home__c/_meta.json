@@ -1,5 +1,5 @@
 {
-  "apiName" : "Whistleblower_Protection_Home__c",
-  "type" : "sfdc_cms__route",
-  "path" : "routes"
+  "apiName": "Whistleblower_Protection_Home__c",
+  "type": "sfdc_cms__route",
+  "path": "routes"
 }

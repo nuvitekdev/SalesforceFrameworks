@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Max_Concurrent_Sessions__c</fullName>
     <defaultValue>3</defaultValue>
-    <description>Maximum number of concurrent active sessions allowed per user. This helps prevent session hijacking and ensures users are not logged in from multiple locations simultaneously.</description>
+    <description
+  >Maximum number of concurrent active sessions allowed per user. This helps prevent session hijacking and ensures users are not logged in from multiple locations simultaneously.</description>
     <externalId>false</externalId>
     <fieldManageability>DeveloperControlled</fieldManageability>
     <label>Max Concurrent Sessions</label>

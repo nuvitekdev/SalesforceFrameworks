@@ -77,7 +77,7 @@ The SLA Tracker component can be added to:
 3. Configure the following required properties:
    - **SLA Duration (Hours)**: Set the number of hours for your SLA target.
    - **Start Time Field**: Field that marks when the SLA clock starts (e.g., CreatedDate).
-   - **Status Field**: Field used to determine the current status (e.g., Status__c).
+   - **Status Field**: Field used to determine the current status (e.g., Status\_\_c).
 
 #### Advanced Options
 
@@ -93,6 +93,7 @@ The SLA Tracker component can be added to:
 ### Usage Examples
 
 #### Standard Case Management
+
 ```
 SLA Duration: 8 hours
 Start Time Field: CreatedDate
@@ -103,6 +104,7 @@ Paused Status Values: Awaiting Customer Response,On Hold
 ```
 
 #### IT Support Tickets
+
 ```
 SLA Duration: 4 hours
 Start Time Field: CreatedDate
@@ -113,6 +115,7 @@ Paused Status Values: Waiting for Information,Pending Approval
 ```
 
 #### Compliance Reviews
+
 ```
 SLA Duration: 120 hours (5 days)
 Start Time Field: Submission_Date__c
@@ -163,4 +166,4 @@ This component is available under the MIT License. See LICENSE.md for details.
 
 ---
 
-*Developed by Nuvitek - Transforming business through innovative Salesforce solutions.* 
+_Developed by Nuvitek - Transforming business through innovative Salesforce solutions._

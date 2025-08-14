@@ -1,72 +1,72 @@
 public class CaseService {
-    public CaseService() {
-        this.newCases = new Map<Id, Case>();
-        this.oldCases = new Map<Id, Case>();
-    }
+  public CaseService() {
+    this.newCases = new Map<Id, Case>();
+    this.oldCases = new Map<Id, Case>();
+  }
 
-    /* Constants */
-        // constants will be added here when we need them
-    
-    /* Trigger Record Properties */
-    private CaseWrapper cWrapper; 
-    private CaseWrapper oldCaseWrapper;
+  /* Constants */
+  // constants will be added here when we need them
 
-    public Map<Id, Case> newCases { get; set; }
-    public Map<Id, Case> oldCases { get; set; }
+  /* Trigger Record Properties */
+  private CaseWrapper cWrapper;
+  private CaseWrapper oldCaseWrapper;
 
-    public Case getNewCase() {
-        return this.cWrapper.cs;
-    }
-    public void setNewCase(Case c){
-        this.cWrapper = new CaseWrapper(c);
-    }
+  public Map<Id, Case> newCases { get; set; }
+  public Map<Id, Case> oldCases { get; set; }
 
-    public void setCases(Case c, Case oldCase) {
-        this.cWrapper = new CaseWrapper(c);
-        this.oldCaseWrapper = new CaseWrapper(oldCase);
-    }
+  public Case getNewCase() {
+    return this.cWrapper.cs;
+  }
+  public void setNewCase(Case c) {
+    this.cWrapper = new CaseWrapper(c);
+  }
 
-    public Case getOldCase() {
-        return this.oldCaseWrapper.cs;
-    }
-    public void setOldCase(Case c) {
-        this.oldCaseWrapper = new CaseWrapper(c);
-    }
+  public void setCases(Case c, Case oldCase) {
+    this.cWrapper = new CaseWrapper(c);
+    this.oldCaseWrapper = new CaseWrapper(oldCase);
+  }
 
-    /* Data variables */
-        // add data variables here
+  public Case getOldCase() {
+    return this.oldCaseWrapper.cs;
+  }
+  public void setOldCase(Case c) {
+    this.oldCaseWrapper = new CaseWrapper(c);
+  }
 
-    /* lists, sets and maps for processing */
-    private List<Id> caseOwnerIdList = new List<Id>();
-    private Map<Id,User> caseOwnerMap;
+  /* Data variables */
+  // add data variables here
 
-    /* Queries */
-    public void queryCaseOwners(){
-        // this isn't being used, just an example use case
-        this.CaseOwnerMap = new Map<Id,User>([SELECT Id FROM User WHERE id IN :this.caseOwnerIdList]);
-    }
-    /* End Queries */
+  /* lists, sets and maps for processing */
+  private List<Id> caseOwnerIdList = new List<Id>();
+  private Map<Id, User> caseOwnerMap;
 
-    /* Query Processing Methods Start */
-        // query processing methods would be here (not being used yet)
-    /* Query Processing Methods End */
+  /* Queries */
+  public void queryCaseOwners() {
+    // this isn't being used, just an example use case
+    this.CaseOwnerMap = new Map<Id, User>(
+      [SELECT Id FROM User WHERE id IN :this.caseOwnerIdList]
+    );
+  }
+  /* End Queries */
 
-    /* Data Collection Methods Start */
-    public void addCaseOwnerId(){
-        // this isn't being used, just an example use case
-        this.caseOwnerIdList.add(this.cWrapper.cs.OwnerId);
-    }
-    /* Data Collection Methods End */
+  /* Query Processing Methods Start */
+  // query processing methods would be here (not being used yet)
+  /* Query Processing Methods End */
 
-    /* Data Setter Methods Start */
-    public void setFields() {
-        // this isn't being used yet, just an example use case
-    }
-    /* Data Setter Methods End */
+  /* Data Collection Methods Start */
+  public void addCaseOwnerId() {
+    // this isn't being used, just an example use case
+    this.caseOwnerIdList.add(this.cWrapper.cs.OwnerId);
+  }
+  /* Data Collection Methods End */
 
+  /* Data Setter Methods Start */
+  public void setFields() {
+    // this isn't being used yet, just an example use case
+  }
+  /* Data Setter Methods End */
 
-    public void finish() {
-        // finish DML statements for other objects
-    }
-
+  public void finish() {
+    // finish DML statements for other objects
+  }
 }

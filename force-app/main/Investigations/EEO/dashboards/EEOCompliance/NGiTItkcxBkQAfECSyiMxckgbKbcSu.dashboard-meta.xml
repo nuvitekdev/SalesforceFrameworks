@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <Dashboard xmlns="http://soap.sforce.com/2006/04/metadata">
     <backgroundEndColor>#FFFFFF</backgroundEndColor>
     <backgroundFadeDirection>Diagonal</backgroundFadeDirection>
@@ -26,7 +26,8 @@
                 <drillToDetailEnabled>false</drillToDetailEnabled>
                 <enableHover>false</enableHover>
                 <expandOthers>false</expandOthers>
-                <groupingColumn>EEO_Intake_Questionnaire__c.Does_the_Aggrieved_have_a_Representative__c</groupingColumn>
+                <groupingColumn
+        >EEO_Intake_Questionnaire__c.Does_the_Aggrieved_have_a_Representative__c</groupingColumn>
                 <groupingSortProperties>
                     <groupingSorts>
                         <groupingLevel>g1</groupingLevel>
@@ -36,7 +37,8 @@
                 <header>Representatives</header>
                 <legendPosition>Right</legendPosition>
                 <maxValuesDisplayed>6</maxValuesDisplayed>
-                <report>unfiled$public/EEO_Intake_Questionnaires_Report_X3D</report>
+                <report
+        >unfiled$public/EEO_Intake_Questionnaires_Report_X3D</report>
                 <showPercentage>true</showPercentage>
                 <showValues>false</showValues>
                 <sortBy>RowLabelAscending</sortBy>
@@ -65,7 +67,8 @@
                 <drillToDetailEnabled>false</drillToDetailEnabled>
                 <enableHover>false</enableHover>
                 <expandOthers>false</expandOthers>
-                <groupingColumn>EEO_Intake_Questionnaire__c.Initial_Contact_Date__c</groupingColumn>
+                <groupingColumn
+        >EEO_Intake_Questionnaire__c.Initial_Contact_Date__c</groupingColumn>
                 <groupingSortProperties>
                     <groupingSorts>
                         <groupingLevel>g1</groupingLevel>
@@ -75,7 +78,8 @@
                 <header>Questionnaires Per Month</header>
                 <legendPosition>Right</legendPosition>
                 <maxValuesDisplayed>6</maxValuesDisplayed>
-                <report>unfiled$public/EEO_Intake_Questionnaires_Report_X3D</report>
+                <report
+        >unfiled$public/EEO_Intake_Questionnaires_Report_X3D</report>
                 <showPercentage>false</showPercentage>
                 <showTotal>true</showTotal>
                 <showValues>true</showValues>

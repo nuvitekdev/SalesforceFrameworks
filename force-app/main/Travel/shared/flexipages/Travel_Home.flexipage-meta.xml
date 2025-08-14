@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
     <flexiPageRegions>
         <itemInstances>
@@ -9,7 +9,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>richTextValue</name>
-                    <value>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 24px; color: rgb(0, 0, 0);&quot;&gt;Travel Application&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px; color: rgb(0, 0, 0);&quot;&gt;Manage travel requests, approvals, booking integrations, and expense reporting. Streamline business travel from planning to reimbursement.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</value>
+                    <value
+          >&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;font-size: 24px; color: rgb(0, 0, 0);&quot;&gt;Travel Application&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot;font-size: 16px; color: rgb(0, 0, 0);&quot;&gt;Manage travel requests, approvals, booking integrations, and expense reporting. Streamline business travel from planning to reimbursement.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</value>
                 </componentInstanceProperties>
                 <componentName>flexipage:richText</componentName>
                 <identifier>flexipage_richText_Travel</identifier>
@@ -21,8 +22,10 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>runtime_approval_process:pendingApprovalCard</componentName>
-                <identifier>runtime_approval_process_pendingApprovalCard_Travel</identifier>
+                <componentName
+        >runtime_approval_process:pendingApprovalCard</componentName>
+                <identifier
+        >runtime_approval_process_pendingApprovalCard_Travel</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
@@ -37,7 +40,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>contextPrompt</name>
-                    <value>your job is to speak within the context of Travel requests and management</value>
+                    <value
+          >your job is to speak within the context of Travel requests and management</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>defaultModelName</name>
@@ -120,11 +124,13 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>descriptions</name>
-                    <value>Plan and approve official travel with streamlined request forms plus policy compliance checks and integrated risk assessment with booking system integration, Simplify reimbursement with mobile receipt capture plus automated expense categorization and policy verification with real-time processing status, Monitor passport applications with document upload capabilities plus status tracking and deadline management with renewal forecasting, Secure approval for conferences with justification tools plus cost estimation and travel coordination with ROI tracking dashboards</value>
+                    <value
+          >Plan and approve official travel with streamlined request forms plus policy compliance checks and integrated risk assessment with booking system integration, Simplify reimbursement with mobile receipt capture plus automated expense categorization and policy verification with real-time processing status, Monitor passport applications with document upload capabilities plus status tracking and deadline management with renewal forecasting, Secure approval for conferences with justification tools plus cost estimation and travel coordination with ROI tracking dashboards</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>icons</name>
-                    <value>utility:travel_and_places, utility:money, utility:record, utility:event</value>
+                    <value
+          >utility:travel_and_places, utility:money, utility:record, utility:event</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>links</name>
@@ -140,7 +146,8 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>titles</name>
-                    <value>Travel Request Portal, Expense Processing Center, Passport Tracking System, Conference Approval Hub</value>
+                    <value
+          >Travel Request Portal, Expense Processing Center, Passport Tracking System, Conference Approval Hub</value>
                 </componentInstanceProperties>
                 <componentName>nuvitekNavigationTiles</componentName>
                 <identifier>c_nuvitekNavigationTiles_Travel</identifier>

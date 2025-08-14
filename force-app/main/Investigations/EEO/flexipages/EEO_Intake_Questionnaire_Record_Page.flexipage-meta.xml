@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
     <flexiPageRegions>
         <itemInstances>
@@ -150,8 +150,10 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Date_Last_Employed_at_Department__c</fieldItem>
-                <identifier>RecordDate_Last_Employed_at_Department_cField</identifier>
+                <fieldItem
+        >Record.Date_Last_Employed_at_Department__c</fieldItem>
+                <identifier
+        >RecordDate_Last_Employed_at_Department_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <name>Facet-374fddb7-fa18-411d-8865-b598efb6c07c</name>
@@ -232,8 +234,10 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Permission_to_use_Aggrieved_s_name__c</fieldItem>
-                <identifier>RecordPermission_to_use_Aggrieved_s_name_cField</identifier>
+                <fieldItem
+        >Record.Permission_to_use_Aggrieved_s_name__c</fieldItem>
+                <identifier
+        >RecordPermission_to_use_Aggrieved_s_name_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <name>Facet-15ced5f1-c4e7-481d-b7bf-d346f6978551</name>
@@ -260,8 +264,10 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Does_the_Aggrieved_have_a_Representative__c</fieldItem>
-                <identifier>RecordDoes_the_Aggrieved_have_a_Representative_cField</identifier>
+                <fieldItem
+        >Record.Does_the_Aggrieved_have_a_Representative__c</fieldItem>
+                <identifier
+        >RecordDoes_the_Aggrieved_have_a_Representative_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -270,11 +276,14 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Is_the_Representative_an_attorney__c</fieldItem>
-                <identifier>RecordIs_the_Representative_an_attorney_cField</identifier>
+                <fieldItem
+        >Record.Is_the_Representative_an_attorney__c</fieldItem>
+                <identifier
+        >RecordIs_the_Representative_an_attorney_cField</identifier>
                 <visibilityRule>
                     <criteria>
-                        <leftValue>{!Record.Does_the_Aggrieved_have_a_Representative__c}</leftValue>
+                        <leftValue
+            >{!Record.Does_the_Aggrieved_have_a_Representative__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Yes</rightValue>
                     </criteria>
@@ -291,7 +300,8 @@
                 <identifier>RecordRepresentative_cField</identifier>
                 <visibilityRule>
                     <criteria>
-                        <leftValue>{!Record.Does_the_Aggrieved_have_a_Representative__c}</leftValue>
+                        <leftValue
+            >{!Record.Does_the_Aggrieved_have_a_Representative__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Yes</rightValue>
                     </criteria>
@@ -308,7 +318,8 @@
                 <identifier>RecordRepresentative_s_Title_cField</identifier>
                 <visibilityRule>
                     <criteria>
-                        <leftValue>{!Record.Does_the_Aggrieved_have_a_Representative__c}</leftValue>
+                        <leftValue
+            >{!Record.Does_the_Aggrieved_have_a_Representative__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Yes</rightValue>
                     </criteria>
@@ -322,10 +333,12 @@
                     <value>none</value>
                 </fieldInstanceProperties>
                 <fieldItem>Record.Representative_Mailing_Address__c</fieldItem>
-                <identifier>RecordRepresentative_Mailing_Address_cField</identifier>
+                <identifier
+        >RecordRepresentative_Mailing_Address_cField</identifier>
                 <visibilityRule>
                     <criteria>
-                        <leftValue>{!Record.Does_the_Aggrieved_have_a_Representative__c}</leftValue>
+                        <leftValue
+            >{!Record.Does_the_Aggrieved_have_a_Representative__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Yes</rightValue>
                     </criteria>
@@ -342,7 +355,8 @@
                 <identifier>RecordRepresentative_Phone_cField</identifier>
                 <visibilityRule>
                     <criteria>
-                        <leftValue>{!Record.Does_the_Aggrieved_have_a_Representative__c}</leftValue>
+                        <leftValue
+            >{!Record.Does_the_Aggrieved_have_a_Representative__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Yes</rightValue>
                     </criteria>
@@ -356,10 +370,12 @@
                     <value>readonly</value>
                 </fieldInstanceProperties>
                 <fieldItem>Record.Representative_Email_Address__c</fieldItem>
-                <identifier>RecordRepresentative_Email_Address_cField</identifier>
+                <identifier
+        >RecordRepresentative_Email_Address_cField</identifier>
                 <visibilityRule>
                     <criteria>
-                        <leftValue>{!Record.Does_the_Aggrieved_have_a_Representative__c}</leftValue>
+                        <leftValue
+            >{!Record.Does_the_Aggrieved_have_a_Representative__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Yes</rightValue>
                     </criteria>
@@ -418,8 +434,10 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Claim_s_of_Alleged_Discrimination__c</fieldItem>
-                <identifier>RecordClaim_s_of_Alleged_Discrimination_cField</identifier>
+                <fieldItem
+        >Record.Claim_s_of_Alleged_Discrimination__c</fieldItem>
+                <identifier
+        >RecordClaim_s_of_Alleged_Discrimination_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -439,7 +457,8 @@
                     <value>none</value>
                 </fieldInstanceProperties>
                 <fieldItem>Record.Details_of_Allegation_s_Issue_s__c</fieldItem>
-                <identifier>RecordDetails_of_Allegation_s_Issue_s_cField</identifier>
+                <identifier
+        >RecordDetails_of_Allegation_s_Issue_s_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -448,8 +467,10 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Remedial_Corrective_Action_Sought__c</fieldItem>
-                <identifier>RecordRemedial_Corrective_Action_Sought_cField</identifier>
+                <fieldItem
+        >Record.Remedial_Corrective_Action_Sought__c</fieldItem>
+                <identifier
+        >RecordRemedial_Corrective_Action_Sought_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <name>Facet-e2b62b7b-4f83-4974-a603-feb70eceec48</name>

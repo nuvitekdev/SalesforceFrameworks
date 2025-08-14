@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ApprovalProcess xmlns="http://soap.sforce.com/2006/04/metadata">
     <active>true</active>
     <allowRecall>true</allowRecall>
@@ -56,7 +56,8 @@
             </approver>
             <whenMultipleApprovers>FirstResponse</whenMultipleApprovers>
         </assignedApprover>
-        <description>Check to see if report falls under the correct jurisdiction</description>
+        <description
+    >Check to see if report falls under the correct jurisdiction</description>
         <label>Check Office Jurisdiction &amp; Priority</label>
         <name>Check_Office_Jurisdiction</name>
         <rejectionActions>
@@ -69,7 +70,8 @@
                 <type>FieldUpdate</type>
             </action>
             <action>
-                <name>Email_Inform_user_of_denied_report_and_reasoning_Not_in_office_jurisdiction</name>
+                <name
+        >Email_Inform_user_of_denied_report_and_reasoning_Not_in_office_jurisdiction</name>
                 <type>Alert</type>
             </action>
         </rejectionActions>

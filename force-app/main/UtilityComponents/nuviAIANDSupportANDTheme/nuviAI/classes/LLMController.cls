@@ -1,5 +1,5 @@
 public with sharing class LLMController {
-  @AuraEnabled(cacheable=true) 
+  @AuraEnabled(cacheable=true)
   public static List<LLM_Configuration__mdt> getLLMConfigurations() {
     System.debug('Getting LLM configurations');
     List<LLM_Configuration__mdt> configs = [
@@ -103,6 +103,26 @@ public with sharing class LLMController {
       System.debug('Stack trace: ' + e.getStackTraceString());
       throw new AuraHandledException('Error: ' + e.getMessage());
     }
+  }
+
+  // Backwards compatible overloaded method for existing callers
+  @AuraEnabled
+  public static String handleRequest(
+    String recordId,
+    String configName,
+    String prompt,
+    String operation,
+    String relatedObjects
+  ) {
+    // Call the new 6-parameter version with null for reportObjects
+    return handleRequest(
+      recordId,
+      configName,
+      prompt,
+      operation,
+      relatedObjects,
+      null
+    );
   }
 
   /**

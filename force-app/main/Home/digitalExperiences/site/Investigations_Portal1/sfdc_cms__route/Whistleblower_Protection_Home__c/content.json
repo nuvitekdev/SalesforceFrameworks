@@ -1,12 +1,12 @@
 {
-  "type" : "sfdc_cms__route",
-  "title" : "Whistleblower Protection Home",
-  "contentBody" : {
-    "activeViewId" : "Whistleblower_Protection_Home",
-    "configurationTags" : [ ],
-    "pageAccess" : "Public",
-    "routeType" : "custom-whistleblower-protection-home",
-    "urlPrefix" : "whistleblower-protection-home"
+  "type": "sfdc_cms__route",
+  "title": "Whistleblower Protection Home",
+  "contentBody": {
+    "activeViewId": "Whistleblower_Protection_Home",
+    "configurationTags": [],
+    "pageAccess": "Public",
+    "routeType": "custom-whistleblower-protection-home",
+    "urlPrefix": "whistleblower-protection-home"
   },
-  "urlName" : "whistleblower-protection-home"
+  "urlName": "whistleblower-protection-home"
 }

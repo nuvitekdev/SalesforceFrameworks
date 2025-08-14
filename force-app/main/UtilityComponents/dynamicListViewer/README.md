@@ -83,7 +83,7 @@ The Dynamic Record List View component can be added to:
 1. Navigate to the page where you want to add the Dynamic Record List View.
 2. Edit the page and drag the **Dynamic Record List View** component from the custom components section.
 3. Configure the following required properties:
-   - **Object API Name**: The API name of the object to display (e.g., "Account", "Custom_Object__c").
+   - **Object API Name**: The API name of the object to display (e.g., "Account", "Custom_Object\_\_c").
    - **List View Fields**: Comma-separated list of field API names to display as columns (e.g., "Phone,Industry,CreatedDate").
 
 4. Configure the following optional properties to customize the experience:
@@ -95,7 +95,7 @@ The Dynamic Record List View component can be added to:
      - **Standard Actions**: `Edit`, `Delete`, `Clone`
      - **Custom Flow Actions**: Any Flow configured as a Quick Action on the object (e.g., `Send_Email_Flow`, `My_Custom_Process`)
      - **Custom Quick Actions**: Any custom quick action defined on the object
-     - **Example**: `Edit,Delete,Clone,Send_Email_Flow,Update_Status` 
+     - **Example**: `Edit,Delete,Clone,Send_Email_Flow,Update_Status`
      - **Default**: `Edit,Delete` (if left blank, no actions will show)
    - **Record Type ID**: The 18-digit ID of a record type to get the correct page layout for related lists.
    - **Show Actions (Deprecated)**: Kept for backward compatibility. Use `Record Action API Names` for better control.
@@ -156,7 +156,7 @@ The Dynamic Record List View component can be added to:
 
 3. **Actions Not Appearing**
    - **Check Configuration**: Ensure you have added action names to the **Record Action API Names** property (e.g., `Edit,Delete,Clone`).
-   - **For Flow Actions**: 
+   - **For Flow Actions**:
      - Create your Flow and make sure it has an input variable named `recordId` of type Text/String
      - Go to Object Manager → Your Object → Buttons, Links, and Actions → New Action
      - Choose "Flow" as the action type and select your Flow
@@ -176,4 +176,4 @@ This component is available under the MIT License. See LICENSE.md for details.
 
 ---
 
-*Developed by Nuvitek - Transforming business through innovative Salesforce solutions.* 
+_Developed by Nuvitek - Transforming business through innovative Salesforce solutions._

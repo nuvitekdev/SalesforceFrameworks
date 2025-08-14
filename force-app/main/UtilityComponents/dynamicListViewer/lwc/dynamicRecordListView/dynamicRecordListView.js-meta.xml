@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>58.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Dynamic Record List View</masterLabel>
-    <description>Displays a list of records from any Salesforce object with customizable fields and styling.</description>
+    <description
+  >Displays a list of records from any Salesforce object with customizable fields and styling.</description>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__RecordPage</target>
@@ -12,22 +13,111 @@
         <target>lightningCommunity__Default</target>
     </targets>
     <targetConfigs>
-        <targetConfig targets="lightning__AppPage,lightning__RecordPage,lightning__HomePage,lightningCommunity__Default">
-            <property name="objectApiName" type="String" label="Object API Name" description="API name of the Salesforce object to display (e.g., Account, Contact, Custom_Object__c)" required="true" />
-            <property name="listViewTitle" type="String" label="List View Title" description="Title to display at the top of the list view" required="false" />
-            <property name="listViewFields" type="String" label="List View Fields" description="Comma-separated list of field API names to display as columns (e.g., Phone,Industry,CreatedDate). Note: Id and Name fields are automatically included; you don't need to specify them." required="true" />
-            <property name="titleField" type="String" label="Title Field" description="Field to use as the title in record detail view. Name is used by default if left blank. Do not specify if Name is already in List View Fields." />
-            <property name="subtitleField" type="String" label="Subtitle Field" description="Field to use as the subtitle in record detail view. Use a field that is not already in List View Fields to avoid errors." />
-            <property name="maxNavigationDepth" type="Integer" label="Max Navigation Depth" description="Maximum number of lookup record navigations allowed. Set to 0 to disable all lookup navigation. Set to 1-10 to allow that specific number of related record navigations." default="1" min="0" max="10" />
-            <property name="showNewButton" type="Boolean" label="[DEPRECATED] Use Record Actions" description="This property is deprecated. Use the Record Action API Names property to control the 'New' button's visibility by including 'New' in the list." default="false"/>
-            <property name="recordActionApiNames" type="String" label="Record Action API Names" description="Comma-separated list of action API names. Supports standard actions (New, Edit, Delete) and custom Flow actions. Example: 'New,Edit,Delete,My_Custom_Flow'." default="New,Edit,Delete"/>
-            <property name="recordTypeId" type="String" label="Record Type ID" description="Optional Record Type ID for page layout configuration" />
-            <property name="relatedListFields" type="String" label="Related List Fields Configuration" description="JSON configuration for related list fields. Example: {&quot;Contacts&quot;:[&quot;Name&quot;,&quot;Email&quot;,&quot;Phone&quot;]}" />
-            <property name="recordTypeNameFilter" type="String" label="Record Type Name Filter" description="Comma-separated list of Record Type Names to filter records (e.g., 'Standard,Premium,Enterprise'). Leave blank to show all record types." />
-            <property name="primaryColor" type="String" label="Primary Color" description="Primary theme color (headers, buttons)" default="#22BDC1" />
-            <property name="accentColor" type="String" label="Accent Color" description="Accent color (highlights, secondary elements)" default="#D5DF23" />
-            <property name="textColor" type="String" label="Text Color" description="Main text color" default="#1d1d1f" />
-            <property name="showOnlyCreatedByMe" type="Boolean" label="Show Only My Records" description="Show only records created by the current user" default="false"/>
+        <targetConfig
+      targets="lightning__AppPage,lightning__RecordPage,lightning__HomePage,lightningCommunity__Default"
+    >
+            <property
+        name="objectApiName"
+        type="String"
+        label="Object API Name"
+        description="API name of the Salesforce object to display (e.g., Account, Contact, Custom_Object__c)"
+        required="true"
+      />
+            <property
+        name="listViewTitle"
+        type="String"
+        label="List View Title"
+        description="Title to display at the top of the list view"
+        required="false"
+      />
+            <property
+        name="listViewFields"
+        type="String"
+        label="List View Fields"
+        description="Comma-separated list of field API names to display as columns (e.g., Phone,Industry,CreatedDate). Note: Id and Name fields are automatically included; you don't need to specify them."
+        required="true"
+      />
+            <property
+        name="titleField"
+        type="String"
+        label="Title Field"
+        description="Field to use as the title in record detail view. Name is used by default if left blank. Do not specify if Name is already in List View Fields."
+      />
+            <property
+        name="subtitleField"
+        type="String"
+        label="Subtitle Field"
+        description="Field to use as the subtitle in record detail view. Use a field that is not already in List View Fields to avoid errors."
+      />
+            <property
+        name="maxNavigationDepth"
+        type="Integer"
+        label="Max Navigation Depth"
+        description="Maximum number of lookup record navigations allowed. Set to 0 to disable all lookup navigation. Set to 1-10 to allow that specific number of related record navigations."
+        default="1"
+        min="0"
+        max="10"
+      />
+            <property
+        name="showNewButton"
+        type="Boolean"
+        label="[DEPRECATED] Use Record Actions"
+        description="This property is deprecated. Use the Record Action API Names property to control the 'New' button's visibility by including 'New' in the list."
+        default="false"
+      />
+            <property
+        name="recordActionApiNames"
+        type="String"
+        label="Record Action API Names"
+        description="Comma-separated list of action API names. Supports standard actions (New, Edit, Delete) and custom Flow actions. Example: 'New,Edit,Delete,My_Custom_Flow'."
+        default="New,Edit,Delete"
+      />
+            <property
+        name="recordTypeId"
+        type="String"
+        label="Record Type ID"
+        description="Optional Record Type ID for page layout configuration"
+      />
+            <property
+        name="relatedListFields"
+        type="String"
+        label="Related List Fields Configuration"
+        description="JSON configuration for related list fields. Example: {&quot;Contacts&quot;:[&quot;Name&quot;,&quot;Email&quot;,&quot;Phone&quot;]}"
+      />
+            <property
+        name="recordTypeNameFilter"
+        type="String"
+        label="Record Type Name Filter"
+        description="Comma-separated list of Record Type Names to filter records (e.g., 'Standard,Premium,Enterprise'). Leave blank to show all record types."
+      />
+            <property
+        name="primaryColor"
+        type="String"
+        label="Primary Color"
+        description="Primary theme color (headers, buttons)"
+        default="#22BDC1"
+      />
+            <property
+        name="accentColor"
+        type="String"
+        label="Accent Color"
+        description="Accent color (highlights, secondary elements)"
+        default="#D5DF23"
+      />
+            <property
+        name="textColor"
+        type="String"
+        label="Text Color"
+        description="Main text color"
+        default="#1d1d1f"
+      />
+            <property
+        name="showOnlyCreatedByMe"
+        type="Boolean"
+        label="Show Only My Records"
+        description="Show only records created by the current user"
+        default="false"
+      />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

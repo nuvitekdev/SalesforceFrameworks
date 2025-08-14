@@ -1,587 +1,839 @@
 <!-- Dynamic Record List View Component -->
 <template>
-    <div class="container">
-        <!-- Enhanced header section with logo and metadata -->
-        <div class="list-header">
-            <div class="list-header-left">
-                <lightning-icon icon-name={objectIcon} size="medium" class="list-icon"></lightning-icon>
-                <div class="list-header-title">
-                    <h1>{objectLabel}</h1>
-                    <div class="list-meta">
-                        <span class="record-count">{totalRecords} items</span>
-                        <span class="separator">•</span>
-                        <span class="sort-info">Sorted by {sortByLabel}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="list-header-actions">
-                <div class="search-container">
-                    <lightning-input 
-                        type="search" 
-                        label="Search Records" 
-                        placeholder="Search across all fields..." 
-                        value={searchTerm} 
-                        onchange={handleSearch}
-                        variant="label-hidden">
-                    </lightning-input>
-                                </div>
-
-                <button class="filter-button" onclick={toggleFilterPanel} title="Filter">
-                    <lightning-icon icon-name="utility:filterList" size="small"></lightning-icon>
-                    <span>Filter</span>
-                </button>
-                <lightning-button
-                    if:true={isNewActionAvailable}
-                    label="New"
-                    variant="brand"
-                    onclick={handleNewClick}
-                    class="new-button">
-                </lightning-button>
-            </div>
+  <div class="container">
+    <!-- Enhanced header section with logo and metadata -->
+    <div class="list-header">
+      <div class="list-header-left">
+        <lightning-icon
+          icon-name={objectIcon}
+          size="medium"
+          class="list-icon"
+        ></lightning-icon>
+        <div class="list-header-title">
+          <h1>{objectLabel}</h1>
+          <div class="list-meta">
+            <span class="record-count">{totalRecords} items</span>
+            <span class="separator">•</span>
+            <span class="sort-info">Sorted by {sortByLabel}</span>
+          </div>
+        </div>
+      </div>
+      <div class="list-header-actions">
+        <div class="search-container">
+          <lightning-input
+            type="search"
+            label="Search Records"
+            placeholder="Search across all fields..."
+            value={searchTerm}
+            onchange={handleSearch}
+            variant="label-hidden"
+          >
+          </lightning-input>
         </div>
 
-        <!-- Filter panel (collapsed by default) -->
-        <div class={filterPanelClass}>
-            <div class="filter-header">
-                <h2>Filters</h2>
-                <button class="close-filter-button" onclick={toggleFilterPanel}>
-                    <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
-                </button>
-            </div>
-            <div class="filter-content">
-                <!-- Will add actual filter controls in a future iteration -->
-                <div class="filter-row">
-                    <lightning-combobox
-                        name="fieldFilter"
-                        label="Field"
-                        placeholder="Select Field"
-                        options={fieldOptions}
-                        onchange={handleFieldSelection}>
-                    </lightning-combobox>
-                    <lightning-combobox
-                        name="operatorFilter"
-                        label="Operator"
-                        placeholder="Select Operator"
-                        options={operatorOptions}
-                        onchange={handleOperatorSelection}
-                        disabled={isOperatorDisabled}>
-                    </lightning-combobox>
-                    <lightning-input 
-                        type="text"
-                        label="Value"
-                        placeholder="Enter value..."
-                        value={fieldValue}
-                        onchange={handleFieldValueChange}
-                        disabled={isValueDisabled}>
-                    </lightning-input>
-                </div>
-                <div class="filter-actions">
-                    <button class="apply-filter-button" onclick={applyFilter} disabled={isApplyDisabled}>Apply Filter</button>
-                    <button class="clear-filter-button" onclick={clearFilters}>Clear</button>
-                </div>
-            </div>
-        </div>
+        <button
+          class="filter-button"
+          onclick={toggleFilterPanel}
+          title="Filter"
+        >
+          <lightning-icon
+            icon-name="utility:filterList"
+            size="small"
+          ></lightning-icon>
+          <span>Filter</span>
+        </button>
+        <lightning-button
+          if:true={isNewActionAvailable}
+          label="New"
+          variant="brand"
+          onclick={handleNewClick}
+          class="new-button"
+        >
+        </lightning-button>
+      </div>
+    </div>
 
-        <!-- Error state - Hidden from UI -->
-        <!-- <template if:true={error}>
+    <!-- Filter panel (collapsed by default) -->
+    <div class={filterPanelClass}>
+      <div class="filter-header">
+        <h2>Filters</h2>
+        <button class="close-filter-button" onclick={toggleFilterPanel}>
+          <lightning-icon
+            icon-name="utility:close"
+            size="small"
+          ></lightning-icon>
+        </button>
+      </div>
+      <div class="filter-content">
+        <!-- Will add actual filter controls in a future iteration -->
+        <div class="filter-row">
+          <lightning-combobox
+            name="fieldFilter"
+            label="Field"
+            placeholder="Select Field"
+            options={fieldOptions}
+            onchange={handleFieldSelection}
+          >
+          </lightning-combobox>
+          <lightning-combobox
+            name="operatorFilter"
+            label="Operator"
+            placeholder="Select Operator"
+            options={operatorOptions}
+            onchange={handleOperatorSelection}
+            disabled={isOperatorDisabled}
+          >
+          </lightning-combobox>
+          <lightning-input
+            type="text"
+            label="Value"
+            placeholder="Enter value..."
+            value={fieldValue}
+            onchange={handleFieldValueChange}
+            disabled={isValueDisabled}
+          >
+          </lightning-input>
+        </div>
+        <div class="filter-actions">
+          <button
+            class="apply-filter-button"
+            onclick={applyFilter}
+            disabled={isApplyDisabled}
+          >
+            Apply Filter
+          </button>
+          <button class="clear-filter-button" onclick={clearFilters}>
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error state - Hidden from UI -->
+    <!-- <template if:true={error}>
             <div class="error-state">
                 <lightning-icon icon-name="utility:error" size="small"></lightning-icon>
                 <p>{error}</p>
             </div>
         </template> -->
 
-        <!-- Loading state -->
-        <template if:true={isLoading}>
-            <div class="loading-state">
-                <lightning-spinner alternative-text="Loading" size="medium" variant="brand"></lightning-spinner>
-                <p>Loading records...</p>
-            </div>
-        </template>
+    <!-- Loading state -->
+    <template if:true={isLoading}>
+      <div class="loading-state">
+        <lightning-spinner
+          alternative-text="Loading"
+          size="medium"
+          variant="brand"
+        ></lightning-spinner>
+        <p>Loading records...</p>
+      </div>
+    </template>
 
-        <!-- Empty state -->
-        <template if:false={hasRecords}>
-            <div class="empty-state" if:false={isLoading}>
-                <lightning-icon icon-name="utility:info" size="medium"></lightning-icon>
-                <h3>No records found</h3>
-                <p>Try adjusting your search or filters to find what you're looking for.</p>
-            </div>
-        </template>
+    <!-- Empty state -->
+    <template if:false={hasRecords}>
+      <div class="empty-state" if:false={isLoading}>
+        <lightning-icon icon-name="utility:info" size="medium"></lightning-icon>
+        <h3>No records found</h3>
+        <p>
+          Try adjusting your search or filters to find what you're looking for.
+        </p>
+      </div>
+    </template>
 
-        <!-- Records list -->
-        <template if:true={hasRecords}>
-            <div class="records-list" if:false={isLoading}>
-                <table>
-                    <thead>
-                        <tr>
-                            <!-- Dynamic headers based on fields -->
-                            <template for:each={sortIconData} for:item="iconData">
-                                <th key={iconData.fieldName} onclick={handleSort} data-field={iconData.fieldName}>
-                                    <div class="column-header">
-                                        <span class="column-label">{iconData.label}</span>
-                                        <lightning-icon 
-                                            icon-name={iconData.iconName}
-                                            size="xx-small" 
-                                            class="sort-icon">
-                                        </lightning-icon>
+    <!-- Records list -->
+    <template if:true={hasRecords}>
+      <div class="records-list" if:false={isLoading}>
+        <table>
+          <thead>
+            <tr>
+              <!-- Dynamic headers based on fields -->
+              <template for:each={sortIconData} for:item="iconData">
+                <th
+                  key={iconData.fieldName}
+                  onclick={handleSort}
+                  data-field={iconData.fieldName}
+                >
+                  <div class="column-header">
+                    <span class="column-label">{iconData.label}</span>
+                    <lightning-icon
+                      icon-name={iconData.iconName}
+                      size="xx-small"
+                      class="sort-icon"
+                    >
+                    </lightning-icon>
+                  </div>
+                </th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Loop through records -->
+            <template for:each={recordsWithData} for:item="recordData">
+              <tr key={recordData.id} class="data-row">
+                <!-- Dynamic cells based on fields -->
+                <template for:each={recordData.cellsData} for:item="cell">
+                  <td
+                    key={cell.key}
+                    onclick={handleRecordClick}
+                    data-id={recordData.id}
+                    class="cell-value"
+                  >
+                    <span>{cell.value}</span>
+                  </td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" if:true={showPagination}>
+        <button
+          class="pagination-button"
+          onclick={handlePageChange}
+          data-page={previousPage}
+          disabled={isPreviousButtonDisabled}
+          aria-label="Previous page"
+        >
+          <lightning-icon
+            icon-name="utility:chevronleft"
+            size="x-small"
+          ></lightning-icon>
+        </button>
+        <span>Page {currentPage} of {totalPages}</span>
+        <button
+          class="pagination-button"
+          onclick={handlePageChange}
+          data-page={nextPage}
+          disabled={isNextButtonDisabled}
+          aria-label="Next page"
+        >
+          <lightning-icon
+            icon-name="utility:chevronright"
+            size="x-small"
+          ></lightning-icon>
+        </button>
+      </div>
+    </template>
+
+    <!-- Record Detail Modal -->
+    <template if:true={showRecordDetail}>
+      <!-- Modal backdrop -->
+      <div class="slds-backdrop slds-backdrop_open"></div>
+
+      <!-- Record Detail Modal -->
+      <section
+        role="dialog"
+        tabindex="-1"
+        aria-modal="true"
+        aria-labelledby="modal-heading"
+        class="record-modal slds-modal slds-fade-in-open"
+      >
+        <div class="slds-modal__container">
+          <!-- Header -->
+          <header class="slds-modal__header">
+            <div class="action-buttons">
+              <lightning-button-menu
+                icon-size="small"
+                onselect={handleActionClick}
+                variant="border-inverse"
+                menu-alignment="right"
+                if:true={validObjectActions}
+              >
+                <template for:each={objectActions} for:item="action">
+                  <lightning-menu-item
+                    key={action.name}
+                    value={action.name}
+                    label={action.label}
+                  >
+                  </lightning-menu-item>
+                </template>
+              </lightning-button-menu>
+            </div>
+            <button
+              class="slds-button slds-button_icon slds-modal__close"
+              title="Close"
+              onclick={closeRecordDetail}
+              aria-label="Close modal"
+            >
+              <lightning-icon
+                icon-name="utility:close"
+                alternative-text="Close"
+                variant="inverse"
+                size="small"
+              ></lightning-icon>
+              <span class="slds-assistive-text">Close</span>
+            </button>
+
+            <!-- Object type indicator -->
+            <template if:true={selectedRecord}>
+              <div class="object-type-badge">
+                <span>{selectedRecord.attributes.type}</span>
+              </div>
+
+              <!-- Back button moved below object type to prevent overlap -->
+              <template if:true={hasBackRecord}>
+                <button
+                  class="slds-button slds-button_neutral back-button"
+                  title="Go back to previous record"
+                  onclick={handleBackNavigation}
+                  aria-label="Back to previous record"
+                >
+                  <lightning-icon
+                    icon-name="utility:chevronleft"
+                    size="x-small"
+                    class="slds-button__icon slds-button__icon_left"
+                  ></lightning-icon>
+                  Back
+                </button>
+              </template>
+            </template>
+
+            <h2 id="modal-heading" class="slds-modal__title slds-hyphenate">
+              {recordDetailTitle}
+            </h2>
+            <p class="slds-text-heading_small">{recordDetailSubtitle}</p>
+          </header>
+
+          <!-- Content -->
+          <div
+            class="slds-modal__content slds-p-around_medium"
+            id="modal-content-id"
+          >
+            <lightning-tabset
+              variant="scoped"
+              active-tab-value={selectedTab}
+              onselect={handleTabChange}
+              class="full-width-tabs"
+            >
+              <!-- Details Tab -->
+              <lightning-tab
+                label="Details"
+                value="details"
+                icon-name="utility:info"
+              >
+                <div class="fields-container" role="tabpanel">
+                  <template if:true={isLoadingRecordDetail}>
+                    <div class="loading-state">
+                      <lightning-spinner
+                        alternative-text="Loading field data"
+                        size="small"
+                        variant="brand"
+                      ></lightning-spinner>
+                      <p>Loading record details...</p>
+                    </div>
+                  </template>
+                  <template if:false={isLoadingRecordDetail}>
+                    <template if:true={noFieldsToDisplay}>
+                      <div class="empty-state small slds-align_absolute-center">
+                        <p>No field data available for this record.</p>
+                      </div>
+                    </template>
+                    <template if:false={noFieldsToDisplay}>
+                      <!-- Use a responsive grid layout instead of individual rows -->
+                      <div class="slds-grid slds-wrap slds-gutters">
+                        <template for:each={displayFields} for:item="field">
+                          <!-- Each field gets a full grid item -->
+                          <div
+                            key={field.fieldName}
+                            class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-2"
+                          >
+                            <div class="field-item">
+                              <div
+                                class="field-label slds-truncate"
+                                title={field.label}
+                              >
+                                {field.label}
+                              </div>
+                              <!-- Only render as link if it's a valid reference field with both a valid object API name and ID -->
+                              <div class="field-value">
+                                <template if:true={field.isReference}>
+                                  <template if:true={field.referenceId}>
+                                    <template if:true={field.referenceToObject}>
+                                      <!-- Only show as a link if lookup navigation is not disabled -->
+                                      <template
+                                        if:false={effectiveLookupNavigationDisabled}
+                                      >
+                                        <a
+                                          href="#"
+                                          data-record-id={field.referenceId}
+                                          data-object-api-name={field.referenceToObject}
+                                          onclick={handleLookupNavigation}
+                                          >{field.value}</a
+                                        >
+                                      </template>
+                                      <template
+                                        if:true={effectiveLookupNavigationDisabled}
+                                      >
+                                        <!-- Show as plain text when lookup navigation is disabled -->
+                                        <span class="disabled-lookup"
+                                          >{field.value}</span
+                                        >
+                                      </template>
+                                    </template>
+                                    <template
+                                      if:false={field.referenceToObject}
+                                    >
+                                      <!-- No valid object type, show as plain text -->
+                                      {field.value}
+                                    </template>
+                                  </template>
+                                  <template if:false={field.referenceId}>
+                                    <!-- No referenceId, show as plain text -->
+                                    {field.value}
+                                  </template>
+                                </template>
+                                <template if:false={field.isReference}>
+                                  <!-- Handle addresses and multi-line values -->
+                                  <template if:true={field.isAddress}>
+                                    <div class="address-field">
+                                      <pre class="address-content">
+{field.value}</pre
+                                      >
+                                      <template if:true={field.hasGeolocation}>
+                                        <a
+                                          href={field.mapUrl}
+                                          target="_blank"
+                                          class="map-link"
+                                        >
+                                          <lightning-icon
+                                            icon-name="utility:location"
+                                            size="x-small"
+                                          ></lightning-icon>
+                                          <span>View on Map</span>
+                                        </a>
+                                      </template>
                                     </div>
-                                </th>
-                            </template>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Loop through records -->
-                        <template for:each={recordsWithData} for:item="recordData">
-                            <tr key={recordData.id} class="data-row">
-                                <!-- Dynamic cells based on fields -->
-                                <template for:each={recordData.cellsData} for:item="cell">
-                                    <td key={cell.key} onclick={handleRecordClick} data-id={recordData.id} class="cell-value">
-                                        <span>{cell.value}</span>
-                                    </td>
+                                  </template>
+                                  <template if:false={field.isAddress}>
+                                    <!-- Handle multi-line text with proper formatting -->
+                                    <template if:true={field.isMultiLine}>
+                                      <pre class="multiline-text">
+{field.value}</pre
+                                      >
+                                    </template>
+                                    <!-- Regular field display -->
+                                    <template if:false={field.isMultiLine}>
+                                      {field.value}
+                                    </template>
+                                  </template>
                                 </template>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            <div class="pagination" if:true={showPagination}>
-                <button 
-                    class="pagination-button" 
-                    onclick={handlePageChange} 
-                    data-page={previousPage} 
-                    disabled={isPreviousButtonDisabled}
-                    aria-label="Previous page">
-                    <lightning-icon icon-name="utility:chevronleft" size="x-small"></lightning-icon>
-                </button>
-                <span>Page {currentPage} of {totalPages}</span>
-                <button 
-                    class="pagination-button" 
-                    onclick={handlePageChange} 
-                    data-page={nextPage} 
-                    disabled={isNextButtonDisabled}
-                    aria-label="Next page">
-                    <lightning-icon icon-name="utility:chevronright" size="x-small"></lightning-icon>
-                </button>
-            </div>
-        </template>
-
-        <!-- Record Detail Modal -->
-        <template if:true={showRecordDetail}>
-            <!-- Modal backdrop -->
-            <div class="slds-backdrop slds-backdrop_open"></div>
-            
-            <!-- Record Detail Modal -->
-            <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="modal-heading" class="record-modal slds-modal slds-fade-in-open">
-                <div class="slds-modal__container">
-                    <!-- Header -->
-                    <header class="slds-modal__header">
-                        <div class="action-buttons">
-                            <lightning-button-menu
-                                icon-size="small"
-                                onselect={handleActionClick}
-                                variant="border-inverse"
-                                menu-alignment="right"
-                                if:true={validObjectActions}>
-                                <template for:each={objectActions} for:item="action">
-                                    <lightning-menu-item
-                                        key={action.name}
-                                        value={action.name}
-                                        label={action.label}>
-                                    </lightning-menu-item>
-                                </template>
-                            </lightning-button-menu>
-                        </div>
-                        <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeRecordDetail} aria-label="Close modal">
-                            <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse" size="small"></lightning-icon>
-                            <span class="slds-assistive-text">Close</span>
-                        </button>
-                        
-                        <!-- Object type indicator -->
-                        <template if:true={selectedRecord}>
-                            <div class="object-type-badge">
-                                <span>{selectedRecord.attributes.type}</span>
+                              </div>
                             </div>
-                            
-                            <!-- Back button moved below object type to prevent overlap -->
-                            <template if:true={hasBackRecord}>
-                                <button class="slds-button slds-button_neutral back-button" 
-                                        title="Go back to previous record" 
-                                        onclick={handleBackNavigation}
-                                        aria-label="Back to previous record">
-                                    <lightning-icon icon-name="utility:chevronleft" size="x-small" class="slds-button__icon slds-button__icon_left"></lightning-icon>
-                                    Back
-                                </button>
-                            </template>
+                          </div>
                         </template>
-                        
-                        <h2 id="modal-heading" class="slds-modal__title slds-hyphenate">{recordDetailTitle}</h2>
-                        <p class="slds-text-heading_small">{recordDetailSubtitle}</p>
-                    </header>
-
-                    <!-- Content -->
-                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id">
-                        <lightning-tabset variant="scoped" active-tab-value={selectedTab} onselect={handleTabChange} class="full-width-tabs">
-                            <!-- Details Tab -->
-                            <lightning-tab label="Details" value="details" icon-name="utility:info">
-                                <div class="fields-container" role="tabpanel">
-                                    <template if:true={isLoadingRecordDetail}>
-                                        <div class="loading-state">
-                                            <lightning-spinner alternative-text="Loading field data" size="small" variant="brand"></lightning-spinner>
-                                            <p>Loading record details...</p>
-                                        </div>
-                                    </template>
-                                    <template if:false={isLoadingRecordDetail}>
-                                        <template if:true={noFieldsToDisplay}>
-                                            <div class="empty-state small slds-align_absolute-center">
-                                                <p>No field data available for this record.</p>
-                                            </div>
-                                        </template>
-                                        <template if:false={noFieldsToDisplay}>
-                                            <!-- Use a responsive grid layout instead of individual rows -->
-                                            <div class="slds-grid slds-wrap slds-gutters">
-                                                <template for:each={displayFields} for:item="field">
-                                                    <!-- Each field gets a full grid item -->
-                                                    <div key={field.fieldName} class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-2">
-                                                        <div class="field-item">
-                                                            <div class="field-label slds-truncate" title={field.label}>{field.label}</div>
-                                                            <!-- Only render as link if it's a valid reference field with both a valid object API name and ID -->
-                                                            <div class="field-value">
-                                                                <template if:true={field.isReference}>
-                                                                    <template if:true={field.referenceId}>
-                                                                        <template if:true={field.referenceToObject}>
-                                                                            <!-- Only show as a link if lookup navigation is not disabled -->
-                                                                            <template if:false={effectiveLookupNavigationDisabled}>
-                                                                            <a href="#" data-record-id={field.referenceId} data-object-api-name={field.referenceToObject} onclick={handleLookupNavigation}>{field.value}</a>
-                                                                            </template>
-                                                                            <template if:true={effectiveLookupNavigationDisabled}>
-                                                                                <!-- Show as plain text when lookup navigation is disabled -->
-                                                                                <span class="disabled-lookup">{field.value}</span>
-                                                                            </template>
-                                                                        </template>
-                                                                        <template if:false={field.referenceToObject}>
-                                                                            <!-- No valid object type, show as plain text -->
-                                                                            {field.value}
-                                                                        </template>
-                                                                    </template>
-                                                                    <template if:false={field.referenceId}>
-                                                                        <!-- No referenceId, show as plain text -->
-                                                                        {field.value}
-                                                                    </template>
-                                                                </template>
-                                                                <template if:false={field.isReference}>
-                                                                    <!-- Handle addresses and multi-line values -->
-                                                                    <template if:true={field.isAddress}>
-                                                                        <div class="address-field">
-                                                                            <pre class="address-content">{field.value}</pre>
-                                                                            <template if:true={field.hasGeolocation}>
-                                                                                <a href={field.mapUrl} target="_blank" class="map-link">
-                                                                                    <lightning-icon icon-name="utility:location" size="x-small"></lightning-icon>
-                                                                                    <span>View on Map</span>
-                                                                                </a>
-                                                                            </template>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:false={field.isAddress}>
-                                                                        <!-- Handle multi-line text with proper formatting -->
-                                                                        <template if:true={field.isMultiLine}>
-                                                                            <pre class="multiline-text">{field.value}</pre>
-                                                                        </template>
-                                                                        <!-- Regular field display -->
-                                                                        <template if:false={field.isMultiLine}>
-                                                                    {field.value}
-                                                                        </template>
-                                                                    </template>
-                                                                </template>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </template>
-                                            </div>
-                                        </template>
-                                    </template>
-                                </div>
-                            </lightning-tab>
-
-                            <!-- Related Lists Tab -->
-                            <lightning-tab label="Related Lists" value="relatedLists" icon-name="utility:list">
-                                <div class="related-lists-container">
-                                    <template if:true={loadingRelatedObjects}>
-                                        <div class="loading-state">
-                                            <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
-                                            <p>Loading related lists...</p>
-                                        </div>
-                                    </template>
-                                    
-                                    <template if:false={loadingRelatedObjects}>
-                                        <!-- Sidebar for related list navigation -->
-                                        <div class="related-lists-sidebar">
-                                            <template for:each={pageLayoutRelatedLists} for:item="relList">
-                                                <div key={relList.relationshipName} 
-                                                     class={relList.computedClass}
-                                                     data-relationship={relList.relationshipName}
-                                                     onclick={handleRelatedListClick}>
-                                                    <lightning-icon icon-name={relList.icon} size="small" class="related-list-icon"></lightning-icon>
-                                                    <span>{relList.label}</span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                        
-                                        <!-- Main content area for the selected related list -->
-                                        <div class="related-list-content">
-                                            <template if:true={selectedRelatedList}>
-                                                <h3>{selectedRelatedList.label}</h3>
-                                                
-                                                <template if:true={loadingRelatedList}>
-                                                    <div class="loading-state small">
-                                                        <lightning-spinner alternative-text="Loading Records"></lightning-spinner>
-                                                    </div>
-                                                </template>
-                                                
-                                                <template if:false={loadingRelatedList}>
-                                                    <template if:true={hasRelatedListRecords}>
-                                                        <lightning-datatable
-                                                            key-field="Id"
-                                                            data={relatedListRecords}
-                                                            columns={relatedListColumns}
-                                                            hide-checkbox-column>
-                                                        </lightning-datatable>
-                                                    </template>
-                                                    
-                                                    <template if:false={hasRelatedListRecords}>
-                                                        <div class="empty-state small">
-                                                            <p>No records found in this list.</p>
-                                                        </div>
-                                                    </template>
-                                                </template>
-                                            </template>
-                                            
-                                            <template if:false={selectedRelatedList}>
-                                                <div class="empty-state small slds-align_absolute-center">
-                                                    <lightning-icon icon-name="utility:arrow_left" size="small"></lightning-icon>
-                                                    <p>Select a related list from the left panel to view records.</p>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </template>
-                                </div>
-                            </lightning-tab>
-
-                            <!-- Files and Attachments Tab -->
-                            <lightning-tab label="Files & Notes" value="filesAndNotes" icon-name="utility:file">
-                                <div class="tab-container" role="tabpanel">
-                                    <div class="files-container">
-                                        <!-- File Upload Section -->
-                                        <template if:true={selectedRecord}>
-                                            <div class="file-upload-section">
-                                                <div class="upload-header">
-                                                    <h3>Upload Files</h3>
-                                                    <p>Drag and drop files here, or click to browse</p>
-                                                </div>
-                                                <lightning-file-upload
-                                                    label="Upload Files"
-                                                    name="fileUploader"
-                                                    accept={acceptedFormats}
-                                                    record-id={selectedRecord.Id}
-                                                    onuploadfinished={handleUploadFinished}
-                                                    multiple="true">
-                                                </lightning-file-upload>
-                                            </div>
-                                        </template>
-
-                                        <!-- Divider -->
-                                        <div class="section-divider"></div>
-
-                                        <!-- Loading state -->
-                                        <template if:true={loadingFiles}>
-                                            <div class="loading-state">
-                                                <lightning-spinner alternative-text="Loading" size="small" variant="brand"></lightning-spinner>
-                                                <p>Loading files...</p>
-                                            </div>
-                                        </template>
-                                        
-                                        <!-- Empty state - only shown if loading is done and no files found -->
-                                        <template if:false={loadingFiles}>
-                                            <template if:false={hasFiles}>
-                                                <div class="empty-state small">
-                                                    <p>No files, notes, or attachments found for this record.</p>
-                                                </div>
-                                            </template>
-                                            
-                                            <!-- Files list -->
-                                            <template if:true={hasFiles}>
-                                                <div class="files-list-header">
-                                                    <h3>Files & Attachments</h3>
-                                                </div>
-                                                <ul class="files-list">
-                                                    <template for:each={files} for:item="file">
-                                                        <li key={file.id} class="file-item">
-                                                            <div class="file-icon">
-                                                                <lightning-icon icon-name={file.iconName} size="small" if:true={file.iconName}></lightning-icon>
-                                                                <lightning-icon icon-name="doctype:unknown" size="small" if:false={file.iconName}></lightning-icon>
-                                                            </div>
-                                                            <div class="file-details">
-                                                                <div class="file-title">
-                                                                    <a href={file.downloadUrl} target="_blank" title="Download file">{file.title}</a>
-                                                                </div>
-                                                                <div class="file-meta">
-                                                                    <span class="file-type">{file.fileType}</span>
-                                                                    <span class="separator">•</span>
-                                                                    <span class="file-size">{file.fileSize}</span>
-                                                                    <span class="separator">•</span>
-                                                                    <span class="file-date">{file.createdDate}</span>
-                                                                </div>
-                                                                <div class="file-description" if:true={file.description}>
-                                                                    {file.description}
-                                                                </div>
-                                                            </div>
-                                                        </li>
-                                                    </template>
-                                                </ul>
-                                            </template>
-                                        </template>
-                                    </div>
-                                </div>
-                            </lightning-tab>
-
-                            <!-- Activity History Tab -->
-                            <lightning-tab label="Activity" value="activityHistory" icon-name="utility:feed">
-                                <div class="tab-container" role="tabpanel">
-                                    <div class="activity-container">
-                                        <template if:true={loadingChatterPosts}>
-                                            <div class="loading-state">
-                                                <lightning-spinner alternative-text="Loading" size="small" variant="brand"></lightning-spinner>
-                                                <p>Loading activity history...</p>
-                                            </div>
-                                        </template>
-                                        <template if:false={loadingChatterPosts}>
-                                            <template if:false={hasChatterPosts}>
-                                                <div class="empty-state small">
-                                                    <p>No activity history or chatter posts found.</p>
-                                                </div>
-                                            </template>
-                                            <template if:true={hasChatterPosts}>
-                                                <div class="activity-header">
-                                                    <h3>Activity Timeline</h3>
-                                                    <p>Recent activity, posts, and communications</p>
-                                                </div>
-                                                <ul class="chatter-posts-list">
-                                                    <template for:each={chatterPosts} for:item="post">
-                                                        <li key={post.id} class="chatter-post" data-type={post.type}>
-                                                            <div class="chatter-post-header">
-                                                                <div class="post-avatar">
-                                                                    <lightning-icon 
-                                                                        icon-name={post.iconName} 
-                                                                        size="small" 
-                                                                        if:true={post.iconName}>
-                                                                    </lightning-icon>
-                                                                    <lightning-icon 
-                                                                        icon-name="standard:user" 
-                                                                        size="small" 
-                                                                        if:false={post.iconName}>
-                                                                    </lightning-icon>
-                                                                </div>
-                                                                <div class="post-meta">
-                                                                    <div class="post-author">{post.createdByName}</div>
-                                                                    <div class="post-type-date">
-                                                                        <span class="post-type">{post.type}</span>
-                                                                        <span class="post-separator">•</span>
-                                                                        <span class="post-date">{post.createdDate}</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="chatter-post-title" if:true={post.title}>
-                                                                <strong>{post.title}</strong>
-                                                            </div>
-                                                            <div class="chatter-post-body" if:true={post.body}>
-                                                                {post.body}
-                                                            </div>
-                                                        </li>
-                                                    </template>
-                                                </ul>
-                                            </template>
-                                        </template>
-                                    </div>
-                                </div>
-                            </lightning-tab>
-                        </lightning-tabset>
-                    </div>
+                      </div>
+                    </template>
+                  </template>
                 </div>
-            </section>
-        </template>
+              </lightning-tab>
 
-        <!-- Flow Modal -->
-        <template if:true={showFlowModal}>
-            <div class="slds-backdrop slds-backdrop_open slds-backdrop--custom"></div>
-            <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open flow-modal">
-                <div class="slds-modal__container">
-                    <header class="slds-modal__header">
-                        <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeFlowModal}>
-                            <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse" size="small"></lightning-icon>
-                            <span class="slds-assistive-text">Close</span>
-                        </button>
-                        <h2 class="slds-modal__title">{flowModalTitle}</h2>
-                    </header>
-                    <div class="slds-modal__content slds-p-around_medium">
-                        <template if:true={flowApiNameToLaunch}>
-                            <lightning-flow
-                                flow-api-name={flowApiNameToLaunch}
-                                flow-input-variables={flowInputVariables}
-                                onstatuschange={handleFlowStatusChange}>
-                            </lightning-flow>
+              <!-- Related Lists Tab -->
+              <lightning-tab
+                label="Related Lists"
+                value="relatedLists"
+                icon-name="utility:list"
+              >
+                <div class="related-lists-container">
+                  <template if:true={loadingRelatedObjects}>
+                    <div class="loading-state">
+                      <lightning-spinner
+                        alternative-text="Loading"
+                        size="small"
+                      ></lightning-spinner>
+                      <p>Loading related lists...</p>
+                    </div>
+                  </template>
+
+                  <template if:false={loadingRelatedObjects}>
+                    <!-- Sidebar for related list navigation -->
+                    <div class="related-lists-sidebar">
+                      <template
+                        for:each={pageLayoutRelatedLists}
+                        for:item="relList"
+                      >
+                        <div
+                          key={relList.relationshipName}
+                          class={relList.computedClass}
+                          data-relationship={relList.relationshipName}
+                          onclick={handleRelatedListClick}
+                        >
+                          <lightning-icon
+                            icon-name={relList.icon}
+                            size="small"
+                            class="related-list-icon"
+                          ></lightning-icon>
+                          <span>{relList.label}</span>
+                        </div>
+                      </template>
+                    </div>
+
+                    <!-- Main content area for the selected related list -->
+                    <div class="related-list-content">
+                      <template if:true={selectedRelatedList}>
+                        <h3>{selectedRelatedList.label}</h3>
+
+                        <template if:true={loadingRelatedList}>
+                          <div class="loading-state small">
+                            <lightning-spinner
+                              alternative-text="Loading Records"
+                            ></lightning-spinner>
+                          </div>
                         </template>
-                    </div>
-                </div>
-            </section>
-        </template>
 
-        <!-- Edit Record Modal -->
-        <template if:true={showEditModal}>
-             <div class="slds-backdrop slds-backdrop_open"></div>
-            <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open">
-                <div class="slds-modal__container">
-                    <header class="slds-modal__header">
-                        <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeEditModal}>
-                            <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse" size="small"></lightning-icon>
-                        </button>
-                        <h2 class="slds-modal__title">Edit {recordDetailTitle}</h2>
-                    </header>
-                    <div class="slds-modal__content slds-p-around_medium">
-                        <lightning-record-form
-                            record-id={selectedRecord.Id}
-                            object-api-name={selectedRecord.attributes.type}
-                            layout-type="Full"
-                            mode="edit"
-                            onsuccess={handleEditSuccess}
-                            oncancel={closeEditModal}>
-                        </lightning-record-form>
-                    </div>
-                </div>
-            </section>
-        </template>
+                        <template if:false={loadingRelatedList}>
+                          <template if:true={hasRelatedListRecords}>
+                            <lightning-datatable
+                              key-field="Id"
+                              data={relatedListRecords}
+                              columns={relatedListColumns}
+                              hide-checkbox-column
+                            >
+                            </lightning-datatable>
+                          </template>
 
-        <!-- New Record Modal -->
-        <template if:true={showNewModal}>
-            <div class="slds-backdrop slds-backdrop_open"></div>
-            <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open">
-                <div class="slds-modal__container">
-                    <header class="slds-modal__header">
-                        <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeNewModal}>
-                            <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse" size="small"></lightning-icon>
-                        </button>
-                        <h2 class="slds-modal__title">New {objectLabel}</h2>
-                    </header>
-                    <div class="slds-modal__content slds-p-around_medium">
-                        <lightning-record-form
-                            object-api-name={objectApiName}
-                            layout-type="Full"
-                            mode="edit"
-                            onsuccess={handleNewSuccess}
-                            oncancel={closeNewModal}>
-                        </lightning-record-form>
+                          <template if:false={hasRelatedListRecords}>
+                            <div class="empty-state small">
+                              <p>No records found in this list.</p>
+                            </div>
+                          </template>
+                        </template>
+                      </template>
+
+                      <template if:false={selectedRelatedList}>
+                        <div
+                          class="empty-state small slds-align_absolute-center"
+                        >
+                          <lightning-icon
+                            icon-name="utility:arrow_left"
+                            size="small"
+                          ></lightning-icon>
+                          <p>
+                            Select a related list from the left panel to view
+                            records.
+                          </p>
+                        </div>
+                      </template>
                     </div>
+                  </template>
                 </div>
-            </section>
-        </template>
-    </div>
+              </lightning-tab>
+
+              <!-- Files and Attachments Tab -->
+              <lightning-tab
+                label="Files & Notes"
+                value="filesAndNotes"
+                icon-name="utility:file"
+              >
+                <div class="tab-container" role="tabpanel">
+                  <div class="files-container">
+                    <!-- File Upload Section -->
+                    <template if:true={selectedRecord}>
+                      <div class="file-upload-section">
+                        <div class="upload-header">
+                          <h3>Upload Files</h3>
+                          <p>Drag and drop files here, or click to browse</p>
+                        </div>
+                        <lightning-file-upload
+                          label="Upload Files"
+                          name="fileUploader"
+                          accept={acceptedFormats}
+                          record-id={selectedRecord.Id}
+                          onuploadfinished={handleUploadFinished}
+                          multiple="true"
+                        >
+                        </lightning-file-upload>
+                      </div>
+                    </template>
+
+                    <!-- Divider -->
+                    <div class="section-divider"></div>
+
+                    <!-- Loading state -->
+                    <template if:true={loadingFiles}>
+                      <div class="loading-state">
+                        <lightning-spinner
+                          alternative-text="Loading"
+                          size="small"
+                          variant="brand"
+                        ></lightning-spinner>
+                        <p>Loading files...</p>
+                      </div>
+                    </template>
+
+                    <!-- Empty state - only shown if loading is done and no files found -->
+                    <template if:false={loadingFiles}>
+                      <template if:false={hasFiles}>
+                        <div class="empty-state small">
+                          <p>
+                            No files, notes, or attachments found for this
+                            record.
+                          </p>
+                        </div>
+                      </template>
+
+                      <!-- Files list -->
+                      <template if:true={hasFiles}>
+                        <div class="files-list-header">
+                          <h3>Files & Attachments</h3>
+                        </div>
+                        <ul class="files-list">
+                          <template for:each={files} for:item="file">
+                            <li key={file.id} class="file-item">
+                              <div class="file-icon">
+                                <lightning-icon
+                                  icon-name={file.iconName}
+                                  size="small"
+                                  if:true={file.iconName}
+                                ></lightning-icon>
+                                <lightning-icon
+                                  icon-name="doctype:unknown"
+                                  size="small"
+                                  if:false={file.iconName}
+                                ></lightning-icon>
+                              </div>
+                              <div class="file-details">
+                                <div class="file-title">
+                                  <a
+                                    href={file.downloadUrl}
+                                    target="_blank"
+                                    title="Download file"
+                                    >{file.title}</a
+                                  >
+                                </div>
+                                <div class="file-meta">
+                                  <span class="file-type">{file.fileType}</span>
+                                  <span class="separator">•</span>
+                                  <span class="file-size">{file.fileSize}</span>
+                                  <span class="separator">•</span>
+                                  <span class="file-date"
+                                    >{file.createdDate}</span
+                                  >
+                                </div>
+                                <div
+                                  class="file-description"
+                                  if:true={file.description}
+                                >
+                                  {file.description}
+                                </div>
+                              </div>
+                            </li>
+                          </template>
+                        </ul>
+                      </template>
+                    </template>
+                  </div>
+                </div>
+              </lightning-tab>
+
+              <!-- Activity History Tab -->
+              <lightning-tab
+                label="Activity"
+                value="activityHistory"
+                icon-name="utility:feed"
+              >
+                <div class="tab-container" role="tabpanel">
+                  <div class="activity-container">
+                    <template if:true={loadingChatterPosts}>
+                      <div class="loading-state">
+                        <lightning-spinner
+                          alternative-text="Loading"
+                          size="small"
+                          variant="brand"
+                        ></lightning-spinner>
+                        <p>Loading activity history...</p>
+                      </div>
+                    </template>
+                    <template if:false={loadingChatterPosts}>
+                      <template if:false={hasChatterPosts}>
+                        <div class="empty-state small">
+                          <p>No activity history or chatter posts found.</p>
+                        </div>
+                      </template>
+                      <template if:true={hasChatterPosts}>
+                        <div class="activity-header">
+                          <h3>Activity Timeline</h3>
+                          <p>Recent activity, posts, and communications</p>
+                        </div>
+                        <ul class="chatter-posts-list">
+                          <template for:each={chatterPosts} for:item="post">
+                            <li
+                              key={post.id}
+                              class="chatter-post"
+                              data-type={post.type}
+                            >
+                              <div class="chatter-post-header">
+                                <div class="post-avatar">
+                                  <lightning-icon
+                                    icon-name={post.iconName}
+                                    size="small"
+                                    if:true={post.iconName}
+                                  >
+                                  </lightning-icon>
+                                  <lightning-icon
+                                    icon-name="standard:user"
+                                    size="small"
+                                    if:false={post.iconName}
+                                  >
+                                  </lightning-icon>
+                                </div>
+                                <div class="post-meta">
+                                  <div class="post-author">
+                                    {post.createdByName}
+                                  </div>
+                                  <div class="post-type-date">
+                                    <span class="post-type">{post.type}</span>
+                                    <span class="post-separator">•</span>
+                                    <span class="post-date"
+                                      >{post.createdDate}</span
+                                    >
+                                  </div>
+                                </div>
+                              </div>
+                              <div
+                                class="chatter-post-title"
+                                if:true={post.title}
+                              >
+                                <strong>{post.title}</strong>
+                              </div>
+                              <div
+                                class="chatter-post-body"
+                                if:true={post.body}
+                              >
+                                {post.body}
+                              </div>
+                            </li>
+                          </template>
+                        </ul>
+                      </template>
+                    </template>
+                  </div>
+                </div>
+              </lightning-tab>
+            </lightning-tabset>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <!-- Flow Modal -->
+    <template if:true={showFlowModal}>
+      <div class="slds-backdrop slds-backdrop_open slds-backdrop--custom"></div>
+      <section
+        role="dialog"
+        tabindex="-1"
+        aria-modal="true"
+        class="slds-modal slds-fade-in-open flow-modal"
+      >
+        <div class="slds-modal__container">
+          <header class="slds-modal__header">
+            <button
+              class="slds-button slds-button_icon slds-modal__close"
+              title="Close"
+              onclick={closeFlowModal}
+            >
+              <lightning-icon
+                icon-name="utility:close"
+                alternative-text="Close"
+                variant="inverse"
+                size="small"
+              ></lightning-icon>
+              <span class="slds-assistive-text">Close</span>
+            </button>
+            <h2 class="slds-modal__title">{flowModalTitle}</h2>
+          </header>
+          <div class="slds-modal__content slds-p-around_medium">
+            <template if:true={flowApiNameToLaunch}>
+              <lightning-flow
+                flow-api-name={flowApiNameToLaunch}
+                flow-input-variables={flowInputVariables}
+                onstatuschange={handleFlowStatusChange}
+              >
+              </lightning-flow>
+            </template>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <!-- Edit Record Modal -->
+    <template if:true={showEditModal}>
+      <div class="slds-backdrop slds-backdrop_open"></div>
+      <section
+        role="dialog"
+        tabindex="-1"
+        aria-modal="true"
+        class="slds-modal slds-fade-in-open"
+      >
+        <div class="slds-modal__container">
+          <header class="slds-modal__header">
+            <button
+              class="slds-button slds-button_icon slds-modal__close"
+              title="Close"
+              onclick={closeEditModal}
+            >
+              <lightning-icon
+                icon-name="utility:close"
+                alternative-text="Close"
+                variant="inverse"
+                size="small"
+              ></lightning-icon>
+            </button>
+            <h2 class="slds-modal__title">Edit {recordDetailTitle}</h2>
+          </header>
+          <div class="slds-modal__content slds-p-around_medium">
+            <lightning-record-form
+              record-id={selectedRecord.Id}
+              object-api-name={selectedRecord.attributes.type}
+              layout-type="Full"
+              mode="edit"
+              onsuccess={handleEditSuccess}
+              oncancel={closeEditModal}
+            >
+            </lightning-record-form>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <!-- New Record Modal -->
+    <template if:true={showNewModal}>
+      <div class="slds-backdrop slds-backdrop_open"></div>
+      <section
+        role="dialog"
+        tabindex="-1"
+        aria-modal="true"
+        class="slds-modal slds-fade-in-open"
+      >
+        <div class="slds-modal__container">
+          <header class="slds-modal__header">
+            <button
+              class="slds-button slds-button_icon slds-modal__close"
+              title="Close"
+              onclick={closeNewModal}
+            >
+              <lightning-icon
+                icon-name="utility:close"
+                alternative-text="Close"
+                variant="inverse"
+                size="small"
+              ></lightning-icon>
+            </button>
+            <h2 class="slds-modal__title">New {objectLabel}</h2>
+          </header>
+          <div class="slds-modal__content slds-p-around_medium">
+            <lightning-record-form
+              object-api-name={objectApiName}
+              layout-type="Full"
+              mode="edit"
+              onsuccess={handleNewSuccess}
+              oncancel={closeNewModal}
+            >
+            </lightning-record-form>
+          </div>
+        </div>
+      </section>
+    </template>
+  </div>
 </template>

@@ -13,19 +13,19 @@ The Dynamic Survey Creator solution consists of two primary components:
 
 The solution uses five custom objects:
 
-1. **Survey__c**: Stores survey details like name, description, welcome message, and thank you message.
-2. **Question__c**: Stores individual questions related to a survey, including question text, type, and display order.
-3. **Answer_Option__c**: Stores answer options for Radio and Checkbox type questions.
-4. **Survey_Response__c**: Tracks individual response sessions from recipients.
-5. **Question_Response__c**: Stores answers to specific questions within a response.
+1. **Survey\_\_c**: Stores survey details like name, description, welcome message, and thank you message.
+2. **Question\_\_c**: Stores individual questions related to a survey, including question text, type, and display order.
+3. **Answer_Option\_\_c**: Stores answer options for Radio and Checkbox type questions.
+4. **Survey_Response\_\_c**: Tracks individual response sessions from recipients.
+5. **Question_Response\_\_c**: Stores answers to specific questions within a response.
 
 ### Relationships
 
-- Survey__c (1) → Question__c (Many)
-- Question__c (1) → Answer_Option__c (Many)
-- Survey__c (1) → Survey_Response__c (Many)
-- Survey_Response__c (1) → Question_Response__c (Many)
-- Question__c (1) → Question_Response__c (Many)
+- Survey**c (1) → Question**c (Many)
+- Question**c (1) → Answer_Option**c (Many)
+- Survey**c (1) → Survey_Response**c (Many)
+- Survey_Response**c (1) → Question_Response**c (Many)
+- Question**c (1) → Question_Response**c (Many)
 
 ## Installation
 
@@ -38,6 +38,7 @@ The solution uses five custom objects:
 ### Setup Steps
 
 1. **Deploy the components to your org**:
+
    ```
    sf project deploy start --source-dir force-app/main/UtilityComponents/dynamicSurveyCreator
    ```
@@ -96,6 +97,7 @@ The Survey Creator follows a 5-step process:
 ## Email Invitations
 
 The system sends personalized emails to recipients with:
+
 - Survey name and description
 - A unique link that pre-populates the recipient's information
 - The link expires when completed or after a set period
@@ -103,20 +105,23 @@ The system sends personalized emails to recipients with:
 ## Response Collection
 
 When recipients complete the survey:
-1. Their responses are recorded in Survey_Response__c and Question_Response__c objects
+
+1. Their responses are recorded in Survey_Response**c and Question_Response**c objects
 2. They see the custom thank you message
 3. The status of their response is updated to "Completed"
 
 ## Viewing Results
 
 Survey responses can be viewed:
+
 1. Through standard Salesforce reports and dashboards
-2. By creating custom list views on the Survey_Response__c object
+2. By creating custom list views on the Survey_Response\_\_c object
 3. By querying the data through SOQL or creating custom Visualforce/Lightning pages
 
 ## Customization
 
 The component allows for customization through:
+
 - Primary color and accent color properties
 - Custom welcome and thank you messages
 - Custom email templates (by modifying the Apex controller)
@@ -131,6 +136,7 @@ The component allows for customization through:
 ## Troubleshooting
 
 Common issues:
+
 1. **Emails not sending**: Check that your org has email deliverability enabled
 2. **Public access errors**: Verify guest user permissions on all custom objects
 3. **Data saving errors**: Check field-level security settings
@@ -139,6 +145,7 @@ Common issues:
 ## Contributing
 
 Feel free to extend this solution with additional features:
+
 - Question branching
 - Additional question types
 - Advanced reporting
@@ -146,4 +153,4 @@ Feel free to extend this solution with additional features:
 
 ## License
 
-This project is available under the MIT License. 
+This project is available under the MIT License.

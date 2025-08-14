@@ -60,7 +60,7 @@ Implement this component when:
 
 The folder-based file manager component provides:
 
-- **Custom Folder Structures**: Define folder structures in FolderStructure__mdt Custom Metadata Type.
+- **Custom Folder Structures**: Define folder structures in FolderStructure\_\_mdt Custom Metadata Type.
 - **Intuitive Navigation**: Easy folder browsing with breadcrumb trails.
 - **Search Capability**: Find files and folders quickly with built-in search.
 - **File Actions**: Download, delete, and preview files with row actions.
@@ -82,7 +82,7 @@ The record-specific file viewer component provides:
 ### Installation
 
 1. Deploy the component to your Salesforce org.
-2. Create FolderStructure__mdt records to define your folder hierarchies.
+2. Create FolderStructure\_\_mdt records to define your folder hierarchies.
 
 ### Configuration
 
@@ -109,13 +109,14 @@ Add to record pages and configure:
 
 ### Custom Metadata Setup
 
-Create FolderStructure__mdt records with:
+Create FolderStructure\_\_mdt records with:
 
 - **Label**: Name of the folder structure.
 - **Description**: Detailed description for admin reference.
 - **Folder Paths**: Comma-separated list of folder paths (use "/" for nested folders).
 
 Example folder paths:
+
 ```
 Documents,Reports,Images,Reports/Monthly,Reports/Annual,Supporting Documents
 ```
@@ -135,7 +136,7 @@ Documents,Reports,Images,Reports/Monthly,Reports/Annual,Supporting Documents
 
 ### Custom Metadata Type
 
-- **FolderStructure__mdt**: Defines folder hierarchies that can be created.
+- **FolderStructure\_\_mdt**: Defines folder hierarchies that can be created.
 
 ## Security Considerations
 
@@ -156,7 +157,7 @@ Documents,Reports,Images,Reports/Monthly,Reports/Annual,Supporting Documents
    - Check that the allow delete property is enabled on the component.
 
 3. **Folder Structure Not Appearing**
-   - Verify FolderStructure__mdt records are properly configured.
+   - Verify FolderStructure\_\_mdt records are properly configured.
    - Check spellings and ensure folder paths use proper format.
 
 4. **Upload Issues**
@@ -186,6 +187,7 @@ This component is available under the MIT License. See LICENSE.md for details.
 ## Limitations and Requirements
 
 ### Record Context Required
+
 Both components in this package (`folderFileManager` and `fileDisplay`) require a valid Salesforce record context to function properly. They can only be used in the following ways:
 
 1. **On Salesforce Record Pages**: The components will automatically detect the current record's ID.
@@ -194,17 +196,20 @@ Both components in this package (`folderFileManager` and `fileDisplay`) require 
 The components will display an error message if placed on pages without a valid record context (such as Home pages, App pages without record context, or custom tabs).
 
 ### Best Practices for Deployment
+
 - Always place these components on record-detail pages or record-related sections.
 - When using in Experience Cloud, always provide a valid record ID in the component properties.
 - Test the components on the appropriate page types before deploying to production.
 - Ensure record sharing settings allow access to the files by the intended users.
 
 ### Troubleshooting Component Errors
+
 If you see errors related to "Cannot read properties of null (reading 'appendChild')" or missing record context:
+
 1. Verify the component is placed on a record page or has a record ID specified.
 2. Check if the record ID property is properly configured for Experience Cloud pages.
 3. Verify the user has access to the record specified in the component properties.
 
 ---
 
-*Developed by Nuvitek - Transforming business through innovative Salesforce solutions.* 
+_Developed by Nuvitek - Transforming business through innovative Salesforce solutions._

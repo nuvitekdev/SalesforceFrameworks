@@ -1,125 +1,136 @@
 {
-  "type" : "sfdc_cms__view",
-  "title" : "Invoice Support",
-  "contentBody" : {
-    "component" : {
-      "children" : [ {
-        "children" : [ {
-          "attributes" : {
-            "backgroundImageConfig" : "{\"url\":\"/cms/delivery/media/MCXSFO33UINJDLDLJYEYHB4JKNWA\",\"contentKey\":\"MCXSFO33UINJDLDLJYEYHB4JKNWA\",\"altText\":\"\",\"contentType\":\"\",\"bgPosition\":\"center center\",\"bgSizeOrRepeat\":\"/cover\"}",
-            "backgroundImageOverlay" : "rgb(243, 243, 243)",
-            "componentSpacerSize" : "",
-            "layoutDirectionDesktop" : "row",
-            "layoutDirectionMobile" : "column",
-            "layoutDirectionTablet" : "column",
-            "maxContentWidth" : "",
-            "sectionColumnGutterWidth" : "",
-            "sectionConfig" : "{\"UUID\":\"fe624c12-9894-4d36-9467-b0a2da32aa22\",\"columns\":[{\"UUID\":\"48ed4cfa-75b3-41f5-b357-017a5028c816\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
-            "sectionMinHeight" : "",
-            "sectionVerticalAlign" : "center"
-          },
-          "children" : [ {
-            "children" : [ {
-              "attributes" : {
-                "backgroundColor" : "rgb(243, 243, 243)",
-                "borderColor" : "rgb(233, 233, 233)",
-                "buttonAlignment" : "left",
-                "buttonSize" : "standard",
-                "buttonText" : "Submit",
-                "customFieldOneConfig" : "{\"fieldInputType\":\"Text\",\"isFieldInputTypeEditable\":true,\"fieldMaxLength\":null,\"fieldApiName\":\"test\"}",
-                "customFieldOneLabel" : "Custom Field Label",
-                "customFieldOnePlaceholder" : "Custom Field Placeholder",
-                "customFieldThreeConfig" : "{\"fieldInputType\":\"Text\",\"isFieldInputTypeEditable\":true,\"fieldMaxLength\":null,\"fieldApiName\":\"\"}",
-                "customFieldThreeLabel" : "Custom Field Label",
-                "customFieldThreePlaceholder" : "Custom Field Placeholder",
-                "customFieldTwoConfig" : "{\"fieldInputType\":\"Text\",\"isFieldInputTypeEditable\":true,\"fieldMaxLength\":null,\"fieldApiName\":\"\"}",
-                "customFieldTwoLabel" : "Custom Field Label",
-                "customFieldTwoPlaceholder" : "Custom Field Placeholder",
-                "descriptionFieldConfig" : "{\"fieldInputType\":\"Text\",\"isFieldInputTypeEditable\":false,\"fieldMaxLength\":null,\"fieldApiName\":\"Description\"}",
-                "descriptionLabel" : "Description",
-                "descriptionPlaceholder" : "Enter your description",
-                "emailFieldConfig" : "{\"fieldInputType\":\"Email\",\"isFieldInputTypeEditable\":false,\"fieldMaxLength\":null,\"fieldApiName\":\"SuppliedEmail\"}",
-                "emailLabel" : "Email",
-                "emailPlaceholder" : "Enter your email address",
-                "fullNameFieldConfig" : "{\"fieldInputType\":\"Text\",\"isFieldInputTypeEditable\":false,\"fieldMaxLength\":null,\"fieldApiName\":\"SuppliedName\"}",
-                "fullNameLabel" : "Full Name",
-                "fullNamePlaceholder" : "Enter your name",
-                "isCustomFieldOneRequired" : false,
-                "isCustomFieldThreeRequired" : false,
-                "isCustomFieldTwoRequired" : false,
-                "isDescriptionRequired" : false,
-                "isEmailRequired" : false,
-                "isFullNameRequired" : false,
-                "isPhoneRequired" : false,
-                "isSubjectRequired" : false,
-                "phoneFieldConfig" : "{\"fieldInputType\":\"Phone\",\"isFieldInputTypeEditable\":false,\"fieldMaxLength\":null,\"fieldApiName\":\"SuppliedPhone\"}",
-                "phoneLabel" : "Phone",
-                "phonePlaceholder" : "Enter your phone number",
-                "position" : "left",
-                "showCustomFieldOne" : false,
-                "showCustomFieldThree" : false,
-                "showCustomFieldTwo" : false,
-                "showDescription" : true,
-                "showEmail" : true,
-                "showFormLabels" : true,
-                "showFullName" : true,
-                "showPhone" : true,
-                "showSubject" : true,
-                "showSubtitle" : true,
-                "showTitle" : true,
-                "subjectFieldConfig" : "{\"fieldInputType\":\"Text\",\"isFieldInputTypeEditable\":false,\"fieldMaxLength\":null,\"fieldApiName\":\"Subject\"}",
-                "subjectLabel" : "Subject",
-                "subjectPlaceholder" : "Enter your subject",
-                "submitActionCustomErrorMessage" : "Looks like something went wrong.",
-                "submitActionSuccessInlineMessage" : "Thank you!",
-                "submitActionSuccessInlineMessageFontSize" : "small",
-                "submitActionSuccessInlineMessagePosition" : "left",
-                "submitActionType" : "inline",
-                "subtitle" : "Tell us how we can help.",
-                "title" : "Contact customer support",
-                "width" : 100
+  "type": "sfdc_cms__view",
+  "title": "Invoice Support",
+  "contentBody": {
+    "component": {
+      "children": [
+        {
+          "children": [
+            {
+              "attributes": {
+                "backgroundImageConfig": "{\"url\":\"/cms/delivery/media/MCXSFO33UINJDLDLJYEYHB4JKNWA\",\"contentKey\":\"MCXSFO33UINJDLDLJYEYHB4JKNWA\",\"altText\":\"\",\"contentType\":\"\",\"bgPosition\":\"center center\",\"bgSizeOrRepeat\":\"/cover\"}",
+                "backgroundImageOverlay": "rgb(243, 243, 243)",
+                "componentSpacerSize": "",
+                "layoutDirectionDesktop": "row",
+                "layoutDirectionMobile": "column",
+                "layoutDirectionTablet": "column",
+                "maxContentWidth": "",
+                "sectionColumnGutterWidth": "",
+                "sectionConfig": "{\"UUID\":\"fe624c12-9894-4d36-9467-b0a2da32aa22\",\"columns\":[{\"UUID\":\"48ed4cfa-75b3-41f5-b357-017a5028c816\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+                "sectionMinHeight": "",
+                "sectionVerticalAlign": "center"
               },
-              "definition" : "dxp_form:contactSupportForm",
-              "id" : "97e45899-675d-464e-aaca-1f73aab626b9",
-              "type" : "component"
-            } ],
-            "id" : "48ed4cfa-75b3-41f5-b357-017a5028c816",
-            "name" : "col1",
-            "title" : "Column 1",
-            "type" : "region"
-          } ],
-          "definition" : "community_layout:section",
-          "id" : "fe624c12-9894-4d36-9467-b0a2da32aa22",
-          "type" : "component"
-        } ],
-        "id" : "54c39adc-e95b-43c6-82e3-b4a35ab84bda",
-        "name" : "content",
-        "title" : "Content",
-        "type" : "region"
-      }, {
-        "children" : [ {
-          "attributes" : {
-            "customHeadTags" : "",
-            "description" : "",
-            "pageTitle" : "Invoice Support",
-            "recordId" : "{!recordId}"
-          },
-          "definition" : "community_builder:seoAssistant",
-          "id" : "10c20744-f712-4b7a-89d4-613af12ace0a",
-          "type" : "component"
-        } ],
-        "id" : "cb5e7800-766b-4765-bd8b-2ad9a3478e7a",
-        "name" : "sfdcHiddenRegion",
-        "title" : "sfdcHiddenRegion",
-        "type" : "region"
-      } ],
-      "definition" : "community_layout:sldsFlexibleLayout",
-      "id" : "e6f75009-a2a7-4a6a-9e90-9b04ba7b5af2",
-      "type" : "component"
+              "children": [
+                {
+                  "children": [
+                    {
+                      "attributes": {
+                        "backgroundColor": "rgb(243, 243, 243)",
+                        "borderColor": "rgb(233, 233, 233)",
+                        "buttonAlignment": "left",
+                        "buttonSize": "standard",
+                        "buttonText": "Submit",
+                        "customFieldOneConfig": "{\"fieldInputType\":\"Text\",\"isFieldInputTypeEditable\":true,\"fieldMaxLength\":null,\"fieldApiName\":\"test\"}",
+                        "customFieldOneLabel": "Custom Field Label",
+                        "customFieldOnePlaceholder": "Custom Field Placeholder",
+                        "customFieldThreeConfig": "{\"fieldInputType\":\"Text\",\"isFieldInputTypeEditable\":true,\"fieldMaxLength\":null,\"fieldApiName\":\"\"}",
+                        "customFieldThreeLabel": "Custom Field Label",
+                        "customFieldThreePlaceholder": "Custom Field Placeholder",
+                        "customFieldTwoConfig": "{\"fieldInputType\":\"Text\",\"isFieldInputTypeEditable\":true,\"fieldMaxLength\":null,\"fieldApiName\":\"\"}",
+                        "customFieldTwoLabel": "Custom Field Label",
+                        "customFieldTwoPlaceholder": "Custom Field Placeholder",
+                        "descriptionFieldConfig": "{\"fieldInputType\":\"Text\",\"isFieldInputTypeEditable\":false,\"fieldMaxLength\":null,\"fieldApiName\":\"Description\"}",
+                        "descriptionLabel": "Description",
+                        "descriptionPlaceholder": "Enter your description",
+                        "emailFieldConfig": "{\"fieldInputType\":\"Email\",\"isFieldInputTypeEditable\":false,\"fieldMaxLength\":null,\"fieldApiName\":\"SuppliedEmail\"}",
+                        "emailLabel": "Email",
+                        "emailPlaceholder": "Enter your email address",
+                        "fullNameFieldConfig": "{\"fieldInputType\":\"Text\",\"isFieldInputTypeEditable\":false,\"fieldMaxLength\":null,\"fieldApiName\":\"SuppliedName\"}",
+                        "fullNameLabel": "Full Name",
+                        "fullNamePlaceholder": "Enter your name",
+                        "isCustomFieldOneRequired": false,
+                        "isCustomFieldThreeRequired": false,
+                        "isCustomFieldTwoRequired": false,
+                        "isDescriptionRequired": false,
+                        "isEmailRequired": false,
+                        "isFullNameRequired": false,
+                        "isPhoneRequired": false,
+                        "isSubjectRequired": false,
+                        "phoneFieldConfig": "{\"fieldInputType\":\"Phone\",\"isFieldInputTypeEditable\":false,\"fieldMaxLength\":null,\"fieldApiName\":\"SuppliedPhone\"}",
+                        "phoneLabel": "Phone",
+                        "phonePlaceholder": "Enter your phone number",
+                        "position": "left",
+                        "showCustomFieldOne": false,
+                        "showCustomFieldThree": false,
+                        "showCustomFieldTwo": false,
+                        "showDescription": true,
+                        "showEmail": true,
+                        "showFormLabels": true,
+                        "showFullName": true,
+                        "showPhone": true,
+                        "showSubject": true,
+                        "showSubtitle": true,
+                        "showTitle": true,
+                        "subjectFieldConfig": "{\"fieldInputType\":\"Text\",\"isFieldInputTypeEditable\":false,\"fieldMaxLength\":null,\"fieldApiName\":\"Subject\"}",
+                        "subjectLabel": "Subject",
+                        "subjectPlaceholder": "Enter your subject",
+                        "submitActionCustomErrorMessage": "Looks like something went wrong.",
+                        "submitActionSuccessInlineMessage": "Thank you!",
+                        "submitActionSuccessInlineMessageFontSize": "small",
+                        "submitActionSuccessInlineMessagePosition": "left",
+                        "submitActionType": "inline",
+                        "subtitle": "Tell us how we can help.",
+                        "title": "Contact customer support",
+                        "width": 100
+                      },
+                      "definition": "dxp_form:contactSupportForm",
+                      "id": "97e45899-675d-464e-aaca-1f73aab626b9",
+                      "type": "component"
+                    }
+                  ],
+                  "id": "48ed4cfa-75b3-41f5-b357-017a5028c816",
+                  "name": "col1",
+                  "title": "Column 1",
+                  "type": "region"
+                }
+              ],
+              "definition": "community_layout:section",
+              "id": "fe624c12-9894-4d36-9467-b0a2da32aa22",
+              "type": "component"
+            }
+          ],
+          "id": "54c39adc-e95b-43c6-82e3-b4a35ab84bda",
+          "name": "content",
+          "title": "Content",
+          "type": "region"
+        },
+        {
+          "children": [
+            {
+              "attributes": {
+                "customHeadTags": "",
+                "description": "",
+                "pageTitle": "Invoice Support",
+                "recordId": "{!recordId}"
+              },
+              "definition": "community_builder:seoAssistant",
+              "id": "10c20744-f712-4b7a-89d4-613af12ace0a",
+              "type": "component"
+            }
+          ],
+          "id": "cb5e7800-766b-4765-bd8b-2ad9a3478e7a",
+          "name": "sfdcHiddenRegion",
+          "title": "sfdcHiddenRegion",
+          "type": "region"
+        }
+      ],
+      "definition": "community_layout:sldsFlexibleLayout",
+      "id": "e6f75009-a2a7-4a6a-9e90-9b04ba7b5af2",
+      "type": "component"
     },
-    "dataProviders" : [ ],
-    "themeLayoutType" : "ciEHyfuuzkL25ZzygQZOolI0iOyTXQ",
-    "viewType" : "custom-invoice-support"
+    "dataProviders": [],
+    "themeLayoutType": "ciEHyfuuzkL25ZzygQZOolI0iOyTXQ",
+    "viewType": "custom-invoice-support"
   },
-  "urlName" : "invoice-support"
+  "urlName": "invoice-support"
 }

@@ -1,240 +1,298 @@
 <template>
-    <!-- Apply dynamic styles at the container level -->
-    <div class="survey-container" style={componentStyle}>
-        <template if:true={isLoading}>
-            <div class="loading-container">
-                <div class="loading-spinner"></div>
-                <p>Loading Survey...</p>
-            </div>
-        </template>
+  <!-- Apply dynamic styles at the container level -->
+  <div class="survey-container" style={componentStyle}>
+    <template if:true={isLoading}>
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading Survey...</p>
+      </div>
+    </template>
 
-        <template if:true={loadError}>
-            <div class="error-container" role="alert">
-                <div class="error-icon">⚠️</div>
-                <h2 class="error-title">Error Loading Survey</h2>
-                <p class="error-message">{loadError}</p>
-                <!-- Optionally add a retry button if applicable -->
-            </div>
-        </template>
+    <template if:true={loadError}>
+      <div class="error-container" role="alert">
+        <div class="error-icon">⚠️</div>
+        <h2 class="error-title">Error Loading Survey</h2>
+        <p class="error-message">{loadError}</p>
+        <!-- Optionally add a retry button if applicable -->
+      </div>
+    </template>
 
-        <!-- Passcode Entry Screen -->
-        <template if:true={showPasscodeScreen}>
-            <div class="passcode-container">
-                <div class="passcode-header">
-                    <div class="passcode-icon">🔐</div>
-                    <h2 class="passcode-title">Survey Access Required</h2>
-                    <p class="passcode-description">
-                        This survey is protected with a passcode. Please enter the passcode that was sent to your email.
-                    </p>
-                </div>
-                
-                <div class="passcode-form">
-                    <lightning-input
+    <!-- Passcode Entry Screen -->
+    <template if:true={showPasscodeScreen}>
+      <div class="passcode-container">
+        <div class="passcode-header">
+          <div class="passcode-icon">🔐</div>
+          <h2 class="passcode-title">Survey Access Required</h2>
+          <p class="passcode-description">
+            This survey is protected with a passcode. Please enter the passcode
+            that was sent to your email.
+          </p>
+        </div>
+
+        <div class="passcode-form">
+          <lightning-input
+            type="text"
+            label="Enter Passcode"
+            value={enteredPasscode}
+            onchange={handlePasscodeChange}
+            placeholder="Enter your 6-digit passcode"
+            maxlength="6"
+            class="passcode-input"
+            required
+          ></lightning-input>
+
+          <template if:true={passcodeError}>
+            <div class="passcode-error" role="alert">
+              <lightning-icon
+                icon-name="utility:error"
+                size="x-small"
+                class="error-icon-small"
+              ></lightning-icon>
+              <span>{passcodeError}</span>
+            </div>
+          </template>
+
+          <button
+            type="button"
+            class="passcode-submit-button"
+            onclick={handlePasscodeSubmit}
+            disabled={isLoading}
+          >
+            <template if:true={isLoading}>
+              <lightning-spinner
+                alternative-text="Validating..."
+                size="small"
+                class="button-spinner"
+              ></lightning-spinner>
+              <span>Validating...</span>
+            </template>
+            <template if:false={isLoading}>
+              <span>Access Survey</span>
+            </template>
+          </button>
+        </div>
+
+        <div class="passcode-help">
+          <p>
+            Can't find your passcode? Check your email inbox and spam folder for
+            the survey invitation.
+          </p>
+        </div>
+      </div>
+    </template>
+
+    <!-- Only show survey if we have data AND passcode screen is not showing -->
+    <template if:true={surveyData}>
+      <template if:false={showPasscodeScreen}>
+        <!-- Only show the form if not already completed -->
+        <template if:false={isCompleted}>
+          <!-- Survey Welcome/Header -->
+          <header class="survey-header">
+            <h1 class="survey-title">{surveyData.survey.Name}</h1>
+            <template if:true={surveyData.survey.Description__c}>
+              <p class="survey-description">
+                {surveyData.survey.Description__c}
+              </p>
+            </template>
+            <template if:true={surveyData.survey.Welcome_Message__c}>
+              <div class="welcome-message">
+                <lightning-formatted-rich-text
+                  value={surveyData.survey.Welcome_Message__c}
+                ></lightning-formatted-rich-text>
+              </div>
+            </template>
+          </header>
+
+          <!-- Survey Questions -->
+          <div class="survey-content">
+            <form class="survey-form">
+              <template
+                for:each={surveyData.questions}
+                for:item="question"
+                for:index="qIndex"
+              >
+                <div key={question.Id} class="survey-question">
+                  <label class="question-text">
+                    <span>{question.displayOrder}.</span>
+                    <span>{question.Question_Text__c}</span>
+                    <template if:true={question.Is_Required__c}>
+                      <abbr class="required-indicator" title="required">*</abbr>
+                    </template>
+                  </label>
+
+                  <!-- Render Input based on Question Type -->
+                  <div class="form-field">
+                    <template if:true={question.isText}>
+                      <lightning-input
+                        class="text-input"
                         type="text"
-                        label="Enter Passcode"
-                        value={enteredPasscode}
-                        onchange={handlePasscodeChange}
-                        placeholder="Enter your 6-digit passcode"
-                        maxlength="6"
-                        class="passcode-input"
-                        required
-                    ></lightning-input>
-                    
-                    <template if:true={passcodeError}>
-                        <div class="passcode-error" role="alert">
-                            <lightning-icon icon-name="utility:error" size="x-small" class="error-icon-small"></lightning-icon>
-                            <span>{passcodeError}</span>
-                        </div>
+                        data-id={question.Id}
+                        onchange={handleResponseChange}
+                        required={question.Is_Required__c}
+                        message-when-value-missing="This field is required."
+                      ></lightning-input>
                     </template>
-                    
-                    <button 
-                        type="button" 
-                        class="passcode-submit-button" 
-                        onclick={handlePasscodeSubmit}
-                        disabled={isLoading}
-                    >
-                        <template if:true={isLoading}>
-                            <lightning-spinner alternative-text="Validating..." size="small" class="button-spinner"></lightning-spinner>
-                            <span>Validating...</span>
-                        </template>
-                        <template if:false={isLoading}>
-                            <span>Access Survey</span>
-                        </template>
-                    </button>
-                </div>
-                
-                <div class="passcode-help">
-                    <p>Can't find your passcode? Check your email inbox and spam folder for the survey invitation.</p>
-                </div>
-            </div>
-        </template>
 
-        <!-- Only show survey if we have data AND passcode screen is not showing -->
-        <template if:true={surveyData}>
-            <template if:false={showPasscodeScreen}>
-                <!-- Only show the form if not already completed -->
-                <template if:false={isCompleted}>
-                    <!-- Survey Welcome/Header -->
-                <header class="survey-header">
-                    <h1 class="survey-title">{surveyData.survey.Name}</h1>
-                    <template if:true={surveyData.survey.Description__c}>
-                        <p class="survey-description">{surveyData.survey.Description__c}</p>
+                    <template if:true={question.isTextarea}>
+                      <lightning-textarea
+                        class="textarea-input"
+                        data-id={question.Id}
+                        onchange={handleResponseChange}
+                        required={question.Is_Required__c}
+                        message-when-value-missing="This field is required."
+                      ></lightning-textarea>
                     </template>
-                    <template if:true={surveyData.survey.Welcome_Message__c}>
-                        <div class="welcome-message">
-                            <lightning-formatted-rich-text value={surveyData.survey.Welcome_Message__c}></lightning-formatted-rich-text>
-                        </div>
+
+                    <template if:true={question.isRadio}>
+                      <lightning-radio-group
+                        class="options-container"
+                        name={question.Id}
+                        options={question.Answer_Options__r}
+                        type="radio"
+                        data-id={question.Id}
+                        onchange={handleResponseChange}
+                        required={question.Is_Required__c}
+                        message-when-value-missing="Please select an option."
+                      ></lightning-radio-group>
                     </template>
-                </header>
 
-                <!-- Survey Questions -->
-                <div class="survey-content">
-                    <form class="survey-form">
-                        <template for:each={surveyData.questions} for:item="question" for:index="qIndex">
-                            <div key={question.Id} class="survey-question">
-                                <label class="question-text">
-                                    <span>{question.displayOrder}.</span>
-                                    <span>{question.Question_Text__c}</span>
-                                    <template if:true={question.Is_Required__c}>
-                                        <abbr class="required-indicator" title="required">*</abbr>
-                                    </template>
-                                </label>
+                    <template if:true={question.isCheckbox}>
+                      <lightning-checkbox-group
+                        class="options-container"
+                        name={question.Id}
+                        options={question.Answer_Options__r}
+                        data-id={question.Id}
+                        onchange={handleResponseChange}
+                        required={question.Is_Required__c}
+                        message-when-value-missing="Please select at least one option."
+                      ></lightning-checkbox-group>
+                    </template>
 
-                                <!-- Render Input based on Question Type -->
-                                <div class="form-field">
-                                    <template if:true={question.isText}>
-                                        <lightning-input
-                                            class="text-input"
-                                            type="text"
-                                            data-id={question.Id}
-                                            onchange={handleResponseChange}
-                                            required={question.Is_Required__c}
-                                            message-when-value-missing="This field is required."
-                                        ></lightning-input>
-                                    </template>
-
-                                    <template if:true={question.isTextarea}>
-                                        <lightning-textarea
-                                            class="textarea-input"
-                                            data-id={question.Id}
-                                            onchange={handleResponseChange}
-                                            required={question.Is_Required__c}
-                                            message-when-value-missing="This field is required."
-                                        ></lightning-textarea>
-                                    </template>
-
-                                    <template if:true={question.isRadio}>
-                                        <lightning-radio-group
-                                            class="options-container"
-                                            name={question.Id}
-                                            options={question.Answer_Options__r}
-                                            type="radio"
-                                            data-id={question.Id}
-                                            onchange={handleResponseChange}
-                                            required={question.Is_Required__c}
-                                            message-when-value-missing="Please select an option."
-                                        ></lightning-radio-group>
-                                    </template>
-
-                                    <template if:true={question.isCheckbox}>
-                                        <lightning-checkbox-group
-                                            class="options-container"
-                                            name={question.Id}
-                                            options={question.Answer_Options__r}
-                                            data-id={question.Id}
-                                            onchange={handleResponseChange}
-                                            required={question.Is_Required__c}
-                                            message-when-value-missing="Please select at least one option."
-                                        ></lightning-checkbox-group>
-                                    </template>
-
-                                    <template if:true={question.isRating}>
-                                        <div class="rating-container">
-                                            <template for:each={ratingOptions} for:item="rating">
-                                                <button
-                                                    key={rating.value}
-                                                    type="button"
-                                                    class={rating.class}
-                                                    data-id={question.Id}
-                                                    data-value={rating.value}
-                                                    onclick={handleRatingClick}
-                                                    aria-pressed={rating.selected}
-                                                    title={rating.value}
-                                                >
-                                                    <!-- Simple star or number -->
-                                                    <template if:true={rating.selected}>
-                                                        {rating.value}
-                                                    </template>
-                                                    <template if:false={rating.selected}>
-                                                        {rating.value}
-                                                    </template>
-                                                </button>
-                                            </template>
-                                            <!-- Hidden input for validation -->
-                                            <input type="hidden" data-id={question.Id} required={question.Is_Required__c} class="rating-validation-input">
-                                        </div>
-                                    </template>
-
-                                    <template if:true={question.isDate}>
-                                        <lightning-input
-                                            class="date-input"
-                                            type="date"
-                                            data-id={question.Id}
-                                            onchange={handleResponseChange}
-                                            required={question.Is_Required__c}
-                                            message-when-value-missing="This field is required."
-                                        ></lightning-input>
-                                    </template>
-                                </div>
-                            </div>
-                        </template>
-
-                        <!-- Submission Area -->
-                        <div class="submission-section">
-                            <button type="button" class="submit-button" onclick={handleSubmit} disabled={isSubmitting}>
-                                <template if:true={isSubmitting}>
-                                    <lightning-spinner alternative-text="Submitting..." size="small" class="button-spinner"></lightning-spinner>
-                                    <span>Submitting...</span>
-                                </template>
-                                <template if:false={isSubmitting}>
-                                    <span>Submit Response</span>
-                                </template>
-                            </button>
-                            <template if:true={submitError}>
-                                <p class="error-message">{submitError}</p>
+                    <template if:true={question.isRating}>
+                      <div class="rating-container">
+                        <template for:each={ratingOptions} for:item="rating">
+                          <button
+                            key={rating.value}
+                            type="button"
+                            class={rating.class}
+                            data-id={question.Id}
+                            data-value={rating.value}
+                            onclick={handleRatingClick}
+                            aria-pressed={rating.selected}
+                            title={rating.value}
+                          >
+                            <!-- Simple star or number -->
+                            <template if:true={rating.selected}>
+                              {rating.value}
                             </template>
-                        </div>
-                    </form>
-                </div>
-                </template>
+                            <template if:false={rating.selected}>
+                              {rating.value}
+                            </template>
+                          </button>
+                        </template>
+                        <!-- Hidden input for validation -->
+                        <input
+                          type="hidden"
+                          data-id={question.Id}
+                          required={question.Is_Required__c}
+                          class="rating-validation-input"
+                        />
+                      </div>
+                    </template>
 
-                <!-- Thank You Message -->
-                <template if:true={isCompleted}>
-                <div class="completion-container">
-                    <div class="completion-icon">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </div>
-                    <h2 class="completion-title">Thank You!</h2>
-                    
-                    <!-- Show different message based on whether this is a returning user -->
-                    <template if:true={hasPreviouslySubmitted}>
-                        <p class="completion-message">You have already submitted a response to this survey.</p>
+                    <template if:true={question.isDate}>
+                      <lightning-input
+                        class="date-input"
+                        type="date"
+                        data-id={question.Id}
+                        onchange={handleResponseChange}
+                        required={question.Is_Required__c}
+                        message-when-value-missing="This field is required."
+                      ></lightning-input>
                     </template>
-                    <template if:false={hasPreviouslySubmitted}>
-                        <p class="completion-message">Your response has been submitted successfully.</p>
-                    </template>
-                    
-                    <template if:true={surveyData.survey.Thank_You_Message__c}>
-                        <div class="thank-you-message">
-                            <lightning-formatted-rich-text value={surveyData.survey.Thank_You_Message__c}></lightning-formatted-rich-text>
-                        </div>
-                    </template>
+                  </div>
                 </div>
-            </template>
-            </template>
+              </template>
+
+              <!-- Submission Area -->
+              <div class="submission-section">
+                <button
+                  type="button"
+                  class="submit-button"
+                  onclick={handleSubmit}
+                  disabled={isSubmitting}
+                >
+                  <template if:true={isSubmitting}>
+                    <lightning-spinner
+                      alternative-text="Submitting..."
+                      size="small"
+                      class="button-spinner"
+                    ></lightning-spinner>
+                    <span>Submitting...</span>
+                  </template>
+                  <template if:false={isSubmitting}>
+                    <span>Submit Response</span>
+                  </template>
+                </button>
+                <template if:true={submitError}>
+                  <p class="error-message">{submitError}</p>
+                </template>
+              </div>
+            </form>
+          </div>
         </template>
-    </div>
+
+        <!-- Thank You Message -->
+        <template if:true={isCompleted}>
+          <div class="completion-container">
+            <div class="completion-icon">
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M22 11.08V12a10 10 0 1 1-5.93-9.14"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M22 4L12 14.01l-3-3"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <h2 class="completion-title">Thank You!</h2>
+
+            <!-- Show different message based on whether this is a returning user -->
+            <template if:true={hasPreviouslySubmitted}>
+              <p class="completion-message">
+                You have already submitted a response to this survey.
+              </p>
+            </template>
+            <template if:false={hasPreviouslySubmitted}>
+              <p class="completion-message">
+                Your response has been submitted successfully.
+              </p>
+            </template>
+
+            <template if:true={surveyData.survey.Thank_You_Message__c}>
+              <div class="thank-you-message">
+                <lightning-formatted-rich-text
+                  value={surveyData.survey.Thank_You_Message__c}
+                ></lightning-formatted-rich-text>
+              </div>
+            </template>
+          </div>
+        </template>
+      </template>
+    </template>
+  </div>
 </template>

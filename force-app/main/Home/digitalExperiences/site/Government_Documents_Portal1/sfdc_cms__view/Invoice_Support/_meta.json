@@ -1,5 +1,5 @@
 {
-  "apiName" : "Invoice_Support",
-  "type" : "sfdc_cms__view",
-  "path" : "views"
+  "apiName": "Invoice_Support",
+  "type": "sfdc_cms__view",
+  "path": "views"
 }

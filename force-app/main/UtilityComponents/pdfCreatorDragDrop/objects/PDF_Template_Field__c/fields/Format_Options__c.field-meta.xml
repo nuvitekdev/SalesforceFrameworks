@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Format_Options__c</fullName>
-    <description>JSON string containing additional formatting options</description>
+    <description
+  >JSON string containing additional formatting options</description>
     <label>Format Options</label>
     <length>2000</length>
     <trackTrending>false</trackTrending>

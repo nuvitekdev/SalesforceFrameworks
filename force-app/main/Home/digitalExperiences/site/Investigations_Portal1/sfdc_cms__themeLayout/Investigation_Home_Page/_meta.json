@@ -1,5 +1,5 @@
 {
-  "apiName" : "Investigation_Home_Page",
-  "type" : "sfdc_cms__themeLayout",
-  "path" : "themeLayouts"
+  "apiName": "Investigation_Home_Page",
+  "type": "sfdc_cms__themeLayout",
+  "path": "themeLayouts"
 }

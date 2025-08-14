@@ -1,69 +1,167 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <testsuites>
-    <testsuite name="force.apex" timestamp="2025-05-06T22:53:19.000Z" hostname="https://nuvitekllc--nuvtekdemo.sandbox.my.salesforce.com" tests="25" failures="0"  errors="0"  time="2.05">
+    <testsuite
+    name="force.apex"
+    timestamp="2025-05-06T22:53:19.000Z"
+    hostname="https://nuvitekllc--nuvtekdemo.sandbox.my.salesforce.com"
+    tests="25"
+    failures="0"
+    errors="0"
+    time="2.05"
+  >
         <properties>
-            <property name="outcome" value="Successful"/>
-            <property name="testsRan" value="25"/>
-            <property name="passing" value="25"/>
-            <property name="failing" value="0"/>
-            <property name="skipped" value="0"/>
-            <property name="passRate" value="100%"/>
-            <property name="failRate" value="0%"/>
-            <property name="testStartTime" value="Tue May 06 2025 6:53:19 PM"/>
-            <property name="testSetupTimeInMs" value="2869"/>
-            <property name="testExecutionTime" value="2.05 s"/>
-            <property name="testTotalTime" value="4.92 s"/>
-            <property name="commandTime" value="0.17 s"/>
-            <property name="hostname" value="https://nuvitekllc--nuvtekdemo.sandbox.my.salesforce.com"/>
-            <property name="orgId" value="00DE100000B8x6DMAR"/>
-            <property name="username" value="shahzeb.khan@nuvitek.com.nuvtekdemo"/>
-            <property name="testRunId" value="707E100001HDjXX"/>
-            <property name="userId" value="0058Z000008CpnQQAS"/>
-            <property name="coveredLines" value="148"/>
-            <property name="testRunCoverage" value="11%"/>
-            <property name="orgWideCoverage" value="2%"/>
+            <property name="outcome" value="Successful" />
+            <property name="testsRan" value="25" />
+            <property name="passing" value="25" />
+            <property name="failing" value="0" />
+            <property name="skipped" value="0" />
+            <property name="passRate" value="100%" />
+            <property name="failRate" value="0%" />
+            <property name="testStartTime" value="Tue May 06 2025 6:53:19 PM" />
+            <property name="testSetupTimeInMs" value="2869" />
+            <property name="testExecutionTime" value="2.05 s" />
+            <property name="testTotalTime" value="4.92 s" />
+            <property name="commandTime" value="0.17 s" />
+            <property
+        name="hostname"
+        value="https://nuvitekllc--nuvtekdemo.sandbox.my.salesforce.com"
+      />
+            <property name="orgId" value="00DE100000B8x6DMAR" />
+            <property
+        name="username"
+        value="shahzeb.khan@nuvitek.com.nuvtekdemo"
+      />
+            <property name="testRunId" value="707E100001HDjXX" />
+            <property name="userId" value="0058Z000008CpnQQAS" />
+            <property name="coveredLines" value="148" />
+            <property name="testRunCoverage" value="11%" />
+            <property name="orgWideCoverage" value="2%" />
         </properties>
-        <testcase name="testAttachmentsProcessing" classname="LLMControllerTest" time="0.03">
+        <testcase
+      name="testAttachmentsProcessing"
+      classname="LLMControllerTest"
+      time="0.03"
+    >
         </testcase>
-        <testcase name="testCheckRecordForAnomalies" classname="LLMControllerTest" time="0.02">
+        <testcase
+      name="testCheckRecordForAnomalies"
+      classname="LLMControllerTest"
+      time="0.02"
+    >
         </testcase>
-        <testcase name="testCoveredPrivateMethods" classname="LLMControllerTest" time="0.02">
+        <testcase
+      name="testCoveredPrivateMethods"
+      classname="LLMControllerTest"
+      time="0.02"
+    >
         </testcase>
-        <testcase name="testErrorHandling" classname="LLMControllerTest" time="0.01">
+        <testcase
+      name="testErrorHandling"
+      classname="LLMControllerTest"
+      time="0.01"
+    >
         </testcase>
-        <testcase name="testGetLLMConfigurations" classname="LLMControllerTest" time="0.02">
+        <testcase
+      name="testGetLLMConfigurations"
+      classname="LLMControllerTest"
+      time="0.02"
+    >
         </testcase>
-        <testcase name="testHandleRequest" classname="LLMControllerTest" time="0.02">
+        <testcase
+      name="testHandleRequest"
+      classname="LLMControllerTest"
+      time="0.02"
+    >
         </testcase>
-        <testcase name="testGetNavigationItems" classname="NuvitekCustomThemeLayoutServicesTest" time="0.03">
+        <testcase
+      name="testGetNavigationItems"
+      classname="NuvitekCustomThemeLayoutServicesTest"
+      time="0.03"
+    >
         </testcase>
-        <testcase name="testSearchAcrossObjects" classname="NuvitekCustomThemeLayoutServicesTest" time="0.29">
+        <testcase
+      name="testSearchAcrossObjects"
+      classname="NuvitekCustomThemeLayoutServicesTest"
+      time="0.29"
+    >
         </testcase>
-        <testcase name="testSearchAcrossObjectsErrors" classname="NuvitekCustomThemeLayoutServicesTest" time="0.02">
+        <testcase
+      name="testSearchAcrossObjectsErrors"
+      classname="NuvitekCustomThemeLayoutServicesTest"
+      time="0.02"
+    >
         </testcase>
-        <testcase name="testCreateAccessRequest" classname="NuvitekAccessRequestControllerTest" time="0.15">
+        <testcase
+      name="testCreateAccessRequest"
+      classname="NuvitekAccessRequestControllerTest"
+      time="0.15"
+    >
         </testcase>
-        <testcase name="testGetAccessTypesForApp" classname="NuvitekAccessRequestControllerTest" time="0.04">
+        <testcase
+      name="testGetAccessTypesForApp"
+      classname="NuvitekAccessRequestControllerTest"
+      time="0.04"
+    >
         </testcase>
-        <testcase name="testMockCoverageImprovement" classname="NuvitekAccessRequestControllerTest" time="0.36">
+        <testcase
+      name="testMockCoverageImprovement"
+      classname="NuvitekAccessRequestControllerTest"
+      time="0.36"
+    >
         </testcase>
-        <testcase name="testSubmitForApproval" classname="NuvitekAccessRequestControllerTest" time="0.05">
+        <testcase
+      name="testSubmitForApproval"
+      classname="NuvitekAccessRequestControllerTest"
+      time="0.05"
+    >
         </testcase>
-        <testcase name="testCreateSupportCase_Defaults" classname="SupportRequesterControllerTest" time="0.18">
+        <testcase
+      name="testCreateSupportCase_Defaults"
+      classname="SupportRequesterControllerTest"
+      time="0.18"
+    >
         </testcase>
-        <testcase name="testCreateSupportCase_Error" classname="SupportRequesterControllerTest" time="0.01">
+        <testcase
+      name="testCreateSupportCase_Error"
+      classname="SupportRequesterControllerTest"
+      time="0.01"
+    >
         </testcase>
-        <testcase name="testCreateSupportCase_Success" classname="SupportRequesterControllerTest" time="0.06">
+        <testcase
+      name="testCreateSupportCase_Success"
+      classname="SupportRequesterControllerTest"
+      time="0.06"
+    >
         </testcase>
-        <testcase name="testCreateSupportCase_WithContact" classname="SupportRequesterControllerTest" time="0.12">
+        <testcase
+      name="testCreateSupportCase_WithContact"
+      classname="SupportRequesterControllerTest"
+      time="0.12"
+    >
         </testcase>
-        <testcase name="testGetCurrentUserInfo_PortalUser" classname="SupportRequesterControllerTest" time="0.06">
+        <testcase
+      name="testGetCurrentUserInfo_PortalUser"
+      classname="SupportRequesterControllerTest"
+      time="0.06"
+    >
         </testcase>
-        <testcase name="testGetCurrentUserInfo_StandardUser" classname="SupportRequesterControllerTest" time="0.05">
+        <testcase
+      name="testGetCurrentUserInfo_StandardUser"
+      classname="SupportRequesterControllerTest"
+      time="0.05"
+    >
         </testcase>
-        <testcase name="testSaveSupportRecording_Error" classname="SupportRequesterControllerTest" time="0.01">
+        <testcase
+      name="testSaveSupportRecording_Error"
+      classname="SupportRequesterControllerTest"
+      time="0.01"
+    >
         </testcase>
-        <testcase name="testSaveSupportRecording_Success" classname="SupportRequesterControllerTest" time="0.50">
+        <testcase
+      name="testSaveSupportRecording_Success"
+      classname="SupportRequesterControllerTest"
+      time="0.50"
+    >
         </testcase>
     </testsuite>
 </testsuites>

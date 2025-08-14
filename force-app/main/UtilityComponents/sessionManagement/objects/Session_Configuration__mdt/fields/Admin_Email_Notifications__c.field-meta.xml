@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Admin_Email_Notifications__c</fullName>
-    <description>Email address where administrative notifications about session monitoring, security events, and auto-deactivations are sent. Multiple emails can be separated by commas.</description>
+    <description
+  >Email address where administrative notifications about session monitoring, security events, and auto-deactivations are sent. Multiple emails can be separated by commas.</description>
     <externalId>false</externalId>
     <fieldManageability>DeveloperControlled</fieldManageability>
     <label>Admin Email Notifications</label>

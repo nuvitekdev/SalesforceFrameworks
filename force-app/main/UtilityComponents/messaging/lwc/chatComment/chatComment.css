@@ -55,14 +55,14 @@
 .comment-wrapper.mycomment .message-body {
   background-color: var(--lwc-brandPrimary, rgb(21, 137, 238));
   color: #fff;
-  border-radius: 1.2rem 0rem 1.2rem 1.2rem
+  border-radius: 1.2rem 0rem 1.2rem 1.2rem;
 }
 
 .comment-wrapper.othercomment .message-body {
   background-color: #fff;
   color: var(--lwc-brandPrimary, rgb(21, 137, 238));
   border: 1px solid var(--lwc-brandPrimary, #1589ee);
-  border-radius:0 1.2rem 1.2rem 1.2rem;
+  border-radius: 0 1.2rem 1.2rem 1.2rem;
 }
 
 .message-user-name {

@@ -1,739 +1,888 @@
 <template>
-    <div class={containerClasses}>
-        <!-- Loading Spinner -->
-        <div if:true={isLoading} class="loading-spinner-container">
-            <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
-        </div>
-        
-        <!-- Saving Spinner -->
-        <div if:true={isSaving} class="save-spinner-container">
-            <lightning-spinner alternative-text="Saving template..." size="medium" variant="brand"></lightning-spinner>
-            <p class="spinner-text slds-m-top_small">Saving your template...</p>
-        </div>
-
-        <!-- Custom Path Component -->
-        <div class="custom-path-container">
-            <ul class="custom-path">
-                <li class="custom-path-item" data-step="0">
-                    <div class="custom-path-indicator" data-step="0">
-                        <span class="custom-path-number">1</span>
-                    </div>
-                    <div class="custom-path-label">Setup</div>
-                </li>
-                <li class="custom-path-item" data-step="1">
-                    <div class="custom-path-line"></div>
-                    <div class="custom-path-indicator" data-step="1">
-                        <span class="custom-path-number">2</span>
-                    </div>
-                    <div class="custom-path-label">Select Fields</div>
-                </li>
-                <li class="custom-path-item" data-step="2">
-                    <div class="custom-path-line"></div>
-                    <div class="custom-path-indicator" data-step="2">
-                        <span class="custom-path-number">3</span>
-                    </div>
-                    <div class="custom-path-label">Design</div>
-                </li>
-                <li class="custom-path-item" data-step="3">
-                    <div class="custom-path-line"></div>
-                    <div class="custom-path-indicator" data-step="3">
-                        <span class="custom-path-number">4</span>
-                    </div>
-                    <div class="custom-path-label">Preview</div>
-                </li>
-                <li class="custom-path-item" data-step="4">
-                    <div class="custom-path-line"></div>
-                    <div class="custom-path-indicator" data-step="4">
-                        <span class="custom-path-number">5</span>
-                    </div>
-                    <div class="custom-path-label">Save</div>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Step 0: Setup -->
-        <template if:true={isStep0}>
-            <div class="step-section step-0-mode slds-p-around_medium">
-                <div class="slds-text-heading_medium slds-m-bottom_small">PDF Template Manager</div>
-                <p class="slds-text-body_regular slds-m-bottom_medium">
-                    Create a new PDF template or manage existing ones.
-                </p>
-
-                <!-- Template Mode Selection -->
-                <div class="form-group slds-m-bottom_large">
-                    <lightning-radio-group
-                        name="templateMode"
-                        label="What would you like to do?"
-                        options={templateModeOptions}
-                        value={templateMode}
-                        onchange={handleTemplateModeChange}
-                        type="button"
-                        variant="label-stacked">
-                    </lightning-radio-group>
-                </div>
-
-                <!-- Create New Template Mode -->
-                <template if:true={isCreateMode}>
-                    <div class="create-template-section">
-                        <h3 class="slds-text-heading_small slds-m-bottom_medium">Create New Template</h3>
-                        
-                        <!-- Object Selection -->
-                        <div class="form-group slds-m-bottom_medium">
-                            <lightning-combobox
-                                name="object"
-                                label="Select Object"
-                                value={selectedObject}
-                                placeholder="Type to search for an object..."
-                                options={availableObjects}
-                                onchange={handleObjectSelect}
-                                variant="label-stacked"
-                                dropdown-length="7"
-                                is-loading={isLoading}
-                                required>
-                            </lightning-combobox>
-                        </div>
-
-                        <!-- Page Setup -->
-                        <div class="slds-box slds-p-around_medium">
-                            <h3 class="slds-text-heading_small slds-m-bottom_medium">Page Setup</h3>
-                            
-                            <div class="slds-grid slds-gutters">
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
-                                    <lightning-radio-group
-                                        name="pageSize"
-                                        label="Page Size"
-                                        options={pageSizeOptions}
-                                        value={pageSetup.pageSize}
-                                        onchange={handlePageSizeChange}
-                                        type="radio">
-                                    </lightning-radio-group>
-                                </div>
-                                
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
-                                    <lightning-radio-group
-                                        name="orientation"
-                                        label="Orientation"
-                                        options={orientationOptions}
-                                        value={pageSetup.orientation}
-                                        onchange={handleOrientationChange}
-                                        type="radio">
-                                    </lightning-radio-group>
-                                </div>
-                                
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
-                                    <div class="slds-form-element">
-                                        <label class="slds-form-element__label" for="pageCount">
-                                            Initial Page Count
-                                        </label>
-                                        <div class="slds-form-element__control">
-                                            <input
-                                                type="number"
-                                                id="pageCount"
-                                                class="slds-input"
-                                                value={pageSetup.pageCount}
-                                                min="1"
-                                                max="10"
-                                                onchange={handlePageCountChange} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="slds-m-top_medium slds-text-align_right">
-                            <lightning-button
-                                label="Next: Select Fields"
-                                variant="brand"
-                                onclick={goToStep}
-                                data-step="1"
-                                disabled={isObjectNotSelected}
-                                class="next-btn">
-                            </lightning-button>
-                        </div>
-                    </div>
-                </template>
-
-                <!-- Manage Existing Templates Mode -->
-                <template if:true={isManageMode}>
-                    <div class="manage-templates-section">
-                        <div class="slds-grid slds-gutters slds-m-bottom_medium">
-                            <div class="slds-col slds-size_1-of-1 slds-medium-size_8-of-12">
-                                <h3 class="slds-text-heading_small">Existing Templates</h3>
-                                <p class="slds-text-body_small slds-text-color_weak">
-                                    Download, edit, or view your saved PDF templates.
-                                </p>
-                            </div>
-                            <div class="slds-col slds-size_1-of-1 slds-medium-size_4-of-12 slds-text-align_right">
-                                <lightning-button
-                                    label="Refresh"
-                                    icon-name="utility:refresh"
-                                    onclick={loadExistingTemplates}
-                                    disabled={isLoadingTemplates}
-                                    variant="neutral">
-                                </lightning-button>
-                            </div>
-                        </div>
-
-                        <!-- Loading Spinner for Templates -->
-                        <template if:true={isLoadingTemplates}>
-                            <div class="slds-text-align_center slds-p-around_large">
-                                <lightning-spinner alternative-text="Loading templates..." size="medium"></lightning-spinner>
-                            </div>
-                        </template>
-
-                        <!-- Templates List -->
-                        <template if:false={isLoadingTemplates}>
-                            <template if:true={hasExistingTemplates}>
-                                <div class="templates-grid">
-                                    <template for:each={existingTemplates} for:item="template">
-                                        <div key={template.id} class="template-card slds-box slds-p-around_medium slds-m-bottom_medium">
-                                            <div class="slds-grid slds-gutters">
-                                                <div class="slds-col slds-size_8-of-12">
-                                                    <h4 class="slds-text-heading_small slds-m-bottom_x-small">{template.name}</h4>
-                                                    <template if:true={template.hasDescription}>
-                                                        <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
-                                                            {template.description}
-                                                        </p>
-                                                    </template>
-                                                    <div class="template-info">
-                                                        <span class="slds-badge slds-theme_default">{template.objectName}</span>
-                                                        <span class="slds-m-left_small slds-text-body_small slds-text-color_weak">
-                                                            {template.pageCount} pages
-                                                        </span>
-                                                        <span class="slds-m-left_small slds-text-body_small slds-text-color_weak">
-                                                            Modified: {template.formattedDate}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div class="slds-col slds-size_4-of-12 slds-text-align_right">
-                                                    <lightning-button-group>
-                                                        <lightning-button
-                                                            label="Download"
-                                                            icon-name="utility:download"
-                                                            onclick={handleDownloadExistingTemplate}
-                                                            data-template-id={template.id}
-                                                            variant="brand"
-                                                            size="small">
-                                                        </lightning-button>
-                                                        <lightning-button
-                                                            label="Edit"
-                                                            icon-name="utility:edit"
-                                                            onclick={handleLoadTemplateForEdit}
-                                                            data-template-id={template.id}
-                                                            variant="neutral"
-                                                            size="small">
-                                                        </lightning-button>
-                                                    </lightning-button-group>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </template>
-                                </div>
-                            </template>
-
-                            <!-- No Templates Message -->
-                            <template if:false={hasExistingTemplates}>
-                                <div class="slds-illustration slds-illustration_large">
-                                    <div class="slds-text-align_center slds-p-around_large">
-                                        <lightning-icon icon-name="custom:custom19" size="large" alternative-text="No templates"></lightning-icon>
-                                        <h3 class="slds-text-heading_medium slds-m-top_medium">No Templates Found</h3>
-                                        <p class="slds-text-body_regular slds-m-top_small">
-                                            Create your first PDF template to get started.
-                                        </p>
-                                        <lightning-button
-                                            label="Create New Template"
-                                            variant="brand"
-                                            onclick={handleCreateNewTemplateClick}
-                                            class="slds-m-top_medium">
-                                        </lightning-button>
-                                    </div>
-                                </div>
-                            </template>
-                        </template>
-                    </div>
-                </template>
-            </div>
-        </template>
-
-        <!-- Step 1: Field Selection -->
-        <template if:true={isStep1}>
-            <div class="step-section slds-p-around_medium">
-                <div class="slds-grid slds-gutters slds-m-bottom_medium">
-                    <div class="slds-col slds-size_1-of-1 slds-medium-size_8-of-12">
-                        <h2 class="slds-text-heading_medium">Select Fields to Include</h2>
-                        <p class="slds-text-body_regular">
-                            Choose which fields from <strong>{selectedObject}</strong> to include in your PDF template.
-                        </p>
-                    </div>
-                    <div class="slds-col slds-size_1-of-1 slds-medium-size_4-of-12 slds-text-align_right">
-                        <span class="field-counter">
-                            {selectedFieldCount} of {totalFieldCount} fields selected
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Search and Filters -->
-                <div class="field-filters slds-box slds-p-around_small slds-m-bottom_medium">
-                    <div class="slds-grid slds-gutters">
-                        <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
-                            <lightning-input
-                                type="search"
-                                label="Search Fields"
-                                placeholder="Search by field name or label..."
-                                value={searchTerm}
-                                onchange={handleFieldSearch}>
-                            </lightning-input>
-                        </div>
-                        <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
-                            <div class="category-filters">
-                                <p class="slds-text-body_small slds-m-bottom_x-small">Filter by Type:</p>
-                                <template for:each={fieldCategoryOptions} for:item="category">
-                                    <label key={category.value} class="slds-checkbox_button">
-                                        <input
-                                            type="checkbox"
-                                            data-category={category.value}
-                                            checked={category.checked}
-                                            onchange={handleCategoryChange} />
-                                        <span class="slds-checkbox_button__label">
-                                            <span class="slds-checkbox_faux">{category.label}</span>
-                                        </span>
-                                    </label>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Field List -->
-                <div class="field-list-container">
-                    <div class="field-list-header slds-p-around_small">
-                        <div class="slds-grid slds-grid_align-spread">
-                            <div class="slds-col">
-                                <strong>Available Fields</strong>
-                            </div>
-                            <div class="slds-col slds-text-align_right">
-                                <lightning-button-group>
-                                    <lightning-button
-                                        label="Select All"
-                                        variant="neutral"
-                                        onclick={handleSelectAll}>
-                                    </lightning-button>
-                                    <lightning-button
-                                        label="Clear All"
-                                        variant="neutral"
-                                        onclick={handleDeselectAll}>
-                                    </lightning-button>
-                                </lightning-button-group>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="field-list slds-scrollable_y">
-                        <template for:each={displayedFields} for:item="field">
-                            <div key={field.id} class="field-item slds-p-around_small">
-                                <div class="slds-grid slds-grid_vertical-align-center">
-                                    <div class="slds-col slds-size_1-of-12">
-                                        <input
-                                            type="checkbox"
-                                            data-field-id={field.id}
-                                            checked={field.selected}
-                                            onchange={handleFieldSelect}
-                                            class="slds-checkbox" />
-                                    </div>
-                                    <div class="slds-col slds-size_1-of-12">
-                                        <lightning-icon
-                                            icon-name={field.iconName}
-                                            size="small"
-                                            alternative-text={field.type}>
-                                        </lightning-icon>
-                                    </div>
-                                    <div class="slds-col slds-size_5-of-12">
-                                        <div class="field-label">{field.label}</div>
-                                        <div class="field-api-name slds-text-body_small slds-text-color_weak">
-                                            {field.value}
-                                        </div>
-                                    </div>
-                                    <div class="slds-col slds-size_2-of-12">
-                                        <span class="field-type-badge">{field.type}</span>
-                                    </div>
-                                    <div class="slds-col slds-size_2-of-12">
-                                        <template if:true={field.isRequired}>
-                                            <span class="required-badge">Required</span>
-                                        </template>
-                                    </div>
-                                    <div class="slds-col slds-size_1-of-12 slds-text-align_right">
-                                        <template if:true={field.helpText}>
-                                            <lightning-helptext
-                                                content={field.helpText}
-                                                icon-variant="bare">
-                                            </lightning-helptext>
-                                        </template>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-                <!-- Navigation -->
-                <div class="slds-m-top_medium slds-grid slds-grid_align-spread">
-                    <div class="slds-col">
-                        <lightning-button
-                            label="Back"
-                            onclick={goToStep}
-                            data-step="0">
-                        </lightning-button>
-                    </div>
-                    <div class="slds-col">
-                        <lightning-button
-                            label="Next: Design Template"
-                            variant="brand"
-                            onclick={goToStep}
-                            data-step="2"
-                            disabled={noFieldsSelected}
-                            class="next-btn">
-                        </lightning-button>
-                    </div>
-                </div>
-            </div>
-        </template>
-
-        <!-- Step 2: Design -->
-        <template if:true={isStep2}>
-            <div class="step-section design-section slds-p-around_medium">
-                <div class="slds-text-heading_medium slds-m-bottom_small">Design Your Template</div>
-                <p class="slds-m-bottom_medium">
-                    Drag and drop fields onto the PDF pages. Resize and position them as needed.
-                </p>
-
-                <div class="design-container slds-grid slds-gutters">
-                    <!-- Left Panel: Selected Fields -->
-                    <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
-                        <div class="field-palette slds-box slds-p-around_small">
-                            <div class="palette-header">
-                                <h3 class="slds-text-heading_small slds-m-bottom_small">Selected Fields</h3>
-                                <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_small">
-                                    Drag fields to place them on the page
-                                </p>
-                                
-                                <!-- Auto-Create Button -->
-                                <lightning-button
-                                    label="Auto-Place All Fields"
-                                    icon-name="utility:magicwand"
-                                    variant="brand"
-                                    class="slds-width_full"
-                                    onclick={handleAutoCreateFields}
-                                    title="Automatically place all selected fields on the page">
-                                </lightning-button>
-                            </div>
-                            
-                            <div class="selected-fields-container">
-                                <div class="draggable-fields-list">
-                                    <template for:each={selectedFields} for:item="field">
-                                        <div key={field.id}
-                                            class="draggable-field"
-                                            draggable="true"
-                                            data-field-id={field.id}
-                                            ondragstart={handleFieldDragStart}
-                                            ondragend={handleFieldDragEnd}>
-                                            <lightning-icon
-                                                icon-name={field.iconName}
-                                                size="x-small"
-                                                class="slds-m-right_x-small">
-                                            </lightning-icon>
-                                            <span class="field-name">{field.label}</span>
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
-                            
-                            <!-- Generic Fields Section -->
-                            <div class="generic-fields-section">
-                                <h4 class="slds-text-heading_small slds-m-bottom_small">Generic Elements</h4>
-                                <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_small">
-                                    Drag these elements to add structure
-                                </p>
-                                
-                                <div class="generic-fields-list">
-                                    <template for:each={genericFields} for:item="field">
-                                        <div key={field.id}
-                                            class="draggable-field generic-field"
-                                            draggable="true"
-                                            data-field-id={field.id}
-                                            ondragstart={handleFieldDragStart}
-                                            ondragend={handleFieldDragEnd}>
-                                            <lightning-icon
-                                                icon-name={field.iconName}
-                                                size="x-small"
-                                                class="slds-m-right_x-small">
-                                            </lightning-icon>
-                                            <span class="field-name">{field.label}</span>
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Panel: PDF Pages -->
-                    <div class="slds-col slds-size_1-of-1 slds-medium-size_9-of-12">
-                        <!-- Page Controls -->
-                        <div class="page-controls slds-box slds-p-around_small slds-m-bottom_small">
-                            <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
-                                <div class="slds-col">
-                                    <lightning-button-group>
-                                        <lightning-button
-                                            label="Previous"
-                                            icon-name="utility:chevronleft"
-                                            onclick={handlePrevPage}
-                                            disabled={isFirstPage}>
-                                        </lightning-button>
-                                        <lightning-button
-                                            label="Next"
-                                            icon-name="utility:chevronright"
-                                            icon-position="right"
-                                            onclick={handleNextPage}
-                                            disabled={isLastPage}>
-                                        </lightning-button>
-                                    </lightning-button-group>
-                                </div>
-                                <div class="slds-col">
-                                    <span class="page-indicator">
-                                        Page {currentPageNum} of {pageSetup.pageCount}
-                                    </span>
-                                </div>
-                                <div class="slds-col">
-                                    <label class="grid-snap-toggle slds-m-right_small">
-                                        <input type="checkbox" 
-                                               checked={gridSnapEnabled} 
-                                               onchange={handleGridSnapToggle} />
-                                        <span class="slds-m-left_x-small">Grid Snap</span>
-                                    </label>
-                                    <label class="grid-snap-toggle slds-m-right_small">
-                                        <input type="checkbox" 
-                                               checked={showGrid} 
-                                               onchange={handleShowGridToggle} />
-                                        <span class="slds-m-left_x-small">Show Grid</span>
-                                    </label>
-                                    <lightning-button
-                                        label="Add Page"
-                                        icon-name="utility:add"
-                                        variant="neutral"
-                                        onclick={handleAddPage}>
-                                    </lightning-button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- PDF Page Canvas -->
-                        <div class="pdf-design-area">
-                            <template for:each={pdfPages} for:item="page">
-                                <div key={page.pageNumber} class={page.cssClass} data-page-num={page.pageNumber} ondragover={handlePageDragOver} ondragleave={handlePageDragLeave} ondrop={handlePageDrop}>
-                                    <!-- Fields will be rendered here dynamically -->
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Template Info and Navigation -->
-                <div class="template-info-section slds-box slds-p-around_medium slds-m-top_medium">
-                    <h3 class="slds-text-heading_small slds-m-bottom_medium">Template Information</h3>
-                    
-                    <div class="slds-grid slds-gutters">
-                        <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
-                            <lightning-input
-                                label="Template Name"
-                                value={templateName}
-                                onchange={handleTemplateNameChange}
-                                required
-                                placeholder="Enter a name for this template">
-                            </lightning-input>
-                        </div>
-                        <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
-                            <lightning-textarea
-                                label="Description"
-                                value={templateDescription}
-                                onchange={handleTemplateDescriptionChange}
-                                placeholder="Optional description">
-                            </lightning-textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Navigation -->
-                <div class="slds-m-top_medium slds-grid slds-grid_align-spread">
-                    <div class="slds-col">
-                        <lightning-button
-                            label="Back"
-                            onclick={goToStep}
-                            data-step="1">
-                        </lightning-button>
-                    </div>
-                    <div class="slds-col">
-                        <lightning-button
-                            label="Next: Preview Template"
-                            variant="brand"
-                            onclick={goToStep}
-                            data-step="3"
-                            class="next-btn">
-                        </lightning-button>
-                    </div>
-                </div>
-            </div>
-        </template>
-
-        <!-- Step 3: Preview -->
-        <template if:true={isStep3}>
-            <div class="step-section slds-p-around_medium">
-                <div class="slds-text-heading_medium slds-m-bottom_small">Preview Your Template</div>
-                <p class="slds-m-bottom_medium">
-                    Review your PDF template before saving. You can go back to make changes if needed.
-                </p>
-
-                <!-- Template Information Summary -->
-                <div class="template-summary-section slds-box slds-p-around_medium slds-m-bottom_medium">
-                    <h3 class="slds-text-heading_small slds-m-bottom_medium">Template Summary</h3>
-                    
-                    <div class="slds-grid slds-gutters">
-                        <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
-                            <dl class="slds-list_horizontal">
-                                <dt class="slds-item_label slds-text-color_weak">Template Name:</dt>
-                                <dd class="slds-item_detail">{templateName}</dd>
-                                <dt class="slds-item_label slds-text-color_weak">Object:</dt>
-                                <dd class="slds-item_detail">{selectedObject}</dd>
-                                <dt class="slds-item_label slds-text-color_weak">Page Count:</dt>
-                                <dd class="slds-item_detail">{pageSetup.pageCount}</dd>
-                            </dl>
-                        </div>
-                        <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
-                            <dl class="slds-list_horizontal">
-                                <dt class="slds-item_label slds-text-color_weak">Page Size:</dt>
-                                <dd class="slds-item_detail">{pageSetup.pageSize}</dd>
-                                <dt class="slds-item_label slds-text-color_weak">Orientation:</dt>
-                                <dd class="slds-item_detail">{pageSetup.orientation}</dd>
-                                <dt class="slds-item_label slds-text-color_weak">Fields Placed:</dt>
-                                <dd class="slds-item_detail">{placedFieldsCount}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                    
-                    <template if:true={templateDescription}>
-                        <div class="slds-m-top_small">
-                            <dt class="slds-item_label slds-text-color_weak">Description:</dt>
-                            <dd class="slds-item_detail">{templateDescription}</dd>
-                        </div>
-                    </template>
-                </div>
-
-                <!-- PDF Preview -->
-                <div class="pdf-preview-section slds-box slds-p-around_medium slds-m-bottom_medium">
-                    <div class="slds-grid slds-gutters slds-m-bottom_small">
-                        <div class="slds-col slds-size_8-of-12">
-                            <h3 class="slds-text-heading_small">PDF Preview</h3>
-                            <p class="slds-text-body_small slds-text-color_weak">
-                                This shows how your template will appear when generated as a PDF.
-                            </p>
-                        </div>
-                        <div class="slds-col slds-size_4-of-12 slds-text-align_right">
-                            <lightning-button
-                                label="Generate Preview"
-                                icon-name="utility:refresh"
-                                onclick={handleGeneratePreview}
-                                disabled={isGeneratingPreview}
-                                variant="neutral"
-                                size="small">
-                            </lightning-button>
-                        </div>
-                    </div>
-
-                    <!-- Preview Loading -->
-                    <template if:true={isGeneratingPreview}>
-                        <div class="preview-loading slds-text-align_center slds-p-around_large">
-                            <lightning-spinner alternative-text="Generating preview..." size="medium"></lightning-spinner>
-                            <p class="slds-m-top_small slds-text-color_weak">Generating your PDF preview...</p>
-                        </div>
-                    </template>
-
-                    <!-- PDF Preview Display -->
-                    <template if:false={isGeneratingPreview}>
-                        <template if:true={previewUrl}>
-                            <div class="pdf-preview-container">
-                                <iframe
-                                    src={previewUrl}
-                                    class="pdf-preview-iframe"
-                                    title="PDF Template Preview">
-                                </iframe>
-                            </div>
-                        </template>
-                        
-                        <template if:false={previewUrl}>
-                            <div class="no-preview-message slds-text-align_center slds-p-around_large">
-                                <lightning-icon icon-name="utility:preview" size="large" alternative-text="No preview"></lightning-icon>
-                                <h4 class="slds-text-heading_small slds-m-top_small">No Preview Available</h4>
-                                <p class="slds-text-body_small slds-text-color_weak slds-m-top_small">
-                                    Click "Generate Preview" to see how your template will look.
-                                </p>
-                            </div>
-                        </template>
-                    </template>
-                </div>
-
-                <!-- Navigation -->
-                <div class="slds-m-top_medium slds-grid slds-grid_align-spread">
-                    <div class="slds-col">
-                        <lightning-button
-                            label="Back to Design"
-                            onclick={goToStep}
-                            data-step="2">
-                        </lightning-button>
-                    </div>
-                    <div class="slds-col">
-                        <lightning-button
-                            label="Save Template"
-                            variant="brand"
-                            onclick={handleSaveTemplate}
-                            class="save-button">
-                        </lightning-button>
-                    </div>
-                </div>
-            </div>
-        </template>
-
-        <!-- Step 4: Success -->
-        <template if:true={isStep4}>
-            <div class="step-section slds-p-around_medium">
-                <div class="success-container">
-                    <div class="success-icon">
-                        <lightning-icon
-                            icon-name="utility:success"
-                            alternative-text="Success"
-                            size="large"
-                            variant="success">
-                        </lightning-icon>
-                    </div>
-                    <h2 class="success-title">Template Saved Successfully!</h2>
-                    <p class="success-message">
-                        Your PDF template has been saved and is ready to use for generating documents.
-                    </p>
-                    <div class="success-actions slds-m-top_large">
-                        <lightning-button
-                            label="Download PDF Template"
-                            variant="brand"
-                            icon-name="utility:download"
-                            onclick={handleDownloadTemplate}
-                            disabled={isLoading}
-                            class="slds-m-right_small">
-                        </lightning-button>
-                        <lightning-button
-                            label="Create Another Template"
-                            variant="neutral"
-                            onclick={handleStartOver}
-                            class="start-over-button">
-                        </lightning-button>
-                    </div>
-                </div>
-            </div>
-        </template>
+  <div class={containerClasses}>
+    <!-- Loading Spinner -->
+    <div if:true={isLoading} class="loading-spinner-container">
+      <lightning-spinner
+        alternative-text="Loading..."
+        size="medium"
+        variant="brand"
+      ></lightning-spinner>
     </div>
+
+    <!-- Saving Spinner -->
+    <div if:true={isSaving} class="save-spinner-container">
+      <lightning-spinner
+        alternative-text="Saving template..."
+        size="medium"
+        variant="brand"
+      ></lightning-spinner>
+      <p class="spinner-text slds-m-top_small">Saving your template...</p>
+    </div>
+
+    <!-- Custom Path Component -->
+    <div class="custom-path-container">
+      <ul class="custom-path">
+        <li class="custom-path-item" data-step="0">
+          <div class="custom-path-indicator" data-step="0">
+            <span class="custom-path-number">1</span>
+          </div>
+          <div class="custom-path-label">Setup</div>
+        </li>
+        <li class="custom-path-item" data-step="1">
+          <div class="custom-path-line"></div>
+          <div class="custom-path-indicator" data-step="1">
+            <span class="custom-path-number">2</span>
+          </div>
+          <div class="custom-path-label">Select Fields</div>
+        </li>
+        <li class="custom-path-item" data-step="2">
+          <div class="custom-path-line"></div>
+          <div class="custom-path-indicator" data-step="2">
+            <span class="custom-path-number">3</span>
+          </div>
+          <div class="custom-path-label">Design</div>
+        </li>
+        <li class="custom-path-item" data-step="3">
+          <div class="custom-path-line"></div>
+          <div class="custom-path-indicator" data-step="3">
+            <span class="custom-path-number">4</span>
+          </div>
+          <div class="custom-path-label">Preview</div>
+        </li>
+        <li class="custom-path-item" data-step="4">
+          <div class="custom-path-line"></div>
+          <div class="custom-path-indicator" data-step="4">
+            <span class="custom-path-number">5</span>
+          </div>
+          <div class="custom-path-label">Save</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Step 0: Setup -->
+    <template if:true={isStep0}>
+      <div class="step-section step-0-mode slds-p-around_medium">
+        <div class="slds-text-heading_medium slds-m-bottom_small">
+          PDF Template Manager
+        </div>
+        <p class="slds-text-body_regular slds-m-bottom_medium">
+          Create a new PDF template or manage existing ones.
+        </p>
+
+        <!-- Template Mode Selection -->
+        <div class="form-group slds-m-bottom_large">
+          <lightning-radio-group
+            name="templateMode"
+            label="What would you like to do?"
+            options={templateModeOptions}
+            value={templateMode}
+            onchange={handleTemplateModeChange}
+            type="button"
+            variant="label-stacked"
+          >
+          </lightning-radio-group>
+        </div>
+
+        <!-- Create New Template Mode -->
+        <template if:true={isCreateMode}>
+          <div class="create-template-section">
+            <h3 class="slds-text-heading_small slds-m-bottom_medium">
+              Create New Template
+            </h3>
+
+            <!-- Object Selection -->
+            <div class="form-group slds-m-bottom_medium">
+              <lightning-combobox
+                name="object"
+                label="Select Object"
+                value={selectedObject}
+                placeholder="Type to search for an object..."
+                options={availableObjects}
+                onchange={handleObjectSelect}
+                variant="label-stacked"
+                dropdown-length="7"
+                is-loading={isLoading}
+                required
+              >
+              </lightning-combobox>
+            </div>
+
+            <!-- Page Setup -->
+            <div class="slds-box slds-p-around_medium">
+              <h3 class="slds-text-heading_small slds-m-bottom_medium">
+                Page Setup
+              </h3>
+
+              <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                  <lightning-radio-group
+                    name="pageSize"
+                    label="Page Size"
+                    options={pageSizeOptions}
+                    value={pageSetup.pageSize}
+                    onchange={handlePageSizeChange}
+                    type="radio"
+                  >
+                  </lightning-radio-group>
+                </div>
+
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                  <lightning-radio-group
+                    name="orientation"
+                    label="Orientation"
+                    options={orientationOptions}
+                    value={pageSetup.orientation}
+                    onchange={handleOrientationChange}
+                    type="radio"
+                  >
+                  </lightning-radio-group>
+                </div>
+
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                  <div class="slds-form-element">
+                    <label class="slds-form-element__label" for="pageCount">
+                      Initial Page Count
+                    </label>
+                    <div class="slds-form-element__control">
+                      <input
+                        type="number"
+                        id="pageCount"
+                        class="slds-input"
+                        value={pageSetup.pageCount}
+                        min="1"
+                        max="10"
+                        onchange={handlePageCountChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="slds-m-top_medium slds-text-align_right">
+              <lightning-button
+                label="Next: Select Fields"
+                variant="brand"
+                onclick={goToStep}
+                data-step="1"
+                disabled={isObjectNotSelected}
+                class="next-btn"
+              >
+              </lightning-button>
+            </div>
+          </div>
+        </template>
+
+        <!-- Manage Existing Templates Mode -->
+        <template if:true={isManageMode}>
+          <div class="manage-templates-section">
+            <div class="slds-grid slds-gutters slds-m-bottom_medium">
+              <div class="slds-col slds-size_1-of-1 slds-medium-size_8-of-12">
+                <h3 class="slds-text-heading_small">Existing Templates</h3>
+                <p class="slds-text-body_small slds-text-color_weak">
+                  Download, edit, or view your saved PDF templates.
+                </p>
+              </div>
+              <div
+                class="slds-col slds-size_1-of-1 slds-medium-size_4-of-12 slds-text-align_right"
+              >
+                <lightning-button
+                  label="Refresh"
+                  icon-name="utility:refresh"
+                  onclick={loadExistingTemplates}
+                  disabled={isLoadingTemplates}
+                  variant="neutral"
+                >
+                </lightning-button>
+              </div>
+            </div>
+
+            <!-- Loading Spinner for Templates -->
+            <template if:true={isLoadingTemplates}>
+              <div class="slds-text-align_center slds-p-around_large">
+                <lightning-spinner
+                  alternative-text="Loading templates..."
+                  size="medium"
+                ></lightning-spinner>
+              </div>
+            </template>
+
+            <!-- Templates List -->
+            <template if:false={isLoadingTemplates}>
+              <template if:true={hasExistingTemplates}>
+                <div class="templates-grid">
+                  <template for:each={existingTemplates} for:item="template">
+                    <div
+                      key={template.id}
+                      class="template-card slds-box slds-p-around_medium slds-m-bottom_medium"
+                    >
+                      <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_8-of-12">
+                          <h4
+                            class="slds-text-heading_small slds-m-bottom_x-small"
+                          >
+                            {template.name}
+                          </h4>
+                          <template if:true={template.hasDescription}>
+                            <p
+                              class="slds-text-body_small slds-text-color_weak slds-m-bottom_x-small"
+                            >
+                              {template.description}
+                            </p>
+                          </template>
+                          <div class="template-info">
+                            <span class="slds-badge slds-theme_default"
+                              >{template.objectName}</span
+                            >
+                            <span
+                              class="slds-m-left_small slds-text-body_small slds-text-color_weak"
+                            >
+                              {template.pageCount} pages
+                            </span>
+                            <span
+                              class="slds-m-left_small slds-text-body_small slds-text-color_weak"
+                            >
+                              Modified: {template.formattedDate}
+                            </span>
+                          </div>
+                        </div>
+                        <div
+                          class="slds-col slds-size_4-of-12 slds-text-align_right"
+                        >
+                          <lightning-button-group>
+                            <lightning-button
+                              label="Download"
+                              icon-name="utility:download"
+                              onclick={handleDownloadExistingTemplate}
+                              data-template-id={template.id}
+                              variant="brand"
+                              size="small"
+                            >
+                            </lightning-button>
+                            <lightning-button
+                              label="Edit"
+                              icon-name="utility:edit"
+                              onclick={handleLoadTemplateForEdit}
+                              data-template-id={template.id}
+                              variant="neutral"
+                              size="small"
+                            >
+                            </lightning-button>
+                          </lightning-button-group>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </template>
+
+              <!-- No Templates Message -->
+              <template if:false={hasExistingTemplates}>
+                <div class="slds-illustration slds-illustration_large">
+                  <div class="slds-text-align_center slds-p-around_large">
+                    <lightning-icon
+                      icon-name="custom:custom19"
+                      size="large"
+                      alternative-text="No templates"
+                    ></lightning-icon>
+                    <h3 class="slds-text-heading_medium slds-m-top_medium">
+                      No Templates Found
+                    </h3>
+                    <p class="slds-text-body_regular slds-m-top_small">
+                      Create your first PDF template to get started.
+                    </p>
+                    <lightning-button
+                      label="Create New Template"
+                      variant="brand"
+                      onclick={handleCreateNewTemplateClick}
+                      class="slds-m-top_medium"
+                    >
+                    </lightning-button>
+                  </div>
+                </div>
+              </template>
+            </template>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <!-- Step 1: Field Selection -->
+    <template if:true={isStep1}>
+      <div class="step-section slds-p-around_medium">
+        <div class="slds-grid slds-gutters slds-m-bottom_medium">
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_8-of-12">
+            <h2 class="slds-text-heading_medium">Select Fields to Include</h2>
+            <p class="slds-text-body_regular">
+              Choose which fields from <strong>{selectedObject}</strong> to
+              include in your PDF template.
+            </p>
+          </div>
+          <div
+            class="slds-col slds-size_1-of-1 slds-medium-size_4-of-12 slds-text-align_right"
+          >
+            <span class="field-counter">
+              {selectedFieldCount} of {totalFieldCount} fields selected
+            </span>
+          </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div
+          class="field-filters slds-box slds-p-around_small slds-m-bottom_medium"
+        >
+          <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
+              <lightning-input
+                type="search"
+                label="Search Fields"
+                placeholder="Search by field name or label..."
+                value={searchTerm}
+                onchange={handleFieldSearch}
+              >
+              </lightning-input>
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
+              <div class="category-filters">
+                <p class="slds-text-body_small slds-m-bottom_x-small">
+                  Filter by Type:
+                </p>
+                <template for:each={fieldCategoryOptions} for:item="category">
+                  <label key={category.value} class="slds-checkbox_button">
+                    <input
+                      type="checkbox"
+                      data-category={category.value}
+                      checked={category.checked}
+                      onchange={handleCategoryChange}
+                    />
+                    <span class="slds-checkbox_button__label">
+                      <span class="slds-checkbox_faux">{category.label}</span>
+                    </span>
+                  </label>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Field List -->
+        <div class="field-list-container">
+          <div class="field-list-header slds-p-around_small">
+            <div class="slds-grid slds-grid_align-spread">
+              <div class="slds-col">
+                <strong>Available Fields</strong>
+              </div>
+              <div class="slds-col slds-text-align_right">
+                <lightning-button-group>
+                  <lightning-button
+                    label="Select All"
+                    variant="neutral"
+                    onclick={handleSelectAll}
+                  >
+                  </lightning-button>
+                  <lightning-button
+                    label="Clear All"
+                    variant="neutral"
+                    onclick={handleDeselectAll}
+                  >
+                  </lightning-button>
+                </lightning-button-group>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-list slds-scrollable_y">
+            <template for:each={displayedFields} for:item="field">
+              <div key={field.id} class="field-item slds-p-around_small">
+                <div class="slds-grid slds-grid_vertical-align-center">
+                  <div class="slds-col slds-size_1-of-12">
+                    <input
+                      type="checkbox"
+                      data-field-id={field.id}
+                      checked={field.selected}
+                      onchange={handleFieldSelect}
+                      class="slds-checkbox"
+                    />
+                  </div>
+                  <div class="slds-col slds-size_1-of-12">
+                    <lightning-icon
+                      icon-name={field.iconName}
+                      size="small"
+                      alternative-text={field.type}
+                    >
+                    </lightning-icon>
+                  </div>
+                  <div class="slds-col slds-size_5-of-12">
+                    <div class="field-label">{field.label}</div>
+                    <div
+                      class="field-api-name slds-text-body_small slds-text-color_weak"
+                    >
+                      {field.value}
+                    </div>
+                  </div>
+                  <div class="slds-col slds-size_2-of-12">
+                    <span class="field-type-badge">{field.type}</span>
+                  </div>
+                  <div class="slds-col slds-size_2-of-12">
+                    <template if:true={field.isRequired}>
+                      <span class="required-badge">Required</span>
+                    </template>
+                  </div>
+                  <div class="slds-col slds-size_1-of-12 slds-text-align_right">
+                    <template if:true={field.helpText}>
+                      <lightning-helptext
+                        content={field.helpText}
+                        icon-variant="bare"
+                      >
+                      </lightning-helptext>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="slds-m-top_medium slds-grid slds-grid_align-spread">
+          <div class="slds-col">
+            <lightning-button label="Back" onclick={goToStep} data-step="0">
+            </lightning-button>
+          </div>
+          <div class="slds-col">
+            <lightning-button
+              label="Next: Design Template"
+              variant="brand"
+              onclick={goToStep}
+              data-step="2"
+              disabled={noFieldsSelected}
+              class="next-btn"
+            >
+            </lightning-button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Step 2: Design -->
+    <template if:true={isStep2}>
+      <div class="step-section design-section slds-p-around_medium">
+        <div class="slds-text-heading_medium slds-m-bottom_small">
+          Design Your Template
+        </div>
+        <p class="slds-m-bottom_medium">
+          Drag and drop fields onto the PDF pages. Resize and position them as
+          needed.
+        </p>
+
+        <div class="design-container slds-grid slds-gutters">
+          <!-- Left Panel: Selected Fields -->
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
+            <div class="field-palette slds-box slds-p-around_small">
+              <div class="palette-header">
+                <h3 class="slds-text-heading_small slds-m-bottom_small">
+                  Selected Fields
+                </h3>
+                <p
+                  class="slds-text-body_small slds-text-color_weak slds-m-bottom_small"
+                >
+                  Drag fields to place them on the page
+                </p>
+
+                <!-- Auto-Create Button -->
+                <lightning-button
+                  label="Auto-Place All Fields"
+                  icon-name="utility:magicwand"
+                  variant="brand"
+                  class="slds-width_full"
+                  onclick={handleAutoCreateFields}
+                  title="Automatically place all selected fields on the page"
+                >
+                </lightning-button>
+              </div>
+
+              <div class="selected-fields-container">
+                <div class="draggable-fields-list">
+                  <template for:each={selectedFields} for:item="field">
+                    <div
+                      key={field.id}
+                      class="draggable-field"
+                      draggable="true"
+                      data-field-id={field.id}
+                      ondragstart={handleFieldDragStart}
+                      ondragend={handleFieldDragEnd}
+                    >
+                      <lightning-icon
+                        icon-name={field.iconName}
+                        size="x-small"
+                        class="slds-m-right_x-small"
+                      >
+                      </lightning-icon>
+                      <span class="field-name">{field.label}</span>
+                    </div>
+                  </template>
+                </div>
+              </div>
+
+              <!-- Generic Fields Section -->
+              <div class="generic-fields-section">
+                <h4 class="slds-text-heading_small slds-m-bottom_small">
+                  Generic Elements
+                </h4>
+                <p
+                  class="slds-text-body_small slds-text-color_weak slds-m-bottom_small"
+                >
+                  Drag these elements to add structure
+                </p>
+
+                <div class="generic-fields-list">
+                  <template for:each={genericFields} for:item="field">
+                    <div
+                      key={field.id}
+                      class="draggable-field generic-field"
+                      draggable="true"
+                      data-field-id={field.id}
+                      ondragstart={handleFieldDragStart}
+                      ondragend={handleFieldDragEnd}
+                    >
+                      <lightning-icon
+                        icon-name={field.iconName}
+                        size="x-small"
+                        class="slds-m-right_x-small"
+                      >
+                      </lightning-icon>
+                      <span class="field-name">{field.label}</span>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Panel: PDF Pages -->
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_9-of-12">
+            <!-- Page Controls -->
+            <div
+              class="page-controls slds-box slds-p-around_small slds-m-bottom_small"
+            >
+              <div
+                class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center"
+              >
+                <div class="slds-col">
+                  <lightning-button-group>
+                    <lightning-button
+                      label="Previous"
+                      icon-name="utility:chevronleft"
+                      onclick={handlePrevPage}
+                      disabled={isFirstPage}
+                    >
+                    </lightning-button>
+                    <lightning-button
+                      label="Next"
+                      icon-name="utility:chevronright"
+                      icon-position="right"
+                      onclick={handleNextPage}
+                      disabled={isLastPage}
+                    >
+                    </lightning-button>
+                  </lightning-button-group>
+                </div>
+                <div class="slds-col">
+                  <span class="page-indicator">
+                    Page {currentPageNum} of {pageSetup.pageCount}
+                  </span>
+                </div>
+                <div class="slds-col">
+                  <label class="grid-snap-toggle slds-m-right_small">
+                    <input
+                      type="checkbox"
+                      checked={gridSnapEnabled}
+                      onchange={handleGridSnapToggle}
+                    />
+                    <span class="slds-m-left_x-small">Grid Snap</span>
+                  </label>
+                  <label class="grid-snap-toggle slds-m-right_small">
+                    <input
+                      type="checkbox"
+                      checked={showGrid}
+                      onchange={handleShowGridToggle}
+                    />
+                    <span class="slds-m-left_x-small">Show Grid</span>
+                  </label>
+                  <lightning-button
+                    label="Add Page"
+                    icon-name="utility:add"
+                    variant="neutral"
+                    onclick={handleAddPage}
+                  >
+                  </lightning-button>
+                </div>
+              </div>
+            </div>
+
+            <!-- PDF Page Canvas -->
+            <div class="pdf-design-area">
+              <template for:each={pdfPages} for:item="page">
+                <div
+                  key={page.pageNumber}
+                  class={page.cssClass}
+                  data-page-num={page.pageNumber}
+                  ondragover={handlePageDragOver}
+                  ondragleave={handlePageDragLeave}
+                  ondrop={handlePageDrop}
+                >
+                  <!-- Fields will be rendered here dynamically -->
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+
+        <!-- Template Info and Navigation -->
+        <div
+          class="template-info-section slds-box slds-p-around_medium slds-m-top_medium"
+        >
+          <h3 class="slds-text-heading_small slds-m-bottom_medium">
+            Template Information
+          </h3>
+
+          <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
+              <lightning-input
+                label="Template Name"
+                value={templateName}
+                onchange={handleTemplateNameChange}
+                required
+                placeholder="Enter a name for this template"
+              >
+              </lightning-input>
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
+              <lightning-textarea
+                label="Description"
+                value={templateDescription}
+                onchange={handleTemplateDescriptionChange}
+                placeholder="Optional description"
+              >
+              </lightning-textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="slds-m-top_medium slds-grid slds-grid_align-spread">
+          <div class="slds-col">
+            <lightning-button label="Back" onclick={goToStep} data-step="1">
+            </lightning-button>
+          </div>
+          <div class="slds-col">
+            <lightning-button
+              label="Next: Preview Template"
+              variant="brand"
+              onclick={goToStep}
+              data-step="3"
+              class="next-btn"
+            >
+            </lightning-button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Step 3: Preview -->
+    <template if:true={isStep3}>
+      <div class="step-section slds-p-around_medium">
+        <div class="slds-text-heading_medium slds-m-bottom_small">
+          Preview Your Template
+        </div>
+        <p class="slds-m-bottom_medium">
+          Review your PDF template before saving. You can go back to make
+          changes if needed.
+        </p>
+
+        <!-- Template Information Summary -->
+        <div
+          class="template-summary-section slds-box slds-p-around_medium slds-m-bottom_medium"
+        >
+          <h3 class="slds-text-heading_small slds-m-bottom_medium">
+            Template Summary
+          </h3>
+
+          <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
+              <dl class="slds-list_horizontal">
+                <dt class="slds-item_label slds-text-color_weak">
+                  Template Name:
+                </dt>
+                <dd class="slds-item_detail">{templateName}</dd>
+                <dt class="slds-item_label slds-text-color_weak">Object:</dt>
+                <dd class="slds-item_detail">{selectedObject}</dd>
+                <dt class="slds-item_label slds-text-color_weak">
+                  Page Count:
+                </dt>
+                <dd class="slds-item_detail">{pageSetup.pageCount}</dd>
+              </dl>
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12">
+              <dl class="slds-list_horizontal">
+                <dt class="slds-item_label slds-text-color_weak">Page Size:</dt>
+                <dd class="slds-item_detail">{pageSetup.pageSize}</dd>
+                <dt class="slds-item_label slds-text-color_weak">
+                  Orientation:
+                </dt>
+                <dd class="slds-item_detail">{pageSetup.orientation}</dd>
+                <dt class="slds-item_label slds-text-color_weak">
+                  Fields Placed:
+                </dt>
+                <dd class="slds-item_detail">{placedFieldsCount}</dd>
+              </dl>
+            </div>
+          </div>
+
+          <template if:true={templateDescription}>
+            <div class="slds-m-top_small">
+              <dt class="slds-item_label slds-text-color_weak">Description:</dt>
+              <dd class="slds-item_detail">{templateDescription}</dd>
+            </div>
+          </template>
+        </div>
+
+        <!-- PDF Preview -->
+        <div
+          class="pdf-preview-section slds-box slds-p-around_medium slds-m-bottom_medium"
+        >
+          <div class="slds-grid slds-gutters slds-m-bottom_small">
+            <div class="slds-col slds-size_8-of-12">
+              <h3 class="slds-text-heading_small">PDF Preview</h3>
+              <p class="slds-text-body_small slds-text-color_weak">
+                This shows how your template will appear when generated as a
+                PDF.
+              </p>
+            </div>
+            <div class="slds-col slds-size_4-of-12 slds-text-align_right">
+              <lightning-button
+                label="Generate Preview"
+                icon-name="utility:refresh"
+                onclick={handleGeneratePreview}
+                disabled={isGeneratingPreview}
+                variant="neutral"
+                size="small"
+              >
+              </lightning-button>
+            </div>
+          </div>
+
+          <!-- Preview Loading -->
+          <template if:true={isGeneratingPreview}>
+            <div
+              class="preview-loading slds-text-align_center slds-p-around_large"
+            >
+              <lightning-spinner
+                alternative-text="Generating preview..."
+                size="medium"
+              ></lightning-spinner>
+              <p class="slds-m-top_small slds-text-color_weak">
+                Generating your PDF preview...
+              </p>
+            </div>
+          </template>
+
+          <!-- PDF Preview Display -->
+          <template if:false={isGeneratingPreview}>
+            <template if:true={previewUrl}>
+              <div class="pdf-preview-container">
+                <iframe
+                  src={previewUrl}
+                  class="pdf-preview-iframe"
+                  title="PDF Template Preview"
+                >
+                </iframe>
+              </div>
+            </template>
+
+            <template if:false={previewUrl}>
+              <div
+                class="no-preview-message slds-text-align_center slds-p-around_large"
+              >
+                <lightning-icon
+                  icon-name="utility:preview"
+                  size="large"
+                  alternative-text="No preview"
+                ></lightning-icon>
+                <h4 class="slds-text-heading_small slds-m-top_small">
+                  No Preview Available
+                </h4>
+                <p
+                  class="slds-text-body_small slds-text-color_weak slds-m-top_small"
+                >
+                  Click "Generate Preview" to see how your template will look.
+                </p>
+              </div>
+            </template>
+          </template>
+        </div>
+
+        <!-- Navigation -->
+        <div class="slds-m-top_medium slds-grid slds-grid_align-spread">
+          <div class="slds-col">
+            <lightning-button
+              label="Back to Design"
+              onclick={goToStep}
+              data-step="2"
+            >
+            </lightning-button>
+          </div>
+          <div class="slds-col">
+            <lightning-button
+              label="Save Template"
+              variant="brand"
+              onclick={handleSaveTemplate}
+              class="save-button"
+            >
+            </lightning-button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Step 4: Success -->
+    <template if:true={isStep4}>
+      <div class="step-section slds-p-around_medium">
+        <div class="success-container">
+          <div class="success-icon">
+            <lightning-icon
+              icon-name="utility:success"
+              alternative-text="Success"
+              size="large"
+              variant="success"
+            >
+            </lightning-icon>
+          </div>
+          <h2 class="success-title">Template Saved Successfully!</h2>
+          <p class="success-message">
+            Your PDF template has been saved and is ready to use for generating
+            documents.
+          </p>
+          <div class="success-actions slds-m-top_large">
+            <lightning-button
+              label="Download PDF Template"
+              variant="brand"
+              icon-name="utility:download"
+              onclick={handleDownloadTemplate}
+              disabled={isLoading}
+              class="slds-m-right_small"
+            >
+            </lightning-button>
+            <lightning-button
+              label="Create Another Template"
+              variant="neutral"
+              onclick={handleStartOver}
+              class="start-over-button"
+            >
+            </lightning-button>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
 </template>

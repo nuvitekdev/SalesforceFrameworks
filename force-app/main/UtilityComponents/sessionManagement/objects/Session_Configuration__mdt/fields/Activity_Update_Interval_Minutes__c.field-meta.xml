@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Activity_Update_Interval_Minutes__c</fullName>
     <defaultValue>5</defaultValue>
-    <description>Interval in minutes for updating user activity timestamps. This determines how frequently the system updates the last activity time for active sessions.</description>
+    <description
+  >Interval in minutes for updating user activity timestamps. This determines how frequently the system updates the last activity time for active sessions.</description>
     <externalId>false</externalId>
     <fieldManageability>DeveloperControlled</fieldManageability>
     <label>Activity Update Interval Minutes</label>

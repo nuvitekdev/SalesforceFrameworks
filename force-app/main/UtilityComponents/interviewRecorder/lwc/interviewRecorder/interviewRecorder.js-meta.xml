@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>62.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Video Interview Recorder</masterLabel>
-    <description>Component to record video interviews and save them as part of applications</description>
+    <description
+  >Component to record video interviews and save them as part of applications</description>
     <targets>
         <target>lightning__RecordPage</target>
         <target>lightning__AppPage</target>
@@ -13,33 +14,87 @@
         <target>lightning__HomePage</target>
     </targets>
     <targetConfigs>
-        <targetConfig targets="lightning__RecordPage,lightning__AppPage,lightning__HomePage">
+        <targetConfig
+      targets="lightning__RecordPage,lightning__AppPage,lightning__HomePage"
+    >
             <!-- Functional settings -->
-            <property name="recordId" type="String" label="Record ID" 
-                     description="ID of the record to associate the interview recording with (required for Home Page)" 
-                     required="false"/>
-            <property name="maxDuration" type="Integer" label="Maximum Duration (seconds)" 
-                     description="Maximum recording duration in seconds" default="300" min="30" max="600"/>
-            <property name="folderName" type="String" label="Folder Name" 
-                     description="Name of the folder where recordings will be saved" default="Interview Recordings"/>
+            <property
+        name="recordId"
+        type="String"
+        label="Record ID"
+        description="ID of the record to associate the interview recording with (required for Home Page)"
+        required="false"
+      />
+            <property
+        name="maxDuration"
+        type="Integer"
+        label="Maximum Duration (seconds)"
+        description="Maximum recording duration in seconds"
+        default="300"
+        min="30"
+        max="600"
+      />
+            <property
+        name="folderName"
+        type="String"
+        label="Folder Name"
+        description="Name of the folder where recordings will be saved"
+        default="Interview Recordings"
+      />
                      
             <!-- UI Customization -->
-            <property name="componentTitle" type="String" label="Component Title" 
-                     description="Title displayed in the component header" default="Video Interview Recorder"/>
-            <property name="showInstructions" type="Boolean" label="Show Instructions" 
-                     description="Display instructions panel below the recorder" default="false"/>
-            <property name="instructionsTitle" type="String" label="Instructions Title" 
-                     description="Title for the instructions panel" default="Interview Recording Instructions"/>
+            <property
+        name="componentTitle"
+        type="String"
+        label="Component Title"
+        description="Title displayed in the component header"
+        default="Video Interview Recorder"
+      />
+            <property
+        name="showInstructions"
+        type="Boolean"
+        label="Show Instructions"
+        description="Display instructions panel below the recorder"
+        default="false"
+      />
+            <property
+        name="instructionsTitle"
+        type="String"
+        label="Instructions Title"
+        description="Title for the instructions panel"
+        default="Interview Recording Instructions"
+      />
                      
             <!-- Color and Appearance -->
-            <property name="primaryColor" type="String" label="Primary Color" 
-                     description="Primary color for component header and accents" default="#22BDC1"/>
-            <property name="accentColor" type="String" label="Accent Color" 
-                     description="Secondary color for progress bars and highlights" default="#D5DF23"/>
-            <property name="countdownDuration" type="Integer" label="Countdown Duration" 
-                     description="Number of seconds to count down before recording starts" default="3" min="1" max="5"/>
-            <property name="customButtonClasses" type="String" label="Custom Button Classes" 
-                     description="Additional CSS classes to apply to buttons (advanced)"/>
+            <property
+        name="primaryColor"
+        type="String"
+        label="Primary Color"
+        description="Primary color for component header and accents"
+        default="#22BDC1"
+      />
+            <property
+        name="accentColor"
+        type="String"
+        label="Accent Color"
+        description="Secondary color for progress bars and highlights"
+        default="#D5DF23"
+      />
+            <property
+        name="countdownDuration"
+        type="Integer"
+        label="Countdown Duration"
+        description="Number of seconds to count down before recording starts"
+        default="3"
+        min="1"
+        max="5"
+      />
+            <property
+        name="customButtonClasses"
+        type="String"
+        label="Custom Button Classes"
+        description="Additional CSS classes to apply to buttons (advanced)"
+      />
                      
             <supportedFormFactors>
                 <supportedFormFactor type="Large" />
@@ -47,38 +102,116 @@
             </supportedFormFactors>
         </targetConfig>
         <targetConfig targets="lightning__FlowScreen">
-            <property name="recordId" type="String" label="Record ID" 
-                     description="ID of the record to associate the interview recording with" required="true"/>
-            <property name="maxDuration" type="Integer" label="Maximum Duration (seconds)" 
-                     description="Maximum recording duration in seconds" default="300" min="30" max="600"/>
-            <property name="folderName" type="String" label="Folder Name" 
-                     description="Name of the folder where recordings will be saved" default="Interview Recordings"/>
-            <property name="componentTitle" type="String" label="Component Title" 
-                     description="Title displayed in the component header" default="Video Interview Recorder"/>
-            <property name="primaryColor" type="String" label="Primary Color" 
-                     description="Primary color for component header and accents" default="#22BDC1"/>
-            <property name="accentColor" type="String" label="Accent Color" 
-                     description="Secondary color for progress bars and highlights" default="#D5DF23"/>
-            <property name="showInstructions" type="Boolean" label="Show Instructions" 
-                     description="Display instructions panel below the recorder" default="false"/>
-            <property name="recordingCompleted" type="Boolean" label="Recording Completed" 
-                     description="Indicates if a recording has been successfully saved"/>
+            <property
+        name="recordId"
+        type="String"
+        label="Record ID"
+        description="ID of the record to associate the interview recording with"
+        required="true"
+      />
+            <property
+        name="maxDuration"
+        type="Integer"
+        label="Maximum Duration (seconds)"
+        description="Maximum recording duration in seconds"
+        default="300"
+        min="30"
+        max="600"
+      />
+            <property
+        name="folderName"
+        type="String"
+        label="Folder Name"
+        description="Name of the folder where recordings will be saved"
+        default="Interview Recordings"
+      />
+            <property
+        name="componentTitle"
+        type="String"
+        label="Component Title"
+        description="Title displayed in the component header"
+        default="Video Interview Recorder"
+      />
+            <property
+        name="primaryColor"
+        type="String"
+        label="Primary Color"
+        description="Primary color for component header and accents"
+        default="#22BDC1"
+      />
+            <property
+        name="accentColor"
+        type="String"
+        label="Accent Color"
+        description="Secondary color for progress bars and highlights"
+        default="#D5DF23"
+      />
+            <property
+        name="showInstructions"
+        type="Boolean"
+        label="Show Instructions"
+        description="Display instructions panel below the recorder"
+        default="false"
+      />
+            <property
+        name="recordingCompleted"
+        type="Boolean"
+        label="Recording Completed"
+        description="Indicates if a recording has been successfully saved"
+      />
         </targetConfig>
         <targetConfig targets="lightningCommunity__Default">
-            <property name="recordId" type="String" label="Record ID" 
-                     description="ID of the record to associate the interview recording with" required="true"/>
-            <property name="maxDuration" type="Integer" label="Maximum Duration (seconds)" 
-                     description="Maximum recording duration in seconds" default="300" min="30" max="600"/>
-            <property name="folderName" type="String" label="Folder Name" 
-                     description="Name of the folder where recordings will be saved" default="Interview Recordings"/>
-            <property name="componentTitle" type="String" label="Component Title" 
-                     description="Title displayed in the component header" default="Video Interview Recorder"/>
-            <property name="primaryColor" type="String" label="Primary Color" 
-                     description="Primary color for component header and accents" default="#22BDC1"/>
-            <property name="accentColor" type="String" label="Accent Color" 
-                     description="Secondary color for progress bars and highlights" default="#D5DF23"/>
-            <property name="showInstructions" type="Boolean" label="Show Instructions" 
-                     description="Display instructions panel below the recorder" default="false"/>
+            <property
+        name="recordId"
+        type="String"
+        label="Record ID"
+        description="ID of the record to associate the interview recording with"
+        required="true"
+      />
+            <property
+        name="maxDuration"
+        type="Integer"
+        label="Maximum Duration (seconds)"
+        description="Maximum recording duration in seconds"
+        default="300"
+        min="30"
+        max="600"
+      />
+            <property
+        name="folderName"
+        type="String"
+        label="Folder Name"
+        description="Name of the folder where recordings will be saved"
+        default="Interview Recordings"
+      />
+            <property
+        name="componentTitle"
+        type="String"
+        label="Component Title"
+        description="Title displayed in the component header"
+        default="Video Interview Recorder"
+      />
+            <property
+        name="primaryColor"
+        type="String"
+        label="Primary Color"
+        description="Primary color for component header and accents"
+        default="#22BDC1"
+      />
+            <property
+        name="accentColor"
+        type="String"
+        label="Accent Color"
+        description="Secondary color for progress bars and highlights"
+        default="#D5DF23"
+      />
+            <property
+        name="showInstructions"
+        type="Boolean"
+        label="Show Instructions"
+        description="Display instructions panel below the recorder"
+        default="false"
+      />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

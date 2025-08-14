@@ -1,188 +1,234 @@
 <template>
-    <div class="nuvitek-theme natural-language-soql-container">
-        <!-- Loading Spinner -->
-        <div if:true={isProcessing} class="processing-spinner-container">
-            <lightning-spinner alternative-text="Processing query..." size="medium" variant="brand"></lightning-spinner>
-            <p class="spinner-text slds-m-top_small">Processing your query...</p>
-        </div>
-
-        <!-- Configuration Warning -->
-        <div if:false={objectApiNames} class="slds-notify slds-notify_alert slds-alert_warning" role="alert">
-            <span class="slds-assistive-text">warning</span>
-            <lightning-icon icon-name="utility:warning" alternative-text="Warning" size="small" class="slds-m-right_x-small"></lightning-icon>
-            <h2>Component Configuration Needed: Please specify Object API Names in the component configuration.</h2>
-        </div>
-
-        <!-- Header Section -->
-        <div class="header-section">
-            <div class="slds-grid slds-gutters slds-wrap">
-                <div class="slds-col slds-size_1-of-1">
-                    <h2 class="section-title">Natural Language to SOQL</h2>
-                    <p class="section-description">{headerDescription}</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Query Input Section -->
-        <div class="query-section slds-p-around_medium">
-            <div class="query-input-container">
-                <div class="input-container">
-                    <lightning-textarea 
-                        label="Ask your question in natural language"
-                        placeholder={queryPlaceholder}
-                        value={userQuery}
-                        onchange={handleQueryChange}
-                        class="query-input">
-                    </lightning-textarea>
-                </div>
-
-                <!-- Example queries that users can click to prefill -->
-                <div class="example-queries-container slds-m-top_small">
-                    <p class="example-queries-title">Try these examples:</p>
-                    <template if:true={isLoadingExamples}>
-                        <div class="slds-is-relative slds-m-vertical_medium example-spinner-container">
-                            <lightning-spinner alternative-text="Loading examples..." size="small"></lightning-spinner>
-                        </div>
-                    </template>
-                    <template if:false={isLoadingExamples}>
-                        <div class="example-query-pills">
-                            <template for:each={dynamicExampleQueries} for:item="exampleString" for:index="index">
-                                <lightning-button 
-                                    key={exampleString} 
-                                    label={exampleString} 
-                                    data-query={exampleString} 
-                                    onclick={handleExampleClick} 
-                                    variant="neutral"
-                                    class="example-pill slds-m-right_x-small slds-m-bottom_x-small"
-                                >
-                                </lightning-button>
-                            </template>
-                            <template if:true={showNoExamplesMessage}>
-                                <p class="slds-text-body_small slds-text-color_weak">No examples available.</p>
-                            </template>
-                        </div>
-                    </template>
-                </div>
-
-                <div class="action-buttons slds-m-top_medium">
-                    <lightning-button 
-                        label="Clear" 
-                        variant="neutral" 
-                        onclick={handleClearQuery}
-                        class="clear-button slds-m-right_small">
-                    </lightning-button>
-                    <lightning-button 
-                        label="Run Query" 
-                        variant="brand" 
-                        onclick={handleRunQuery}
-                        disabled={isQueryButtonDisabled}
-                        class="run-button">
-                    </lightning-button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Results Section -->
-        <div if:true={hasResults} class="results-section slds-p-around_medium">
-            <!-- Generated SOQL Display -->
-            <div class="generated-soql-container slds-m-bottom_medium">
-                <div class="soql-header">
-                    <div class="slds-grid slds-gutters">
-                        <div class="slds-col slds-size_9-of-12">
-                            <h3 class="soql-title">Generated SOQL Query</h3>
-                        </div>
-                        <div class="slds-col slds-size_3-of-12 slds-text-align_right">
-                            <lightning-button-icon 
-                                icon-name="utility:copy_to_clipboard" 
-                                variant="bare" 
-                                alternative-text="Copy Query" 
-                                title="Copy Query" 
-                                onclick={handleCopyQuery}
-                                class="copy-button">
-                            </lightning-button-icon>
-                        </div>
-                    </div>
-                </div>
-                <div class="soql-content">
-                    <pre>{generatedSoql}</pre>
-                </div>
-            </div>
-
-            <!-- Data Table Results -->
-            <div class="results-data-container">
-                <h3 class="results-title slds-m-bottom_small">Results</h3>
-                <div class="results-count slds-m-bottom_small">
-                    Found {resultCount} records
-                </div>
-                <div class="results-table">
-                    <lightning-datatable
-                        key-field="Id"
-                        data={results}
-                        columns={columns}
-                        hide-checkbox-column>
-                    </lightning-datatable>
-                </div>
-            </div>
-
-            <!-- Export Options -->
-            <div class="export-container slds-m-top_medium slds-text-align_right">
-                <lightning-button-group>
-                    <lightning-button 
-                        label="Refine Query" 
-                        icon-name="utility:edit" 
-                        onclick={handleRefineQuery}
-                        class="refine-button">
-                    </lightning-button>
-                    <lightning-button 
-                        label="Export CSV" 
-                        icon-name="utility:download" 
-                        onclick={handleExportCSV}
-                        class="export-button">
-                    </lightning-button>
-                </lightning-button-group>
-            </div>
-        </div>
-
-        <!-- Error Display -->
-        <div if:true={hasError} class="error-section slds-p-around_medium">
-            <div class="error-container">
-                <div class="error-icon">
-                    <lightning-icon icon-name="utility:error" alternative-text="Error" size="medium"></lightning-icon>
-                </div>
-                <div class="error-message">
-                    <h3 class="error-title">Error Processing Query</h3>
-                    <p class="error-text">{errorMessage}</p>
-                </div>
-            </div>
-            <div class="error-actions slds-m-top_medium">
-                <lightning-button 
-                    label="Try Again" 
-                    variant="brand" 
-                    onclick={handleTryAgain}
-                    class="try-again-button">
-                </lightning-button>
-            </div>
-        </div>
-
-        <!-- Empty Results State -->
-        <div if:true={hasNoResults} class="empty-section slds-p-around_medium">
-            <div class="empty-container">
-                <div class="empty-icon">
-                    <lightning-icon icon-name="utility:search" alternative-text="No Results" size="medium"></lightning-icon>
-                </div>
-                <div class="empty-message">
-                    <h3 class="empty-title">No Results Found</h3>
-                    <p class="empty-text">Try refining your query or asking a different question.</p>
-                </div>
-            </div>
-            <div class="empty-actions slds-m-top_medium">
-                <lightning-button 
-                    label="Refine Query" 
-                    variant="brand" 
-                    onclick={handleRefineQuery}
-                    class="refine-button">
-                </lightning-button>
-            </div>
-        </div>
+  <div class="nuvitek-theme natural-language-soql-container">
+    <!-- Loading Spinner -->
+    <div if:true={isProcessing} class="processing-spinner-container">
+      <lightning-spinner
+        alternative-text="Processing query..."
+        size="medium"
+        variant="brand"
+      ></lightning-spinner>
+      <p class="spinner-text slds-m-top_small">Processing your query...</p>
     </div>
+
+    <!-- Configuration Warning -->
+    <div
+      if:false={objectApiNames}
+      class="slds-notify slds-notify_alert slds-alert_warning"
+      role="alert"
+    >
+      <span class="slds-assistive-text">warning</span>
+      <lightning-icon
+        icon-name="utility:warning"
+        alternative-text="Warning"
+        size="small"
+        class="slds-m-right_x-small"
+      ></lightning-icon>
+      <h2>
+        Component Configuration Needed: Please specify Object API Names in the
+        component configuration.
+      </h2>
+    </div>
+
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="slds-grid slds-gutters slds-wrap">
+        <div class="slds-col slds-size_1-of-1">
+          <h2 class="section-title">Natural Language to SOQL</h2>
+          <p class="section-description">{headerDescription}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Query Input Section -->
+    <div class="query-section slds-p-around_medium">
+      <div class="query-input-container">
+        <div class="input-container">
+          <lightning-textarea
+            label="Ask your question in natural language"
+            placeholder={queryPlaceholder}
+            value={userQuery}
+            onchange={handleQueryChange}
+            class="query-input"
+          >
+          </lightning-textarea>
+        </div>
+
+        <!-- Example queries that users can click to prefill -->
+        <div class="example-queries-container slds-m-top_small">
+          <p class="example-queries-title">Try these examples:</p>
+          <template if:true={isLoadingExamples}>
+            <div
+              class="slds-is-relative slds-m-vertical_medium example-spinner-container"
+            >
+              <lightning-spinner
+                alternative-text="Loading examples..."
+                size="small"
+              ></lightning-spinner>
+            </div>
+          </template>
+          <template if:false={isLoadingExamples}>
+            <div class="example-query-pills">
+              <template
+                for:each={dynamicExampleQueries}
+                for:item="exampleString"
+                for:index="index"
+              >
+                <lightning-button
+                  key={exampleString}
+                  label={exampleString}
+                  data-query={exampleString}
+                  onclick={handleExampleClick}
+                  variant="neutral"
+                  class="example-pill slds-m-right_x-small slds-m-bottom_x-small"
+                >
+                </lightning-button>
+              </template>
+              <template if:true={showNoExamplesMessage}>
+                <p class="slds-text-body_small slds-text-color_weak">
+                  No examples available.
+                </p>
+              </template>
+            </div>
+          </template>
+        </div>
+
+        <div class="action-buttons slds-m-top_medium">
+          <lightning-button
+            label="Clear"
+            variant="neutral"
+            onclick={handleClearQuery}
+            class="clear-button slds-m-right_small"
+          >
+          </lightning-button>
+          <lightning-button
+            label="Run Query"
+            variant="brand"
+            onclick={handleRunQuery}
+            disabled={isQueryButtonDisabled}
+            class="run-button"
+          >
+          </lightning-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div if:true={hasResults} class="results-section slds-p-around_medium">
+      <!-- Generated SOQL Display -->
+      <div class="generated-soql-container slds-m-bottom_medium">
+        <div class="soql-header">
+          <div class="slds-grid slds-gutters">
+            <div class="slds-col slds-size_9-of-12">
+              <h3 class="soql-title">Generated SOQL Query</h3>
+            </div>
+            <div class="slds-col slds-size_3-of-12 slds-text-align_right">
+              <lightning-button-icon
+                icon-name="utility:copy_to_clipboard"
+                variant="bare"
+                alternative-text="Copy Query"
+                title="Copy Query"
+                onclick={handleCopyQuery}
+                class="copy-button"
+              >
+              </lightning-button-icon>
+            </div>
+          </div>
+        </div>
+        <div class="soql-content">
+          <pre>{generatedSoql}</pre>
+        </div>
+      </div>
+
+      <!-- Data Table Results -->
+      <div class="results-data-container">
+        <h3 class="results-title slds-m-bottom_small">Results</h3>
+        <div class="results-count slds-m-bottom_small">
+          Found {resultCount} records
+        </div>
+        <div class="results-table">
+          <lightning-datatable
+            key-field="Id"
+            data={results}
+            columns={columns}
+            hide-checkbox-column
+          >
+          </lightning-datatable>
+        </div>
+      </div>
+
+      <!-- Export Options -->
+      <div class="export-container slds-m-top_medium slds-text-align_right">
+        <lightning-button-group>
+          <lightning-button
+            label="Refine Query"
+            icon-name="utility:edit"
+            onclick={handleRefineQuery}
+            class="refine-button"
+          >
+          </lightning-button>
+          <lightning-button
+            label="Export CSV"
+            icon-name="utility:download"
+            onclick={handleExportCSV}
+            class="export-button"
+          >
+          </lightning-button>
+        </lightning-button-group>
+      </div>
+    </div>
+
+    <!-- Error Display -->
+    <div if:true={hasError} class="error-section slds-p-around_medium">
+      <div class="error-container">
+        <div class="error-icon">
+          <lightning-icon
+            icon-name="utility:error"
+            alternative-text="Error"
+            size="medium"
+          ></lightning-icon>
+        </div>
+        <div class="error-message">
+          <h3 class="error-title">Error Processing Query</h3>
+          <p class="error-text">{errorMessage}</p>
+        </div>
+      </div>
+      <div class="error-actions slds-m-top_medium">
+        <lightning-button
+          label="Try Again"
+          variant="brand"
+          onclick={handleTryAgain}
+          class="try-again-button"
+        >
+        </lightning-button>
+      </div>
+    </div>
+
+    <!-- Empty Results State -->
+    <div if:true={hasNoResults} class="empty-section slds-p-around_medium">
+      <div class="empty-container">
+        <div class="empty-icon">
+          <lightning-icon
+            icon-name="utility:search"
+            alternative-text="No Results"
+            size="medium"
+          ></lightning-icon>
+        </div>
+        <div class="empty-message">
+          <h3 class="empty-title">No Results Found</h3>
+          <p class="empty-text">
+            Try refining your query or asking a different question.
+          </p>
+        </div>
+      </div>
+      <div class="empty-actions slds-m-top_medium">
+        <lightning-button
+          label="Refine Query"
+          variant="brand"
+          onclick={handleRefineQuery}
+          class="refine-button"
+        >
+        </lightning-button>
+      </div>
+    </div>
+  </div>
 </template>

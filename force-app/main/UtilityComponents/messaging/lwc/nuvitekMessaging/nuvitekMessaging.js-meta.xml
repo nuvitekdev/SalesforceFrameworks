@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>62.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Nuvitek Messaging</masterLabel>
-    <description>Modern messaging component for communicating with users and contacts</description>
+    <description
+  >Modern messaging component for communicating with users and contacts</description>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__RecordPage</target>
@@ -13,62 +14,157 @@
         <target>lightning__UtilityBar</target>
     </targets>
     <targetConfigs>
-        <targetConfig targets="lightning__AppPage,lightning__RecordPage,lightning__HomePage">                
+        <targetConfig
+      targets="lightning__AppPage,lightning__RecordPage,lightning__HomePage"
+    >                
             <!-- Layout Properties -->
-            <property name="componentHeight" type="Integer" label="Component Height" 
-                description="Height of the messaging component in pixels. If set to 0 or if the container is smaller, the component will adapt to available space." default="600" min="0" />
+            <property
+        name="componentHeight"
+        type="Integer"
+        label="Component Height"
+        description="Height of the messaging component in pixels. If set to 0 or if the container is smaller, the component will adapt to available space."
+        default="600"
+        min="0"
+      />
                 
             <!-- Functionality Properties -->
-            <property name="disableInitialLoading" type="Boolean" label="Disable Initial Loading" 
-                description="When enabled, the component will not show a loading spinner on initialization, making it easier to remove from the page." default="false" />
+            <property
+        name="disableInitialLoading"
+        type="Boolean"
+        label="Disable Initial Loading"
+        description="When enabled, the component will not show a loading spinner on initialization, making it easier to remove from the page."
+        default="false"
+      />
                 
             <!-- Theme Properties -->
-            <property name="primaryColor" type="String" label="Primary Color" 
-                description="Primary color used for headers, navigation elements, buttons, badges, and interactive elements. Controls the color of the conversation and chat headers, the 'new message' button, and the unread message badge." default="#22BDC1" />
-            <property name="accentColor" type="String" label="Accent Color" 
-                description="Secondary accent color used for hover states, highlights, and selected elements. Controls button hover effects and active state indicators like the left border of selected conversations." default="#D5DF23" />
-            <property name="messageOutgoingColor" type="String" label="Outgoing Message Color" 
-                description="Background color for message bubbles sent by the current user (appears on the right side). Text color will automatically adjust to be black or white based on this color's brightness." default="#22BDC1" />
-            <property name="messageIncomingColor" type="String" label="Incoming Message Color" 
-                description="Background color for message bubbles received from other users (appears on the left side). Text color will automatically adjust to be black or white based on this color's brightness." default="#D5DF23" />
+            <property
+        name="primaryColor"
+        type="String"
+        label="Primary Color"
+        description="Primary color used for headers, navigation elements, buttons, badges, and interactive elements. Controls the color of the conversation and chat headers, the 'new message' button, and the unread message badge."
+        default="#22BDC1"
+      />
+            <property
+        name="accentColor"
+        type="String"
+        label="Accent Color"
+        description="Secondary accent color used for hover states, highlights, and selected elements. Controls button hover effects and active state indicators like the left border of selected conversations."
+        default="#D5DF23"
+      />
+            <property
+        name="messageOutgoingColor"
+        type="String"
+        label="Outgoing Message Color"
+        description="Background color for message bubbles sent by the current user (appears on the right side). Text color will automatically adjust to be black or white based on this color's brightness."
+        default="#22BDC1"
+      />
+            <property
+        name="messageIncomingColor"
+        type="String"
+        label="Incoming Message Color"
+        description="Background color for message bubbles received from other users (appears on the left side). Text color will automatically adjust to be black or white based on this color's brightness."
+        default="#D5DF23"
+      />
         </targetConfig>
         <targetConfig targets="lightningCommunity__Default">
             <!-- Layout Properties -->
-            <property name="componentHeight" type="Integer" label="Component Height" 
-                description="Height of the messaging component in pixels. If set to 0 or if the container is smaller, the component will adapt to available space." default="600" min="0" />
+            <property
+        name="componentHeight"
+        type="Integer"
+        label="Component Height"
+        description="Height of the messaging component in pixels. If set to 0 or if the container is smaller, the component will adapt to available space."
+        default="600"
+        min="0"
+      />
                 
             <!-- Functionality Properties -->
-            <property name="disableInitialLoading" type="Boolean" label="Disable Initial Loading" 
-                description="When enabled, the component will not show a loading spinner on initialization, making it easier to remove from the page." default="false" />
+            <property
+        name="disableInitialLoading"
+        type="Boolean"
+        label="Disable Initial Loading"
+        description="When enabled, the component will not show a loading spinner on initialization, making it easier to remove from the page."
+        default="false"
+      />
                 
             <!-- Theme Properties -->
-            <property name="primaryColor" type="String" label="Primary Color" 
-                description="Primary color used for headers, navigation elements, buttons, badges, and interactive elements. Controls the color of the conversation and chat headers, the 'new message' button, and the unread message badge." default="#22BDC1" />
-            <property name="accentColor" type="String" label="Accent Color" 
-                description="Secondary accent color used for hover states, highlights, and selected elements. Controls button hover effects and active state indicators like the left border of selected conversations." default="#D5DF23" />
-            <property name="messageOutgoingColor" type="String" label="Outgoing Message Color" 
-                description="Background color for message bubbles sent by the current user (appears on the right side). Text color will automatically adjust to be black or white based on this color's brightness." default="#22BDC1" />
-            <property name="messageIncomingColor" type="String" label="Incoming Message Color" 
-                description="Background color for message bubbles received from other users (appears on the left side). Text color will automatically adjust to be black or white based on this color's brightness." default="#D5DF23" />
+            <property
+        name="primaryColor"
+        type="String"
+        label="Primary Color"
+        description="Primary color used for headers, navigation elements, buttons, badges, and interactive elements. Controls the color of the conversation and chat headers, the 'new message' button, and the unread message badge."
+        default="#22BDC1"
+      />
+            <property
+        name="accentColor"
+        type="String"
+        label="Accent Color"
+        description="Secondary accent color used for hover states, highlights, and selected elements. Controls button hover effects and active state indicators like the left border of selected conversations."
+        default="#D5DF23"
+      />
+            <property
+        name="messageOutgoingColor"
+        type="String"
+        label="Outgoing Message Color"
+        description="Background color for message bubbles sent by the current user (appears on the right side). Text color will automatically adjust to be black or white based on this color's brightness."
+        default="#22BDC1"
+      />
+            <property
+        name="messageIncomingColor"
+        type="String"
+        label="Incoming Message Color"
+        description="Background color for message bubbles received from other users (appears on the left side). Text color will automatically adjust to be black or white based on this color's brightness."
+        default="#D5DF23"
+      />
         </targetConfig>
         <targetConfig targets="lightning__UtilityBar">
             <!-- Layout Properties -->
-            <property name="componentHeight" type="Integer" label="Component Height" 
-                description="Height of the messaging component in pixels. If set to 0 or if the container is smaller, the component will adapt to available space." default="0" min="0" />
+            <property
+        name="componentHeight"
+        type="Integer"
+        label="Component Height"
+        description="Height of the messaging component in pixels. If set to 0 or if the container is smaller, the component will adapt to available space."
+        default="0"
+        min="0"
+      />
                 
             <!-- Functionality Properties -->
-            <property name="disableInitialLoading" type="Boolean" label="Disable Initial Loading" 
-                description="When enabled, the component will not show a loading spinner on initialization, making it easier to remove from the page." default="false" />
+            <property
+        name="disableInitialLoading"
+        type="Boolean"
+        label="Disable Initial Loading"
+        description="When enabled, the component will not show a loading spinner on initialization, making it easier to remove from the page."
+        default="false"
+      />
                 
             <!-- Theme Properties -->
-            <property name="primaryColor" type="String" label="Primary Color" 
-                description="Primary color used for headers, navigation elements, buttons, badges, and interactive elements. Controls the color of the conversation and chat headers, the 'new message' button, and the unread message badge." default="#22BDC1" />
-            <property name="accentColor" type="String" label="Accent Color" 
-                description="Secondary accent color used for hover states, highlights, and selected elements. Controls button hover effects and active state indicators like the left border of selected conversations." default="#D5DF23" />
-            <property name="messageOutgoingColor" type="String" label="Outgoing Message Color" 
-                description="Background color for message bubbles sent by the current user (appears on the right side). Text color will automatically adjust to be black or white based on this color's brightness." default="#22BDC1" />
-            <property name="messageIncomingColor" type="String" label="Incoming Message Color" 
-                description="Background color for message bubbles received from other users (appears on the left side). Text color will automatically adjust to be black or white based on this color's brightness." default="#D5DF23" />
+            <property
+        name="primaryColor"
+        type="String"
+        label="Primary Color"
+        description="Primary color used for headers, navigation elements, buttons, badges, and interactive elements. Controls the color of the conversation and chat headers, the 'new message' button, and the unread message badge."
+        default="#22BDC1"
+      />
+            <property
+        name="accentColor"
+        type="String"
+        label="Accent Color"
+        description="Secondary accent color used for hover states, highlights, and selected elements. Controls button hover effects and active state indicators like the left border of selected conversations."
+        default="#D5DF23"
+      />
+            <property
+        name="messageOutgoingColor"
+        type="String"
+        label="Outgoing Message Color"
+        description="Background color for message bubbles sent by the current user (appears on the right side). Text color will automatically adjust to be black or white based on this color's brightness."
+        default="#22BDC1"
+      />
+            <property
+        name="messageIncomingColor"
+        type="String"
+        label="Incoming Message Color"
+        description="Background color for message bubbles received from other users (appears on the left side). Text color will automatically adjust to be black or white based on this color's brightness."
+        default="#D5DF23"
+      />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
