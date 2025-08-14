@@ -56,7 +56,9 @@
       "Bash(done)",
       "mcp__salesforce-enhanced__salesforce_read_apex",
       "Bash(git commit:*)",
-      "Bash(sfdx:*)"
+      "Bash(sfdx:*)",
+      "Bash(sed:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
