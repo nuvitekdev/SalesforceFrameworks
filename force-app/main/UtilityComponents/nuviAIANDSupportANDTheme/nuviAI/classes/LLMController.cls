@@ -1,5 +1,5 @@
 public with sharing class LLMController {
-  @AuraEnabled(cacheable=true)
+  @AuraEnabled(cacheable=true) 
   public static List<LLM_Configuration__mdt> getLLMConfigurations() {
     System.debug('Getting LLM configurations');
     List<LLM_Configuration__mdt> configs = [
