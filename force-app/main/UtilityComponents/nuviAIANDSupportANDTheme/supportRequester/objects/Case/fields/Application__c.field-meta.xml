@@ -1,11 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Application__c</fullName>
-    <description
-  >The application context where the support request originated</description>
+    <description>The application context where the support request originated</description>
     <externalId>false</externalId>
-    <inlineHelpText
-  >The application or context where the user was working when they submitted the support request</inlineHelpText>
+    <inlineHelpText>The application or context where the user was working when they submitted the support request</inlineHelpText>
     <label>Application</label>
     <length>255</length>
     <required>false</required>

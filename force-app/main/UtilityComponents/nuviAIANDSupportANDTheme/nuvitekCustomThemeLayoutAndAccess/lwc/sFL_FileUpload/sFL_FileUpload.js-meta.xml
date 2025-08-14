@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>59.0</apiVersion>
     <isExposed>true</isExposed>
@@ -12,86 +12,19 @@
     </targets>
     <targetConfigs>
         <targetConfig targets="lightning__FlowScreen">
-            <property
-        name="recordId"
-        type="String"
-        label="Record ID"
-        description="ID of the record to attach files to"
-        required="true"
-      />
-            <property
-        name="label"
-        type="String"
-        label="Component Label"
-        description="Label for the file upload component"
-        default="Upload Files"
-      />
-            <property
-        name="multiple"
-        type="Boolean"
-        label="Allow Multiple Files"
-        description="Allow multiple file uploads"
-        default="false"
-      />
-            <property
-        name="required"
-        type="Boolean"
-        label="Required"
-        description="Make file upload required"
-        default="false"
-      />
-            <property
-        name="acceptedFormats"
-        type="String"
-        label="Accepted File Formats"
-        description="Comma-separated list of accepted file formats (e.g., .jpg, .pdf, .png)"
-        default=".pdf, .png, .jpg, .jpeg, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .csv, .txt"
-      />
-            <property
-        name="uploadComplete"
-        type="Boolean"
-        label="Upload Complete"
-        description="Indicates if files have been uploaded"
-        default="false"
-      />
-            <property
-        name="fileNames"
-        type="String"
-        label="Uploaded File Names"
-        description="Comma-separated list of uploaded file names"
-      />
+            <property name="recordId" type="String" label="Record ID" description="ID of the record to attach files to" required="true"/>
+            <property name="label" type="String" label="Component Label" description="Label for the file upload component" default="Upload Files"/>
+            <property name="multiple" type="Boolean" label="Allow Multiple Files" description="Allow multiple file uploads" default="false"/>
+            <property name="required" type="Boolean" label="Required" description="Make file upload required" default="false"/>
+            <property name="acceptedFormats" type="String" label="Accepted File Formats" description="Comma-separated list of accepted file formats (e.g., .jpg, .pdf, .png)" default=".pdf, .png, .jpg, .jpeg, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .csv, .txt"/>
+            <property name="uploadComplete" type="Boolean" label="Upload Complete" description="Indicates if files have been uploaded" default="false"/>
+            <property name="fileNames" type="String" label="Uploaded File Names" description="Comma-separated list of uploaded file names"/>
         </targetConfig>
-        <targetConfig
-      targets="lightning__RecordPage,lightning__AppPage,lightning__HomePage,lightningCommunity__Default"
-    >
-            <property
-        name="label"
-        type="String"
-        label="Component Label"
-        description="Label for the file upload component"
-        default="Upload Files"
-      />
-            <property
-        name="multiple"
-        type="Boolean"
-        label="Allow Multiple Files"
-        description="Allow multiple file uploads"
-        default="false"
-      />
-            <property
-        name="required"
-        type="Boolean"
-        label="Required"
-        description="Make file upload required"
-        default="false"
-      />
-            <property
-        name="acceptedFormats"
-        type="String"
-        label="Accepted File Formats"
-        description="Comma-separated list of accepted file formats (e.g., .jpg, .pdf, .png)"
-        default=".pdf, .png, .jpg, .jpeg, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .csv, .txt"
-      />
+        <targetConfig targets="lightning__RecordPage,lightning__AppPage,lightning__HomePage,lightningCommunity__Default">
+            <property name="label" type="String" label="Component Label" description="Label for the file upload component" default="Upload Files"/>
+            <property name="multiple" type="Boolean" label="Allow Multiple Files" description="Allow multiple file uploads" default="false"/>
+            <property name="required" type="Boolean" label="Required" description="Make file upload required" default="false"/>
+            <property name="acceptedFormats" type="String" label="Accepted File Formats" description="Comma-separated list of accepted file formats (e.g., .jpg, .pdf, .png)" default=".pdf, .png, .jpg, .jpeg, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .csv, .txt"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

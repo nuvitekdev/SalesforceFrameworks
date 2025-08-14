@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>62.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Nuvitek Navigation Tiles</masterLabel>
-    <description
-  >A dynamic, highly customizable navigation tiles component with multiple styles, animations, and layout options</description>
+    <description>A dynamic, highly customizable navigation tiles component with multiple styles, animations, and layout options</description>
     <targets>
         <target>lightningCommunity__Page</target>
         <target>lightningCommunity__Default</target>
@@ -12,99 +11,22 @@
         <target>lightning__HomePage</target>
     </targets>
     <targetConfigs>
-        <targetConfig
-      targets="lightningCommunity__Default,lightning__AppPage,lightning__HomePage"
-    >
-            <property
-        name="columns"
-        type="Integer"
-        default="3"
-        min="1"
-        max="6"
-        label="Number of Columns"
-        description="Number of tiles to display per row"
-      />
-            <property
-        name="tileStyle"
-        type="String"
-        default="elevated"
-        label="Tile Style"
-        description="Visual style for all tiles"
-        datasource="elevated,gradient,neomorphic,glassmorphic,accent,neumorphic,modern,material,soft,depth,glossy,shadow"
-      />
-            <property
-        name="delimiter"
-        type="String"
-        default=","
-        label="Delimiter"
-        description="Delimiter for character-delimited lists. Default is comma (,)"
-      />    
+        <targetConfig targets="lightningCommunity__Default,lightning__AppPage,lightning__HomePage">
+            <property name="columns" type="Integer" default="3" min="1" max="6" label="Number of Columns" description="Number of tiles to display per row"/>
+            <property name="tileStyle" type="String" default="elevated" label="Tile Style" description="Visual style for all tiles" datasource="elevated,gradient,neomorphic,glassmorphic,accent,neumorphic,modern,material,soft,depth,glossy,shadow"/>
+            <property name="delimiter" type="String" default="," label="Delimiter" description="Delimiter for character-delimited lists. Default is comma (,)"/>    
             <!-- Comma-delimited list properties -->
-            <property
-        name="titles"
-        type="String"
-        label="Tile Titles"
-        default="Feature 1, Feature 2, Feature 3"
-        description="Comma-separated list of tile titles"
-      />
-            <property
-        name="descriptions"
-        type="String"
-        label="Tile Descriptions"
-        default="Description of feature 1, Description of feature 2, Description of feature 3"
-        description="Comma-separated list of tile descriptions"
-      />
-            <property
-        name="icons"
-        type="String"
-        label="Tile Icons"
-        default="utility:info, utility:success, utility:settings"
-        description="Comma-separated list of SLDS icon names"
-      />
-            <property
-        name="colors"
-        type="String"
-        label="Tile Colors"
-        default="#0071e3, #34c759, #007aff"
-        description="Comma-separated list of accent colors"
-      />
-            <property
-        name="links"
-        type="String"
-        label="Tile Links"
-        default="/page1, /page2, /page3"
-        description="Comma-separated list of links to navigate to when clicked"
-      />
-            <property
-        name="bgImages"
-        type="String"
-        label="Background Images"
-        default=""
-        description="Comma-separated list of image URLs for background images (leave blank for color background)"
-      />
+            <property name="titles" type="String" label="Tile Titles" default="Feature 1, Feature 2, Feature 3" description="Comma-separated list of tile titles"/>
+            <property name="descriptions" type="String" label="Tile Descriptions" default="Description of feature 1, Description of feature 2, Description of feature 3" description="Comma-separated list of tile descriptions"/>
+            <property name="icons" type="String" label="Tile Icons" default="utility:info, utility:success, utility:settings" description="Comma-separated list of SLDS icon names"/>
+            <property name="colors" type="String" label="Tile Colors" default="#0071e3, #34c759, #007aff" description="Comma-separated list of accent colors"/>
+            <property name="links" type="String" label="Tile Links" default="/page1, /page2, /page3" description="Comma-separated list of links to navigate to when clicked"/>
+            <property name="bgImages" type="String" label="Background Images" default="" description="Comma-separated list of image URLs for background images (leave blank for color background)"/>
             
             <!-- Theme Properties -->
-            <property
-        name="primaryColor"
-        type="String"
-        label="Primary Color"
-        default="#22BDC1"
-        description="Primary color for theme elements (matches theme layout)"
-      />
-            <property
-        name="accentColor"
-        type="String"
-        label="Accent Color"
-        default="#D5DF23"
-        description="Accent color for highlights (matches theme layout)"
-      />
-            <property
-        name="textColor"
-        type="String"
-        label="Text Color"
-        default="#1d1d1f"
-        description="Main text color (matches theme layout)"
-      />
+            <property name="primaryColor" type="String" label="Primary Color" default="#22BDC1" description="Primary color for theme elements (matches theme layout)"/>
+            <property name="accentColor" type="String" label="Accent Color" default="#D5DF23" description="Accent color for highlights (matches theme layout)"/>
+            <property name="textColor" type="String" label="Text Color" default="#1d1d1f" description="Main text color (matches theme layout)"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
