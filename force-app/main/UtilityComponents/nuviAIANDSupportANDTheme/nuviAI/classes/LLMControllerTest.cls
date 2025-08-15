@@ -216,7 +216,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Tell me about this account',
             'question',
-            'Contact,Opportunity'
+            'Contact,Opportunity',
+            null
         );
         Test.stopTest();
     }
@@ -250,7 +251,8 @@ public class LLMControllerTest {
             'Anthropic_Claude',
             'Summarize this account',
             'summarize',
-            'Contact'
+            'Contact',
+            null
         );
         Test.stopTest();
     }
@@ -284,7 +286,8 @@ public class LLMControllerTest {
             'Google_Gemini',
             'Analyze this account',
             'analyze',
-            'Case'
+            'Case',
+            null
         );
         Test.stopTest();
     }
@@ -318,7 +321,8 @@ public class LLMControllerTest {
             'OpenRouter_Model',
             'Generate text',
             'text',
-            ''
+            '',
+            null
         );
         Test.stopTest();
     }
@@ -352,7 +356,8 @@ public class LLMControllerTest {
             'DeepSeek_Model',
             'Generate code',
             'code',
-            ''
+            '',
+            null
         );
         Test.stopTest();
     }
@@ -386,7 +391,8 @@ public class LLMControllerTest {
                 'OpenAI_GPT4',
                 'Tell me about this account',
                 'question',
-                'Contact,Opportunity'
+                'Contact,Opportunity',
+                null
             );
         } catch (Exception e) {
             // Expected exception
@@ -423,7 +429,8 @@ public class LLMControllerTest {
                 'OpenAI_GPT4',
                 'Test rate limiting',
                 'question',
-                ''
+                '',
+                null
             );
         } catch (Exception e) {
             // Expected exception after max retries
@@ -458,7 +465,8 @@ public class LLMControllerTest {
                 'Unknown_Provider',
                 'Test unsupported provider',
                 'text',
-                ''
+                '',
+                null
             );
         } catch (Exception e) {
             // Expected exception
@@ -492,10 +500,7 @@ public class LLMControllerTest {
         Test.startTest();
         String result = LLMController.checkRecordForAnomalies(
             testAccount.Id,
-            'OpenAI_GPT4',
-            'Contact,Opportunity',
-            new List<String>(),
-            null
+            'OpenAI_GPT4'
         );
         Test.stopTest();
     }
@@ -526,10 +531,7 @@ public class LLMControllerTest {
         try {
             String result = LLMController.checkRecordForAnomalies(
                 testAccount.Id,
-                'OpenAI_GPT4',
-                'Contact,Opportunity',
-                new List<String>(),
-                null
+                'OpenAI_GPT4'
             );
         } catch (Exception e) {
             // Expected exception
@@ -544,10 +546,7 @@ public class LLMControllerTest {
         try {
             String result = LLMController.checkRecordForAnomalies(
                 null,
-                'OpenAI_GPT4',
-                'Contact',
-                new List<String>(),
-                null
+                'OpenAI_GPT4'
             );
         } catch (Exception e) {
             // Expected exception
@@ -604,10 +603,7 @@ public class LLMControllerTest {
         Test.startTest();
         String result = LLMController.checkRecordForAnomalies(
             testAccount.Id,
-            'OpenAI_GPT4_Vision',
-            'Contact,Opportunity',
-            new List<String>{ contentDocumentId },
-            'Look for personal information inconsistencies'
+            'OpenAI_GPT4_Vision'
         );
         Test.stopTest();
         
@@ -673,10 +669,7 @@ public class LLMControllerTest {
         try {
             String result = LLMController.checkRecordForAnomalies(
                 testAccount.Id,
-                'OpenAI_GPT4_Vision',
-                'Contact,Opportunity',
-                new List<String>{ contentDocumentId },
-                'Look for personal information inconsistencies'
+                'OpenAI_GPT4_Vision'
             );
             
             // The document should be skipped due to size limit, and a regular call should be made
@@ -976,7 +969,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Analyze this document',
             'question',
-            'Contact'
+            'Contact',
+            null
         );
         Test.stopTest();
     }
@@ -1017,7 +1011,7 @@ public class LLMControllerTest {
         insert links;
         
         Test.startTest();
-        List<Map<String, String>> result = LLMController.getAttachmentsBase64(testAccount.Id);
+        String result = LLMController.getAttachmentsBase64(testAccount.Id);
         Test.stopTest();
     }
     
@@ -1071,7 +1065,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Tell me about this account',
             'question',
-            'Contact,Opportunity'
+            'Contact,Opportunity',
+            null
         );
         
         LLMController.handleRequest(
@@ -1079,7 +1074,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Tell me about this contact',
             'question',
-            'Account,Opportunity'
+            'Account,Opportunity',
+            null
         );
         
         LLMController.handleRequest(
@@ -1087,7 +1083,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Tell me about this opportunity',
             'question',
-            'Account,Contact'
+            'Account,Contact',
+            null
         );
         
         LLMController.handleRequest(
@@ -1095,7 +1092,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Tell me about this case',
             'question',
-            'Account,Contact'
+            'Account,Contact',
+            null
         );
         
         LLMController.handleRequest(
@@ -1103,7 +1101,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Tell me about this lead',
             'question',
-            ''
+            '',
+            null
         );
         
         Test.stopTest();
@@ -1138,6 +1137,7 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'What is the capital of France?',
             'question',
+            null,
             null
         );
         Test.stopTest();
@@ -1200,7 +1200,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Summarize this account with all its related data',
             'summarize',
-            'Contact,Task'
+            'Contact,Task',
+            null
         );
         Test.stopTest();
     }
@@ -1282,7 +1283,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Get record with feed items',
             'question',
-            ''
+            '',
+            null
         );
         
         // Reset mock setting
@@ -1350,7 +1352,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Get record with case comments',
             'question',
-            ''
+            '',
+            null
         );
         
         // Reset mock setting
@@ -1419,7 +1422,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Get lead with conversion details',
             'question',
-            ''
+            '',
+            null
         );
         
         // Reset mock setting
@@ -1468,7 +1472,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Get related objects',
             'question',
-            'Contact,Opportunity'
+            'Contact,Opportunity',
+            null
         );
         
         // Test with inaccessible object
@@ -1477,7 +1482,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Get related objects with invalid object',
             'question',
-            'Contact,InvalidObject'
+            'Contact,InvalidObject',
+            null
         );
         
         // Test empty object list
@@ -1486,7 +1492,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Get related objects with empty list',
             'question',
-            ''
+            '',
+            null
         );
         
         // Reset mock setting
@@ -1537,7 +1544,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Get field history',
             'question',
-            ''
+            '',
+            null
         );
         
         // Test with a custom object name
@@ -1546,7 +1554,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Get field history for custom object',
             'question',
-            ''
+            '',
+            null
         );
         
         // Reset mock setting
@@ -1618,7 +1627,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Get lead record context',
             'question',
-            ''
+            '',
+            null
         );
         
         // Test Case record context 
@@ -1627,7 +1637,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Get case record context',
             'question',
-            ''
+            '',
+            null
         );
         
         Test.stopTest();
@@ -1688,7 +1699,8 @@ public class LLMControllerTest {
             'OpenAI_GPT4',
             'Test SOSL related records',
             'question',
-            'Contact,Opportunity'
+            'Contact,Opportunity',
+            null
         );
         
         Test.stopTest();

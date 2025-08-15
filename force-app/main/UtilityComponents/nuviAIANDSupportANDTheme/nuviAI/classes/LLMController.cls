@@ -1,7 +1,14 @@
 public with sharing class LLMController {
+    @TestVisible
+    private static List<LLM_Configuration__mdt> mockConfigurations;
+
     @AuraEnabled(cacheable=true)
     public static List<LLM_Configuration__mdt> getLLMConfigurations() {
         System.debug('Getting LLM configurations');
+        if (Test.isRunningTest() && mockConfigurations != null) {
+            System.debug('Using mock configurations for test: ' + mockConfigurations);
+            return mockConfigurations;
+        }
         List<LLM_Configuration__mdt> configs = [SELECT Id, DeveloperName, MasterLabel, Provider__c, 
                                                 Model_Name__c, Supports_Files__c 
                                                 FROM LLM_Configuration__mdt 
@@ -19,11 +26,24 @@ public with sharing class LLMController {
         
         try {
             System.debug('Fetching LLM configuration');
-            LLM_Configuration__mdt config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, 
-                                             Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
-                                             FROM LLM_Configuration__mdt 
-                                             WHERE DeveloperName = :configName 
-                                             LIMIT 1];
+            LLM_Configuration__mdt config;
+            if (Test.isRunningTest() && mockConfigurations != null) {
+                for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
+                    if (mockConfig.DeveloperName == configName) {
+                        config = mockConfig;
+                        break;
+                    }
+                }
+                if (config == null) {
+                    throw new AuraHandledException('Configuration not found: ' + configName);
+                }
+            } else {
+                config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, 
+                         Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
+                         FROM LLM_Configuration__mdt 
+                         WHERE DeveloperName = :configName 
+                         LIMIT 1];
+            }
             System.debug('Found configuration: ' + config);
             
             String context = '';
@@ -81,11 +101,24 @@ public with sharing class LLMController {
         try {
             // Fetch the specified LLM configuration
             System.debug('Fetching LLM configuration for anomaly check');
-            LLM_Configuration__mdt config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, 
-                                             Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
-                                             FROM LLM_Configuration__mdt 
-                                             WHERE DeveloperName = :configName 
-                                             LIMIT 1];
+            LLM_Configuration__mdt config;
+            if (Test.isRunningTest() && mockConfigurations != null) {
+                for (LLM_Configuration__mdt mockConfig : mockConfigurations) {
+                    if (mockConfig.DeveloperName == configName) {
+                        config = mockConfig;
+                        break;
+                    }
+                }
+                if (config == null) {
+                    throw new AuraHandledException('Configuration not found: ' + configName);
+                }
+            } else {
+                config = [SELECT API_Key__c, Base_URL__c, Model_Name__c, 
+                         Provider__c, Supports_Files__c, Max_Tokens__c, Temperature__c
+                         FROM LLM_Configuration__mdt 
+                         WHERE DeveloperName = :configName 
+                         LIMIT 1];
+            }
             System.debug('Found configuration for anomaly check: ' + config);
 
             // Get the context for the specified record
@@ -305,6 +338,7 @@ public with sharing class LLMController {
         return query;
     }
     
+    @TestVisible
     private static String getAttachmentsBase64(String recordId) {
         System.debug('Getting attachments for record: ' + recordId);
         
