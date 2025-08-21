@@ -1,71 +1,92 @@
 <template>
-    <div class="slds-card slds-var-p-around_medium file-upload-container">
-        <div if:true={recordId} class="slds-grid slds-grid_vertical">
-            <div class="slds-col">
-                <div class="slds-form-element">
-                    <label class="slds-form-element__label" for="file-upload-input">
-                        <span>{label}</span>
-                        <template if:true={required}>
-                            <abbr class="slds-required" title="required">*</abbr>
-                        </template>
-                    </label>
-                    <div class="slds-form-element__control">
-                        <lightning-file-upload
-                            name="fileUploader"
-                            accept={acceptedFileFormats}
-                            record-id={recordId}
-                            onuploadfinished={handleUploadFinished}
-                            onerror={handleError}
-                            multiple={multiple}
-                            disabled={isLoading}>
-                        </lightning-file-upload>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="slds-col slds-var-m-top_small" if:true={hasUploadedFiles}>
-                <div class="slds-box slds-theme_shade file-container">
-                    <div class="slds-grid slds-grid_align-spread slds-wrap">
-                        <div class="slds-col slds-size_1-of-1 slds-medium-size_11-of-12">
-                            <div class="slds-media">
-                                <div class="slds-media__figure">
-                                    <lightning-icon icon-name="doctype:attachment" size="small"></lightning-icon>
-                                </div>
-                                <div class="slds-media__body">
-                                    <p class="slds-text-heading_small file-names-container">
-                                        <span class="slds-text-heading_small">Uploaded Files:</span>
-                                        <span class="file-names">{uploadedFileNames}</span>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-12 slds-align_absolute-center">
-                            <lightning-button-icon
-                                icon-name="utility:clear"
-                                alternative-text="Clear files"
-                                title="Clear files"
-                                variant="border-filled"
-                                onclick={handleClearFiles}>
-                            </lightning-button-icon>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="slds-col slds-var-m-top_small" if:true={isLoading}>
-                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
-            </div>
+  <div class="slds-card slds-var-p-around_medium file-upload-container">
+    <div if:true={recordId} class="slds-grid slds-grid_vertical">
+      <div class="slds-col">
+        <div class="slds-form-element">
+          <label class="slds-form-element__label" for="file-upload-input">
+            <span>{label}</span>
+            <template if:true={required}>
+              <abbr class="slds-required" title="required">*</abbr>
+            </template>
+          </label>
+          <div class="slds-form-element__control">
+            <lightning-file-upload
+              name="fileUploader"
+              accept={acceptedFileFormats}
+              record-id={recordId}
+              onuploadfinished={handleUploadFinished}
+              onerror={handleError}
+              multiple={multiple}
+              disabled={isLoading}
+            >
+            </lightning-file-upload>
+          </div>
         </div>
-        
-        <div if:false={recordId} class="slds-box slds-theme_error slds-var-m-bottom_medium">
-            <div class="slds-media slds-media_center">
+      </div>
+
+      <div class="slds-col slds-var-m-top_small" if:true={hasUploadedFiles}>
+        <div class="slds-box slds-theme_shade file-container">
+          <div class="slds-grid slds-grid_align-spread slds-wrap">
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_11-of-12">
+              <div class="slds-media">
                 <div class="slds-media__figure">
-                    <lightning-icon icon-name="utility:warning" alternative-text="Warning" size="small" variant="inverse"></lightning-icon>
+                  <lightning-icon
+                    icon-name="doctype:attachment"
+                    size="small"
+                  ></lightning-icon>
                 </div>
                 <div class="slds-media__body">
-                    <p>Record ID is required to upload files. Please provide a valid record ID or use this component on a record page.</p>
+                  <p class="slds-text-heading_small file-names-container">
+                    <span class="slds-text-heading_small">Uploaded Files:</span>
+                    <span class="file-names">{uploadedFileNames}</span>
+                  </p>
                 </div>
+              </div>
             </div>
+            <div
+              class="slds-col slds-size_1-of-1 slds-medium-size_1-of-12 slds-align_absolute-center"
+            >
+              <lightning-button-icon
+                icon-name="utility:clear"
+                alternative-text="Clear files"
+                title="Clear files"
+                variant="border-filled"
+                onclick={handleClearFiles}
+              >
+              </lightning-button-icon>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div class="slds-col slds-var-m-top_small" if:true={isLoading}>
+        <lightning-spinner
+          alternative-text="Loading"
+          size="small"
+        ></lightning-spinner>
+      </div>
     </div>
+
+    <div
+      if:false={recordId}
+      class="slds-box slds-theme_error slds-var-m-bottom_medium"
+    >
+      <div class="slds-media slds-media_center">
+        <div class="slds-media__figure">
+          <lightning-icon
+            icon-name="utility:warning"
+            alternative-text="Warning"
+            size="small"
+            variant="inverse"
+          ></lightning-icon>
+        </div>
+        <div class="slds-media__body">
+          <p>
+            Record ID is required to upload files. Please provide a valid record
+            ID or use this component on a record page.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>

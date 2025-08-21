@@ -1,123 +1,204 @@
 <!-- nuvitekNavigationTiles.html -->
 <template>
-    <div class="tiles-container" style={gridStyle}>
-        <template for:each={tilesData} for:item="tile" for:index="index">
-            <div key={tile.id} 
-                 class="navigation-tile size-medium shape-rounded animation-lift style-elevated clickable-tile"
-                 style={tile.style} 
-                 data-index={index}
-                 onclick={handleWholeTemplateClick}>
-                
-                <!-- Background Image (if available) -->
-                <template if:true={tile.hasBgImage}>
-                    <div class="tile-bg-image" style="background-image: url('{tile.bgImageUrl}')"></div>
-                    <div class="tile-overlay" style={tile.overlayStyle}></div>
-                </template>
-                
-                <div class="tile-content">
-                    <!-- Empty div to maintain layout structure where the request button was -->
-                    <div class="tile-menu"></div>
-                    
-                    <!-- More Options Button above the icon - now serves as request access button -->
-                    <button class="menu-button-center" onclick={handleRequestAccess} data-index={index} aria-label="Request Access">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="12" cy="5" r="2" fill="currentColor"/>
-                            <circle cx="12" cy="12" r="2" fill="currentColor"/>
-                            <circle cx="12" cy="19" r="2" fill="currentColor"/>
-                        </svg>
-                    </button>
-                    
-                    <!-- Icon -->
-                    <div class="tile-icon-container">
-                        <template if:true={tile.hasIcon}>
-                            <div class="tile-icon" style={tile.iconStyle}>
-                                <lightning-icon icon-name={tile.icon} size="large"></lightning-icon>
-                            </div>
-                        </template>
-                    </div>
-                    
-                    <!-- Title and Description -->
-                    <div class="tile-text">
-                        <h3 class="tile-title" style={tile.titleStyle}>{tile.title}</h3>
-                        <p class="tile-description" style={tile.descriptionStyle}>{tile.description}</p>
-                    </div>
-                    
-                    <!-- Action Indicator - keep for visual indicator but remove the onclick -->
-                    <div class="tile-action" data-index={index}>
-                        <div class="action-indicator">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <div class="tiles-container" style={gridStyle}>
+    <template for:each={tilesData} for:item="tile" for:index="index">
+      <div
+        key={tile.id}
+        class="navigation-tile size-medium shape-rounded animation-lift style-elevated clickable-tile"
+        style={tile.style}
+        data-index={index}
+        onclick={handleWholeTemplateClick}
+      >
+        <!-- Background Image (if available) -->
+        <template if:true={tile.hasBgImage}>
+          <div
+            class="tile-bg-image"
+            style="background-image: url(&quot;{tile.bgImageUrl}&quot;)"
+          ></div>
+          <div class="tile-overlay" style={tile.overlayStyle}></div>
         </template>
-    </div>
 
-    <!-- Improved Modal for Request Access Form -->
-    <template if:true={isRequestModalOpen}>
-        <div class="nuvitek-modal-backdrop"></div>
-        <section role="dialog" tabindex="-1" class="nuvitek-modal" style={modalContainerStyle}>
-            <div class="nuvitek-modal-container">
-                <header class="nuvitek-modal-header" style={modalHeaderStyle}>
-                    <h2 class="nuvitek-modal-title">{selectedTileTitle}</h2>
-                    <button class="nuvitek-modal-close" onclick={closeRequestModal} aria-label="Close">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                    </button>
-                </header>
-                <div class="nuvitek-modal-content">
-                    <p class="nuvitek-modal-subtitle">Request Access</p>
-                    <div class="nuvitek-form">
-                        <div class="nuvitek-form-field">
-                            <label for="accessType">Access Type</label>
-                            <div class="nuvitek-select-container">
-                                <select id="accessType" class="nuvitek-select" onchange={handleAccessTypeChange}>
-                                    <option value="" disabled selected>Select access type</option>
-                                    <template for:each={accessTypeOptions} for:item="option">
-                                        <option key={option.value} value={option.value}>{option.label}</option>
-                                    </template>
-                                </select>
-                                <div class="nuvitek-select-arrow" style={selectArrowStyle}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="nuvitek-form-field">
-                            <label for="justification">Justification</label>
-                            <textarea 
-                                id="justification" 
-                                class="nuvitek-textarea" 
-                                placeholder="Why do you need this access?"
-                                onchange={handleJustificationChange}></textarea>
-                        </div>
-                    </div>
-                </div>
-                <footer class="nuvitek-modal-footer">
-                    <button class="nuvitek-button secondary" onclick={closeRequestModal}>Cancel</button>
-                    <button class="nuvitek-button primary" onclick={submitAccessRequest} disabled={isSubmitDisabled} style={primaryButtonStyle}>Submit Request</button>
-                </footer>
+        <div class="tile-content">
+          <!-- Empty div to maintain layout structure where the request button was -->
+          <div class="tile-menu"></div>
+
+          <!-- More Options Button above the icon - now serves as request access button -->
+          <button
+            class="menu-button-center"
+            onclick={handleRequestAccess}
+            data-index={index}
+            aria-label="Request Access"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="12" cy="5" r="2" fill="currentColor" />
+              <circle cx="12" cy="12" r="2" fill="currentColor" />
+              <circle cx="12" cy="19" r="2" fill="currentColor" />
+            </svg>
+          </button>
+
+          <!-- Icon -->
+          <div class="tile-icon-container">
+            <template if:true={tile.hasIcon}>
+              <div class="tile-icon" style={tile.iconStyle}>
+                <lightning-icon
+                  icon-name={tile.icon}
+                  size="large"
+                ></lightning-icon>
+              </div>
+            </template>
+          </div>
+
+          <!-- Title and Description -->
+          <div class="tile-text">
+            <h3 class="tile-title" style={tile.titleStyle}>{tile.title}</h3>
+            <p class="tile-description" style={tile.descriptionStyle}>
+              {tile.description}
+            </p>
+          </div>
+
+          <!-- Action Indicator - keep for visual indicator but remove the onclick -->
+          <div class="tile-action" data-index={index}>
+            <div class="action-indicator">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M5 12H19M19 12L12 5M19 12L12 19"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
             </div>
-        </section>
-    </template>
-    
-    <!-- Toast Message -->
-    <template if:true={showToast}>
-        <div class="toast-container">
-            <div class={toastClass}>
-                <div class="toast-icon">
-                    <lightning-icon icon-name={toastIcon} size="small"></lightning-icon>
-                </div>
-                <div class="toast-content">
-                    <h3 class="toast-title">{toastTitle}</h3>
-                    <p class="toast-message">{toastMessage}</p>
-                </div>
-            </div>
+          </div>
         </div>
+      </div>
     </template>
+  </div>
+
+  <!-- Improved Modal for Request Access Form -->
+  <template if:true={isRequestModalOpen}>
+    <div class="nuvitek-modal-backdrop"></div>
+    <section
+      role="dialog"
+      tabindex="-1"
+      class="nuvitek-modal"
+      style={modalContainerStyle}
+    >
+      <div class="nuvitek-modal-container">
+        <header class="nuvitek-modal-header" style={modalHeaderStyle}>
+          <h2 class="nuvitek-modal-title">{selectedTileTitle}</h2>
+          <button
+            class="nuvitek-modal-close"
+            onclick={closeRequestModal}
+            aria-label="Close"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M18 6L6 18M6 6L18 18"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </header>
+        <div class="nuvitek-modal-content">
+          <p class="nuvitek-modal-subtitle">Request Access</p>
+          <div class="nuvitek-form">
+            <div class="nuvitek-form-field">
+              <label for="accessType">Access Type</label>
+              <div class="nuvitek-select-container">
+                <select
+                  id="accessType"
+                  class="nuvitek-select"
+                  onchange={handleAccessTypeChange}
+                >
+                  <option value="" disabled selected>Select access type</option>
+                  <template for:each={accessTypeOptions} for:item="option">
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  </template>
+                </select>
+                <div class="nuvitek-select-arrow" style={selectArrowStyle}>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M6 9L12 15L18 9"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="nuvitek-form-field">
+              <label for="justification">Justification</label>
+              <textarea
+                id="justification"
+                class="nuvitek-textarea"
+                placeholder="Why do you need this access?"
+                onchange={handleJustificationChange}
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <footer class="nuvitek-modal-footer">
+          <button class="nuvitek-button secondary" onclick={closeRequestModal}>
+            Cancel
+          </button>
+          <button
+            class="nuvitek-button primary"
+            onclick={submitAccessRequest}
+            disabled={isSubmitDisabled}
+            style={primaryButtonStyle}
+          >
+            Submit Request
+          </button>
+        </footer>
+      </div>
+    </section>
+  </template>
+
+  <!-- Toast Message -->
+  <template if:true={showToast}>
+    <div class="toast-container">
+      <div class={toastClass}>
+        <div class="toast-icon">
+          <lightning-icon icon-name={toastIcon} size="small"></lightning-icon>
+        </div>
+        <div class="toast-content">
+          <h3 class="toast-title">{toastTitle}</h3>
+          <p class="toast-message">{toastMessage}</p>
+        </div>
+      </div>
+    </div>
+  </template>
 </template>
