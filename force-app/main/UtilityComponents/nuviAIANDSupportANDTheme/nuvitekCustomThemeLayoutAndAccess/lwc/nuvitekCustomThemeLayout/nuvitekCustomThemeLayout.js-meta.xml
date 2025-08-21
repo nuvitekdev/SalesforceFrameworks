@@ -19,28 +19,28 @@
         type="Color"
         default="#22BDC1"
         label="Primary Color"
-        description="Primary accent color for buttons and highlights"
+        description="Primary color for buttons and highlights. Example: #22BDC1, rgb(34, 189, 193), or CSS color name"
       />
             <property
         name="accentColor"
         type="Color"
         default="#D5DF23"
         label="Accent Color"
-        description="Secondary accent color for gradients and decorations"
+        description="Secondary color for gradients and decorations. Example: #D5DF23, rgb(213, 223, 35)"
       />
             <property
         name="textColor"
         type="Color"
         default="#1d1d1f"
         label="Text Color"
-        description="Main text color"
+        description="Main text color throughout the site. Example: #1d1d1f for dark text, #ffffff for white text"
       />
             <property
         name="themeName"
         type="String"
         default="light"
         label="Theme Mode"
-        description="Light or dark theme mode"
+        description="Theme mode. Options: 'light' for light backgrounds, 'dark' for dark backgrounds"
         datasource="light,dark"
       />
             <property
@@ -71,7 +71,7 @@
         type="Integer"
         default="100"
         label="Header Container Width %"
-        description="Controls the width of the header container as percentage"
+        description="Header width as percentage (0-100). Example: 100 for full width, 80 for centered with margins"
         min="0"
         max="100"
       />
@@ -80,7 +80,7 @@
         type="String"
         default="standard"
         label="Header Variant"
-        description="Visual style for the header"
+        description="Header style. Options: 'standard' (normal), 'minimal' (simple), 'expanded' (larger)"
         datasource="standard,minimal,expanded"
       />
             <property
@@ -96,14 +96,14 @@
         name="logoUrl"
         type="String"
         label="Logo URL"
-        description="URL to your custom logo image"
+        description="Logo image URL. Examples: '/resource/CompanyLogo' for static resource, 'https://example.com/logo.png' for external"
       />
             <property
         name="logoAltText"
         type="String"
         default="Nuvitek"
         label="Logo Alt Text"
-        description="Alternative text for the logo for accessibility"
+        description="Alternative text for logo accessibility. Example: 'Company Logo', 'Home'"
       />
 
             <!-- Navigation configuration -->
@@ -111,7 +111,7 @@
         name="headerNavigationMenuName"
         type="String"
         label="Header Navigation Menu"
-        description="Enter the name of the navigation menu to use in the header"
+        description="Exact name of navigation menu created in Setup > Navigation Menus. Example: 'Main Navigation', 'Header Menu'"
       />
             <property
         name="ensureHomeNavItem"
@@ -132,7 +132,7 @@
         type="String"
         default="Account,Contact"
         label="Objects to Search"
-        description="Comma-separated list of objects to search across"
+        description="Salesforce objects to search, comma-separated. Example: Account,Contact,Case,Opportunity,Lead"
       />
             <property
         name="showProfileIcon"
@@ -146,7 +146,7 @@
         type="String"
         default="/profile"
         label="Profile Page URL"
-        description="URL to the user profile page"
+        description="URL to user profile page. Examples: '/profile', '/s/profile', '/myaccount'"
       />
 
             <!-- Hero section configuration -->
@@ -162,14 +162,14 @@
         type="String"
         default="fullwidth"
         label="Hero Layout"
-        description="Layout style for the hero section"
+        description="Hero layout. Options: 'fullwidth' (centered content), 'split' (two-column layout)"
         datasource="split,fullwidth"
       />
             <property
         name="heroBackgroundImage"
         type="String"
         label="Hero Background Image URL"
-        description="Background image URL for hero section"
+        description="Hero background image URL. Example: '/resource/HeroImage' for static resource, 'https://example.com/hero.jpg' for external"
       />
             <property
         name="heroTitle"
@@ -196,7 +196,7 @@
         name="heroCTAPrimaryUrl"
         type="String"
         label="Primary Button URL"
-        description="Link for primary call-to-action button"
+        description="URL for main CTA button. Examples: '/register', '/contact-us', 'https://example.com/signup'"
       />
             <property
         name="heroCTASecondaryLabel"
@@ -209,7 +209,7 @@
         name="heroCTASecondaryUrl"
         type="String"
         label="Secondary Button URL"
-        description="Link for secondary call-to-action button"
+        description="URL for secondary button. Examples: '/learn-more', '/about', '/documentation'"
       />
 
             <!-- Video background properties -->
@@ -225,7 +225,7 @@
         type="Integer"
         default="30"
         label="Hero Background Darkness"
-        description="Controls the overlay of the hero section. Negative values darken (black overlay), positive values lighten (white overlay). -100 to 0: Black overlay (higher negative = darker). 0: No overlay. 1 to 100: White overlay (higher positive = lighter)."
+        description="Hero overlay darkness (-100 to 100). Negative: black overlay (darker), 0: no overlay, Positive: white overlay (lighter). Example: -50 for dark overlay, 30 for light overlay"
         min="-100"
         max="100"
       />
@@ -233,20 +233,20 @@
         name="backgroundVideoUrl"
         type="String"
         label="Background Video URL"
-        description="URL to your background video file (MP4 format recommended)"
+        description="Video file URL for hero background. Example: '/resource/BackgroundVideo.mp4', 'https://example.com/video.mp4'. MP4 format recommended"
       />
             <property
         name="backgroundVideoFallbackUrl"
         type="String"
         label="Background Video Fallback Image"
-        description="URL to a fallback image shown on mobile or when video can't play"
+        description="Image shown if video fails. Example: '/resource/VideoFallback.jpg', 'https://example.com/fallback.jpg'"
       />
             <property
         name="backgroundVideoDarkness"
         type="Integer"
         default="35"
         label="Video Darkness Percentage"
-        description="Percentage to darken the background video (0-100)"
+        description="Video darkness overlay percentage (0-100). Example: 0 for no overlay, 50 for medium darkness, 100 for black"
         min="0"
         max="100"
       />
@@ -263,14 +263,14 @@
         name="fabUrl"
         type="String"
         label="FAB Action URL"
-        description="Link for floating action button (only used when FAB Options is set to 'URL Link')"
+        description="URL for floating button when fabOptions is 'url_link'. Example: '/help', '/contact', 'mailto:support@company.com'"
       />
             <property
         name="fabOptions"
         type="String"
         default="both"
         label="FAB Options"
-        description="Select which options to show in the floating action button menu"
+        description="Floating button functionality. Options: 'both' (menu with help & AI), 'help_form' (help only), 'ai_assistant' (AI only), 'url_link' (link to URL)"
         datasource="both,help_form,ai_assistant,url_link"
       />
             
@@ -293,14 +293,14 @@
         type="String"
         default="utility:chat"
         label="Help Form Icon"
-        description="Icon name for the help form option (e.g. utility:chat)"
+        description="Lightning icon for help form. Format: 'category:iconName'. Examples: 'utility:chat', 'utility:help', 'standard:case'"
       />
             <property
         name="aiAssistantIcon"
         type="String"
         default="utility:einstein"
         label="AI Assistant Icon"
-        description="Icon name for the AI assistant option (e.g. utility:einstein)"
+        description="Lightning icon for AI assistant. Format: 'category:iconName'. Examples: 'utility:einstein', 'utility:bot', 'standard:bot'"
       />
 
             <!-- Footer configuration -->
@@ -315,14 +315,14 @@
         name="footerNavigationMenuName"
         type="String"
         label="Footer Navigation Menu"
-        description="Enter the name of the navigation menu to use in the footer"
+        description="Exact name of navigation menu for footer. Example: 'Footer Navigation', 'Footer Links'. Create in Setup > Navigation Menus"
       />
             <property
         name="footerStyle"
         type="String"
         default="standard"
         label="Footer Style"
-        description="Style variant for the footer section"
+        description="Footer layout style. Options: 'standard' (normal), 'minimal' (simple), 'multi-column' (multiple sections)"
         datasource="standard,minimal,multi-column"
       />
             <property
@@ -353,7 +353,7 @@
         type="Integer"
         default="3"
         label="Number of Footer Columns"
-        description="Number of columns to display in the footer"
+        description="Number of footer columns (1-5). Example: 3 for three-column layout"
         min="1"
         max="5"
       />
@@ -362,14 +362,14 @@
         type="String"
         default="Products, Resources, Company"
         label="Footer Column Titles"
-        description="Comma-separated list of column titles"
+        description="Column headers separated by commas. Example: 'Products, Resources, Company' or 'Services, Support, About Us'"
       />
             <property
         name="footerColumnMenus"
         type="String"
         default=""
         label="Footer Column Menus"
-        description="Comma-separated list of navigation menu names for each column (leave blank to use sections of main footer menu)"
+        description="Navigation menu names for each column, comma-separated. Example: 'Products Menu, Resources Menu, Company Menu'. Create these in Setup > Navigation Menus"
       />
 
             <!-- Social media links -->
@@ -379,7 +379,7 @@
         type="Integer"
         default="0"
         label="Number of Social Links"
-        description="Number of social links to display"
+        description="Number of social media links to display (0-10). Set to 0 to hide social links"
         min="0"
         max="10"
       />
@@ -388,14 +388,14 @@
         type="String"
         default="Facebook, Twitter, LinkedIn, Instagram"
         label="Social Link Titles"
-        description="Comma-separated list of social media names"
+        description="Social platform names, comma-separated. Example: 'Facebook, Twitter, LinkedIn, Instagram, YouTube'. Must match order of URLs"
       />
             <property
         name="socialLinkUrls"
         type="String"
         default=""
         label="Social Link URLs"
-        description="Comma-separated list of social media URLs"
+        description="Full URLs to social profiles, comma-separated. Example: 'https://facebook.com/company, https://twitter.com/company, https://linkedin.com/company/name'. Must match order of titles"
       />
         </targetConfig>
     </targetConfigs>
