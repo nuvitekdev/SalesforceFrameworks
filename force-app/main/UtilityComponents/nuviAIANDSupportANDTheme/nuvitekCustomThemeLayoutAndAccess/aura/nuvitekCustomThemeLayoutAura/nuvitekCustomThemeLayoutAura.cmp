@@ -540,7 +540,7 @@
                 <!-- FAB Menu Options -->
                 <aura:if isTrue="{!and(v.fabOptions != 'url_link', v.fabMenuOpen)}">
                     <div class="{!v.fabMenuClass}">
-                        <!-- Help Request Option -->
+                        <!-- Help Request Option - COMMENTED OUT
                         <aura:if isTrue="{!or(v.fabOptions == 'both', v.fabOptions == 'help_form')}">
                             <div class="fab-menu-item">
                                 <span class="fab-menu-label">{!v.helpFormLabel}</span>
@@ -549,8 +549,9 @@
                                 </button>
                             </div>
                         </aura:if>
+                        -->
                         
-                        <!-- AI Assistant Option -->
+                        <!-- AI Assistant Option - COMMENTED OUT
                         <aura:if isTrue="{!or(v.fabOptions == 'both', v.fabOptions == 'ai_assistant')}">
                             <div class="fab-menu-item">
                                 <span class="fab-menu-label">{!v.aiAssistantLabel}</span>
@@ -559,13 +560,13 @@
                                 </button>
                             </div>
                         </aura:if>
+                        -->
                     </div>
                 </aura:if>
 
-                <!-- Help Form Dialog -->
+                <!-- Help Form Dialog - COMMENTED OUT
                 <div class="{!v.helpFormDialogClass}">
                     <div class="support-requester-content">
-                        <!-- The support requester LWC component -->
                         <c:supportRequester
                             primaryColor="{!v.primaryColor}"
                             accentColor="{!v.accentColor}"
@@ -575,13 +576,13 @@
                             showFaqSection="{!v.showFaqSection}">
                         </c:supportRequester>
                     </div>
-                    <!-- Add close button to top right corner -->
                     <button class="dialog-close-button" onclick="{!c.toggleHelpForm}">
                         <lightning:icon iconName="utility:close" size="small"/>
                     </button>
                 </div>
+                -->
                 
-                <!-- LLM Assistant Dialog -->
+                <!-- LLM Assistant Dialog - COMMENTED OUT
                 <div class="{!v.llmAssistantDialogClass}">
                     <div class="help-form-dialog-header">
                         <h2 class="help-form-title">AI Assistant</h2>
@@ -590,10 +591,10 @@
                         </button>
                     </div>
                     <div class="help-form-content llm-assistant-container">
-                        <!-- LLM Assistant component is loaded here -->
                         <c:llmAssistant primaryColor="{!v.primaryColor}" accentColor="{!v.accentColor}"></c:llmAssistant>
                     </div>
                 </div>
+                -->
 
                 <!-- Overlay backdrop when dialogs are open -->
                 <div class="{!v.backdropClass}" onclick="{!c.closeAllDialogs}"></div>
