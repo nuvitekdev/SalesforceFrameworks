@@ -1,25 +1,25 @@
 <design:component label="Nuvitek Custom Theme Layout">
     <!-- Base theme properties -->
-    <design:attribute name="primaryColor" label="Primary Color" description="Primary theme color (hex or rgb)" default="#22BDC1"/>
-    <design:attribute name="accentColor" label="Accent Color" description="Accent theme color (hex or rgb)" default="#D5DF23"/>
-    <design:attribute name="textColor" label="Text Color" description="Main text color (hex or rgb)" default="#1d1d1f"/>
-    <design:attribute name="themeName" label="Theme Name" description="Theme variant (light or dark)" default="light"/>
-    <design:attribute name="heroBackgroundDarkness" label="Hero Background Darkness" description="Hero background overlay darkness" default="30"/>
+    <design:attribute name="primaryColor" label="Primary Color" description="Primary theme color. Example: #22BDC1, rgb(34, 189, 193), or CSS color name like 'blue'" default="#22BDC1"/>
+    <design:attribute name="accentColor" label="Accent Color" description="Secondary color for buttons and highlights. Example: #D5DF23, rgb(213, 223, 35)" default="#D5DF23"/>
+    <design:attribute name="textColor" label="Text Color" description="Main text color throughout the site. Example: #1d1d1f for dark text, #ffffff for white text" default="#1d1d1f"/>
+    <design:attribute name="themeName" label="Theme Name" description="Theme variant. Options: 'light' for light backgrounds, 'dark' for dark backgrounds" default="light"/>
+    <design:attribute name="heroBackgroundDarkness" label="Hero Background Darkness" description="Darkness overlay percentage for hero background (0-100). Example: 30 for light overlay, 70 for dark overlay" default="30"/>
     
     <!-- Search attributes -->
-    <design:attribute name="searchObjects" label="Search Objects" description="Objects to search across" default="Account,Contact"/>
+    <design:attribute name="searchObjects" label="Search Objects" description="Comma-separated Salesforce objects to search. Example: Account,Contact,Case,Opportunity,Lead" default="Account,Contact"/>
     
     <!-- Header options -->
     <design:attribute name="useDefaultHeader" label="Use Default Header" description="Use the built-in header" default="false"/>
-    <design:attribute name="headerNavigationMenuName" label="Header Navigation Menu" description="Name of the navigation menu for header"/>
-    <design:attribute name="logoUrl" label="Logo URL" description="URL or static resource name for logo"/>
-    <design:attribute name="logoAltText" label="Logo Alt Text" description="Alt text for logo" default="Nuvitek"/>
+    <design:attribute name="headerNavigationMenuName" label="Header Navigation Menu" description="Exact name of the navigation menu created in Setup > Navigation Menus. Example: 'Main Navigation', 'Header Menu'"/>
+    <design:attribute name="logoUrl" label="Logo URL" description="Logo image URL. Examples: '/resource/CompanyLogo' for static resource, 'https://example.com/logo.png' for external URL"/>
+    <design:attribute name="logoAltText" label="Logo Alt Text" description="Alternative text for logo accessibility. Example: 'Nuvitek Company Logo', 'Home'" default="Nuvitek"/>
     <design:attribute name="showSearchInHeader" label="Show Search in Header" description="Display search functionality in header" default="false"/>
     <design:attribute name="headerSticky" label="Sticky Header" description="Make header stick to top when scrolling" default="false"/>
-    <design:attribute name="headerVariant" label="Header Variant" description="Header style variant" default="standard"/>
-    <design:attribute name="headerContainerWidth" label="Header Container Width" description="Header container width percentage" default="100"/>
+    <design:attribute name="headerVariant" label="Header Variant" description="Header style. Options: 'standard' for normal header, 'transparent' for see-through header, 'minimal' for simple header" default="standard"/>
+    <design:attribute name="headerContainerWidth" label="Header Container Width" description="Header width as percentage (1-100). Example: 100 for full width, 80 for centered with margins" default="100"/>
     <design:attribute name="showProfileIcon" label="Show Profile Icon" description="Display profile icon in header" default="false"/>
-    <design:attribute name="profilePageUrl" label="Profile Page URL" description="URL for profile page" default="/profile"/>
+    <design:attribute name="profilePageUrl" label="Profile Page URL" description="URL to user profile page. Examples: '/profile', '/s/profile', '/myaccount'" default="/profile"/>
     <design:attribute name="ensureHomeNavItem" label="Ensure Home Nav Item" description="Automatically add Home as first nav item if not present" default="false"/>
     <design:attribute name="showFaqSection" label="Show FAQ Section" description="Display FAQ section" default="false"/>
     
@@ -28,43 +28,43 @@
     
     <!-- Footer options -->
     <design:attribute name="useDefaultFooter" label="Use Default Footer" description="Use the built-in footer" default="false"/>
-    <design:attribute name="footerNavigationMenuName" label="Footer Navigation Menu" description="Name of the navigation menu for footer"/>
-    <design:attribute name="footerStyle" label="Footer Style" description="Footer layout style (minimal, standard, multi-column)" default="standard"/>
+    <design:attribute name="footerNavigationMenuName" label="Footer Navigation Menu" description="Exact name of the navigation menu for footer links. Example: 'Footer Navigation', 'Footer Links'"/>
+    <design:attribute name="footerStyle" label="Footer Style" description="Footer layout style. Options: 'minimal' (simple), 'standard' (normal), 'multi-column' (multiple sections)" default="standard"/>
     <design:attribute name="companyName" label="Company Name" description="Company name for footer" default="Nuvitek"/>
     <design:attribute name="footerTagline" label="Footer Tagline" description="Footer tagline text" default="Delivering innovative solutions since 2012"/>
     <design:attribute name="footerLegalText" label="Footer Legal Text" description="Footer legal text" default="All rights reserved. Terms and conditions apply."/>
-    <design:attribute name="footerColumnCount" label="Footer Column Count" description="Number of footer columns" default="3"/>
-    <design:attribute name="footerColumnTitles" label="Footer Column Titles" description="Comma-separated footer column titles" default="Products, Resources, Company"/>
-    <design:attribute name="footerColumnMenus" label="Footer Column Menus" description="Comma-separated menu names for footer columns"/>
+    <design:attribute name="footerColumnCount" label="Footer Column Count" description="Number of footer columns (1-4). Example: 3 for three-column layout" default="3"/>
+    <design:attribute name="footerColumnTitles" label="Footer Column Titles" description="Column headers separated by commas. Example: 'Products, Resources, Company' or 'Services, Support, About Us'" default="Products, Resources, Company"/>
+    <design:attribute name="footerColumnMenus" label="Footer Column Menus" description="Navigation menu names for each column, comma-separated. Example: 'Products Menu, Resources Menu, Company Menu'. Create these in Setup > Navigation Menus"/>
     <design:attribute name="socialLinksCount" label="Social Links Count" description="Number of social links" default="0"/>
-    <design:attribute name="socialLinkTitles" label="Social Link Titles" description="Comma-separated social link titles" default="Facebook, Twitter, LinkedIn, Instagram"/>
-    <design:attribute name="socialLinkUrls" label="Social Link URLs" description="Comma-separated social link URLs"/>
+    <design:attribute name="socialLinkTitles" label="Social Link Titles" description="Social platform names, comma-separated. Example: 'Facebook, Twitter, LinkedIn, Instagram, YouTube'" default="Facebook, Twitter, LinkedIn, Instagram"/>
+    <design:attribute name="socialLinkUrls" label="Social Link URLs" description="Full URLs to social profiles, comma-separated. Example: 'https://facebook.com/company, https://twitter.com/company, https://linkedin.com/company/name'"/>
     
     <!-- Hero section -->
     <design:attribute name="showHeroSection" label="Show Hero Section" description="Display hero section" default="true"/>
-    <design:attribute name="heroLayout" label="Hero Layout" description="Hero section layout (fullwidth or split)" default="fullwidth"/>
-    <design:attribute name="heroBackgroundImage" label="Hero Background Image" description="Background image for hero section"/>
+    <design:attribute name="heroLayout" label="Hero Layout" description="Hero section layout. Options: 'fullwidth' for centered content, 'split' for two-column layout" default="fullwidth"/>
+    <design:attribute name="heroBackgroundImage" label="Hero Background Image" description="Hero background image URL. Example: '/resource/HeroImage' for static resource, 'https://example.com/hero.jpg' for external"/>
     <design:attribute name="heroTitle" label="Hero Title" description="Main hero title" default="Experience the Future Today"/>
     <design:attribute name="heroSubtitle" label="Hero Subtitle" description="Hero subtitle text" default="Discover innovative solutions designed with you in mind"/>
     <design:attribute name="heroCTAPrimaryLabel" label="Hero CTA Primary Label" description="Primary CTA button text" default="Get Started"/>
-    <design:attribute name="heroCTAPrimaryUrl" label="Hero CTA Primary URL" description="Primary CTA button URL"/>
+    <design:attribute name="heroCTAPrimaryUrl" label="Hero CTA Primary URL" description="URL for main call-to-action button. Examples: '/register', '/contact-us', 'https://example.com/signup'"/>
     <design:attribute name="heroCTASecondaryLabel" label="Hero CTA Secondary Label" description="Secondary CTA button text" default="Learn More"/>
-    <design:attribute name="heroCTASecondaryUrl" label="Hero CTA Secondary URL" description="Secondary CTA button URL"/>
+    <design:attribute name="heroCTASecondaryUrl" label="Hero CTA Secondary URL" description="URL for secondary button. Examples: '/learn-more', '/about', '/documentation'"/>
     
     <!-- FAB options -->
     <design:attribute name="showFab" label="Show FAB" description="Display floating action button" default="false"/>
-    <design:attribute name="fabUrl" label="FAB URL" description="URL for FAB when using url_link option"/>
-    <design:attribute name="fabOptions" label="FAB Options" description="FAB functionality (both, help_form, ai_assistant, url_link)" default="both"/>
+    <design:attribute name="fabUrl" label="FAB URL" description="URL for floating action button when fabOptions is 'url_link'. Example: '/help', '/contact', 'mailto:support@company.com'"/>
+    <design:attribute name="fabOptions" label="FAB Options" description="Floating button functionality. Options: 'both' (menu with help and AI), 'help_form' (help only), 'ai_assistant' (AI only), 'url_link' (link to URL)" default="both"/>
     <design:attribute name="helpFormLabel" label="Help Form Label" description="Label for help form option" default="Help Request"/>
     <design:attribute name="aiAssistantLabel" label="AI Assistant Label" description="Label for AI assistant option" default="AI Assistant"/>
-    <design:attribute name="helpFormIcon" label="Help Form Icon" description="Icon for help form" default="utility:chat"/>
-    <design:attribute name="aiAssistantIcon" label="AI Assistant Icon" description="Icon for AI assistant" default="utility:einstein"/>
+    <design:attribute name="helpFormIcon" label="Help Form Icon" description="Lightning icon for help form. Format: 'category:iconName'. Examples: 'utility:chat', 'utility:help', 'standard:case'" default="utility:chat"/>
+    <design:attribute name="aiAssistantIcon" label="AI Assistant Icon" description="Lightning icon for AI assistant. Format: 'category:iconName'. Examples: 'utility:einstein', 'utility:bot', 'standard:bot'" default="utility:einstein"/>
     
     <!-- Video background -->
     <design:attribute name="showBackgroundVideo" label="Show Background Video" description="Display video background in hero" default="false"/>
-    <design:attribute name="backgroundVideoUrl" label="Background Video URL" description="URL to background video"/>
-    <design:attribute name="backgroundVideoFallbackUrl" label="Background Video Fallback URL" description="Fallback image for video"/>
-    <design:attribute name="backgroundVideoDarkness" label="Background Video Darkness" description="Video overlay darkness" default="35"/>
+    <design:attribute name="backgroundVideoUrl" label="Background Video URL" description="Video file URL for hero background. Example: '/resource/BackgroundVideo' for static resource, 'https://example.com/video.mp4'"/>
+    <design:attribute name="backgroundVideoFallbackUrl" label="Background Video Fallback URL" description="Image shown if video fails to load. Example: '/resource/VideoFallback', 'https://example.com/fallback.jpg'"/>
+    <design:attribute name="backgroundVideoDarkness" label="Background Video Darkness" description="Darkness overlay percentage for video (0-100). Example: 0 for no overlay, 50 for medium darkness, 100 for black" default="35"/>
     
     <!-- Theme control -->
     <design:attribute name="applyThemeToSlots" label="Apply Theme to Slots" description="Apply theme variables to slotted content" default="false"/>
