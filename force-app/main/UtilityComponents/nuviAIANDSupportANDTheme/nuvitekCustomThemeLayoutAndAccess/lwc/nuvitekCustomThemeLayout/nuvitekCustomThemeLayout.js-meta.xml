@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>62.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Nuvitek Custom Theme Layout</masterLabel>
-    <description
-  >A highly customizable theme layout component that supports both default and custom header/footer components</description>
+    <description>A highly customizable theme layout component that supports both default and custom header/footer components</description>
     <targets>
         <target>lightningCommunity__Page</target>
                 <target>lightning__HomePage</target>
@@ -14,389 +13,151 @@
     <targetConfigs>
         <targetConfig targets="lightningCommunity__Default">
             <!-- Theme appearance -->
-            <property
-        name="primaryColor"
-        type="Color"
-        default="#22BDC1"
-        label="Primary Color"
-        description="Primary color for buttons and highlights. Example: #22BDC1, rgb(34, 189, 193), or CSS color name"
-      />
-            <property
-        name="accentColor"
-        type="Color"
-        default="#D5DF23"
-        label="Accent Color"
-        description="Secondary color for gradients and decorations. Example: #D5DF23, rgb(213, 223, 35)"
-      />
-            <property
-        name="textColor"
-        type="Color"
-        default="#1d1d1f"
-        label="Text Color"
-        description="Main text color throughout the site. Example: #1d1d1f for dark text, #ffffff for white text"
-      />
-            <property
-        name="themeName"
-        type="String"
-        default="light"
-        label="Theme Mode"
-        description="Theme mode. Options: 'light' for light backgrounds, 'dark' for dark backgrounds"
-        datasource="light,dark"
-      />
-            <property
-        name="applyThemeToSlots"
-        type="Boolean"
-        default="true"
-        label="Apply Theme to Slotted Content"
-        description="When enabled, automatically applies theme styling to components placed in slots"
-      />
-            <property
-        name="globalThemeOverride"
-        type="Boolean"
-        default="true"
-        label="Global Theme Overrides"
-        description="When enabled, applies theme styling to OOTB Salesforce components"
-      />
+            <property name="primaryColor" type="Color" default="#22BDC1" label="Primary Color"
+                description="Primary accent color for buttons and highlights" />
+            <property name="accentColor" type="Color" default="#D5DF23" label="Accent Color"
+                description="Secondary accent color for gradients and decorations" />
+            <property name="textColor" type="Color" default="#1d1d1f" label="Text Color"
+                description="Main text color" />
+            <property name="themeName" type="String" default="light" label="Theme Mode"
+                description="Light or dark theme mode"
+                datasource="light,dark" />
+            <property name="applyThemeToSlots" type="Boolean" default="true"
+                label="Apply Theme to Slotted Content"
+                description="When enabled, automatically applies theme styling to components placed in slots" />
+            <property name="globalThemeOverride" type="Boolean" default="true"
+                label="Global Theme Overrides"
+                description="When enabled, applies theme styling to OOTB Salesforce components" />
 
             <!-- Header configuration -->
-            <property
-        name="useDefaultHeader"
-        type="Boolean"
-        default="false"
-        label="Use Default Header"
-        description="Enable to use the built-in header instead of custom header component"
-      />
-            <property
-        name="headerContainerWidth"
-        type="Integer"
-        default="100"
-        label="Header Container Width %"
-        description="Header width as percentage (0-100). Example: 100 for full width, 80 for centered with margins"
-        min="0"
-        max="100"
-      />
-            <property
-        name="headerVariant"
-        type="String"
-        default="standard"
-        label="Header Variant"
-        description="Header style. Options: 'standard' (normal), 'minimal' (simple), 'expanded' (larger)"
-        datasource="standard,minimal,expanded"
-      />
-            <property
-        name="headerSticky"
-        type="Boolean"
-        default="false"
-        label="Sticky Header"
-        description="Keep the header fixed at the top when scrolling"
-      />
+            <property name="useDefaultHeader" type="Boolean" default="false"
+                label="Use Default Header"
+                description="Enable to use the built-in header instead of custom header component" />
+            <property name="headerContainerWidth" type="Integer" default="100"
+                label="Header Container Width %"
+                description="Controls the width of the header container as percentage" min="0"
+                max="100" />
+            <property name="headerVariant" type="String" default="standard" label="Header Variant"
+                description="Visual style for the header" datasource="standard,minimal,expanded" />
+            <property name="headerSticky" type="Boolean" default="false" label="Sticky Header"
+                description="Keep the header fixed at the top when scrolling" />
 
             <!-- Logo configuration -->
-            <property
-        name="logoUrl"
-        type="String"
-        label="Logo URL"
-        description="Logo image URL. Examples: '/resource/CompanyLogo' for static resource, 'https://example.com/logo.png' for external"
-      />
-            <property
-        name="logoAltText"
-        type="String"
-        default="Nuvitek"
-        label="Logo Alt Text"
-        description="Alternative text for logo accessibility. Example: 'Company Logo', 'Home'"
-      />
+            <property name="logoUrl" type="String" label="Logo URL"
+                description="URL to your custom logo image" />
+            <property name="logoAltText" type="String" default="Nuvitek" label="Logo Alt Text"
+                description="Alternative text for the logo for accessibility" />
 
             <!-- Navigation configuration -->
-            <property
-        name="headerNavigationMenuName"
-        type="String"
-        label="Header Navigation Menu"
-        description="Exact name of navigation menu created in Setup > Navigation Menus. Example: 'Main Navigation', 'Header Menu'"
-      />
-            <property
-        name="ensureHomeNavItem"
-        type="Boolean"
-        default="false"
-        label="Ensure Home Navigation Item"
-        description="Automatically add a Home item to navigation if one doesn't exist"
-      />
-            <property
-        name="showSearchInHeader"
-        type="Boolean"
-        default="false"
-        label="Show Search in Header"
-        description="Display a search box in the header"
-      />
-            <property
-        name="searchObjects"
-        type="String"
-        default="Account,Contact"
-        label="Objects to Search"
-        description="Salesforce objects to search, comma-separated. Example: Account,Contact,Case,Opportunity,Lead"
-      />
-            <property
-        name="showProfileIcon"
-        type="Boolean"
-        default="false"
-        label="Show Profile Icon"
-        description="Display a profile icon in the header that links to the user profile"
-      />
-            <property
-        name="profilePageUrl"
-        type="String"
-        default="/profile"
-        label="Profile Page URL"
-        description="URL to user profile page. Examples: '/profile', '/s/profile', '/myaccount'"
-      />
+            <property name="headerNavigationMenuName" type="String" label="Header Navigation Menu"
+                description="Enter the name of the navigation menu to use in the header" />
+            <property name="ensureHomeNavItem" type="Boolean" default="false"
+                label="Ensure Home Navigation Item"
+                description="Automatically add a Home item to navigation if one doesn't exist" />
+            <property name="showSearchInHeader" type="Boolean" default="false"
+                label="Show Search in Header" description="Display a search box in the header" />
+            <property name="searchObjects" type="String" default="Account,Contact" 
+                label="Objects to Search"
+                description="Comma-separated list of objects to search across" />
+            <property name="showProfileIcon" type="Boolean" default="false"
+                label="Show Profile Icon"
+                description="Display a profile icon in the header that links to the user profile" />
+            <property name="profilePageUrl" type="String" default="/profile"
+                label="Profile Page URL" description="URL to the user profile page" />
 
             <!-- Hero section configuration -->
-            <property
-        name="showHeroSection"
-        type="Boolean"
-        default="false"
-        label="Show Hero Section"
-        description="Toggle to display the hero banner section"
-      />
-            <property
-        name="heroLayout"
-        type="String"
-        default="fullwidth"
-        label="Hero Layout"
-        description="Hero layout. Options: 'fullwidth' (centered content), 'split' (two-column layout)"
-        datasource="split,fullwidth"
-      />
-            <property
-        name="heroBackgroundImage"
-        type="String"
-        label="Hero Background Image URL"
-        description="Hero background image URL. Example: '/resource/HeroImage' for static resource, 'https://example.com/hero.jpg' for external"
-      />
-            <property
-        name="heroTitle"
-        type="String"
-        default="Experience the Future Today"
-        label="Hero Title"
-        description="Main headline for hero section"
-      />
-            <property
-        name="heroSubtitle"
-        type="String"
-        default="Discover innovative solutions designed with you in mind"
-        label="Hero Subtitle"
-        description="Supporting text for hero section"
-      />
-            <property
-        name="heroCTAPrimaryLabel"
-        type="String"
-        default="Get Started"
-        label="Primary Button Label"
-        description="Text for primary call-to-action button"
-      />
-            <property
-        name="heroCTAPrimaryUrl"
-        type="String"
-        label="Primary Button URL"
-        description="URL for main CTA button. Examples: '/register', '/contact-us', 'https://example.com/signup'"
-      />
-            <property
-        name="heroCTASecondaryLabel"
-        type="String"
-        default="Learn More"
-        label="Secondary Button Label"
-        description="Text for secondary call-to-action button"
-      />
-            <property
-        name="heroCTASecondaryUrl"
-        type="String"
-        label="Secondary Button URL"
-        description="URL for secondary button. Examples: '/learn-more', '/about', '/documentation'"
-      />
+            <property name="showHeroSection" type="Boolean" default="false"
+                label="Show Hero Section" description="Toggle to display the hero banner section" />
+            <property name="heroLayout" type="String" default="fullwidth" label="Hero Layout"
+                description="Layout style for the hero section" datasource="split,fullwidth" />
+            <property name="heroBackgroundImage" type="String" label="Hero Background Image URL"
+                description="Background image URL for hero section" />
+            <property name="heroTitle" type="String" default="Experience the Future Today" label="Hero Title" 
+                description="Main headline for hero section" />
+            <property name="heroSubtitle" type="String" 
+                default="Discover innovative solutions designed with you in mind" 
+                label="Hero Subtitle" description="Supporting text for hero section" />
+            <property name="heroCTAPrimaryLabel" type="String" default="Get Started" label="Primary Button Label" 
+                description="Text for primary call-to-action button" />
+            <property name="heroCTAPrimaryUrl" type="String" label="Primary Button URL"
+                description="Link for primary call-to-action button" />
+            <property name="heroCTASecondaryLabel" type="String" default="Learn More" label="Secondary Button Label"
+                description="Text for secondary call-to-action button" />
+            <property name="heroCTASecondaryUrl" type="String" label="Secondary Button URL"
+                description="Link for secondary call-to-action button" />
 
             <!-- Video background properties -->
-            <property
-        name="showBackgroundVideo"
-        type="Boolean"
-        default="false"
-        label="Show Background Video"
-        description="Toggle to display a background video in the hero section"
-      />
-            <property
-        name="heroBackgroundDarkness"
-        type="Integer"
-        default="30"
-        label="Hero Background Darkness"
-        description="Hero overlay darkness (-100 to 100). Negative: black overlay (darker), 0: no overlay, Positive: white overlay (lighter). Example: -50 for dark overlay, 30 for light overlay"
-        min="-100"
-        max="100"
-      />
-            <property
-        name="backgroundVideoUrl"
-        type="String"
-        label="Background Video URL"
-        description="Video file URL for hero background. Example: '/resource/BackgroundVideo.mp4', 'https://example.com/video.mp4'. MP4 format recommended"
-      />
-            <property
-        name="backgroundVideoFallbackUrl"
-        type="String"
-        label="Background Video Fallback Image"
-        description="Image shown if video fails. Example: '/resource/VideoFallback.jpg', 'https://example.com/fallback.jpg'"
-      />
-            <property
-        name="backgroundVideoDarkness"
-        type="Integer"
-        default="35"
-        label="Video Darkness Percentage"
-        description="Video darkness overlay percentage (0-100). Example: 0 for no overlay, 50 for medium darkness, 100 for black"
-        min="0"
-        max="100"
-      />
+            <property name="showBackgroundVideo" type="Boolean" default="false"
+                label="Show Background Video"
+                description="Toggle to display a background video in the hero section" />
+            <property name="heroBackgroundDarkness" type="Integer" default="30"
+                label="Hero Background Darkness"
+                description="Controls the overlay of the hero section. Negative values darken (black overlay), positive values lighten (white overlay). -100 to 0: Black overlay (higher negative = darker). 0: No overlay. 1 to 100: White overlay (higher positive = lighter)."
+                min="-100" max="100" />
+            <property name="backgroundVideoUrl" type="String" label="Background Video URL"
+                description="URL to your background video file (MP4 format recommended)" />
+            <property name="backgroundVideoFallbackUrl" type="String"
+                label="Background Video Fallback Image"
+                description="URL to a fallback image shown on mobile or when video can't play" />
+            <property name="backgroundVideoDarkness" type="Integer" default="35"
+                label="Video Darkness Percentage"
+                description="Percentage to darken the background video (0-100)" min="0" max="100" />
 
             <!-- Visual elements -->
-            <property
-        name="showFab"
-        type="Boolean"
-        default="false"
-        label="Show Floating Action Button"
-        description="Toggle to display floating action button"
-      />
-            <property
-        name="fabUrl"
-        type="String"
-        label="FAB Action URL"
-        description="URL for floating button when fabOptions is 'url_link'. Example: '/help', '/contact', 'mailto:support@company.com'"
-      />
-            <property
-        name="fabOptions"
-        type="String"
-        default="both"
-        label="FAB Options"
-        description="Floating button functionality. Options: 'both' (menu with help & AI), 'help_form' (help only), 'ai_assistant' (AI only), 'url_link' (link to URL)"
-        datasource="both,help_form,ai_assistant,url_link"
-      />
+            <property name="showFab" type="Boolean" default="false"
+                label="Show Floating Action Button"
+                description="Toggle to display floating action button" />
+            <property name="fabUrl" type="String" label="FAB Action URL"
+                description="Link for floating action button (only used when FAB Options is set to 'URL Link')" />
+            <property name="fabOptions" type="String" default="both" label="FAB Options"
+                description="Select which options to show in the floating action button menu"
+                datasource="both,help_form,ai_assistant,url_link" />
             
-            <property
-        name="helpFormLabel"
-        type="String"
-        default="Help Request"
-        label="Help Form Label"
-        description="Label for the help request option in the FAB menu"
-      />
-            <property
-        name="aiAssistantLabel"
-        type="String"
-        default="AI Assistant"
-        label="AI Assistant Label"
-        description="Label for the AI assistant option in the FAB menu"
-      />
-            <property
-        name="helpFormIcon"
-        type="String"
-        default="utility:chat"
-        label="Help Form Icon"
-        description="Lightning icon for help form. Format: 'category:iconName'. Examples: 'utility:chat', 'utility:help', 'standard:case'"
-      />
-            <property
-        name="aiAssistantIcon"
-        type="String"
-        default="utility:einstein"
-        label="AI Assistant Icon"
-        description="Lightning icon for AI assistant. Format: 'category:iconName'. Examples: 'utility:einstein', 'utility:bot', 'standard:bot'"
-      />
+            <property name="helpFormLabel" type="String" default="Help Request" label="Help Form Label"
+                description="Label for the help request option in the FAB menu" />
+            <property name="aiAssistantLabel" type="String" default="AI Assistant" label="AI Assistant Label"
+                description="Label for the AI assistant option in the FAB menu" />
+            <property name="helpFormIcon" type="String" default="utility:chat" label="Help Form Icon"
+                description="Icon name for the help form option (e.g. utility:chat)" />
+            <property name="aiAssistantIcon" type="String" default="utility:einstein" label="AI Assistant Icon"
+                description="Icon name for the AI assistant option (e.g. utility:einstein)" />
 
             <!-- Footer configuration -->
-            <property
-        name="useDefaultFooter"
-        type="Boolean"
-        default="false"
-        label="Use Default Footer"
-        description="Enable to use the built-in footer instead of custom footer component"
-      />
-            <property
-        name="footerNavigationMenuName"
-        type="String"
-        label="Footer Navigation Menu"
-        description="Exact name of navigation menu for footer. Example: 'Footer Navigation', 'Footer Links'. Create in Setup > Navigation Menus"
-      />
-            <property
-        name="footerStyle"
-        type="String"
-        default="standard"
-        label="Footer Style"
-        description="Footer layout style. Options: 'standard' (normal), 'minimal' (simple), 'multi-column' (multiple sections)"
-        datasource="standard,minimal,multi-column"
-      />
-            <property
-        name="companyName"
-        type="String"
-        default="Nuvitek"
-        label="Company Name"
-        description="Company name displayed in copyright notice"
-      />
-            <property
-        name="footerTagline"
-        type="String"
-        default="Delivering innovative solutions since 2012"
-        label="Footer Tagline"
-        description="Short tagline displayed in the footer"
-      />
-            <property
-        name="footerLegalText"
-        type="String"
-        default="All rights reserved. Terms and conditions apply."
-        label="Legal Text"
-        description="Additional legal text displayed in the footer"
-      />
+            <property name="useDefaultFooter" type="Boolean" default="false"
+                label="Use Default Footer"
+                description="Enable to use the built-in footer instead of custom footer component" />
+            <property name="footerNavigationMenuName" type="String" label="Footer Navigation Menu"
+                description="Enter the name of the navigation menu to use in the footer" />
+            <property name="footerStyle" type="String" default="standard" label="Footer Style"
+                description="Style variant for the footer section"
+                datasource="standard,minimal,multi-column" />
+            <property name="companyName" type="String" default="Nuvitek" label="Company Name"
+                description="Company name displayed in copyright notice" />
+            <property name="footerTagline" type="String" 
+                default="Delivering innovative solutions since 2012" 
+                label="Footer Tagline" description="Short tagline displayed in the footer" />
+            <property name="footerLegalText" type="String" 
+                default="All rights reserved. Terms and conditions apply." 
+                label="Legal Text" description="Additional legal text displayed in the footer" />
 
             <!-- Dynamic Footer Columns -->
-            <property
-        name="footerColumnCount"
-        type="Integer"
-        default="3"
-        label="Number of Footer Columns"
-        description="Number of footer columns (1-5). Example: 3 for three-column layout"
-        min="1"
-        max="5"
-      />
-            <property
-        name="footerColumnTitles"
-        type="String"
-        default="Products, Resources, Company"
-        label="Footer Column Titles"
-        description="Column headers separated by commas. Example: 'Products, Resources, Company' or 'Services, Support, About Us'"
-      />
-            <property
-        name="footerColumnMenus"
-        type="String"
-        default=""
-        label="Footer Column Menus"
-        description="Navigation menu names for each column, comma-separated. Example: 'Products Menu, Resources Menu, Company Menu'. Create these in Setup > Navigation Menus"
-      />
+            <property name="footerColumnCount" type="Integer" default="3"
+                label="Number of Footer Columns"
+                description="Number of columns to display in the footer" min="1" max="5" />
+            <property name="footerColumnTitles" type="String" default="Products, Resources, Company" 
+                label="Footer Column Titles" description="Comma-separated list of column titles" />
+            <property name="footerColumnMenus" type="String" default="" label="Footer Column Menus"
+                description="Comma-separated list of navigation menu names for each column (leave blank to use sections of main footer menu)" />
 
             <!-- Social media links -->
             <!-- Dynamic Social Links -->
-            <property
-        name="socialLinksCount"
-        type="Integer"
-        default="0"
-        label="Number of Social Links"
-        description="Number of social media links to display (0-10). Set to 0 to hide social links"
-        min="0"
-        max="10"
-      />
-            <property
-        name="socialLinkTitles"
-        type="String"
-        default="Facebook, Twitter, LinkedIn, Instagram"
-        label="Social Link Titles"
-        description="Social platform names, comma-separated. Example: 'Facebook, Twitter, LinkedIn, Instagram, YouTube'. Must match order of URLs"
-      />
-            <property
-        name="socialLinkUrls"
-        type="String"
-        default=""
-        label="Social Link URLs"
-        description="Full URLs to social profiles, comma-separated. Example: 'https://facebook.com/company, https://twitter.com/company, https://linkedin.com/company/name'. Must match order of titles"
-      />
+            <property name="socialLinksCount" type="Integer" default="0"
+                label="Number of Social Links" description="Number of social links to display"
+                min="0" max="10" />
+            <property name="socialLinkTitles" type="String" default="Facebook, Twitter, LinkedIn, Instagram" 
+                label="Social Link Titles" description="Comma-separated list of social media names" />
+            <property name="socialLinkUrls" type="String" default="" label="Social Link URLs"
+                description="Comma-separated list of social media URLs" />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
