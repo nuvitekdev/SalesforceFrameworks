@@ -452,31 +452,27 @@
             
             <!-- FAB Menu Options -->
             <div class={fabMenuClass} if:false={isUrlLink}>
-                <!-- Help Request Option - COMMENTED OUT -->
-                <!--
+                <!-- Help Request Option -->
                 <div class="fab-menu-item" if:true={showHelpFormOption}>
                     <span class="fab-menu-label">{helpFormLabel}</span>
                     <button class="fab-menu-button" onclick={toggleHelpForm} aria-label={helpFormLabel}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" lwc:dom="manual"></svg>
                     </button>
                 </div>
-                -->
                 
-                <!-- AI Assistant Option - COMMENTED OUT -->
-                <!--
+                <!-- AI Assistant Option -->
                 <div class="fab-menu-item" if:true={showAiAssistantOption}>
                     <span class="fab-menu-label">{aiAssistantLabel}</span>
                     <button class="fab-menu-button" onclick={toggleLlmAssistant} aria-label={aiAssistantLabel}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" lwc:dom="manual"></svg>
                     </button>
                 </div>
-                -->
             </div>
 
-            <!-- Help Form Dialog - COMMENTED OUT -->
-            <!--
+            <!-- Help Form Dialog -->
             <div class={helpFormDialogClass}>
                 <div class="support-requester-content">
+                    <!-- The support requester LWC component -->
                     <c-support-requester
                         primary-color={primaryColor}
                         accent-color={accentColor}
@@ -486,6 +482,7 @@
                         show-faq-section={showFaqSection}>
                     </c-support-requester>
                 </div>
+                <!-- Add close button to top right corner -->
                 <button class="dialog-close-button" onclick={toggleHelpForm}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -493,10 +490,8 @@
                     </svg>
                 </button>
             </div>
-            -->
             
-            <!-- LLM Assistant Dialog - COMMENTED OUT -->
-            <!--
+            <!-- LLM Assistant Dialog -->
             <div class={llmAssistantDialogClass}>
                 <div class="help-form-dialog-header">
                     <h2 class="help-form-title">AI Assistant</h2>
@@ -508,10 +503,10 @@
                     </button>
                 </div>
                 <div class="help-form-content llm-assistant-container">
+                    <!-- LLM Assistant component is loaded here -->
                     <c-llm-assistant primary-color={primaryColor} accent-color={accentColor}></c-llm-assistant>
                 </div>
             </div>
-            -->
 
             <!-- Overlay backdrop when dialogs are open -->
             <div class={backdropClass} onclick={closeAllDialogs}></div>
