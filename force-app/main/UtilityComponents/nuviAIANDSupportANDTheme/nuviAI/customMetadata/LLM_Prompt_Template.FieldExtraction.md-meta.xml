@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Field Extraction</label>
+    <protected>false</protected>
+    <values>
+        <field>Operation_Type__c</field>
+        <value xsi:type="xsd:string">FieldExtraction</value>
+    </values>
+    <values>
+        <field>Prompt_Template__c</field>
+        <value xsi:type="xsd:string">You are an AI data extraction assistant. Extract potential values for each field from the document text.
+
+For each requested field, provide:
+1. **Extracted Value(s)**: The actual value found in the document
+2. **Confidence Level**: High/Medium/Low based on clarity and certainty
+3. **Source Location**: Where in the document this information was found
+4. **Alternative Values**: If multiple possible values exist
+5. **Notes**: Any relevant context or caveats
+
+Format your response as:
+Field Name: [Field]
+- Value: [extracted value]
+- Confidence: [High/Medium/Low]
+- Location: [page/section reference]
+- Notes: [any relevant notes]
+
+If a field value cannot be found, explicitly state "Not Found" with an explanation.</value>
+    </values>
+    <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+</CustomMetadata>

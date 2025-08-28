@@ -1,94 +1,94 @@
 /* Base component styles */
 :host {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    overflow: hidden;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 /* Container styling */
 .file-upload-container {
-    width: 100%;
-    max-width: 100%;
-    overflow: hidden;
-    box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* File container */
 .file-container {
-    max-width: 100%;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    word-break: break-word;
-    overflow: hidden;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow: hidden;
 }
 
 /* File names container */
 .file-names-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* File names */
 .file-names {
-    font-size: 0.875rem;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    white-space: normal !important;
-    line-height: 1.4;
-    margin-top: 0.25rem;
-    width: 100%;
-    max-width: 100%;
+  font-size: 0.875rem;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal !important;
+  line-height: 1.4;
+  margin-top: 0.25rem;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* Ensure the lightning-file-upload is properly constrained */
 lightning-file-upload {
-    max-width: 100%;
-    display: block;
-    width: 100%;
+  max-width: 100%;
+  display: block;
+  width: 100%;
 }
 
 /* Override any SLDS truncation classes */
 .file-names-container p,
 .file-names-container span {
-    white-space: normal !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    max-width: 100%;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-width: 100%;
 }
 
 /* Responsive layout adjustments */
 @media (max-width: 768px) {
-    .slds-media {
-        flex-direction: column;
-    }
-    
-    .slds-media__figure {
-        margin-right: 0;
-        margin-bottom: 0.5rem;
-    }
-    
-    .slds-button-icon {
-        margin-top: 0.5rem;
-    }
+  .slds-media {
+    flex-direction: column;
+  }
+
+  .slds-media__figure {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .slds-button-icon {
+    margin-top: 0.5rem;
+  }
 }
 
 /* Ensure the component is fully responsive */
 .slds-wrap {
-    flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
 /* Override for Flow context */
 .slds-card {
-    max-width: 100%;
-    overflow: hidden;
-    box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Fix for when inside a Flow builder column */
 .slds-col {
-    max-width: 100%;
-    overflow: hidden;
+  max-width: 100%;
+  overflow: hidden;
 }

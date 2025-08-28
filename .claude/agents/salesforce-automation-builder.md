@@ -30,6 +30,7 @@ EOF
 ```
 
 **Why Claude for Automation:**
+
 - **Superior Accuracy**: 72.5% code generation accuracy
 - **Salesforce Expertise**: Deep understanding of triggers and limits
 - **Test Coverage**: Generates comprehensive test classes
@@ -82,6 +83,7 @@ EOF
 6. Coordinate deployment order
 
 **Quality Checks:**
+
 - All triggers follow framework patterns
 - Validation rules have clear error messages
 - Approval processes match business requirements
@@ -89,6 +91,7 @@ EOF
 - Performance is optimized for scale
 
 **Collaboration Protocol:**
+
 - Phase 4 implementation agent
 - Reads from code-business-logic-analyzer outputs
 - Creates automation in `/implementations/salesforce/force-app/main/default/`
@@ -97,6 +100,7 @@ EOF
 
 **Output Standards:**
 All automation includes:
+
 - Production-ready implementations
 - Clear documentation of logic
 - Deployment instructions

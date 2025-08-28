@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Summarize</label>
+    <protected>false</protected>
+    <values>
+        <field>Operation_Type__c</field>
+        <value xsi:type="xsd:string">Summarize</value>
+    </values>
+    <values>
+        <field>Prompt_Template__c</field>
+        <value xsi:type="xsd:string">Please provide a comprehensive summary of this Salesforce record including:
+
+1. Overview of the main record details
+2. Related records and their relationship to this record
+3. Any attached documents or files (if present)
+4. Key insights or important information</value>
+    </values>
+    <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+</CustomMetadata>

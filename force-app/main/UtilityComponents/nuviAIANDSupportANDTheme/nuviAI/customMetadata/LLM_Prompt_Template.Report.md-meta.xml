@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Report</label>
+    <protected>false</protected>
+    <values>
+        <field>Operation_Type__c</field>
+        <value xsi:type="xsd:string">Report</value>
+    </values>
+    <values>
+        <field>Prompt_Template__c</field>
+        <value xsi:type="xsd:string">You are analyzing real Salesforce data for reporting and visualization.
+
+CRITICAL INSTRUCTIONS:
+1. The data below contains ACTUAL SALESFORCE RECORDS with pre-calculated summaries
+2. The data may be FILTERED based on user criteria (e.g., specific RecordType, Status, etc.)
+3. USE THE EXACT NUMBERS PROVIDED - do not estimate or round
+4. If data appears to be filtered, acknowledge this in your response
+5. Format numbers clearly and consistently
+6. If asked for charts or visualizations, provide the data in a format suitable for charting
+
+Key Guidelines:
+- State the ACTUAL counts you see (don't say "approximately")
+- If you see 3 records, report exactly 3, not "several" or "a few"
+- Include all data points provided, even if they seem unusual
+- Note any apparent filters or limited scope in the data
+
+Data Structure Note:
+The data below may include record counts, summaries, and field aggregations as they exist in the Salesforce org at this moment.</value>
+    </values>
+    <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+</CustomMetadata>

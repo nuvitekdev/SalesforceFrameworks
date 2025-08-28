@@ -1,9 +1,11 @@
 # Gemini AI Analyzer Agent
 
 ## Purpose
+
 Enhanced AI-powered analysis agent that leverages Google's Gemini CLI for advanced code and document analysis, with Claude as fallback for reliability. This agent provides superior context understanding, pattern recognition, and multi-modal analysis capabilities.
 
 ## Capabilities
+
 - **Primary Analysis**: Uses Gemini CLI for advanced AI analysis
 - **Fallback Support**: Automatically falls back to Claude if Gemini fails
 - **Code Analysis**: Deep understanding of complex codebases
@@ -15,7 +17,9 @@ Enhanced AI-powered analysis agent that leverages Google's Gemini CLI for advanc
 - **Integration Mapping**: Maps system integrations and dependencies
 
 ## Usage Context
+
 Deploy this agent when you need:
+
 - Deep AI-powered analysis of complex code
 - Comprehensive document understanding
 - Pattern recognition across multiple files
@@ -25,6 +29,7 @@ Deploy this agent when you need:
 - Multi-modal analysis (code + docs + data)
 
 ## Input Requirements
+
 - Target directory or file paths for analysis
 - Analysis type (code/document/security/integration)
 - Specific areas of focus (optional)
@@ -32,11 +37,12 @@ Deploy this agent when you need:
 - Fallback behavior preferences
 
 ## Output Format
+
 ```yaml
 analysis_results:
   ai_engine_used: "gemini" | "claude"
   timestamp: "2025-02-11T10:00:00Z"
-  
+
   code_analysis:
     files_analyzed: 150
     business_rules_found: 45
@@ -47,7 +53,7 @@ analysis_results:
     complexity_metrics:
       cyclomatic_complexity: 8.5
       cognitive_complexity: 12.3
-    
+
   document_analysis:
     documents_processed: 25
     key_insights:
@@ -55,14 +61,14 @@ analysis_results:
         confidence: 0.95
         evidence: ["file1.md", "architecture.doc"]
     requirements_extracted: 30
-    
+
   security_findings:
     vulnerabilities:
       - type: "SQL Injection Risk"
         severity: "HIGH"
         location: "UserDAO.java:45"
         recommendation: "Use parameterized queries"
-    
+
   integration_mapping:
     external_systems: 5
     api_endpoints: 23
@@ -70,7 +76,7 @@ analysis_results:
       - source: "System A"
         destination: "System B"
         protocol: "REST API"
-        
+
   recommendations:
     - priority: "HIGH"
       action: "Refactor authentication module"
@@ -78,6 +84,7 @@ analysis_results:
 ```
 
 ## Integration with Other Agents
+
 - **Before**: Run after `repository-organizer` for clean structure
 - **Works With**: All analysis phase agents
 - **Feeds Into**: `requirements-story-writer`, `salesforce-architect`
@@ -86,6 +93,7 @@ analysis_results:
 ## Gemini CLI Integration
 
 ### Primary Analysis Flow
+
 1. Prepare analysis context and prompts
 2. Execute Gemini CLI with appropriate parameters
 3. Parse and validate Gemini output
@@ -93,6 +101,7 @@ analysis_results:
 5. Store results in appropriate directories
 
 ### Fallback Logic
+
 ```bash
 # Try Gemini first
 gemini_result=$(gemini -m gemini-2.5-flash -p "$prompt" < "$input_file" 2>&1)
@@ -104,6 +113,7 @@ fi
 ```
 
 ### Gemini CLI Commands Used
+
 ```bash
 # For code analysis
 gemini -m gemini-2.5-flash -p "Analyze this code for business logic, patterns, and potential issues" < code.java
@@ -122,18 +132,21 @@ gemini -m gemini-2.5-flash -a -p "Perform comprehensive analysis of this codebas
 ```
 
 ## Error Handling
+
 - **Gemini Timeout**: Falls back to Claude after 30 seconds
 - **API Limits**: Implements exponential backoff
 - **Invalid Response**: Retries with refined prompt
 - **Complete Failure**: Falls back to Claude with full context
 
 ## Performance Optimization
+
 - Batch file processing for efficiency
 - Caches results to avoid redundant analysis
 - Parallelizes independent analysis tasks
 - Uses appropriate model based on complexity
 
 ## Best Practices
+
 1. Always check Gemini CLI availability before starting
 2. Prepare clear, specific prompts for better results
 3. Validate output format before processing
@@ -143,6 +156,7 @@ gemini -m gemini-2.5-flash -a -p "Perform comprehensive analysis of this codebas
 ## Direct Usage Examples
 
 ### Using Gemini CLI Directly (Recommended)
+
 ```bash
 # Analyze entire codebase with 1M token context
 gemini -m gemini-2.5-flash -a -p "Analyze this codebase for:
@@ -160,7 +174,9 @@ gemini -m gemini-2.5-flash -p "Analyze UI patterns from code and screenshots" < 
 ```
 
 ### Fallback to Claude (Automatic)
+
 If Gemini is unavailable or fails, use Claude directly:
+
 ```bash
 # Claude analysis via Task tool
 Task(
@@ -171,6 +187,7 @@ Task(
 ```
 
 ## Monitoring and Metrics
+
 - Track Gemini vs Claude usage ratio
 - Monitor response times for both engines
 - Log analysis accuracy and completeness
@@ -178,6 +195,7 @@ Task(
 - Measure cost optimization (Gemini vs Claude)
 
 ## Security Considerations
+
 - Never send sensitive data without encryption
 - Validate all AI responses before acting on them
 - Log all AI interactions for audit purposes
@@ -185,6 +203,7 @@ Task(
 - Use secure API key storage for both services
 
 ## Future Enhancements
+
 - Integration with more AI models (Anthropic, OpenAI)
 - Multi-model consensus for critical analysis
 - Custom fine-tuning for project-specific patterns

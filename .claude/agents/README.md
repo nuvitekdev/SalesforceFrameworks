@@ -11,6 +11,7 @@ This directory contains the specifications for the comprehensive **21-agent syst
 Our agents now leverage **Google's Gemini CLI** for enhanced AI-powered analysis with automatic Claude fallback:
 
 ### Key Features
+
 - **Primary Analysis**: Gemini CLI provides superior pattern recognition and multi-file context understanding
 - **Automatic Fallback**: Seamless switch to Claude if Gemini fails or is unavailable
 - **Hybrid Mode**: Can use both engines for comprehensive coverage and validation
@@ -18,6 +19,7 @@ Our agents now leverage **Google's Gemini CLI** for enhanced AI-powered analysis
 - **Performance**: Faster analysis of large codebases with better context retention
 
 ### Setup & Testing
+
 ```bash
 # Check if Gemini is installed
 which gemini  # Should show: /root/.nvm/versions/node/v20.19.2/bin/gemini
@@ -30,7 +32,9 @@ npm install -g @google/generative-ai-cli
 ```
 
 ### Usage
+
 Agents automatically detect and use Gemini when available. Manual usage:
+
 ```bash
 # Use the wrapper script for any analysis
 ./.claude/agents/gemini-wrapper.sh <input_file> "<prompt>" <output_file>
@@ -40,7 +44,9 @@ Agents automatically detect and use Gemini when available. Manual usage:
 ```
 
 ### Enhanced Agents with Gemini
+
 The following agents have been upgraded with Gemini integration:
+
 - ✅ **gemini-ai-analyzer** - New dedicated AI analysis orchestrator
 - ✅ **code-business-logic-analyzer** - Enhanced pattern recognition and business rule extraction
 - ✅ **documentation-generator** - AI-powered documentation generation
@@ -48,6 +54,7 @@ The following agents have been upgraded with Gemini integration:
 - ✅ **integration-analyzer** - Superior integration pattern detection
 
 ### Gemini Benefits for Migration
+
 - **Larger Context Windows**: Analyze entire modules simultaneously
 - **Better Pattern Recognition**: Identifies complex patterns across files
 - **Faster Processing**: Reduces analysis time by up to 40%
@@ -65,6 +72,7 @@ The following agents have been upgraded with Gemini integration:
    - Invokes all 20 agents in optimal sequence
 
 2. **Phase 1: Gemini Analyzes (7 agents in parallel)**
+
    ```bash
    gemini -m gemini-2.5-flash -a -p "Analyze entire module" < benefit_module/
    # Extracts: 47 business rules, 15 tables, 8 forms, 6 integrations
@@ -79,17 +87,18 @@ The following agents have been upgraded with Gemini integration:
    - Claude designs Salesforce solution
 
 5. **Phase 4: Claude Generates Code (5 agents)**
+
    ```apex
    // Claude generates with 72.5% accuracy:
    public class BenefitTriggerHandler {
-       // All 47 validation rules implemented
-       // 95% test coverage included
+     // All 47 validation rules implemented
+     // 95% test coverage included
    }
    ```
 
 6. **Triple-AI Validation**
    - Claude: "Architecture correct ✓"
-   - Gemini: "Patterns validated ✓"  
+   - Gemini: "Patterns validated ✓"
    - Claude Code: "Quality verified ✓"
 
 7. **You Receive Complete Solution**
@@ -107,6 +116,7 @@ The following agents have been upgraded with Gemini integration:
 👉 **See `/docs/AI-WORKFLOW-EXAMPLE.md` for the complete detailed walkthrough**
 
 ## Quick Navigation
+
 - [🤖 Agent System Architecture](#agent-system-architecture)
 - [📋 Analysis Agents](#analysis-agents-7)
 - [📄 Documentation Agents](#documentation-agents-2)
@@ -121,7 +131,9 @@ The following agents have been upgraded with Gemini integration:
 ## Agent System Architecture
 
 ### 🎯 Design Philosophy
+
 The agent system follows a **specialized, collaborative approach** where each agent has:
+
 - **Domain Expertise**: Deep specialization in specific aspects of migration
 - **Clear Responsibilities**: Well-defined scope and deliverables
 - **Collaborative Interfaces**: Standardized communication and handoff protocols
@@ -129,18 +141,19 @@ The agent system follows a **specialized, collaborative approach** where each ag
 
 ### 📊 Agent Classification
 
-| Phase | Agent Count | Focus Area | Primary Output |
-|-------|-------------|------------|----------------|
-| **Phase 1: Analysis** | 7 agents | Legacy system analysis | Technical documentation and business rules |
-| **Phase 2: Documentation** | 2 agents | Requirements synthesis | AI-ready specifications and user stories |
-| **Phase 3: Design** | 6 agents | Salesforce solution design | Implementation-ready technical specifications |
-| **Phase 4: Implementation** | 5 agents | Salesforce build & deploy | Working Salesforce components and code |
-| **Phase 5: Verification** | 1 agent | Completeness validation | Migration coverage and gap analysis |
-| **Total** | **21 agents** | **Complete migration** | **Production-ready Salesforce solutions** |
+| Phase                       | Agent Count   | Focus Area                 | Primary Output                                |
+| --------------------------- | ------------- | -------------------------- | --------------------------------------------- |
+| **Phase 1: Analysis**       | 7 agents      | Legacy system analysis     | Technical documentation and business rules    |
+| **Phase 2: Documentation**  | 2 agents      | Requirements synthesis     | AI-ready specifications and user stories      |
+| **Phase 3: Design**         | 6 agents      | Salesforce solution design | Implementation-ready technical specifications |
+| **Phase 4: Implementation** | 5 agents      | Salesforce build & deploy  | Working Salesforce components and code        |
+| **Phase 5: Verification**   | 1 agent       | Completeness validation    | Migration coverage and gap analysis           |
+| **Total**                   | **21 agents** | **Complete migration**     | **Production-ready Salesforce solutions**     |
 
 ### ✅ Verified Agent List (Exactly 21)
+
 1. repository-organizer
-2. code-business-logic-analyzer  
+2. code-business-logic-analyzer
 3. database-schema-analyzer
 4. ui-pattern-analyzer
 5. security-role-analyzer
@@ -166,10 +179,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ## Analysis Agents (7)
 
 ### 1. 🗂️ Repository Organizer Agent
+
 **📁 File**: [repository-organizer.md](./repository-organizer.md)  
 **Mission**: Create comprehensive repository structure and navigation
 
 #### Capabilities
+
 - Repository structure analysis and optimization
 - Comprehensive README creation for all folders
 - Cross-reference link management
@@ -177,6 +192,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Navigation system implementation
 
 #### Key Outputs
+
 - Complete folder structure with navigation READMEs
 - Master project documentation with cross-references
 - Consistent documentation standards across all folders
@@ -185,10 +201,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ---
 
 ### 2. 🔍 Code & Business Logic Analyzer
+
 **📁 File**: [code-business-logic-analyzer.md](./code-business-logic-analyzer.md)  
 **Mission**: Deep analysis of legacy code and business rule extraction
 
 #### Capabilities
+
 - Multi-framework code analysis (Struts, Spring, Custom MVC)
 - Business rule identification and documentation
 - Algorithm and calculation logic extraction
@@ -196,6 +214,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Legacy framework assessment
 
 #### Key Outputs
+
 - Complete business logic documentation
 - Code analysis reports with technical insights
 - Business rule matrices and validation requirements
@@ -204,10 +223,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ---
 
 ### 3. 🗄️ Database Schema Analyzer
+
 **📁 File**: [database-schema-analyzer.md](./database-schema-analyzer.md)  
 **Mission**: Complete database analysis and Salesforce object mapping
 
 #### Capabilities
+
 - Database schema reverse engineering
 - Entity relationship mapping
 - Data type and constraint analysis
@@ -215,6 +236,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Data migration strategy development
 
 #### Key Outputs
+
 - Complete ERD diagrams and documentation
 - Salesforce custom object specifications
 - Data migration scripts and procedures
@@ -223,10 +245,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ---
 
 ### 4. 🎨 UI Pattern Analyzer
+
 **📁 File**: [ui-pattern-analyzer.md](./ui-pattern-analyzer.md)  
 **Mission**: JSP analysis and Lightning Web Component specifications
 
 #### Capabilities
+
 - JSP form and layout analysis
 - User workflow identification
 - UI component cataloging
@@ -234,6 +258,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Mobile and accessibility considerations
 
 #### Key Outputs
+
 - Complete UI component inventory
 - LWC specifications with design patterns
 - User experience improvement recommendations
@@ -242,10 +267,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ---
 
 ### 5. 🛡️ Security & Compliance Analyzer
+
 **📁 File**: [security-role-analyzer.md](./security-role-analyzer.md)  
 **Mission**: Security analysis and compliance mapping
 
 #### Capabilities
+
 - Legacy security framework analysis (Shiro, Spring Security)
 - Role and permission mapping
 - Compliance requirement analysis (FISMA, Section 508)
@@ -253,6 +280,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Access control pattern identification
 
 #### Key Outputs
+
 - Security role and permission matrices
 - Salesforce profiles and permission set designs
 - Compliance documentation and validation
@@ -261,10 +289,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ---
 
 ### 6. 🔗 Integration Analyzer
+
 **📁 File**: [integration-analyzer.md](./integration-analyzer.md)  
 **Mission**: External system integration analysis and modernization
 
 #### Capabilities
+
 - Legacy integration pattern analysis
 - External system interface documentation
 - API modernization planning
@@ -272,6 +302,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Data flow and transformation mapping
 
 #### Key Outputs
+
 - Integration architecture documentation
 - Modern API specifications
 - Data transformation requirements
@@ -280,10 +311,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ---
 
 ### 7. 🧠 MCP Integration Specialist
+
 **📁 File**: [mcp-integration-specialist.md](./mcp-integration-specialist.md)  
 **Mission**: Enhanced analysis using Model Context Protocol servers
 
 #### Capabilities
+
 - Sequential thinking framework application
 - Memory bank organization and retrieval
 - Git history and evolution analysis
@@ -291,6 +324,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Context preservation across sessions
 
 #### Key Outputs
+
 - Enhanced analysis depth and accuracy
 - Context-aware documentation
 - Historical evolution insights
@@ -301,10 +335,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ## Documentation Agents (2)
 
 ### 8. 📝 Requirements & Story Writer
+
 **📁 File**: [requirements-story-writer.md](./requirements-story-writer.md)  
 **Mission**: Hierarchical requirements creation (Theme→Epic→Feature→Story→Task)
 
 #### Capabilities
+
 - Theme-based requirement organization
 - Epic and feature breakdown
 - User story creation with acceptance criteria
@@ -312,6 +348,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Traceability matrix development
 
 #### Key Outputs
+
 - Complete hierarchical requirement structure
 - Implementation-ready user stories
 - Acceptance criteria and test scenarios
@@ -320,10 +357,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ---
 
 ### 9. 🤖 AI Specification Formatter
+
 **📁 File**: [documentation-generator.md](./documentation-generator.md)  
 **Mission**: AI-implementable documentation formatting
 
 #### Capabilities
+
 - AI-optimized specification formatting
 - Self-contained implementation guides
 - Cross-reference and dependency documentation
@@ -331,6 +370,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Quality assurance and validation
 
 #### Key Outputs
+
 - AI-ready implementation specifications
 - Standardized documentation templates
 - Complete technical specifications
@@ -341,10 +381,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ## Salesforce Design Agents (6)
 
 ### 10. 🏗️ Salesforce Solution Architect
+
 **📁 File**: [salesforce-architect.md](./salesforce-architect.md)  
 **Mission**: OOTB design, performance optimization, and technical architecture
 
 #### Capabilities
+
 - Out-of-the-box solution maximization
 - Technical architecture design
 - Performance optimization planning
@@ -352,6 +394,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Multi-cloud solution design
 
 #### Key Outputs
+
 - Technical architecture blueprints
 - OOTB vs custom development decisions
 - Performance optimization recommendations
@@ -360,10 +403,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ---
 
 ### 11. 🎨 UI/UX Designer
+
 **📁 File**: [lwc-ui-designer.md](./lwc-ui-designer.md)  
 **Mission**: Lightning Web Component design and user experience
 
 #### Capabilities
+
 - Lightning Web Component architecture
 - Salesforce Design System implementation
 - User experience optimization
@@ -371,6 +416,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Accessibility compliance (WCAG 2.1)
 
 #### Key Outputs
+
 - Complete LWC component library
 - Lightning page designs and layouts
 - User experience improvement plans
@@ -379,10 +425,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ---
 
 ### 12. ⚡ Technical Developer
+
 **📁 File**: [apex-flow-developer.md](./apex-flow-developer.md)  
 **Mission**: Apex patterns, Flow design, and API architecture
 
 #### Capabilities
+
 - Apex class design and patterns
 - Flow automation design
 - API and integration development
@@ -390,6 +438,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Performance optimization
 
 #### Key Outputs
+
 - Apex class specifications and patterns
 - Flow automation designs
 - API and integration architectures
@@ -398,10 +447,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ---
 
 ### 13. 📊 Data Migration Architect
+
 **📁 File**: [data-migration-planner.md](./data-migration-planner.md)  
 **Mission**: ETL planning, data mapping, and migration execution
 
 #### Capabilities
+
 - Data migration strategy development
 - ETL script creation and optimization
 - Data quality assessment and cleanup
@@ -409,6 +460,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Rollback and recovery planning
 
 #### Key Outputs
+
 - Complete data migration plans
 - ETL scripts and procedures
 - Data quality reports and cleanup
@@ -417,10 +469,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ---
 
 ### 14. 🔗 Integration Architect
+
 **📁 File**: [integration-analyzer.md](./integration-analyzer.md)  
 **Mission**: External system connections and middleware design
 
 #### Capabilities
+
 - Modern integration architecture
 - API design and development
 - Middleware and ESB planning
@@ -428,6 +482,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Error handling and monitoring
 
 #### Key Outputs
+
 - Integration architecture designs
 - API specifications and documentation
 - Middleware configuration
@@ -436,10 +491,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ---
 
 ### 15. 🚀 DevOps Engineer
+
 **📁 File**: [deployment-devops-planner.md](./deployment-devops-planner.md)  
 **Mission**: CI/CD, deployment automation, and operational excellence
 
 #### Capabilities
+
 - CI/CD pipeline design and implementation
 - Deployment automation
 - Environment management
@@ -447,6 +504,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Operational runbook creation
 
 #### Key Outputs
+
 - Complete CI/CD pipeline configurations
 - Deployment automation scripts
 - Monitoring and alerting systems
@@ -457,10 +515,12 @@ The agent system follows a **specialized, collaborative approach** where each ag
 ## Phase 5: Verification Agent (1)
 
 ### 21. 🔍 Migration Completeness Verifier
+
 **📁 File**: [migration-completeness-verifier.md](./migration-completeness-verifier.md)  
 **Mission**: Comprehensive end-to-end verification of migration completeness
 
 #### Capabilities
+
 - Complete legacy code coverage analysis
 - Business rule extraction and verification
 - UI component mapping validation
@@ -471,6 +531,7 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Gap analysis and coverage reporting
 
 #### Key Outputs
+
 - Migration completeness reports (90%+ coverage required)
 - Comprehensive gap analysis with actionable recommendations
 - Coverage metrics across all functional areas
@@ -478,9 +539,11 @@ The agent system follows a **specialized, collaborative approach** where each ag
 - Final migration readiness assessment
 
 #### When to Execute
+
 This agent should be run AFTER all other 20 agents have completed their work. It serves as the final validation step to ensure nothing has been missed in the migration planning.
 
 **Critical Dependencies:**
+
 - Requires outputs from all Phase 1-4 agents
 - Uses completed user stories and implementation plans
 - Validates against legacy codebase
@@ -493,43 +556,54 @@ This agent should be run AFTER all other 20 agents have completed their work. It
 ### 🔄 Sequential Processing Phases
 
 #### **Phase 1: Discovery & Analysis**
+
 ```
 Repository Organizer → Code Analyzer → Database Analyzer → UI Analyzer → Security Analyzer → Integration Analyzer → MCP Specialist
 ```
+
 **Duration**: 2-3 weeks per module  
 **Output**: Complete technical analysis and business understanding
 
 #### **Phase 2: Documentation & Requirements**
+
 ```
 Requirements Writer ← (All Analysis Outputs) → AI Specification Formatter
 ```
+
 **Duration**: 1-2 weeks per module  
 **Output**: Implementation-ready specifications and user stories
 
 #### **Phase 3: Salesforce Design**
+
 ```
 Solution Architect → UI/UX Designer → Technical Developer → Data Migration Architect → Integration Architect → DevOps Engineer
 ```
+
 **Duration**: 3-4 weeks per module  
 **Output**: Complete Salesforce implementation specifications
 
 #### **Phase 4: Implementation**
+
 ```
 Object Builder → Automation Builder → UI Builder → Permission Builder → Test Automation Builder
 ```
+
 **Duration**: 4-6 weeks per module  
 **Output**: Working Salesforce components and comprehensive test coverage
 
 #### **Phase 5: Final Verification**
+
 ```
 Migration Completeness Verifier ← (All Previous Phase Outputs)
 ```
+
 **Duration**: 1 week per module  
 **Output**: Migration readiness certification and gap analysis
 
 ### 🤝 Collaboration Protocols
 
 #### **Data Flow Standards**
+
 - Each agent reads CLAUDE.md for complete project context
 - Agents consume outputs from previous phase agents
 - All outputs follow hierarchical folder structure
@@ -537,12 +611,14 @@ Migration Completeness Verifier ← (All Previous Phase Outputs)
 - Major findings update CLAUDE.md for project continuity
 
 #### **Quality Assurance**
+
 - Each agent validates inputs before processing
 - Outputs undergo peer review by related agents
 - Implementation specifications tested against requirements
 - All documentation cross-referenced and linked
 
 #### **Communication Methods**
+
 - Structured output files with standardized formats
 - Status updates written to `/analysis/agent-logs/`
 - Dependencies tracked in agent-specific documentation
@@ -555,18 +631,21 @@ Migration Completeness Verifier ← (All Previous Phase Outputs)
 ### 📊 Success Metrics
 
 #### **Completed Modules (FMR & DUA)**
+
 - **Analysis Completeness**: 100% of legacy functionality analyzed
 - **Implementation Readiness**: Zero additional analysis required for development
 - **Quality Standards**: 95%+ test coverage achieved
 - **Documentation Coverage**: Complete specifications from theme to task level
 
 #### **Performance Statistics**
+
 - **Average Analysis Time**: 2-3 weeks per module
 - **Documentation Accuracy**: 95%+ first-pass accuracy
 - **Implementation Success**: 100% of analyzed requirements successfully implemented
 - **Stakeholder Satisfaction**: Complete business requirement coverage
 
 ### 🎯 Quality Indicators
+
 - **Business Rule Coverage**: 100% of legacy business logic captured
 - **Technical Completeness**: All architectural decisions documented
 - **Implementation Readiness**: No tribal knowledge required for development
@@ -577,24 +656,28 @@ Migration Completeness Verifier ← (All Previous Phase Outputs)
 ## Usage Guidelines
 
 ### 🔧 For Agent Operators
+
 1. **Preparation**: Ensure all agents have access to CLAUDE.md and relevant context
 2. **Sequencing**: Follow the three-phase approach for optimal results
 3. **Quality Control**: Validate outputs at each phase before proceeding
 4. **Context Management**: Maintain context continuity across agent sessions
 
 ### 📋 For Project Managers
+
 1. **Progress Tracking**: Monitor agent outputs and milestone completion
 2. **Quality Assurance**: Review agent deliverables against project standards
 3. **Resource Planning**: Allocate appropriate time for each phase
 4. **Risk Management**: Identify and mitigate agent dependency risks
 
 ### 🛠️ For Technical Teams
+
 1. **Specification Usage**: Use agent outputs as implementation blueprints
 2. **Validation**: Cross-check agent recommendations against technical feasibility
 3. **Feedback Loop**: Provide implementation feedback to improve agent accuracy
 4. **Customization**: Adapt agent recommendations to specific technical constraints
 
 ### 🤖 For AI Implementation
+
 1. **Self-Contained Specs**: All agent outputs designed for AI implementation
 2. **No Additional Analysis**: Specifications complete for development
 3. **Clear Dependencies**: All prerequisites and dependencies documented
@@ -605,12 +688,14 @@ Migration Completeness Verifier ← (All Previous Phase Outputs)
 ## Agent Customization & Extension
 
 ### 🔧 Agent Modification Guidelines
+
 - **Preserve Core Mission**: Maintain agent's primary focus and capabilities
 - **Enhance Collaboration**: Improve inter-agent communication protocols
 - **Extend Capabilities**: Add new analysis or design capabilities
 - **Maintain Standards**: Follow established output formats and quality standards
 
 ### 📈 Future Agent Enhancements
+
 - **Specialized Domain Agents**: Industry-specific analysis capabilities
 - **Advanced AI Integration**: Enhanced AI model integration
 - **Real-Time Collaboration**: Live agent collaboration capabilities
@@ -621,16 +706,19 @@ Migration Completeness Verifier ← (All Previous Phase Outputs)
 ## Related Resources
 
 ### 📄 Project Documentation
+
 - **[Master Project Overview](../README.md)** - Complete project navigation
 - **[Project Context](../CLAUDE.md)** - AI context and project intelligence hub
 - **[Analysis Results](../analysis/)** - Agent outputs and analysis documentation
 
 ### 🛠️ Implementation Resources
+
 - **[Implementation Artifacts](../implementation/)** - Salesforce implementation results
 - **[Legacy Systems](../legacy-systems/)** - Source material for agent analysis
 - **[Technical Documentation](../docs/)** - Supporting technical resources
 
 ### 🔗 Agent Support Resources
+
 - **MCP Server Setup**: Model Context Protocol server configurations
 - **AI Tool Integration**: Supporting AI tools and frameworks
 - **Quality Templates**: Standardized output templates and formats
@@ -645,4 +733,4 @@ Migration Completeness Verifier ← (All Previous Phase Outputs)
 
 ---
 
-*This agent system represents a breakthrough in AI-assisted enterprise software migration, delivering comprehensive analysis and implementation-ready specifications. For complete project context, see [CLAUDE.md](../CLAUDE.md)*
+_This agent system represents a breakthrough in AI-assisted enterprise software migration, delivering comprehensive analysis and implementation-ready specifications. For complete project context, see [CLAUDE.md](../CLAUDE.md)_

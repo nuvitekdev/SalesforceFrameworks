@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Document Analysis</label>
+    <protected>false</protected>
+    <values>
+        <field>Operation_Type__c</field>
+        <value xsi:type="xsd:string">DocumentAnalysis</value>
+    </values>
+    <values>
+        <field>Prompt_Template__c</field>
+        <value xsi:type="xsd:string">You are analyzing PDF document(s). For EACH document, please provide a detailed analysis with the following structure:
+
+1. **Document Type and Purpose**
+   - Identify the type of document
+   - State its primary purpose
+   - Note the document date if available
+
+2. **Key Information Extracted**
+   - Main parties involved
+   - Important dates and deadlines
+   - Financial amounts or values
+   - Reference numbers or IDs
+
+3. **Content Summary**
+   - Executive summary of main points
+   - Critical sections or clauses
+   - Action items or requirements
+
+4. **Relevant Entities**
+   - People mentioned
+   - Organizations referenced
+   - Locations identified
+
+5. **Compliance and Risk Factors**
+   - Any compliance requirements noted
+   - Potential risks or concerns
+   - Missing information that should be present
+
+Please format your response clearly with headers for each document analyzed.</value>
+    </values>
+    <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+</CustomMetadata>

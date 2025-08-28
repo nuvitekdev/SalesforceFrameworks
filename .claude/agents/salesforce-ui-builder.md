@@ -52,46 +52,47 @@ You are a Salesforce UI implementation specialist. Your mission is to transform 
 2. For each UI component:
 
    **LWC Implementation:**
+
    ```javascript
    // benefitCalculator.js
-   import { LightningElement, wire, track } from 'lwc';
-   import calculateBenefit from '@salesforce/apex/BenefitController.calculateBenefit';
-   
+   import { LightningElement, wire, track } from "lwc";
+   import calculateBenefit from "@salesforce/apex/BenefitController.calculateBenefit";
+
    export default class BenefitCalculator extends LightningElement {
-       @track benefitAmount;
-       @track isLoading = false;
-       
-       handleCalculate() {
-           this.isLoading = true;
-           calculateBenefit({ recordId: this.recordId })
-               .then(result => {
-                   this.benefitAmount = result;
-               })
-               .catch(error => {
-                   this.showError(error);
-               })
-               .finally(() => {
-                   this.isLoading = false;
-               });
-       }
+     @track benefitAmount;
+     @track isLoading = false;
+
+     handleCalculate() {
+       this.isLoading = true;
+       calculateBenefit({ recordId: this.recordId })
+         .then((result) => {
+           this.benefitAmount = result;
+         })
+         .catch((error) => {
+           this.showError(error);
+         })
+         .finally(() => {
+           this.isLoading = false;
+         });
+     }
    }
    ```
 
    **HTML Template:**
+
    ```html
    <template>
-       <lightning-card title="Benefit Calculator">
-           <div class="slds-p-horizontal_medium">
-               <lightning-button 
-                   label="Calculate" 
-                   onclick={handleCalculate}
-                   disabled={isLoading}>
-               </lightning-button>
-               <div if:true={benefitAmount}>
-                   Amount: {benefitAmount}
-               </div>
-           </div>
-       </lightning-card>
+     <lightning-card title="Benefit Calculator">
+       <div class="slds-p-horizontal_medium">
+         <lightning-button
+           label="Calculate"
+           onclick="{handleCalculate}"
+           disabled="{isLoading}"
+         >
+         </lightning-button>
+         <div if:true="{benefitAmount}">Amount: {benefitAmount}</div>
+       </div>
+     </lightning-card>
    </template>
    ```
 

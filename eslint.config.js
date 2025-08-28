@@ -1,43 +1,24 @@
+const { configs } = require("@salesforce/eslint-config-lwc");
+
 module.exports = [
+  ...configs.lwc.map((config) => ({
+    ...config,
+    files: ["**/lwc/**/*.js"]
+  })),
   {
-    files: ["**/*.js"],
+    files: ["**/aura/**/*.js"],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: "module",
-      parserOptions: {
-        ecmaFeatures: {
-          experimentalDecorators: true
-        }
-      },
+      sourceType: "script",
       globals: {
         console: "readonly",
         window: "readonly",
-        document: "readonly",
-        navigator: "readonly"
+        document: "readonly"
       }
     },
     rules: {
       "no-console": "warn",
       "no-unused-vars": "warn"
-    }
-  },
-  {
-    files: ["**/lwc/**/*.js"],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: "module",
-      parserOptions: {
-        ecmaFeatures: {
-          experimentalDecorators: true
-        }
-      }
-    }
-  },
-  {
-    files: ["**/aura/**/*.js"],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: "script"
     }
   }
 ];

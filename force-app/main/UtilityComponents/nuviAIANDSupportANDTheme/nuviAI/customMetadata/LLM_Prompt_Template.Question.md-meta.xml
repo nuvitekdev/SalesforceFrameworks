@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Question</label>
+    <protected>false</protected>
+    <values>
+        <field>Operation_Type__c</field>
+        <value xsi:type="xsd:string">Question</value>
+    </values>
+    <values>
+        <field>Prompt_Template__c</field>
+        <value xsi:type="xsd:string">Answer the following question about the Salesforce record based on the provided data:
+
+Please provide:
+- A clear, direct answer to the question
+- Supporting details from the record data
+- Any relevant context or related information
+- If the answer cannot be determined from the available data, clearly state what information is missing</value>
+    </values>
+    <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+</CustomMetadata>

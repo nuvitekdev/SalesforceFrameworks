@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Anomaly</label>
+    <protected>false</protected>
+    <values>
+        <field>Operation_Type__c</field>
+        <value xsi:type="xsd:string">Anomaly</value>
+    </values>
+    <values>
+        <field>Prompt_Template__c</field>
+        <value xsi:type="xsd:string">Analyze this Salesforce record for potential anomalies, issues, or areas needing attention:
+
+1. Check for missing required fields or incomplete data
+2. Identify any unusual patterns or data inconsistencies
+3. Flag potential compliance or business rule violations
+4. Look for data quality issues
+5. Suggest corrective actions if issues are found
+
+Please provide:
+- A clear list of any anomalies found
+- Severity level for each issue (High/Medium/Low)
+- Specific recommendations for resolution
+- Overall data quality assessment</value>
+    </values>
+    <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+</CustomMetadata>

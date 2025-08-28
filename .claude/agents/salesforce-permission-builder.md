@@ -50,6 +50,7 @@ You are a Salesforce security implementation specialist. Your mission is to tran
    - Compliance requirements
 
 2. Create security matrix:
+
    ```yaml
    Profile: Benefit_Processor
    Objects:
@@ -71,6 +72,7 @@ You are a Salesforce security implementation specialist. Your mission is to tran
 3. Implement configurations:
 
    **Profile Metadata:**
+
    ```xml
    <Profile xmlns="http://soap.sforce.com/2006/04/metadata">
        <custom>true</custom>
@@ -86,6 +88,7 @@ You are a Salesforce security implementation specialist. Your mission is to tran
    ```
 
    **Sharing Rule:**
+
    ```xml
    <SharingRules>
        <sharingCriteriaRules>

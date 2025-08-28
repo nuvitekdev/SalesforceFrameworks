@@ -58,7 +58,8 @@
       "Bash(git commit:*)",
       "Bash(sfdx:*)",
       "Bash(sed:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(gemini models:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

@@ -23,6 +23,7 @@ Task(subagent_type="security-role-analyzer")
 ```
 
 **Why Gemini for Security Analysis:**
+
 - **Pattern Recognition**: Identifies security patterns across files
 - **Large Context**: Analyzes entire security configuration at once
 - **Cross-Reference**: Maps roles to code usage

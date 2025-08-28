@@ -21,16 +21,19 @@ This is a Salesforce DX project with government/public sector applications focus
 **ALWAYS use Gemini CLI for complex analysis before implementation:**
 
 1. **Code Analysis**: Break down complex code structures
+
    ```bash
    echo "analyze the structure and dependencies of [component/class]" | gemini
    ```
 
 2. **Architecture Decisions**: Evaluate design patterns
+
    ```bash
    echo "compare trigger framework vs process builder for [use case]" | gemini
    ```
 
 3. **Performance Analysis**: Identify bottlenecks
+
    ```bash
    echo "analyze governor limit risks in [code section]" | gemini
    ```
@@ -138,9 +141,11 @@ npm run prettier
 ### 7. Enhanced Development Workflow
 
 1. **Initial Analysis Phase**:
+
    ```bash
    echo "analyze complexity of [task description]" | gemini
    ```
+
    - Determine if specialized agent is needed
    - Identify potential governor limit issues
    - Review security implications
@@ -152,6 +157,7 @@ npm run prettier
    - For UI/UX: Use `lwc-ui-designer` or `salesforce-ui-builder` agents
 
 3. **Detailed Planning**:
+
    ```bash
    echo "create implementation plan for [specific feature]" | gemini
    ```
@@ -162,11 +168,13 @@ npm run prettier
    - Maintain production standards
 
 5. **Validation**:
+
    ```bash
    npm run lint && npm run prettier:verify && npm run test:unit
    ```
 
 6. **Security Check**:
+
    ```bash
    echo "review security of [implemented feature]" | gemini
    ```
@@ -239,6 +247,7 @@ npm run prettier
 ### Problem-Solving Approach
 
 1. **Gemini-First Analysis**:
+
    ```bash
    echo "analyze problem: [description] and suggest best approach" | gemini
    ```
@@ -295,7 +304,7 @@ npm run prettier
 
 ### When to Use Each Agent
 
-1. **repository-organizer**: 
+1. **repository-organizer**:
    - Initial project setup
    - Cleaning up file structure
    - Organizing components into proper folders
