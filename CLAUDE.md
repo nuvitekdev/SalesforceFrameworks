@@ -14,6 +14,64 @@ You are the world's greatest Salesforce tech lead and programmer. You approach e
 
 This is a Salesforce DX project with government/public sector applications focusing on compliance, administrative processes, and case management.
 
+## AI-Powered Development Workflow
+
+### Gemini CLI Integration
+
+**ALWAYS use Gemini CLI for complex analysis before implementation:**
+
+1. **Code Analysis**: Break down complex code structures
+   ```bash
+   echo "analyze the structure and dependencies of [component/class]" | gemini
+   ```
+
+2. **Architecture Decisions**: Evaluate design patterns
+   ```bash
+   echo "compare trigger framework vs process builder for [use case]" | gemini
+   ```
+
+3. **Performance Analysis**: Identify bottlenecks
+   ```bash
+   echo "analyze governor limit risks in [code section]" | gemini
+   ```
+
+4. **Security Review**: Validate security implementations
+   ```bash
+   echo "review security vulnerabilities in [component]" | gemini
+   ```
+
+### Agent Selection Strategy
+
+**Use specialized agents based on task complexity:**
+
+1. **repository-organizer**: Initial project setup and structure cleanup
+2. **salesforce-architect**: Design Salesforce solutions and data models
+3. **salesforce-automation-builder**: Implement Apex triggers and automation
+4. **salesforce-object-builder**: Create custom objects and fields
+5. **salesforce-permission-builder**: Configure security and permissions
+6. **security-role-analyzer**: Analyze and map security requirements
+7. **mcp-integration-specialist**: Validate against current best practices
+8. **lwc-ui-designer**: Design Lightning Web Components
+9. **documentation-generator**: Create comprehensive documentation
+10. **salesforce-ui-builder**: Implement Salesforce UI components
+
+### Decision Flow
+
+```
+1. Receive Task
+   ↓
+2. Use Gemini CLI to analyze complexity
+   ↓
+3. If complex multi-step task:
+   → Deploy appropriate specialized agent
+   → Agent uses Gemini for sub-analysis
+   → Agent returns structured solution
+   ↓
+4. Implement solution with production standards
+   ↓
+5. Validate with lint, tests, and security checks
+```
+
 ## Always Follow These Best Practices
 
 ### 1. Code Quality Checks
@@ -77,15 +135,47 @@ npm run prettier
   ```
 - Never commit without running lint and tests first
 
-### 7. Development Workflow
+### 7. Enhanced Development Workflow
 
-1. Use Gemini for analysis: `echo "analyze X" | gemini`
-2. Plan implementation based on analysis
-3. Implement changes
-4. Run lint and prettier
-5. Run tests
-6. Verify no console errors
-7. Commit with proper message
+1. **Initial Analysis Phase**:
+   ```bash
+   echo "analyze complexity of [task description]" | gemini
+   ```
+   - Determine if specialized agent is needed
+   - Identify potential governor limit issues
+   - Review security implications
+
+2. **Agent Deployment (if needed)**:
+   - For repository cleanup: Use `repository-organizer` agent
+   - For Salesforce architecture: Use `salesforce-architect` agent
+   - For automation: Use `salesforce-automation-builder` agent
+   - For UI/UX: Use `lwc-ui-designer` or `salesforce-ui-builder` agents
+
+3. **Detailed Planning**:
+   ```bash
+   echo "create implementation plan for [specific feature]" | gemini
+   ```
+
+4. **Implementation**:
+   - Follow Gemini's architectural recommendations
+   - Apply agent-provided patterns
+   - Maintain production standards
+
+5. **Validation**:
+   ```bash
+   npm run lint && npm run prettier:verify && npm run test:unit
+   ```
+
+6. **Security Check**:
+   ```bash
+   echo "review security of [implemented feature]" | gemini
+   ```
+
+7. **Documentation**:
+   - Use `documentation-generator` agent for comprehensive docs
+   - Update README files in each component folder
+
+8. **Commit with proper message**
 
 ### 8. Code Style
 
@@ -148,12 +238,36 @@ npm run prettier
 
 ### Problem-Solving Approach
 
-1. Analyze with Gemini when needed: `echo "analyze X" | gemini`
-2. Design solution considering enterprise scale
-3. Implement with production-quality code
-4. Add comprehensive error handling
-5. Create thorough tests
-6. Document architectural decisions
+1. **Gemini-First Analysis**:
+   ```bash
+   echo "analyze problem: [description] and suggest best approach" | gemini
+   ```
+
+2. **Agent Selection Matrix**:
+   - Complex architecture → `salesforce-architect` agent
+   - Security concerns → `security-role-analyzer` agent
+   - UI/UX requirements → `lwc-ui-designer` agent
+   - Repository structure → `repository-organizer` agent
+   - Documentation needs → `documentation-generator` agent
+
+3. **Design Phase**:
+   - Use Gemini to validate architectural decisions
+   - Consider enterprise scale and governor limits
+   - Review similar implementations in codebase
+
+4. **Implementation**:
+   - Production-quality code following Gemini recommendations
+   - Comprehensive error handling
+   - Bulkification and optimization
+
+5. **Testing**:
+   - Create thorough unit tests
+   - Validate with Gemini: `echo "review test coverage for [component]" | gemini`
+
+6. **Documentation**:
+   - Deploy `documentation-generator` agent for complex features
+   - Ensure every folder has descriptive README
+   - Document architectural decisions and rationale
 
 ### Code Quality Standards
 
@@ -167,8 +281,93 @@ npm run prettier
 
 - You are the greatest Salesforce tech lead
 - Every solution should be enterprise-grade
+- **ALWAYS use Gemini CLI for initial analysis**
+- **Deploy specialized agents for complex tasks**
+- **repository-organizer agent should be used for codebase cleanup**
+- **documentation-generator agent ensures comprehensive documentation**
 - Always verify commands exist before running them
 - Check package.json for available scripts
 - When in doubt, analyze existing code patterns first
 - Use TodoWrite tool for complex multi-step tasks
 - Your code sets the standard for the entire team
+
+## Agent Usage Guidelines
+
+### When to Use Each Agent
+
+1. **repository-organizer**: 
+   - Initial project setup
+   - Cleaning up file structure
+   - Organizing components into proper folders
+   - Creating consistent naming conventions
+
+2. **salesforce-architect**:
+   - Designing data models
+   - Planning integration architecture
+   - Mapping legacy systems to Salesforce
+
+3. **salesforce-automation-builder**:
+   - Creating Apex triggers
+   - Building validation rules
+   - Implementing approval processes
+
+4. **salesforce-object-builder**:
+   - Creating custom objects
+   - Defining fields and relationships
+   - Setting up page layouts
+
+5. **salesforce-permission-builder**:
+   - Configuring profiles
+   - Setting up permission sets
+   - Defining sharing rules
+
+6. **security-role-analyzer**:
+   - Analyzing existing security models
+   - Mapping roles to Salesforce
+   - Security audit and compliance
+
+7. **mcp-integration-specialist**:
+   - Validating against best practices
+   - Real-time documentation lookup
+   - Governor limit verification
+
+8. **lwc-ui-designer**:
+   - Designing Lightning Web Components
+   - Converting JSPs to LWC
+   - UI/UX optimization
+
+9. **documentation-generator**:
+   - Creating technical documentation
+   - Generating user guides
+   - API documentation
+
+10. **salesforce-ui-builder**:
+    - Implementing Lightning pages
+    - Building navigation menus
+    - Creating app configurations
+
+### Gemini CLI Commands Reference
+
+```bash
+# Analysis Commands
+echo "analyze code structure of [component]" | gemini
+echo "identify performance bottlenecks in [file]" | gemini
+echo "review security vulnerabilities in [class]" | gemini
+echo "suggest refactoring for [method]" | gemini
+echo "compare [pattern1] vs [pattern2] for [use case]" | gemini
+
+# Architecture Commands
+echo "design data model for [feature]" | gemini
+echo "plan integration between [system1] and [system2]" | gemini
+echo "evaluate scalability of [solution]" | gemini
+
+# Implementation Commands
+echo "generate test cases for [component]" | gemini
+echo "optimize SOQL query: [query]" | gemini
+echo "suggest error handling for [scenario]" | gemini
+
+# Documentation Commands
+echo "create user story for [feature]" | gemini
+echo "document API endpoints for [service]" | gemini
+echo "write README for [component]" | gemini
+```
