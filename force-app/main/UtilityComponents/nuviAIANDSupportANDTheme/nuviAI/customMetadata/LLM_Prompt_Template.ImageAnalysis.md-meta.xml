@@ -3,6 +3,10 @@
     <label>Image Analysis</label>
     <protected>false</protected>
     <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
         <field>Operation_Type__c</field>
         <value xsi:type="xsd:string">ImageAnalysis</value>
     </values>
@@ -11,12 +15,12 @@
         <value xsi:type="xsd:string">IMAGE ANALYSIS FORMATTING INSTRUCTIONS FOR EACH IMAGE:
 - **DO NOT** include any introductory or concluding conversational phrases, apologies, or offers for further assistance.
 - **ONLY** provide the structured analysis for each image as specified below.
-- Start each image's analysis *immediately* with its title using &lt;b&gt; tags (e.g., &lt;b&gt;Image 1: Filename.jpg&lt;/b&gt;). NO text before this title.
+- Start each image&apos;s analysis *immediately* with its title using &lt;b&gt; tags (e.g., &lt;b&gt;Image 1: Filename.jpg&lt;/b&gt;). NO text before this title.
 - For each image, create the following main sections using &lt;b&gt; tags for their titles: &lt;b&gt;Executive Summary:&lt;/b&gt;, &lt;b&gt;In-Depth Analysis:&lt;/b&gt;, and &lt;b&gt;Key Observations &amp; Relevance:&lt;/b&gt;.
 - **DO NOT USE MARKDOWN** for any formatting. Use HTML tags exclusively as specified (&lt;b&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;br&gt;, &lt;hr&gt;).
 - Use &lt;ul&gt; and &lt;li&gt; tags for all bulleted lists. Each &lt;li&gt; item should represent a distinct point.
 - Use a single &lt;br&gt; tag for line breaks if needed for readability within paragraphs.
-- Ensure a clear visual separation (e.g., a single &lt;hr&gt; tag) between the full analysis of one image and the start of the next image's title if multiple images are analyzed.
+- Ensure a clear visual separation (e.g., a single &lt;hr&gt; tag) between the full analysis of one image and the start of the next image&apos;s title if multiple images are analyzed.
 
 Analyze the provided image(s) and provide:
 1. Description of what is shown
@@ -24,9 +28,5 @@ Analyze the provided image(s) and provide:
 3. Relevant details for business context
 4. Quality assessment
 5. Potential use cases or concerns</value>
-    </values>
-    <values>
-        <field>IsActive__c</field>
-        <value xsi:type="xsd:boolean">true</value>
     </values>
 </CustomMetadata>

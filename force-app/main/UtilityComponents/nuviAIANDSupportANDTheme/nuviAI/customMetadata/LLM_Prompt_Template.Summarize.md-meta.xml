@@ -3,6 +3,10 @@
     <label>Summarize</label>
     <protected>false</protected>
     <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
         <field>Operation_Type__c</field>
         <value xsi:type="xsd:string">Summarize</value>
     </values>
@@ -14,9 +18,5 @@
 2. Related records and their relationship to this record
 3. Any attached documents or files (if present)
 4. Key insights or important information</value>
-    </values>
-    <values>
-        <field>IsActive__c</field>
-        <value xsi:type="xsd:boolean">true</value>
     </values>
 </CustomMetadata>

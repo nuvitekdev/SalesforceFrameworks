@@ -3,6 +3,10 @@
     <label>Field Extraction</label>
     <protected>false</protected>
     <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
         <field>Operation_Type__c</field>
         <value xsi:type="xsd:string">FieldExtraction</value>
     </values>
@@ -24,10 +28,6 @@ Field Name: [Field]
 - Location: [page/section reference]
 - Notes: [any relevant notes]
 
-If a field value cannot be found, explicitly state "Not Found" with an explanation.</value>
-    </values>
-    <values>
-        <field>IsActive__c</field>
-        <value xsi:type="xsd:boolean">true</value>
+If a field value cannot be found, explicitly state &quot;Not Found&quot; with an explanation.</value>
     </values>
 </CustomMetadata>

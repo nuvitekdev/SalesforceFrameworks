@@ -3,6 +3,10 @@
     <label>Document Analysis</label>
     <protected>false</protected>
     <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
         <field>Operation_Type__c</field>
         <value xsi:type="xsd:string">DocumentAnalysis</value>
     </values>
@@ -37,9 +41,5 @@
    - Missing information that should be present
 
 Please format your response clearly with headers for each document analyzed.</value>
-    </values>
-    <values>
-        <field>IsActive__c</field>
-        <value xsi:type="xsd:boolean">true</value>
     </values>
 </CustomMetadata>

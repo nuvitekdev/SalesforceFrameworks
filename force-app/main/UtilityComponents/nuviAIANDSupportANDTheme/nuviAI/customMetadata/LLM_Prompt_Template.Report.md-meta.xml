@@ -3,6 +3,10 @@
     <label>Report</label>
     <protected>false</protected>
     <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
         <field>Operation_Type__c</field>
         <value xsi:type="xsd:string">Report</value>
     </values>
@@ -19,16 +23,12 @@ CRITICAL INSTRUCTIONS:
 6. If asked for charts or visualizations, provide the data in a format suitable for charting
 
 Key Guidelines:
-- State the ACTUAL counts you see (don't say "approximately")
-- If you see 3 records, report exactly 3, not "several" or "a few"
+- State the ACTUAL counts you see (don&apos;t say &quot;approximately&quot;)
+- If you see 3 records, report exactly 3, not &quot;several&quot; or &quot;a few&quot;
 - Include all data points provided, even if they seem unusual
 - Note any apparent filters or limited scope in the data
 
 Data Structure Note:
 The data below may include record counts, summaries, and field aggregations as they exist in the Salesforce org at this moment.</value>
-    </values>
-    <values>
-        <field>IsActive__c</field>
-        <value xsi:type="xsd:boolean">true</value>
     </values>
 </CustomMetadata>

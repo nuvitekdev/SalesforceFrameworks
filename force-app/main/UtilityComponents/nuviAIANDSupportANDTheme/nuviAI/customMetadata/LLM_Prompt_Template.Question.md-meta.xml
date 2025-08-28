@@ -3,6 +3,10 @@
     <label>Question</label>
     <protected>false</protected>
     <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
         <field>Operation_Type__c</field>
         <value xsi:type="xsd:string">Question</value>
     </values>
@@ -15,9 +19,5 @@ Please provide:
 - Supporting details from the record data
 - Any relevant context or related information
 - If the answer cannot be determined from the available data, clearly state what information is missing</value>
-    </values>
-    <values>
-        <field>IsActive__c</field>
-        <value xsi:type="xsd:boolean">true</value>
     </values>
 </CustomMetadata>

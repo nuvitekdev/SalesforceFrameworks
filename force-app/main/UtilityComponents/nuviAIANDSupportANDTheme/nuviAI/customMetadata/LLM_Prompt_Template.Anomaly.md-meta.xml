@@ -3,6 +3,10 @@
     <label>Anomaly</label>
     <protected>false</protected>
     <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
         <field>Operation_Type__c</field>
         <value xsi:type="xsd:string">Anomaly</value>
     </values>
@@ -21,9 +25,5 @@ Please provide:
 - Severity level for each issue (High/Medium/Low)
 - Specific recommendations for resolution
 - Overall data quality assessment</value>
-    </values>
-    <values>
-        <field>IsActive__c</field>
-        <value xsi:type="xsd:boolean">true</value>
     </values>
 </CustomMetadata>

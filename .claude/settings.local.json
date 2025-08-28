@@ -59,7 +59,10 @@
       "Bash(sfdx:*)",
       "Bash(sed:*)",
       "Bash(git checkout:*)",
-      "Bash(gemini models:*)"
+      "Bash(gemini models:*)",
+      "Bash(sf org login web:*)",
+      "Bash(sf project retrieve:*)",
+      "mcp__salesforce-enhanced__salesforce_search_objects"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
