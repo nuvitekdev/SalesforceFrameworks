@@ -317,6 +317,7 @@
 
 /* Menu Button in Center - Now used for Request Access */
 .menu-button-center {
+  align-self: flex-end;
   cursor: pointer;
   width: 40px;
   height: 40px;
