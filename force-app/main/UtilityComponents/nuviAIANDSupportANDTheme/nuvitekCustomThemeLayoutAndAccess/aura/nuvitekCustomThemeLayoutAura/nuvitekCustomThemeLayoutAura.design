@@ -40,6 +40,14 @@
     <design:attribute name="socialLinkTitles" label="Social Link Titles" description="Social platform names, comma-separated. Example: 'Facebook, Twitter, LinkedIn, Instagram, YouTube'" default="Facebook, Twitter, LinkedIn, Instagram"/>
     <design:attribute name="socialLinkUrls" label="Social Link URLs" description="Full URLs to social profiles, comma-separated. Example: 'https://facebook.com/company, https://twitter.com/company, https://linkedin.com/company/name'"/>
     
+    <!-- Content Layout Configuration (Required - cannot be removed) -->
+    <design:attribute name="mainContentLayout" label="Main Content Layout" description="Choose layout style for main content area" default="full-width"/>
+    <design:attribute name="showContentArea1" label="Show Content Area 1" description="Display additional content area 1" default="false"/>
+    <design:attribute name="showContentArea2" label="Show Content Area 2" description="Display additional content area 2" default="false"/>
+    <design:attribute name="showContentArea3" label="Show Content Area 3" description="Display additional content area 3" default="false"/>
+    <design:attribute name="showBeforeMainContent" label="Show Before Main Content Area" description="Display content area before main content" default="false"/>
+    <design:attribute name="showAfterMainContent" label="Show After Main Content Area" description="Display content area after main content" default="false"/>
+    
     <!-- Hero section -->
     <design:attribute name="showHeroSection" label="Show Hero Section" description="Display hero section" default="true"/>
     <design:attribute name="heroLayout" label="Hero Layout" description="Hero section layout. Options: 'fullwidth' for centered content, 'split' for two-column layout" default="fullwidth"/>
@@ -50,6 +58,10 @@
     <design:attribute name="heroCTAPrimaryUrl" label="Hero CTA Primary URL" description="URL for main call-to-action button. Examples: '/register', '/contact-us', 'https://example.com/signup'"/>
     <design:attribute name="heroCTASecondaryLabel" label="Hero CTA Secondary Label" description="Secondary CTA button text" default="Learn More"/>
     <design:attribute name="heroCTASecondaryUrl" label="Hero CTA Secondary URL" description="URL for secondary button. Examples: '/learn-more', '/about', '/documentation'"/>
+    
+    <!-- Hero Media Component for Split View -->
+    <design:attribute name="heroMediaComponentName" label="Hero Media Component (Split View)" description="Name of LWC component to display in split hero right side. Format: 'c:componentName' for custom LWC or 'lightning:component' for standard"/>
+    <design:attribute name="heroMediaComponentAttributes" label="Hero Media Component Attributes" description="JSON string of attributes to pass to the hero media component. Example: {'recordId': '{!recordId}', 'showTitle': true}"/>
     
     <!-- FAB options -->
     <design:attribute name="showFab" label="Show FAB" description="Display floating action button" default="false"/>

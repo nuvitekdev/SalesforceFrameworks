@@ -1,5 +1,5 @@
 <aura:component
-  implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes,forceCommunity:layout,forceCommunity:themeLayout"
+  implements="forceCommunity:availableForAllPageTypes,forceCommunity:layout,forceCommunity:themeLayout"
   controller="nuvitekCustomThemeLayoutAuraController"
   access="global"
 >
@@ -210,6 +210,62 @@
     access="global"
   />
   <aura:attribute name="heroCTASecondaryUrl" type="String" access="global" />
+
+  <!-- Hero Media Component for Split View -->
+  <aura:attribute
+    name="heroMediaComponentName"
+    type="String"
+    access="global"
+  />
+  <aura:attribute
+    name="heroMediaComponentAttributes"
+    type="String"
+    access="global"
+  />
+  <aura:attribute
+    name="heroMediaComponentCreated"
+    type="Boolean"
+    default="false"
+    access="private"
+  />
+
+  <!-- Content Layout Configuration (Required - cannot be removed) -->
+  <aura:attribute
+    name="mainContentLayout"
+    type="String"
+    default="full-width"
+    access="global"
+  />
+  <aura:attribute
+    name="showContentArea1"
+    type="Boolean"
+    default="false"
+    access="global"
+  />
+  <aura:attribute
+    name="showContentArea2"
+    type="Boolean"
+    default="false"
+    access="global"
+  />
+  <aura:attribute
+    name="showContentArea3"
+    type="Boolean"
+    default="false"
+    access="global"
+  />
+  <aura:attribute
+    name="showBeforeMainContent"
+    type="Boolean"
+    default="false"
+    access="global"
+  />
+  <aura:attribute
+    name="showAfterMainContent"
+    type="Boolean"
+    default="false"
+    access="global"
+  />
 
   <!-- FAB control -->
   <aura:attribute
@@ -709,19 +765,35 @@
           <!-- Hero media (for split layout) -->
           <aura:if isTrue="{!v.isHeroSplit}">
             <div class="hero-media">
-              <div class="nuvitek-themed-component">{!v.heroMedia}</div>
-              <!-- Default media placeholder if no content provided -->
-              <aura:if isTrue="{!empty(v.heroMedia)}">
-                <div class="media-placeholder">
-                  <div class="placeholder-content">
-                    <div class="placeholder-circle"></div>
-                    <div class="placeholder-lines">
-                      <div class="placeholder-line"></div>
-                      <div class="placeholder-line"></div>
-                      <div class="placeholder-line"></div>
-                    </div>
-                  </div>
+              <!-- Check if component name is specified first -->
+              <aura:if isTrue="{!not(empty(v.heroMediaComponentName))}">
+                <!-- Dynamically created component -->
+                <div class="hero-media-content nuvitek-themed-component" aura:id="heroMediaContainer">
+                  <!-- Component will be created dynamically here -->
                 </div>
+                <aura:set attribute="else">
+                  <!-- Fall back to facet if no component specified -->
+                  <aura:if isTrue="{!not(empty(v.heroMedia))}">
+                    <!-- User-added content via facet -->
+                    <div class="hero-media-content nuvitek-themed-component">
+                      {!v.heroMedia}
+                    </div>
+                    <aura:set attribute="else">
+                      <!-- Placeholder shown when empty -->
+                      <div class="media-placeholder">
+                        <div class="placeholder-content">
+                          <lightning:icon iconName="utility:image" size="large" alternativeText="Add content" />
+                          <div class="placeholder-text">
+                            Configure Hero Media Component
+                          </div>
+                          <div class="placeholder-subtext">
+                            Set "Hero Media Component" in component properties
+                          </div>
+                        </div>
+                      </div>
+                    </aura:set>
+                  </aura:if>
+                </aura:set>
               </aura:if>
             </div>
           </aura:if>

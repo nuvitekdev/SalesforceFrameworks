@@ -1,0 +1,129 @@
+<template>
+    <lightning-card>
+        <!-- Title Section -->
+        <div slot="title">
+            <div class="slds-grid slds-grid_align-spread">
+                <div class="slds-col">
+                    <lightning-icon icon-name="standard:bot" size="small" class="slds-m-right_small"></lightning-icon>
+                    <span class="slds-text-heading_small">{cardTitle}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+            <!-- Anomaly Detection Banner -->
+            <template if:true={enableAnomalyDetection}>
+                <div if:true={anomalyCheckLoading} class="slds-m-bottom_small">
+                    <lightning-spinner alternative-text="Checking for anomalies..." size="small"></lightning-spinner>
+                </div>
+                <div if:true={showAnomalyBanner} class="slds-notify slds-notify_alert slds-alert_warning slds-m-bottom_medium">
+                    <span class="slds-assistive-text">warning</span>
+                    <lightning-icon icon-name="utility:warning" variant="warning" size="small"></lightning-icon>
+                    <div class="slds-notify__content">
+                        <lightning-formatted-rich-text value={anomalyCheckResult}></lightning-formatted-rich-text>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Model Selector -->
+            <template if:false={hideModelSelector}>
+                <lightning-combobox
+                    name="llmModel"
+                    label="AI Model"
+                    value={selectedLLM}
+                    placeholder="Select an AI Model"
+                    options={llmOptions}
+                    onchange={handleModelChange}
+                    class="slds-m-bottom_small"
+                ></lightning-combobox>
+            </template>
+
+            <!-- User Input -->
+            <lightning-textarea
+                name="userPrompt"
+                label={questionInputLabel}
+                value={userPrompt}
+                placeholder={questionInputPlaceholder}
+                onchange={handlePromptChange}
+                class="slds-m-bottom_medium"
+            ></lightning-textarea>
+
+            <!-- Action Buttons -->
+            <div class="slds-button-group slds-m-bottom_medium">
+                <lightning-button
+                    variant="brand"
+                    label={askButtonLabel}
+                    onclick={handleAsk}
+                    disabled={isAskDisabled}
+                ></lightning-button>
+
+                <template if:true={effectiveRecordId}>
+                    <lightning-button
+                        variant="neutral"
+                        label="Summarize"
+                        onclick={handleSummarize}
+                        disabled={isAskDisabled}
+                    ></lightning-button>
+                </template>
+
+                <template if:true={showImageAnalysisButton}>
+                    <lightning-button
+                        variant="neutral"
+                        label="Analyze Images"
+                        onclick={handleAnalyzeImages}
+                        disabled={isAskDisabled}
+                    ></lightning-button>
+                </template>
+
+                <template if:true={showAnalyzeButton}>
+                    <lightning-button
+                        variant="neutral"
+                        label="Analyze Documents"
+                        onclick={handleShowDocumentModal}
+                        disabled={isAskDisabled}
+                    ></lightning-button>
+                </template>
+
+                <template if:true={enableGenerateReport}>
+                    <lightning-button
+                        variant="neutral"
+                        label="Generate Report"
+                        onclick={handleGenerateReport}
+                        disabled={isAskDisabled}
+                    ></lightning-button>
+                </template>
+            </div>
+
+            <!-- Conversation Display Component -->
+            <c-llm-conversation-display
+                conversation-history={conversationHistory}
+                user-chat-bubble-color={userChatBubbleColor}
+                user-chat-text-color={userChatTextColor}
+                ai-chat-bubble-color={aiChatBubbleColor}
+                ai-chat-text-color={aiChatTextColor}
+                show-history={showConversationHistory}
+                is-loading={isLoading}
+                onclearconversation={handleClearConversation}
+                ontogglehistory={handleToggleHistory}
+            ></c-llm-conversation-display>
+
+            <!-- Current Response -->
+            <template if:true={response}>
+                <div class="slds-box slds-m-top_medium">
+                    <h3 class="slds-text-heading_small slds-m-bottom_small">Response</h3>
+                    <lightning-formatted-rich-text value={response}></lightning-formatted-rich-text>
+                </div>
+            </template>
+
+            <!-- Document Selection Modal -->
+            <c-llm-document-modal
+                documents={pdfDocuments}
+                show-modal={showDocumentModal}
+                modal-title="Select PDF Documents to Analyze"
+                modal-description="Choose one or more PDF documents for AI analysis"
+                oncancel={handleDocumentModalCancel}
+                onconfirm={handleDocumentModalConfirm}
+            ></c-llm-document-modal>
+        </div>
+    </lightning-card>
+</template>
