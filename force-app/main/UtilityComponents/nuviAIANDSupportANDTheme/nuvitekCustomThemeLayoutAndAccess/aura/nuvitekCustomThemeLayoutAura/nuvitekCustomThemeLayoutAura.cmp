@@ -352,6 +352,9 @@
   <aura:attribute name="footerNavItems" type="List" default="[]" />
   <aura:attribute name="isHeaderNavLoaded" type="Boolean" default="false" />
   <aura:attribute name="isFooterNavLoaded" type="Boolean" default="false" />
+  <aura:attribute name="isLoadingNavigation" type="Boolean" default="false" />
+  <aura:attribute name="loadingMenus" type="List" default="[]" />
+  <aura:attribute name="columnMenusData" type="Object" default="{}" />
 
   <!-- Additional properties -->
   <aura:attribute

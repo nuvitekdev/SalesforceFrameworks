@@ -69,6 +69,14 @@
     var headerMenuName = component.get("v.headerNavigationMenuName");
     var footerMenuName = component.get("v.footerNavigationMenuName");
 
+    // FIXED: Track loading state to prevent multiple calls during initialization
+    var isLoadingNavigation = component.get("v.isLoadingNavigation");
+    if (isLoadingNavigation) {
+      console.log("Navigation loading already in progress, skipping duplicate call...");
+      return;
+    }
+    component.set("v.isLoadingNavigation", true);
+
     // Load header navigation
     if (headerMenuName) {
       this.getNavigationItems(component, headerMenuName, "header");
@@ -82,6 +90,11 @@
     } else {
       component.set("v.isFooterNavLoaded", true);
     }
+
+    // FIXED: Reset loading state after navigation is complete
+    setTimeout(function() {
+      component.set("v.isLoadingNavigation", false);
+    }, 1500); // Give enough time for async calls to complete
   },
 
   getNavigationItems: function (component, menuName, type) {
@@ -106,9 +119,12 @@
         } else {
           component.set("v.footerNavItems", processedItems);
           component.set("v.isFooterNavLoaded", true);
+          // IMPROVED: Only process footer columns for main footer navigation
+          // This prevents recursive calls during column menu loading
           this.processFooterColumns(component);
         }
 
+        // IMPROVED: Single call to update computed properties at the end
         this.updateComputedProperties(component);
       } else {
         console.error("Error loading navigation items:", response.getError());
@@ -256,20 +272,43 @@
       return menu.trim();
     });
 
-    // Process each menu that's different from the main footer menu
-    menus.forEach(
-      function (menuName, index) {
-        if (menuName && menuName !== footerNavigationMenuName) {
-          this.fetchMenuData(component, menuName, index);
-        }
-      }.bind(this)
-    );
+    // IMPROVED: Batch process menus and prevent duplicate requests
+    var uniqueMenus = [];
+    var processedMenuNames = new Set();
+    
+    // First pass: collect unique menu names to prevent duplicates
+    menus.forEach(function (menuName, index) {
+      if (menuName && 
+          menuName !== footerNavigationMenuName && 
+          !processedMenuNames.has(menuName)) {
+        processedMenuNames.add(menuName);
+        uniqueMenus.push({menuName: menuName, index: index});
+      }
+    });
+
+    // IMPROVED: Process menus with staggered timing to prevent server overload
+    uniqueMenus.forEach(function(menuInfo, i) {
+      setTimeout(function() {
+        this.fetchMenuData(component, menuInfo.menuName, menuInfo.index);
+      }.bind(this), i * 250); // 250ms delay between each request
+    }.bind(this));
   },
 
   fetchMenuData: function (component, menuName, columnIndex) {
     if (!menuName || menuName.trim() === "") {
       return;
     }
+
+    // IMPROVED: Prevent duplicate menu loading requests
+    var loadingMenus = component.get("v.loadingMenus") || [];
+    if (loadingMenus.includes(menuName)) {
+      console.log("Menu already being loaded, skipping duplicate request:", menuName);
+      return;
+    }
+    
+    // IMPROVED: Track that we're loading this specific menu
+    loadingMenus.push(menuName);
+    component.set("v.loadingMenus", loadingMenus);
 
     var action = component.get("c.getNavigationItems");
     action.setParams({
@@ -287,16 +326,41 @@
         columnMenusData[columnIndex] = processedItems;
         component.set("v.columnMenusData", columnMenusData);
 
-        this.processFooterColumns(component);
+        // IMPROVED: Check if all column menus are loaded before processing footer
+        this.checkAndProcessFooterColumnsWhenReady(component);
       } else {
         console.error(
           "Error loading menu for column " + columnIndex + ":",
           response.getError()
         );
       }
+
+      // IMPROVED: Remove from loading list when complete
+      var currentLoadingMenus = component.get("v.loadingMenus") || [];
+      var menuIndex = currentLoadingMenus.indexOf(menuName);
+      if (menuIndex > -1) {
+        currentLoadingMenus.splice(menuIndex, 1);
+        component.set("v.loadingMenus", currentLoadingMenus);
+      }
     });
 
     $A.enqueueAction(action);
+  },
+
+  // ADDED: Helper method to safely process footer columns when all menus are ready
+  checkAndProcessFooterColumnsWhenReady: function (component) {
+    var loadingMenus = component.get("v.loadingMenus") || [];
+    
+    // IMPROVED: Only process footer columns when no menus are currently loading
+    if (loadingMenus.length === 0) {
+      this.processFooterColumns(component);
+      this.updateComputedProperties(component);
+    } else {
+      // IMPROVED: If menus are still loading, check again after a delay
+      setTimeout(function() {
+        this.checkAndProcessFooterColumnsWhenReady(component);
+      }.bind(this), 400); // Check every 400ms until all menus are loaded
+    }
   },
 
   processFooterColumns: function (component) {
@@ -337,7 +401,8 @@
     }
 
     component.set("v.footerColumnsWithItems", columns);
-    this.updateComputedProperties(component);
+    // FIXED: Don't call updateComputedProperties here to prevent recursion
+    // The computed properties will be updated by the calling method
   },
 
   processSocialLinks: function (component) {
@@ -399,8 +464,8 @@
   },
 
   updateComputedProperties: function (component) {
-    // Debug hero section visibility
-    this.debugHeroSection(component);
+    // REMOVED: Debug hero section visibility - was causing performance issues
+    // Only call debug methods manually when needed: window.debugHeroSection()
 
     // Update theme class
     var themeName = component.get("v.themeName");
