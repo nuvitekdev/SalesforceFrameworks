@@ -45,49 +45,49 @@
         type="String"
         label="Tile Titles"
         default="Feature 1, Feature 2, Feature 3"
-        description="Comma-separated list of tile titles"
+        description="Comma-separated list of tile titles. Each title appears as the main heading on the tile. Example: Home, Reports, Settings"
       />
             <property
         name="descriptions"
         type="String"
         label="Tile Descriptions"
         default="Description of feature 1, Description of feature 2, Description of feature 3"
-        description="Comma-separated list of tile descriptions"
+        description="Comma-separated list of tile descriptions. Optional text that appears below the title. Leave empty for no description. Example: Access dashboard, View analytics, Manage preferences"
       />
             <property
         name="icons"
         type="String"
         label="Tile Icons"
         default="utility:info, utility:success, utility:settings"
-        description="Comma-separated list of SLDS icon names"
+        description="Comma-separated list of SLDS icon names. Format: category:name (e.g., utility:download, standard:account, custom:custom1). Leave empty for no icon. Full list: https://lightningdesignsystem.com/icons/"
       />
             <property
         name="colors"
         type="String"
-        label="Tile Colors"
+        label="Tile Accent Colors"
         default="#0071e3, #34c759, #007aff"
-        description="Comma-separated list of accent colors"
+        description="Comma-separated list of hex color codes for each tile. Controls the tile's accent color based on the selected style. Example: #FF6900, #0071e3, #34c759"
       />
             <property
         name="links"
         type="String"
         label="Tile Links (Navigation URLs)"
         default="/page1, /page2, /page3"
-        description="Comma-separated list of URLs for navigation. Examples: /lightning/page/home (internal page), https://example.com (external site), home (named page). Leave empty if using static resource for that tile position."
+        description="Comma-separated list of URLs for navigation. SUPPORTED FORMATS: 1) External sites: www.usda.gov, https://example.com, example.org (automatically opens in new tab); 2) Salesforce pages: /lightning/page/home, /apex/CustomPage; 3) Named pages: home, chatter; 4) JSON navigation: {&quot;type&quot;:&quot;standard__objectPage&quot;,&quot;attributes&quot;:{&quot;objectApiName&quot;:&quot;Account&quot;,&quot;actionName&quot;:&quot;list&quot;}}. Leave empty to use static resource download instead."
       />
             <property
         name="bgImages"
         type="String"
         label="Background Images (Optional)"
         default=""
-        description="Comma-separated list of image URLs for tile backgrounds. Leave empty for solid color background. Example: https://example.com/image1.jpg, , https://example.com/image3.jpg (second tile has no background image)"
+        description="Comma-separated list of image URLs for tile backgrounds. Leave empty for solid color background. Example: https://example.com/image1.jpg, , https://example.com/image3.jpg (second tile has no background image). Images will have a dark overlay for text readability."
       />
             <property
         name="staticResources"
         type="String"
         label="Static Resource Downloads (Optional)"
         default=""
-        description="Comma-separated list of Salesforce Static Resource API names that will be downloaded when tile is clicked. Use this OR links for each tile, not both. Example: UserManual, , CompanyLogo means tile 1 downloads UserManual, tile 2 uses its link for navigation, tile 3 downloads CompanyLogo. Static resources take priority over links."
+        description="Comma-separated list of Salesforce Static Resource API names for file downloads. When set, clicking the tile downloads the file instead of navigating. EXAMPLE: UserManual, , CompanyLogo = tile 1 downloads UserManual file, tile 2 uses its link, tile 3 downloads CompanyLogo. NOTE: Static resources take priority over links. Files download with their original format (PDF, ZIP, etc.)."
       />
             
             <!-- Theme Properties -->

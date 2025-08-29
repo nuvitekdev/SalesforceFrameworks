@@ -528,11 +528,18 @@ export default class NuvitekNavigationTiles extends NavigationMixin(
       }
 
       const url = tile.link.trim();
-      console.log("url" + url);
+      console.log("url: " + url);
 
-      if (url.startsWith("http://") || url.startsWith("https://")) {
-        // External URL
-        window.open(url, "_blank");
+      // Check if it's an external URL (http, https, or common domains)
+      if (url.startsWith("http://") || url.startsWith("https://") || 
+          url.startsWith("www.") || url.includes(".com") || url.includes(".org") || 
+          url.includes(".gov") || url.includes(".edu") || url.includes(".net")) {
+        // External URL - add https:// if missing
+        let fullUrl = url;
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+          fullUrl = "https://" + url;
+        }
+        window.open(fullUrl, "_blank");
       } else if (url.startsWith("/")) {
         // Relative URL within Salesforce
         this[NavigationMixin.Navigate]({
@@ -542,10 +549,15 @@ export default class NuvitekNavigationTiles extends NavigationMixin(
           }
         });
       } else if (url.startsWith("{") && url.endsWith("}")) {
-        const pageRef = JSON.parse(url);
-        this[NavigationMixin.Navigate](pageRef);
+        // JSON page reference for navigation
+        try {
+          const pageRef = JSON.parse(url);
+          this[NavigationMixin.Navigate](pageRef);
+        } catch (e) {
+          console.error("Invalid JSON navigation reference:", e);
+        }
       } else {
-        // Try to handle as a named page
+        // Try to handle as a named page in Salesforce
         this[NavigationMixin.Navigate]({
           type: "standard__namedPage",
           attributes: {
@@ -631,9 +643,16 @@ export default class NuvitekNavigationTiles extends NavigationMixin(
 
     const url = tile.link.trim();
 
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      // External URL
-      window.open(url, "_blank");
+    // Check if it's an external URL (http, https, or common domains)
+    if (url.startsWith("http://") || url.startsWith("https://") || 
+        url.startsWith("www.") || url.includes(".com") || url.includes(".org") || 
+        url.includes(".gov") || url.includes(".edu") || url.includes(".net")) {
+      // External URL - add https:// if missing
+      let fullUrl = url;
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        fullUrl = "https://" + url;
+      }
+      window.open(fullUrl, "_blank");
     } else if (url.startsWith("/")) {
       // Relative URL within Salesforce
       this[NavigationMixin.Navigate]({

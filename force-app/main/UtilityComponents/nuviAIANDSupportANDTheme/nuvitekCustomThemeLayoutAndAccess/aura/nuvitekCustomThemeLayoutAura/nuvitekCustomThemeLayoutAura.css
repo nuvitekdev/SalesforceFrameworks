@@ -1810,7 +1810,7 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background-color: #22bdc1; /* Use explicit color instead of variable */
+  background-color: var(--primary-color, #22bdc1); /* Use primary color variable with fallback */
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
   color: white;
   display: flex;
@@ -1826,7 +1826,7 @@
 }
 
 .THIS .fab-button:hover {
-  background-color: #1a9599; /* Use explicit darker color */
+  background-color: var(--primary-dark, #1a9599); /* Use primary dark color variable with fallback */
   transform: translateY(-5px) rotate(15deg) scale(1.05);
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
   color: white;
