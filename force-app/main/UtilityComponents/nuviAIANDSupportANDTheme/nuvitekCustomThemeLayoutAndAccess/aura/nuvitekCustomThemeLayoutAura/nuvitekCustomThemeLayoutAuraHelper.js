@@ -2,6 +2,9 @@
   initializeComponent: function (component, helper) {
     console.log("🚀 Initializing Nuvitek Custom Theme Layout component...");
 
+    // Parse custom FAB items if provided
+    this.parseCustomFabItems(component);
+
     // Initial debug check
     console.log("📊 Initial Hero Section Configuration:");
     console.log("  showHeroSection:", component.get("v.showHeroSection"));
@@ -38,6 +41,17 @@
     setTimeout(function () {
       helper.injectSvgIcons(component);
     }, 100);
+    
+    // Re-inject icons periodically to handle navigation issues
+    var iconInterval = setInterval(function() {
+      var fabIcon = component.getElement().querySelector(".fab-icon-svg");
+      if (fabIcon && !fabIcon.innerHTML.trim()) {
+        helper.injectSvgIcons(component);
+      }
+    }, 500);
+    
+    // Store interval ID to clean up later
+    component.set("v.iconInterval", iconInterval);
 
     console.log("✅ Component initialized successfully.");
     console.log("💡 Debug commands available:");
@@ -529,6 +543,26 @@
     component.set("v.isHeroFullscreen", heroLayout === "fullwidth");
     component.set("v.heroSectionClass", "hero-section layout-" + heroLayout);
 
+    // Banner-specific CSS classes
+    if (heroLayout === "banner") {
+      var bannerTextSize = component.get("v.bannerTextSize") || "40px";
+      var bannerTextAlign = component.get("v.bannerTextAlign") || "center";
+      
+      component.set("v.heroContainerClass", "hero-container align-" + bannerTextAlign);
+      component.set("v.heroContentClass", "hero-content align-" + bannerTextAlign);
+      component.set("v.heroTitleClass", "hero-title align-" + bannerTextAlign);
+      component.set("v.heroTitleStyle", "font-size: " + bannerTextSize + " !important;");
+      component.set("v.heroTitleTextStyle", "font-size: " + bannerTextSize + " !important;");
+      component.set("v.heroSubtitleClass", "hero-subtitle align-" + bannerTextAlign);
+    } else {
+      component.set("v.heroContainerClass", "hero-container");
+      component.set("v.heroContentClass", "hero-content");
+      component.set("v.heroTitleClass", "hero-title");
+      component.set("v.heroTitleStyle", "");
+      component.set("v.heroTitleTextStyle", "");
+      component.set("v.heroSubtitleClass", "hero-subtitle");
+    }
+
     // Update hero background style
     var heroBackgroundImage = component.get("v.heroBackgroundImage");
     var showBackgroundVideo = component.get("v.showBackgroundVideo");
@@ -636,11 +670,20 @@
       mobileMenuOpen ? "mobile-menu open" : "mobile-menu"
     );
 
-    // Update FAB classes
+    // Update FAB classes and computed properties
     var fabMenuOpen = component.get("v.fabMenuOpen");
     var helpFormOpen = component.get("v.helpFormOpen");
     var llmAssistantOpen = component.get("v.llmAssistantOpen");
+    var fabOptions = component.get("v.fabOptions");
+    var fabCustomItemsList = component.get("v.fabCustomItemsList") || [];
 
+    // Compute hasAnyFabItems - check if any FAB options are available
+    var hasHelpForm = fabOptions === "both" || fabOptions === "help_form";
+    var hasAiAssistant = fabOptions === "both" || fabOptions === "ai_assistant";
+    var hasCustomItems = (fabOptions === "both" || fabOptions === "custom") && fabCustomItemsList.length > 0;
+    var hasAnyFabItems = hasHelpForm || hasAiAssistant || hasCustomItems;
+    
+    component.set("v.hasAnyFabItems", hasAnyFabItems);
     component.set("v.fabMenuClass", fabMenuOpen ? "fab-menu open" : "fab-menu");
     component.set(
       "v.helpFormDialogClass",
@@ -666,6 +709,23 @@
       scrollIndicatorClass += " on-video-background";
     }
     component.set("v.scrollIndicatorClass", scrollIndicatorClass);
+
+    // Update hero media URLs (image and video)
+    var heroMediaImage = component.get("v.heroMediaImage");
+    if (heroMediaImage && heroMediaImage.trim() !== "") {
+      var heroMediaImageUrl = this.getResourcePath(heroMediaImage);
+      component.set("v.heroMediaImageUrl", heroMediaImageUrl);
+    } else {
+      component.set("v.heroMediaImageUrl", "");
+    }
+    
+    var heroMediaVideo = component.get("v.heroMediaVideo");
+    if (heroMediaVideo && heroMediaVideo.trim() !== "") {
+      var heroMediaVideoUrl = this.getResourcePath(heroMediaVideo);
+      component.set("v.heroMediaVideoUrl", heroMediaVideoUrl);
+    } else {
+      component.set("v.heroMediaVideoUrl", "");
+    }
 
     // Update shouldShowHeader
     var useDefaultHeader = component.get("v.useDefaultHeader");
@@ -1453,6 +1513,62 @@
       });
     } catch (error) {
       console.error("Error injecting SVG icons:", error);
+    }
+  },
+
+  parseCustomFabItems: function(component) {
+    try {
+      var customItemsString = component.get("v.fabCustomItems");
+      if (customItemsString && customItemsString.trim() !== "") {
+        var itemsList = [];
+        
+        // Split by pipe to get individual items
+        var items = customItemsString.split('|');
+        
+        items.forEach(function(item) {
+          if (item && item.trim() !== "") {
+            // Split by comma to get label, URL, and optional icon
+            var parts = item.trim().split(',');
+            
+            if (parts.length >= 2) {
+              var url = parts[1].trim();
+              var isExternal = url.indexOf('http://') === 0 || url.indexOf('https://') === 0 || 
+                              url.indexOf('mailto:') === 0 || url.indexOf('tel:') === 0;
+              
+              var menuItem = {
+                label: parts[0].trim(),
+                url: url,
+                icon: parts[2] ? parts[2].trim() : 'open', // Default icon
+                target: isExternal ? '_blank' : '_self',
+                rel: isExternal ? 'noopener noreferrer' : null
+              };
+              
+              // Map common icons to their SVG names
+              var iconMap = {
+                'open': 'open',
+                'link': 'open',
+                'external': 'open',
+                'help': 'chat',
+                'chat': 'chat',
+                'ai': 'einstein',
+                'einstein': 'einstein',
+                'home': 'home',
+                'settings': 'settings',
+                'user': 'user'
+              };
+              
+              menuItem.icon = iconMap[menuItem.icon.toLowerCase()] || 'open';
+              
+              itemsList.push(menuItem);
+            }
+          }
+        });
+        
+        component.set("v.fabCustomItemsList", itemsList);
+      }
+    } catch(e) {
+      console.error("Error parsing custom FAB items:", e);
+      component.set("v.fabCustomItemsList", []);
     }
   }
 });

@@ -344,13 +344,13 @@
         style={heroOverlayStyle}
       ></div>
 
-      <div class="hero-container">
-        <div class="hero-content">
+      <div class={heroContainerClass}>
+        <div class={heroContentClass}>
           <!-- Update the hero title and subtitle in the HTML -->
-          <h1 class="hero-title" aria-label={heroTitle}>
-            <span class="hero-title-text">{heroTitle}</span>
+          <h1 class={heroTitleClass} style={heroTitleStyle} aria-label={heroTitle}>
+            <span class="hero-title-text" style={heroTitleTextStyle}>{heroTitle}</span>
           </h1>
-          <p class="hero-subtitle" style={heroSubtitleStyle}>{heroSubtitle}</p>
+          <p class={heroSubtitleClass} style={heroSubtitleStyle}>{heroSubtitle}</p>
           <div class="hero-cta">
             <template if:true={heroCTAPrimaryLabel}>
               <a href={heroCTAPrimaryUrl} class="cta-button primary">
@@ -696,72 +696,104 @@
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          lwc:dom="manual"
-        ></svg>
+        >
+          <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </button>
 
-      <!-- FAB Menu Options -->
+      <!-- Arrow indicator under FAB button -->
+      <div class="fab-arrow" if:true={fabMenuOpen}>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M18 15L12 9L6 15"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+
+      <!-- FAB Menu Options - Original Style -->
       <div class={fabMenuClass} if:false={isUrlLink}>
         <!-- Help Request Option - COMMENTED OUT -->
-        <!--
-                <div class="fab-menu-item" if:true={showHelpFormOption}>
-                    <span class="fab-menu-label">{helpFormLabel}</span>
-                    <button class="fab-menu-button" onclick={toggleHelpForm} aria-label={helpFormLabel}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" lwc:dom="manual"></svg>
-                    </button>
-                </div>
-                -->
+        <!-- <div class="fab-menu-item" if:true={showHelpFormOption}>
+          <button class="fab-menu-label fab-menu-button-text" onclick={toggleHelpForm} aria-label={helpFormLabel}>
+            <lightning-icon icon-name="utility:question" size="x-small" alternative-text="Help Request" class="fab-menu-text-icon"></lightning-icon>
+            {helpFormLabel}
+          </button>
+        </div> -->
 
         <!-- AI Assistant Option - COMMENTED OUT -->
-        <!--
-                <div class="fab-menu-item" if:true={showAiAssistantOption}>
-                    <span class="fab-menu-label">{aiAssistantLabel}</span>
-                    <button class="fab-menu-button" onclick={toggleLlmAssistant} aria-label={aiAssistantLabel}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" lwc:dom="manual"></svg>
-                    </button>
-                </div>
-                -->
+        <!-- <div class="fab-menu-item" if:true={showAiAssistantOption}>
+          <button class="fab-menu-label fab-menu-button-text" onclick={toggleLlmAssistant} aria-label={aiAssistantLabel}>
+            <lightning-icon icon-name="utility:einstein" size="x-small" alternative-text="AI Assistant" class="fab-menu-text-icon"></lightning-icon>
+            {aiAssistantLabel}
+          </button>
+        </div> -->
+        
+        <!-- Custom FAB Menu Items -->
+        <template if:true={showCustomItems}>
+          <template for:each={parsedCustomItems} for:item="item">
+            <div class="fab-menu-item" key={item.label}>
+              <a href={item.url} 
+                 class="fab-menu-label fab-menu-button-text custom-fab-text" 
+                 target={item.target}
+                 rel={item.rel}
+                 aria-label={item.label}>
+                {item.label}
+              </a>
+            </div>
+          </template>
+        </template>
       </div>
 
       <!-- Help Form Dialog - COMMENTED OUT -->
       <!--
-            <div class={helpFormDialogClass}>
-                <div class="support-requester-content">
-                    <c-support-requester
-                        primary-color={primaryColor}
-                        accent-color={accentColor}
-                        use-dark-theme={isDarkTheme}
-                        layout-orientation="vertical"
-                        component-title={helpFormLabel}
-                        show-faq-section={showFaqSection}>
-                    </c-support-requester>
-                </div>
-                <button class="dialog-close-button" onclick={toggleHelpForm}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+      <div class={helpFormDialogClass}>
+          <div class="support-requester-content">
+              <c-support-requester
+                  primary-color={primaryColor}
+                  accent-color={accentColor}
+                  use-dark-theme={isDarkTheme}
+                  layout-orientation="vertical"
+                  component-title={helpFormLabel}
+                  show-faq-section={showFaqSection}>
+              </c-support-requester>
+          </div>
+          <button class="dialog-close-button" onclick={toggleHelpForm}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                             stroke-linejoin="round" />
                     </svg>
                 </button>
             </div>
-            -->
+      -->
+          
 
       <!-- LLM Assistant Dialog - COMMENTED OUT -->
       <!--
-            <div class={llmAssistantDialogClass}>
-                <div class="help-form-dialog-header">
-                    <h2 class="help-form-title">AI Assistant</h2>
-                    <button class="help-form-close" onclick={toggleLlmAssistant}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
-                    </button>
-                </div>
-                <div class="help-form-content llm-assistant-container">
-                    <c-llm-assistant primary-color={primaryColor} accent-color={accentColor}></c-llm-assistant>
-                </div>
-            </div>
-            -->
+      <div class={llmAssistantDialogClass}>
+          <div class="help-form-dialog-header">
+              <h2 class="help-form-title">AI Assistant</h2>
+              <button class="help-form-close" onclick={toggleLlmAssistant}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round" />
+                  </svg>
+              </button>
+          </div>
+          <div class="help-form-content llm-assistant-container">
+              <c-llm-assistant primary-color={primaryColor} accent-color={accentColor}></c-llm-assistant>
+          </div>
+      </div>
+      -->
 
       <!-- Overlay backdrop when dialogs are open -->
       <div class={backdropClass} onclick={closeAllDialogs}></div>

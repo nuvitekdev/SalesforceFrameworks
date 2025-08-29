@@ -13,7 +13,10 @@
     </targets>
     <targetConfigs>
         <targetConfig targets="lightningCommunity__Default">
-            <!-- Theme appearance -->
+            <!-- ========================================= -->
+            <!-- 🎨 THEME & APPEARANCE SETTINGS -->
+            <!-- ========================================= -->
+            
             <property
         name="primaryColor"
         type="Color"
@@ -58,7 +61,10 @@
         description="When enabled, applies theme styling to OOTB Salesforce components"
       />
 
-            <!-- Header configuration -->
+            <!-- ========================================= -->
+            <!-- 🔝 HEADER & NAVIGATION CONFIGURATION -->
+            <!-- ========================================= -->
+            
             <property
         name="useDefaultHeader"
         type="Boolean"
@@ -90,8 +96,8 @@
         label="Sticky Header"
         description="Keep the header fixed at the top when scrolling"
       />
-
-            <!-- Logo configuration -->
+            
+            <!-- Logo Settings -->
             <property
         name="logoUrl"
         type="String"
@@ -105,8 +111,8 @@
         label="Logo Alt Text"
         description="Alternative text for logo accessibility. Example: 'Company Logo', 'Home'"
       />
-
-            <!-- Navigation configuration -->
+            
+            <!-- Navigation Menu Settings -->
             <property
         name="headerNavigationMenuName"
         type="String"
@@ -149,7 +155,10 @@
         description="URL to user profile page. Examples: '/profile', '/s/profile', '/myaccount'"
       />
 
-            <!-- Hero section configuration -->
+            <!-- ========================================= -->
+            <!-- 🌟 HERO SECTION CONFIGURATION -->
+            <!-- ========================================= -->
+            
             <property
         name="showHeroSection"
         type="Boolean"
@@ -162,8 +171,8 @@
         type="String"
         default="fullwidth"
         label="Hero Layout"
-        description="Hero layout. Options: 'fullwidth' (centered content), 'split' (two-column layout)"
-        datasource="split,fullwidth"
+        description="Hero layout. Options: 'fullwidth' (centered content, full viewport height), 'split' (two-column layout with content + media), 'banner' (compact page header, 120-150px height)"
+        datasource="split,fullwidth,banner"
       />
             <property
         name="heroBackgroundImage"
@@ -211,8 +220,25 @@
         label="Secondary Button URL"
         description="URL for secondary button. Examples: '/learn-more', '/about', '/documentation'"
       />
-
-            <!-- Video background properties -->
+            
+            <!-- Banner Layout Customization -->
+            <property
+        name="bannerTextSize"
+        type="String"
+        default="40px"
+        label="Banner Text Size (px)"
+        description="Text size for banner layout in pixels. Examples: '24px', '32px', '40px', '48px', '56px', etc."
+      />
+            <property
+        name="bannerTextAlign"
+        type="String"
+        default="center"
+        label="Banner Text Alignment"
+        description="Text alignment for banner layout. Options: 'left' (left aligned), 'center' (center aligned), 'right' (right aligned)"
+        datasource="left,center,right"
+      />
+            
+            <!-- Video Background Settings -->
             <property
         name="showBackgroundVideo"
         type="Boolean"
@@ -251,59 +277,171 @@
         max="100"
       />
 
-            <!-- Visual elements -->
+            <!-- ========================================= -->
+            <!-- FLOATING ACTION BUTTON (FAB) CONFIGURATION -->
+            <!-- ========================================= -->
+            
+            <!-- FAB Main Settings -->
             <property
         name="showFab"
         type="Boolean"
         default="false"
-        label="Show Floating Action Button"
-        description="Toggle to display floating action button"
+        label="🔘 Enable Floating Action Button (FAB)"
+        description="Display a floating action button in the bottom-right corner.
+        
+✅ WHAT IT DOES:
+• Shows a circular button that floats above content
+• Opens a popup menu with quick access links
+• Perfect for government sites (USDA.gov, help desks, etc.)
+
+📍 APPEARS: Bottom-right corner of the screen
+🎯 USE CASES: Help links, external agency sites, contact info"
       />
-            <property
-        name="fabUrl"
-        type="String"
-        label="FAB Action URL"
-        description="URL for floating button when fabOptions is 'url_link'. Example: '/help', '/contact', 'mailto:support@company.com'"
-      />
+            
             <property
         name="fabOptions"
         type="String"
-        default="both"
-        label="FAB Options"
-        description="Floating button functionality. Options: 'both' (menu with help and AI), 'help_form' (help only), 'ai_assistant' (AI only), 'url_link' (link to URL)"
-        datasource="both,help_form,ai_assistant,url_link"
+        default="custom"
+        label="⚙️ FAB Button Mode"
+        description="Choose what the FAB button displays when clicked.
+
+🎯 OPTIONS:
+• custom = Shows your custom links in a popup menu (recommended)
+• url_link = Direct link (no popup, goes straight to URL)
+• help_form = Shows ONLY the help request form (commented out - uncomment if needed)
+• ai_assistant = Shows ONLY the AI assistant (commented out - uncomment if needed)
+• both = Shows ALL options (commented out - uncomment if needed)
+
+💡 TIP: Use 'custom' for government/agency links with multiple options"
+        datasource="custom,help_form,ai_assistant,both,url_link"
       />
             
+            <!-- Custom Links Configuration -->
+            <property
+        name="fabCustomItems"
+        type="String"
+        label="📋 Custom Menu Items (Links)"
+        description="Configure your custom links for the FAB menu.
+
+📝 FORMAT:
+Label,URL,Type|Label2,URL2,Type2
+
+🔧 COMPONENTS:
+• Label = Display text (e.g., 'USDA.gov', 'Help Desk')
+• URL = Destination link
+• Type = Icon type (link, email, chat, open)
+
+📌 EXAMPLES:
+
+1️⃣ SIMPLE (2 LINKS):
+USDA.gov,https://usda.gov,link|Help Desk,mailto:help@usda.gov,email
+
+2️⃣ WITH EMAIL SUBJECT:
+USDA.gov,https://usda.gov,link|Help Desk,mailto:SM.FN.WISPHelp@usda.gov?subject=WISP Support Request,email
+
+3️⃣ FULL EXAMPLE WITH EMAIL TEMPLATE:
+USDA.gov,https://www.usda.gov/,link|Help Desk,mailto:SM.FN.WISPHelp@usda.gov?subject=WISP Application Support&amp;body=Hello Team,%0D%0AI need help with:%0D%0A,email
+
+🌐 URL TYPES:
+• https://site.com = Opens in new tab
+• /internal-page = Navigates within site
+• mailto:email@gov = Opens email client
+• tel:+1234567890 = Opens phone dialer
+
+⚠️ IMPORTANT: Only items you define will appear (no empty spaces)"
+      />
+            
+            <!-- Single URL Mode (url_link) -->
+            <property
+        name="fabUrl"
+        type="String"
+        label="🔗 Single FAB URL (Direct Link Mode)"
+        description="Direct URL when using 'url_link' mode - FAB goes straight to this URL.
+
+📌 EXAMPLES:
+• /help = Internal help page
+• https://usda.gov = External site (new tab)
+• mailto:support@usda.gov = Email link
+• tel:+1-800-123-4567 = Phone number
+
+⚠️ NOTE: Only works when FAB Button Mode = 'url_link'"
+      />
+            
+            <!-- Help Form Settings -->
             <property
         name="helpFormLabel"
         type="String"
         default="Help Request"
-        label="Help Form Label"
-        description="Label for the help request option in the FAB menu"
+        label="💬 Help Form - Label Text"
+        description="Text shown for the help form option.
+
+📌 EXAMPLES:
+• 'Help Request'
+• 'Submit a Ticket'
+• 'Contact Support'
+• 'Get Help'
+
+⚠️ ONLY SHOWS: When FAB Mode = 'help_form' or 'both'"
       />
-            <property
-        name="aiAssistantLabel"
-        type="String"
-        default="AI Assistant"
-        label="AI Assistant Label"
-        description="Label for the AI assistant option in the FAB menu"
-      />
+            
             <property
         name="helpFormIcon"
         type="String"
         default="utility:chat"
-        label="Help Form Icon"
-        description="Lightning icon for help form. Format: 'category:iconName'. Examples: 'utility:chat', 'utility:help', 'standard:case'"
+        label="💬 Help Form - Icon"
+        description="Lightning icon for help form button.
+
+📝 FORMAT: category:iconName
+
+📌 COMMON OPTIONS:
+• utility:chat (speech bubble)
+• utility:help (question mark)
+• utility:case (briefcase)
+• standard:case (case icon)
+• standard:service_request
+
+🔍 Find more: developer.salesforce.com/docs/icons"
       />
+            
+            <!-- AI Assistant Settings -->
+            <property
+        name="aiAssistantLabel"
+        type="String"
+        default="AI Assistant"
+        label="🤖 AI Assistant - Label Text"
+        description="Text shown for the AI assistant option.
+
+📌 EXAMPLES:
+• 'AI Assistant'
+• 'Virtual Assistant'
+• 'Chat with AI'
+• 'Get AI Help'
+
+⚠️ ONLY SHOWS: When FAB Mode = 'ai_assistant' or 'both'"
+      />
+            
             <property
         name="aiAssistantIcon"
         type="String"
         default="utility:einstein"
-        label="AI Assistant Icon"
-        description="Lightning icon for AI assistant. Format: 'category:iconName'. Examples: 'utility:einstein', 'utility:bot', 'standard:bot'"
+        label="🤖 AI Assistant - Icon"
+        description="Lightning icon for AI assistant button.
+
+📝 FORMAT: category:iconName
+
+📌 COMMON OPTIONS:
+• utility:einstein (Einstein icon)
+• utility:bot (robot icon)
+• standard:bot (bot icon)
+• utility:sentiment_positive
+
+🔍 Find more: developer.salesforce.com/docs/icons"
       />
 
-            <!-- Footer configuration -->
+            <!-- ========================================= -->
+            <!-- 📄 FOOTER CONFIGURATION -->
+            <!-- ========================================= -->
+            
             <property
         name="useDefaultFooter"
         type="Boolean"
@@ -346,8 +484,8 @@
         label="Legal Text"
         description="Additional legal text displayed in the footer"
       />
-
-            <!-- Dynamic Footer Columns -->
+            
+            <!-- Footer Columns Settings -->
             <property
         name="footerColumnCount"
         type="Integer"
@@ -371,9 +509,8 @@
         label="Footer Column Menus"
         description="Navigation menu names for each column, comma-separated. Example: 'Products Menu, Resources Menu, Company Menu'. Create these in Setup > Navigation Menus"
       />
-
-            <!-- Social media links -->
-            <!-- Dynamic Social Links -->
+            
+            <!-- Social Media Links -->
             <property
         name="socialLinksCount"
         type="Integer"

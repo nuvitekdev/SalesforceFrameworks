@@ -211,6 +211,20 @@
   />
   <aura:attribute name="heroCTASecondaryUrl" type="String" access="global" />
 
+  <!-- Banner customization attributes -->
+  <aura:attribute
+    name="bannerTextSize"
+    type="String"
+    default="40px"
+    access="global"
+  />
+  <aura:attribute
+    name="bannerTextAlign"
+    type="String"
+    default="center"
+    access="global"
+  />
+
   <!-- Hero Media Component for Split View -->
   <aura:attribute
     name="heroMediaComponentName"
@@ -228,8 +242,46 @@
     default="false"
     access="private"
   />
+  
+  <!-- Hero Media Image Option -->
+  <aura:attribute
+    name="heroMediaImage"
+    type="String"
+    access="global"
+  />
+  <aura:attribute
+    name="heroMediaImageAlt"
+    type="String"
+    default="Hero Image"
+    access="global"
+  />
+  <aura:attribute
+    name="heroMediaImageUrl"
+    type="String"
+    access="private"
+  />
+  
+  <!-- Hero Media Video Option -->
+  <aura:attribute
+    name="heroMediaVideo"
+    type="String"
+    access="global"
+  />
+  <aura:attribute
+    name="heroMediaVideoUrl"
+    type="String"
+    access="private"
+  />
+  <aura:attribute
+    name="heroMediaType"
+    type="String"
+    default="image"
+    access="global"
+  />
 
-  <!-- Content Layout Configuration (Required - cannot be removed) -->
+  <!-- Content Layout Configuration - COMMENTED OUT (Not Currently Used but may be required by system) -->
+  <!-- Note: These attributes might be required by Salesforce Theme Layout system even if not used in code -->
+  <!--
   <aura:attribute
     name="mainContentLayout"
     type="String"
@@ -266,6 +318,7 @@
     default="false"
     access="global"
   />
+  -->
 
   <!-- FAB control -->
   <aura:attribute
@@ -278,9 +331,12 @@
   <aura:attribute
     name="fabOptions"
     type="String"
-    default="both"
+    default="custom"
     access="global"
   />
+  <!-- Custom FAB Menu Items: Format: "Label1,URL1,icon1|Label2,URL2,icon2" -->
+  <aura:attribute name="fabCustomItems" type="String" access="global" />
+  <aura:attribute name="fabCustomItemsList" type="List" default="[]" access="private" />
   <aura:attribute
     name="helpFormLabel"
     type="String"
@@ -400,6 +456,12 @@
   <aura:attribute name="headerClass" type="String" />
   <aura:attribute name="headerStyle" type="String" />
   <aura:attribute name="heroSectionClass" type="String" />
+  <aura:attribute name="heroContainerClass" type="String" />
+  <aura:attribute name="heroContentClass" type="String" />
+  <aura:attribute name="heroTitleClass" type="String" />
+  <aura:attribute name="heroTitleStyle" type="String" />
+  <aura:attribute name="heroTitleTextStyle" type="String" />
+  <aura:attribute name="heroSubtitleClass" type="String" />
   <aura:attribute name="heroBackgroundStyle" type="String" />
   <aura:attribute name="heroOverlayStyle" type="String" />
   <aura:attribute name="heroSubtitleStyle" type="String" />
@@ -410,6 +472,7 @@
   <aura:attribute name="mobileMenuButtonClass" type="String" />
   <aura:attribute name="mobileMenuClass" type="String" />
   <aura:attribute name="fabMenuClass" type="String" />
+  <aura:attribute name="hasAnyFabItems" type="Boolean" default="false" />
   <aura:attribute name="helpFormDialogClass" type="String" />
   <aura:attribute name="llmAssistantDialogClass" type="String" />
   <aura:attribute name="backdropClass" type="String" />
@@ -427,9 +490,11 @@
   <aura:attribute name="footerColumnsStyle" type="String" />
   <aura:attribute name="footerColumnsWithItems" type="List" default="[]" />
   <aura:attribute name="socialLinks" type="List" default="[]" />
+  <aura:attribute name="iconInterval" type="Object" />
 
   <!-- Handlers -->
   <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+  <aura:handler name="destroy" value="{!this}" action="{!c.handleDestroy}" />
 
   <!-- Main Template -->
   <div class="{!v.themeClass}" style="{!v.themeStyle}">
@@ -739,13 +804,13 @@
           <div class="hero-overlay" style="{!v.heroOverlayStyle}"></div>
         </aura:if>
 
-        <div class="hero-container">
-          <div class="hero-content">
+        <div class="{!v.heroContainerClass}">
+          <div class="{!v.heroContentClass}">
             <!-- Update the hero title and subtitle in the HTML -->
-            <h1 class="hero-title" aria-label="{!v.heroTitle}">
-              <span class="hero-title-text">{!v.heroTitle}</span>
+            <h1 class="{!v.heroTitleClass}" style="{!v.heroTitleStyle}" aria-label="{!v.heroTitle}">
+              <span class="hero-title-text" style="{!v.heroTitleTextStyle}">{!v.heroTitle}</span>
             </h1>
-            <p class="hero-subtitle" style="{!v.heroSubtitleStyle}">
+            <p class="{!v.heroSubtitleClass}" style="{!v.heroSubtitleStyle}">
               {!v.heroSubtitle}
             </p>
             <div class="hero-cta">
@@ -768,32 +833,63 @@
           <!-- Hero media (for split layout) -->
           <aura:if isTrue="{!v.isHeroSplit}">
             <div class="hero-media">
-              <!-- Check if component name is specified first -->
-              <aura:if isTrue="{!not(empty(v.heroMediaComponentName))}">
-                <!-- Dynamically created component -->
-                <div class="hero-media-content nuvitek-themed-component" aura:id="heroMediaContainer">
-                  <!-- Component will be created dynamically here -->
+              <!-- Priority 1: Check if media (image or video) is specified -->
+              <aura:if isTrue="{!or(not(empty(v.heroMediaImage)), not(empty(v.heroMediaVideo)))}">
+                <div class="hero-media-content hero-media-container">
+                  <!-- Show video if specified and type is video -->
+                  <aura:if isTrue="{!and(v.heroMediaType == 'video', not(empty(v.heroMediaVideo)))}">
+                    <video 
+                      class="hero-media-video"
+                      autoplay="autoplay"
+                      loop="loop"
+                      muted="muted"
+                      playsinline="playsinline"
+                    >
+                      <source src="{!v.heroMediaVideoUrl}" type="video/mp4" />
+                      <!-- Fallback to image if video doesn't load -->
+                      <aura:if isTrue="{!not(empty(v.heroMediaImageUrl))}">
+                        Your browser does not support the video tag.
+                      </aura:if>
+                    </video>
+                    <aura:set attribute="else">
+                      <!-- Show image -->
+                      <img 
+                        src="{!v.heroMediaImageUrl}" 
+                        alt="{!v.heroMediaImageAlt}"
+                        class="hero-media-image"
+                      />
+                    </aura:set>
+                  </aura:if>
                 </div>
                 <aura:set attribute="else">
-                  <!-- Fall back to facet if no component specified -->
-                  <aura:if isTrue="{!not(empty(v.heroMedia))}">
-                    <!-- User-added content via facet -->
-                    <div class="hero-media-content nuvitek-themed-component">
-                      {!v.heroMedia}
+                  <!-- Priority 2: Check if component name is specified -->
+                  <aura:if isTrue="{!not(empty(v.heroMediaComponentName))}">
+                    <!-- Dynamically created component -->
+                    <div class="hero-media-content nuvitek-themed-component" aura:id="heroMediaContainer">
+                      <!-- Component will be created dynamically here -->
                     </div>
                     <aura:set attribute="else">
-                      <!-- Placeholder shown when empty -->
-                      <div class="media-placeholder">
-                        <div class="placeholder-content">
-                          <lightning:icon iconName="utility:image" size="large" alternativeText="Add content" />
-                          <div class="placeholder-text">
-                            Configure Hero Media Component
-                          </div>
-                          <div class="placeholder-subtext">
-                            Set "Hero Media Component" in component properties
-                          </div>
+                      <!-- Priority 3: Fall back to facet if available -->
+                      <aura:if isTrue="{!not(empty(v.heroMedia))}">
+                        <!-- User-added content via facet -->
+                        <div class="hero-media-content nuvitek-themed-component">
+                          {!v.heroMedia}
                         </div>
-                      </div>
+                        <aura:set attribute="else">
+                          <!-- Placeholder shown when nothing is configured -->
+                          <div class="media-placeholder">
+                            <div class="placeholder-content">
+                              <lightning:icon iconName="utility:image" size="large" alternativeText="Add content" />
+                              <div class="placeholder-text">
+                                Configure Hero Media
+                              </div>
+                              <div class="placeholder-subtext">
+                                Set "Hero Media Image" in component properties
+                              </div>
+                            </div>
+                          </div>
+                        </aura:set>
+                      </aura:if>
                     </aura:set>
                   </aura:if>
                 </aura:set>
@@ -996,64 +1092,82 @@
           <span class="fab-icon-svg" data-icon="plus"></span>
         </button>
 
-        <!-- FAB Menu Options -->
-        <aura:if isTrue="{!and(v.fabOptions != 'url_link', v.fabMenuOpen)}">
-          <div class="{!v.fabMenuClass}">
-            <!-- Help Request Option - COMMENTED OUT
-                        <aura:if isTrue="{!or(v.fabOptions == 'both', v.fabOptions == 'help_form')}">
-                            <div class="fab-menu-item">
-                                <span class="fab-menu-label">{!v.helpFormLabel}</span>
-                                <button class="fab-menu-button" onclick="{!c.toggleHelpForm}" aria-label="{!v.helpFormLabel}">
-                                    <span class="fab-menu-icon-svg" data-icon="chat"></span>
-                                </button>
-                            </div>
-                        </aura:if>
-                        -->
-
-            <!-- AI Assistant Option - COMMENTED OUT
-                        <aura:if isTrue="{!or(v.fabOptions == 'both', v.fabOptions == 'ai_assistant')}">
-                            <div class="fab-menu-item">
-                                <span class="fab-menu-label">{!v.aiAssistantLabel}</span>
-                                <button class="fab-menu-button" onclick="{!c.toggleLlmAssistant}" aria-label="{!v.aiAssistantLabel}">
-                                    <span class="fab-menu-icon-svg" data-icon="einstein"></span>
-                                </button>
-                            </div>
-                        </aura:if>
-                        -->
+        <!-- Arrow indicator under FAB button -->
+        <aura:if isTrue="{!v.fabMenuOpen}">
+          <div class="fab-arrow">
+            <span class="fab-arrow-svg" data-icon="arrow-up"></span>
           </div>
         </aura:if>
 
-        <!-- Help Form Dialog - COMMENTED OUT
-                <div class="{!v.helpFormDialogClass}">
-                    <div class="support-requester-content">
-                        <c:supportRequester
-                            primaryColor="{!v.primaryColor}"
-                            accentColor="{!v.accentColor}"
-                            useDarkTheme="{!v.themeName == 'dark'}"
-                            layoutOrientation="vertical"
-                            componentTitle="{!v.helpFormLabel}"
-                            showFaqSection="{!v.showFaqSection}">
-                        </c:supportRequester>
-                    </div>
-                    <button class="dialog-close-button" onclick="{!c.toggleHelpForm}">
-                        <lightning:icon iconName="utility:close" size="small"/>
-                    </button>
-                </div>
-                -->
+        <!-- FAB Menu Options - Original Style -->
+        <aura:if isTrue="{!and(v.fabOptions != 'url_link', v.fabMenuOpen, v.hasAnyFabItems)}">
+          <div class="{!v.fabMenuClass}">
+            <!-- Help Request Option - COMMENTED OUT -->
+            <!-- <aura:if isTrue="{!or(v.fabOptions == 'both', v.fabOptions == 'help_form')}">
+              <div class="fab-menu-item">
+                <button class="fab-menu-label fab-menu-button-text" onclick="{!c.toggleHelpForm}" aria-label="{!v.helpFormLabel}">
+                  <span class="fab-menu-text-icon fab-menu-icon-svg" data-icon="chat"></span>
+                  {!v.helpFormLabel}
+                </button>
+              </div>
+            </aura:if> -->
 
-        <!-- LLM Assistant Dialog - COMMENTED OUT
-                <div class="{!v.llmAssistantDialogClass}">
-                    <div class="help-form-dialog-header">
-                        <h2 class="help-form-title">AI Assistant</h2>
-                        <button class="help-form-close" onclick="{!c.toggleLlmAssistant}">
-                            <lightning:icon iconName="utility:close" size="small"/>
-                        </button>
-                    </div>
-                    <div class="help-form-content llm-assistant-container">
-                        <c:llmAssistant primaryColor="{!v.primaryColor}" accentColor="{!v.accentColor}"></c:llmAssistant>
-                    </div>
+            <!-- AI Assistant Option - COMMENTED OUT -->
+            <!-- <aura:if isTrue="{!or(v.fabOptions == 'both', v.fabOptions == 'ai_assistant')}">
+              <div class="fab-menu-item">
+                <button class="fab-menu-label fab-menu-button-text" onclick="{!c.toggleLlmAssistant}" aria-label="{!v.aiAssistantLabel}">
+                  <span class="fab-menu-text-icon fab-menu-icon-svg" data-icon="robot"></span>
+                  {!v.aiAssistantLabel}
+                </button>
+              </div>
+            </aura:if> -->
+            
+            <!-- Custom FAB Menu Items -->
+            <aura:if isTrue="{!and(or(v.fabOptions == 'both', v.fabOptions == 'custom'), v.fabCustomItemsList.length > 0)}">
+              <aura:iteration items="{!v.fabCustomItemsList}" var="item">
+                <div class="fab-menu-item">
+                  <a href="{!item.url}" 
+                     class="fab-menu-label fab-menu-button-text custom-fab-text" 
+                     target="{!item.target}"
+                     rel="{!item.rel}"
+                     aria-label="{!item.label}">
+                    {!item.label}
+                  </a>
                 </div>
-                -->
+              </aura:iteration>
+            </aura:if>
+          </div>
+        </aura:if>
+
+        <!-- Help Form Dialog - COMMENTED OUT -->
+        <!-- <div class="{!v.helpFormDialogClass}">
+            <div class="support-requester-content">
+                <c:supportRequester
+                    primaryColor="{!v.primaryColor}"
+                    accentColor="{!v.accentColor}"
+                    useDarkTheme="{!v.themeName == 'dark'}"
+                    layoutOrientation="vertical"
+                    componentTitle="{!v.helpFormLabel}"
+                    showFaqSection="{!v.showFaqSection}">
+                </c:supportRequester>
+            </div>
+            <button class="dialog-close-button" onclick="{!c.toggleHelpForm}">
+                <lightning:icon iconName="utility:close" size="small"/>
+            </button>
+        </div> -->
+
+        <!-- LLM Assistant Dialog - COMMENTED OUT -->
+        <!-- <div class="{!v.llmAssistantDialogClass}">
+            <div class="help-form-dialog-header">
+                <h2 class="help-form-title">AI Assistant</h2>
+                <button class="help-form-close" onclick="{!c.toggleLlmAssistant}">
+                    <lightning:icon iconName="utility:close" size="small"/>
+                </button>
+            </div>
+            <div class="help-form-content llm-assistant-container">
+                <div class="placeholder-message">LLM Assistant component not available</div>
+            </div>
+        </div> -->
 
         <!-- Overlay backdrop when dialogs are open -->
         <div class="{!v.backdropClass}" onclick="{!c.closeAllDialogs}"></div>

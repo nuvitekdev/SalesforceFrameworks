@@ -669,6 +669,17 @@
   text-align: center;
 }
 
+.hero-section.layout-banner {
+  min-height: 125px;
+  max-height: 150px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
 .hero-overlay {
   position: absolute;
   top: 0;
@@ -710,6 +721,14 @@
   gap: var(--spacing-xl);
 }
 
+.hero-section.layout-banner .hero-container {
+  max-width: 1200px;
+  padding: 0 var(--spacing-md);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
 .hero-content {
   max-width: 800px;
   display: flex;
@@ -721,6 +740,13 @@
   max-width: 50%;
   align-items: flex-start;
   text-align: left;
+}
+
+.hero-section.layout-banner .hero-content {
+  max-width: 100%;
+  align-items: center;
+  text-align: center;
+  gap: var(--spacing-xs);
 }
 
 .hero-title {
@@ -736,6 +762,84 @@
 
 .hero-section.layout-split .hero-title {
   text-align: left;
+}
+
+.hero-section.layout-banner .hero-title {
+  /* font-size is now controlled by inline styles */
+  margin-bottom: var(--spacing-xs);
+  text-align: center;
+}
+
+/* Banner text size is now controlled by inline styles applied to both h1 and span elements */
+
+/* Banner text alignment variants - focus on align-items for content positioning */
+.hero-section.layout-banner .hero-container.align-left {
+  align-items: flex-start !important;
+}
+
+.hero-section.layout-banner .hero-container.align-center {
+  align-items: center !important;
+}
+
+.hero-section.layout-banner .hero-container.align-right {
+  align-items: flex-end !important;
+}
+
+.hero-section.layout-banner .hero-content.align-left {
+  text-align: left !important;
+  align-items: flex-start !important;
+}
+
+.hero-section.layout-banner .hero-content.align-center {
+  text-align: center !important;
+  align-items: center !important;
+}
+
+.hero-section.layout-banner .hero-content.align-right {
+  text-align: right !important;
+  align-items: flex-end !important;
+}
+
+.hero-section.layout-banner .hero-title.align-left {
+  text-align: left !important;
+}
+
+.hero-section.layout-banner .hero-title.align-center {
+  text-align: center !important;
+}
+
+.hero-section.layout-banner .hero-title.align-right {
+  text-align: right !important;
+}
+
+.hero-section.layout-banner .hero-subtitle.align-left {
+  text-align: left !important;
+}
+
+.hero-section.layout-banner .hero-subtitle.align-center {
+  text-align: center !important;
+}
+
+.hero-section.layout-banner .hero-subtitle.align-right {
+  text-align: right !important;
+}
+
+/* Keep underline centered regardless of text alignment */
+.hero-section.layout-banner .hero-title .hero-title-text::after {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  right: auto !important;
+}
+
+/* Hide title underline when title is empty */
+.hero-section.layout-banner .hero-title:empty .hero-title-text::after,
+.hero-section.layout-fullwidth .hero-title:empty .hero-title-text::after,
+.hero-section.layout-split .hero-title:empty .hero-title-text::after {
+  display: none;
+}
+
+.hero-title-text:empty::after {
+  display: none;
 }
 
 .hero-title-text {
@@ -774,6 +878,13 @@
   transform: none;
 }
 
+.hero-section.layout-banner .hero-title-text::after {
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 3px;
+}
+
 .hero-subtitle {
   font-size: var(--font-size-xl);
   line-height: 1.5;
@@ -789,6 +900,14 @@
 
 .hero-section.layout-split .hero-subtitle {
   text-align: left;
+}
+
+.hero-section.layout-banner .hero-subtitle {
+  font-size: var(--font-size-md);
+  margin-bottom: var(--spacing-xs);
+  margin-top: 0;
+  text-align: center;
+  max-width: 600px;
 }
 
 .hero-cta {
@@ -1189,6 +1308,32 @@
   list-style-type: none;
 }
 
+/* Footer navigation simplified layout */
+.footer-nav-simplified {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) 0;
+}
+
+.footer-nav-simplified .footer-nav-item {
+  position: relative;
+  padding: 0 var(--spacing-sm);
+}
+
+.footer-nav-simplified .footer-nav-item:not(:last-child)::after {
+  content: '|';
+  position: absolute;
+  right: calc(var(--spacing-md) * -0.5);
+  color: #ccc;
+  pointer-events: none;
+}
+
+.theme-dark .footer-nav-simplified .footer-nav-item:not(:last-child)::after {
+  color: #555;
+}
+
 /* Footer variants - more distinctive differences */
 .site-footer.style-minimal {
   padding-top: var(--spacing-xs);
@@ -1284,6 +1429,24 @@
   background-color: var(--primary-dark);
   transform: translateY(-4px) scale(1.05);
   box-shadow: var(--shadow-xl);
+}
+
+/* FAB Arrow Indicator */
+.fab-arrow {
+  position: absolute;
+  bottom: 72px;
+  right: 22px;
+  width: 16px;
+  height: 16px;
+  color: var(--primary-color);
+  opacity: 0.8;
+  animation: bounce 2s infinite;
+  z-index: 98;
+}
+
+.fab-arrow svg {
+  width: 100%;
+  height: 100%;
 }
 
 /* Help Form Dialog Styles */
@@ -1577,6 +1740,13 @@
     padding-top: 80px;
     padding-bottom: var(--spacing-xl);
   }
+  
+  .hero-section.layout-banner {
+    min-height: 100px;
+    max-height: 120px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
 
   .hero-title {
     font-size: var(--font-size-4xl);
@@ -1584,6 +1754,16 @@
 
   .hero-subtitle {
     font-size: var(--font-size-lg);
+  }
+  
+  .hero-section.layout-banner .hero-title {
+    /* font-size is now controlled by inline styles */
+  }
+  
+  /* Banner text size is now controlled by inline styles - responsive scaling handled automatically */
+  
+  .hero-section.layout-banner .hero-subtitle {
+    font-size: var(--font-size-sm);
   }
 
   /* Fix for scroll indicator on mobile */
@@ -1837,7 +2017,7 @@
   }
 }
 
-/* FAB Menu styles */
+/* FAB Menu styles - Original Design */
 .fab-menu {
   position: absolute;
   bottom: 76px;
@@ -1879,6 +2059,7 @@
   cursor: pointer;
   border: none;
   transition: all var(--transition-medium);
+  text-decoration: none;
 }
 
 .fab-menu-button:hover {
@@ -1904,6 +2085,74 @@
 .fab-menu-item:hover .fab-menu-label {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
+}
+
+/* Clickable text labels with icons for built-in options */
+.fab-menu-button-text {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 14px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.fab-menu-button-text:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  color: white;
+}
+
+/* Icons within text labels */
+.fab-menu-text-icon {
+  width: 16px;
+  height: 16px;
+  color: white !important;
+  flex-shrink: 0;
+}
+
+/* Custom FAB text links (no icons) */
+.custom-fab-text {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white !important;
+  padding: 10px 14px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  display: block;
+}
+
+.custom-fab-text:hover {
+  background-color: rgba(0, 0, 0, 0.85);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  color: white !important;
+  text-decoration: none;
+}
+
+.fab-menu-item-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: inherit;
 }
 
 /* LLM Assistant container styles */
@@ -1950,15 +2199,32 @@
   --item-index: 3;
 }
 
+.fab-menu-item:nth-child(4) {
+  --item-index: 4;
+}
+
+.fab-menu-item:nth-child(5) {
+  --item-index: 5;
+}
+
+.fab-menu-item:nth-child(6) {
+  --item-index: 6;
+}
+
+/* Custom FAB Menu Item Styles for anchor elements */
+.custom-fab-item {
+  text-decoration: none;
+}
+
+.custom-fab-item:hover {
+  text-decoration: none;
+}
+
 /* Update the main FAB button to indicate it's a menu */
 .fab-button {
   transition:
     transform 0.3s ease,
     background-color 0.3s ease;
-}
-
-.fab-button:hover {
-  transform: translateY(-5px) rotate(90deg);
 }
 
 /* Support Requester Dialog Styles */

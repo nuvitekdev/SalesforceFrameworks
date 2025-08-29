@@ -179,7 +179,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  background-color: var(--primary-color);
+  background-color: rgba(255, 255, 255, 0.92);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
@@ -312,8 +312,8 @@
   border-radius: 24px;
   font-weight: 600;
   font-size: 16px;
-  color: #1d1d1f;
-  /* Force dark text on white background */
+  color: #222222 !important;
+  /* Force black text in light mode */
   transition: all 0.25s ease;
   position: relative;
   z-index: 2;
@@ -327,19 +327,22 @@
 }
 
 /* Dark theme header navigation text - force white */
-.cNuvitekCustomThemeLayoutAura.theme-dark .nav-item {
+.THIS .theme-dark .nav-item {
+  color: #ffffff !important;
+  /* Force white text in dark mode */
+}
+
+.THIS .theme-dark .nav-item span {
   color: #ffffff !important;
 }
 
-.cNuvitekCustomThemeLayoutAura.theme-dark .nav-item span {
+.THIS .theme-dark .nav-item:hover {
   color: #ffffff !important;
-}
-
-.cNuvitekCustomThemeLayoutAura.theme-dark .nav-item:hover {
+  /* Force white on hover in dark mode */
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.cNuvitekCustomThemeLayoutAura.theme-dark .nav-item:hover span {
+.THIS .theme-dark .nav-item:hover span {
   color: #ffffff !important;
 }
 
@@ -396,9 +399,9 @@
 }
 
 .THIS .nav-item:hover {
-  color: #ffffff !important;
-  /* Force white on hover */
-  background-color: rgba(255, 255, 255, 0.1);
+  color: #000000 !important;
+  /* Force black on hover in light mode */
+  background-color: rgba(0, 0, 0, 0.04);
   transform: translateY(-1px);
 }
 
@@ -825,6 +828,17 @@
   align-items: center;
 }
 
+.THIS .hero-section.layout-banner {
+  min-height: 125px;
+  max-height: 150px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
 .THIS .hero-overlay {
   position: absolute;
   top: 0;
@@ -866,6 +880,14 @@
   gap: var(--spacing-xl);
 }
 
+.THIS .hero-section.layout-banner .hero-container {
+  max-width: 1200px;
+  padding: 0 var(--spacing-md);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
 .THIS .hero-content {
   max-width: 800px;
   display: flex;
@@ -877,6 +899,13 @@
   max-width: 50%;
   align-items: flex-start;
   text-align: left;
+}
+
+.THIS .hero-section.layout-banner .hero-content {
+  max-width: 100%;
+  align-items: center;
+  text-align: center;
+  gap: var(--spacing-xs);
 }
 
 .THIS .hero-title {
@@ -904,6 +933,84 @@
 
 .THIS .hero-section.layout-split .hero-title {
   text-align: left;
+}
+
+.THIS .hero-section.layout-banner .hero-title {
+  /* font-size is now controlled by inline styles */
+  margin-bottom: var(--spacing-xs);
+  text-align: center;
+}
+
+/* Banner text size is now controlled by inline styles applied to both h1 and span elements */
+
+/* Banner text alignment variants - focus on align-items for content positioning */
+.THIS .hero-section.layout-banner .hero-container.align-left {
+  align-items: flex-start !important;
+}
+
+.THIS .hero-section.layout-banner .hero-container.align-center {
+  align-items: center !important;
+}
+
+.THIS .hero-section.layout-banner .hero-container.align-right {
+  align-items: flex-end !important;
+}
+
+.THIS .hero-section.layout-banner .hero-content.align-left {
+  text-align: left !important;
+  align-items: flex-start !important;
+}
+
+.THIS .hero-section.layout-banner .hero-content.align-center {
+  text-align: center !important;
+  align-items: center !important;
+}
+
+.THIS .hero-section.layout-banner .hero-content.align-right {
+  text-align: right !important;
+  align-items: flex-end !important;
+}
+
+.THIS .hero-section.layout-banner .hero-title.align-left {
+  text-align: left !important;
+}
+
+.THIS .hero-section.layout-banner .hero-title.align-center {
+  text-align: center !important;
+}
+
+.THIS .hero-section.layout-banner .hero-title.align-right {
+  text-align: right !important;
+}
+
+.THIS .hero-section.layout-banner .hero-subtitle.align-left {
+  text-align: left !important;
+}
+
+.THIS .hero-section.layout-banner .hero-subtitle.align-center {
+  text-align: center !important;
+}
+
+.THIS .hero-section.layout-banner .hero-subtitle.align-right {
+  text-align: right !important;
+}
+
+/* Keep underline centered regardless of text alignment */
+.THIS .hero-section.layout-banner .hero-title .hero-title-text::after {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  right: auto !important;
+}
+
+/* Hide title underline when title is empty */
+.THIS .hero-section.layout-banner .hero-title:empty .hero-title-text::after,
+.THIS .hero-section.layout-fullwidth .hero-title:empty .hero-title-text::after,
+.THIS .hero-section.layout-split .hero-title:empty .hero-title-text::after {
+  display: none;
+}
+
+.THIS .hero-title-text:empty::after {
+  display: none;
 }
 
 .THIS .hero-title-text {
@@ -972,6 +1079,13 @@
   transform: none;
 }
 
+.THIS .hero-section.layout-banner .hero-title-text::after {
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 3px;
+}
+
 .THIS .hero-subtitle {
   font-size: var(--font-size-xl);
   line-height: 1.5;
@@ -1014,6 +1128,14 @@
 
 .THIS .hero-section.layout-split .hero-subtitle {
   text-align: left;
+}
+
+.THIS .hero-section.layout-banner .hero-subtitle {
+  font-size: var(--font-size-md);
+  margin-bottom: var(--spacing-xs);
+  margin-top: 0;
+  text-align: center;
+  max-width: 600px;
 }
 
 .THIS .hero-cta {
@@ -1173,6 +1295,156 @@
   flex-direction: column;
   gap: 8px;
   width: 200px;
+}
+
+/* Hero Media Container - Enhanced styling */
+.THIS .hero-media-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(135deg, var(--background-elevated) 0%, var(--background-alt) 100%);
+  border-radius: var(--radius-lg);
+  min-height: 450px;
+}
+
+/* Hero Media Image Styles - Enhanced */
+.THIS .hero-media-image {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 450px;
+  object-fit: contain;
+  object-position: center;
+  border-radius: var(--radius-md);
+  animation: fadeIn 0.8s ease-in-out;
+  background-color: transparent;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Hero Media Video Styles - Enhanced */
+.THIS .hero-media-video {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 450px;
+  object-fit: contain;
+  object-position: center;
+  border-radius: var(--radius-md);
+  animation: fadeIn 0.8s ease-in-out;
+  background-color: transparent;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Animation for smooth appearance - Enhanced */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Ensure media maintains aspect ratio - Enhanced */
+.THIS .hero-media-content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Add subtle overlay gradient for better text contrast when needed */
+.THIS .hero-media-content::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.02) 100%);
+  border-radius: var(--radius-lg);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Responsive adjustments - Enhanced */
+@media (max-width: 768px) {
+  .THIS .hero-media-image,
+  .THIS .hero-media-video {
+    max-height: 300px;
+    border-radius: var(--radius-md);
+  }
+  
+  .THIS .hero-media-container {
+    padding: var(--spacing-md);
+    background: var(--background-alt);
+    min-height: 350px;
+  }
+}
+
+/* High resolution displays - Enhanced */
+@media (min-width: 1440px) {
+  .THIS .hero-media-image,
+  .THIS .hero-media-video {
+    max-height: 550px;
+    border-radius: var(--radius-lg);
+  }
+  
+  .THIS .hero-media-container {
+    padding: var(--spacing-xl);
+    min-height: 600px;
+  }
+}
+
+/* Loading state for media */
+.THIS .hero-media-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+}
+
+.THIS .hero-media-loading::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid var(--primary-light);
+  border-color: var(--primary-light) transparent var(--primary-light) transparent;
+  animation: mediaLoading 1.2s linear infinite;
+}
+
+@keyframes mediaLoading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dark theme media adjustments */
+.THIS .theme-dark .hero-media-container {
+  background: linear-gradient(135deg, var(--background-elevated) 0%, rgba(255,255,255,0.05) 100%);
+}
+
+.THIS .theme-dark .hero-media-image,
+.THIS .theme-dark .hero-media-video {
+  opacity: 1;
 }
 
 .THIS .placeholder-line {
@@ -1432,6 +1704,32 @@
   list-style-type: none;
 }
 
+/* Footer navigation simplified layout */
+.THIS .footer-nav-simplified {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) 0;
+}
+
+.THIS .footer-nav-simplified .footer-nav-item {
+  position: relative;
+  padding: 0 var(--spacing-sm);
+}
+
+.THIS .footer-nav-simplified .footer-nav-item:not(:last-child)::after {
+  content: '|';
+  position: absolute;
+  right: calc(var(--spacing-md) * -0.5);
+  color: #ccc;
+  pointer-events: none;
+}
+
+.THIS .theme-dark .footer-nav-simplified .footer-nav-item:not(:last-child)::after {
+  color: #555;
+}
+
 /* Footer variants - more distinctive differences */
 .THIS .site-footer.style-minimal {
   padding-top: var(--spacing-xs);
@@ -1512,21 +1810,46 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background-color: var(--primary-color);
-  box-shadow: var(--shadow-lg);
+  background-color: #22bdc1; /* Use explicit color instead of variable */
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   border: none;
-  transition: all var(--transition-medium);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              background-color 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  z-index: 99;
 }
 
 .THIS .fab-button:hover {
-  background-color: var(--primary-dark);
-  transform: translateY(-4px) scale(1.05);
-  box-shadow: var(--shadow-xl);
+  background-color: #1a9599; /* Use explicit darker color */
+  transform: translateY(-5px) rotate(15deg) scale(1.05);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+  color: white;
+}
+
+.THIS .fab-button:active {
+  transform: translateY(-2px) rotate(5deg) scale(1.02);
+}
+
+/* Add subtle animation on load */
+@keyframes fabEntrance {
+  from {
+    opacity: 0;
+    transform: scale(0) rotate(-180deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+.THIS .fab {
+  animation: fabEntrance 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 /* Help Form Dialog Styles */
@@ -1820,6 +2143,13 @@
     padding-top: 80px;
     padding-bottom: var(--spacing-xl);
   }
+  
+  .THIS .hero-section.layout-banner {
+    min-height: 100px;
+    max-height: 120px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
 
   .THIS .hero-title {
     font-size: 48px;
@@ -1827,6 +2157,16 @@
 
   .THIS .hero-subtitle {
     font-size: 20px;
+  }
+  
+  .THIS .hero-section.layout-banner .hero-title {
+    /* font-size is now controlled by inline styles */
+  }
+  
+  /* Banner text size is now controlled by inline styles - responsive scaling handled automatically */
+  
+  .THIS .hero-section.layout-banner .hero-subtitle {
+    font-size: var(--font-size-sm);
   }
 
   /* Fix for scroll indicator on mobile */
@@ -2082,67 +2422,159 @@
   }
 }
 
-/* FAB Menu styles */
+/* Enhanced FAB Menu styles - Apple-esque popup positioned above FAB */
 .THIS .fab-menu {
   position: absolute;
   bottom: 76px;
-  right: 5px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  right: 0;
+  min-width: 280px;
+  background: rgba(128, 128, 128, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.15);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(20px);
-  transition: all var(--transition-medium);
-  z-index: 99;
+  transform: translateY(10px) scale(0.95);
+  transform-origin: bottom right;
+  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 1000;
+  overflow: hidden;
 }
 
 .THIS .fab-menu.open {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
   animation: springIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
+/* Dark theme FAB menu */
+.THIS .theme-dark .fab-menu {
+  background: rgba(96, 96, 96, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* FAB Menu Header */
+.THIS .fab-menu-header {
+  padding: 16px 20px 12px;
+  background: rgba(200, 200, 200, 0.8);
+  color: #000000;
+  margin: 0;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.THIS .theme-dark .fab-menu-header {
+  background: rgba(120, 120, 120, 0.8);
+  color: #000000;
+}
+
+.THIS .fab-menu-title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: #000000;
+}
+
+.THIS .fab-menu-divider {
+  display: none;
+}
+
+/* FAB Menu Items Container */
+.THIS .fab-menu-items {
+  padding: 8px;
+}
+
+/* Enhanced FAB Menu Item */
 .THIS .fab-menu-item {
+  margin-bottom: 4px;
+  animation: fadeInRight 0.3s ease forwards;
+  opacity: 0;
+  animation-delay: calc(var(--item-index, 0) * 0.05s);
+}
+
+.THIS .fab-menu-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Enhanced FAB Menu Button */
+.THIS .fab-menu-item-button {
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 12px;
-}
-
-.THIS .fab-menu-button {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background-color: white;
-  box-shadow: var(--shadow-md);
-  color: var(--primary-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+  padding: 12px 16px;
+  background: transparent;
   border: none;
-  transition: all var(--transition-medium);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  text-align: left;
+  color: #000000;
+  text-decoration: none;
 }
 
-.THIS .fab-menu-button:hover {
-  background-color: var(--primary-color);
-  color: white;
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: var(--shadow-lg);
+.THIS .fab-menu-item-button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  transform: translateX(2px);
+  color: #000000;
 }
 
-.THIS .fab-menu-label {
-  background-color: white;
-  padding: 8px 14px;
-  border-radius: var(--radius-full, 9999px);
-  box-shadow: var(--shadow-sm);
-  font-size: 14px;
+.THIS .theme-dark .fab-menu-item-button {
+  color: #000000;
+}
+
+.THIS .theme-dark .fab-menu-item-button:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+  color: #000000;
+}
+
+/* FAB Menu Label Styling */
+.THIS .fab-menu-label,
+.THIS .fab-menu-item-label {
+  flex: 1;
+  font-size: var(--font-size-md);
   font-weight: 500;
+  color: #000000;
+  text-align: left;
+}
+
+.THIS .fab-menu-item-icon {
+  color: #ffffff;
+}
+
+.THIS .theme-dark .fab-menu-label,
+.THIS .theme-dark .fab-menu-item-label {
+  color: #000000;
+}
+
+.THIS .theme-dark .fab-menu-item-icon {
+  color: #ffffff;
+}
+
+.THIS .fab-menu-button:hover .fab-menu-label {
   color: var(--text-color);
-  white-space: nowrap;
-  transition: all var(--transition-medium);
+}
+
+.THIS .fab-menu-button.custom-fab-item:hover .fab-menu-label {
+  color: white;
+}
+
+/* Dark theme FAB menu */
+.THIS .theme-dark .fab-menu {
+  background-color: var(--background-elevated);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.THIS .theme-dark .fab-menu-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.THIS .theme-dark .fab-menu-label {
+  color: var(--text-color);
 }
 
 .THIS .fab-menu-button:hover + .fab-menu-label,
@@ -2195,15 +2627,53 @@
   --item-index: 3;
 }
 
-/* Update the main FAB button to indicate it's a menu */
-.THIS .fab-button {
-  transition:
-    transform 0.3s ease,
-    background-color 0.3s ease;
+.THIS .fab-menu-item:nth-child(4) {
+  --item-index: 4;
 }
 
-.THIS .fab-button:hover {
-  transform: translateY(-5px) rotate(90deg);
+.THIS .fab-menu-item:nth-child(5) {
+  --item-index: 5;
+}
+
+.THIS .fab-menu-item:nth-child(6) {
+  --item-index: 6;
+}
+
+/* Custom FAB Menu Item Styles */
+.THIS .fab-menu-item-button.custom-fab-item {
+  text-decoration: none;
+  background: linear-gradient(135deg, white 0%, var(--background-elevated) 100%);
+  transition: all var(--transition-medium);
+}
+
+.THIS .fab-menu-item-button.custom-fab-item:hover {
+  text-decoration: none;
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+  color: white;
+  transform: translateY(-3px) scale(1.1);
+}
+
+.THIS .theme-dark .fab-menu-item-button.custom-fab-item {
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 100%);
+}
+
+.THIS .theme-dark .fab-menu-item-button.custom-fab-item:hover {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  color: white;
+}
+
+/* Icon styles for custom FAB items */
+.THIS .custom-fab-item .fab-menu-icon-svg {
+  transition: transform var(--transition-fast);
+}
+
+.THIS .custom-fab-item:hover .fab-menu-icon-svg {
+  transform: scale(1.1);
+}
+
+/* Update the main FAB button to indicate it's a menu */
+.THIS .fab-button.menu-open {
+  transform: rotate(90deg);
 }
 
 /* Support Requester Dialog Styles */
@@ -2356,4 +2826,287 @@
 
 .THIS .theme-dark .dialog-close-button:hover {
   background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ===== ORIGINAL FAB DESIGN - AURA SUPPORT ===== */
+/* FAB Arrow Indicator */
+.THIS .fab-arrow {
+  position: absolute;
+  bottom: 72px;
+  right: 22px;
+  width: 16px;
+  height: 16px;
+  color: var(--primary-color);
+  opacity: 0.8;
+  animation: bounce 2s infinite;
+  z-index: 98;
+}
+
+.THIS .fab-arrow-svg {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  position: relative;
+}
+
+.THIS .fab-arrow-svg[data-icon="arrow-up"]::before {
+  content: "↑";
+  font-size: 16px;
+  color: var(--primary-color);
+  position: absolute;
+  top: -2px;
+  left: 2px;
+}
+
+/* Override FAB menu for original design - Individual floating buttons */
+.THIS .fab-menu {
+  position: absolute;
+  bottom: 76px;
+  right: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all var(--transition-medium);
+  z-index: 99;
+  /* Remove background and borders for individual button style */
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  box-shadow: none;
+  min-width: auto;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.THIS .fab-menu.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  animation: none; /* Remove complex animation for cleaner look */
+}
+
+/* Remove header and items container for original design */
+.THIS .fab-menu-header,
+.THIS .fab-menu-items {
+  display: none;
+}
+
+/* Individual FAB menu items - Original Apple-style floating buttons */
+.THIS .fab-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  opacity: 0;
+  transform: translateX(20px);
+  animation: fadeInLeft 0.3s ease forwards;
+  animation-delay: calc(var(--item-index, 0) * 0.1s);
+}
+
+.THIS .fab-menu-item:nth-child(1) { --item-index: 1; }
+.THIS .fab-menu-item:nth-child(2) { --item-index: 2; }
+.THIS .fab-menu-item:nth-child(3) { --item-index: 3; }
+.THIS .fab-menu-item:nth-child(4) { --item-index: 4; }
+.THIS .fab-menu-item:nth-child(5) { --item-index: 5; }
+.THIS .fab-menu-item:nth-child(6) { --item-index: 6; }
+
+/* Floating button labels */
+.THIS .fab-menu-label {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Individual floating buttons */
+.THIS .fab-menu-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: var(--shadow-md);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition-medium);
+  text-decoration: none;
+}
+
+.THIS .fab-menu-button:hover {
+  transform: translateY(-3px) scale(1.1);
+  box-shadow: var(--shadow-lg);
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Icon styles for FAB buttons */
+.THIS .fab-menu-item-icon,
+.THIS .fab-menu-icon-svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: inherit;
+  display: inline-block;
+  position: relative;
+}
+
+/* SVG icon injection for Aura */
+.THIS .fab-menu-icon-svg[data-icon="chat"]::before {
+  content: "💬";
+  font-size: 16px;
+  position: absolute;
+  top: -2px;
+  left: 2px;
+}
+
+.THIS .fab-menu-icon-svg[data-icon="robot"]::before {
+  content: "🤖";
+  font-size: 16px;
+  position: absolute;
+  top: -2px;
+  left: 2px;
+}
+
+.THIS .fab-menu-icon-svg[data-icon="link"]::before {
+  content: "🔗";
+  font-size: 16px;
+  position: absolute;
+  top: -2px;
+  left: 2px;
+}
+
+.THIS .fab-menu-icon-svg[data-icon="email"]::before {
+  content: "✉️";
+  font-size: 16px;
+  position: absolute;
+  top: -2px;
+  left: 2px;
+}
+
+/* Animation for individual buttons appearing */
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Dark theme adjustments for original FAB */
+.THIS .theme-dark .fab-menu-label {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #333;
+}
+
+.THIS .theme-dark .fab-menu-button {
+  background-color: rgba(255, 255, 255, 0.95);
+  color: var(--primary-color);
+}
+
+.THIS .theme-dark .fab-menu-button:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Clickable text labels with icons for built-in options */
+.THIS .fab-menu-button-text {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 14px;
+  border-radius: var(--radius-full, 20px);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.THIS .fab-menu-button-text:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  color: white;
+}
+
+/* Icons within text labels */
+.THIS .fab-menu-text-icon {
+  width: 16px;
+  height: 16px;
+  color: white;
+  flex-shrink: 0;
+  display: inline-block;
+  position: relative;
+}
+
+.THIS .fab-menu-text-icon[data-icon="chat"]::before {
+  content: "💬";
+  font-size: 14px;
+  position: absolute;
+  top: -2px;
+  left: 1px;
+}
+
+.THIS .fab-menu-text-icon[data-icon="robot"]::before {
+  content: "🤖";
+  font-size: 14px;
+  position: absolute;
+  top: -2px;
+  left: 1px;
+}
+
+/* Custom FAB text links (no icons) */
+.THIS .custom-fab-text {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white !important;
+  padding: 10px 14px;
+  border-radius: var(--radius-full, 20px);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  display: block;
+}
+
+.THIS .custom-fab-text:hover {
+  background-color: rgba(0, 0, 0, 0.85);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  color: white !important;
+  text-decoration: none;
+}
+
+/* Dark theme adjustments for new text styles */
+.THIS .theme-dark .fab-menu-button-text {
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+.THIS .theme-dark .custom-fab-text {
+  background-color: rgba(0, 0, 0, 0.75);
 }

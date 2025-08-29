@@ -144,30 +144,10 @@
 
       if (fabOptions === "url_link" && fabUrl) {
         window.location.href = fabUrl;
-      } else if (fabOptions === "help_form") {
-        var currentValue = component.get("v.helpFormOpen");
-        component.set("v.helpFormOpen", !currentValue);
-        if (!currentValue) {
-          component.set("v.fabMenuOpen", false);
-          component.set("v.llmAssistantOpen", false);
-        }
-        helper.updateComputedProperties(component);
-      } else if (fabOptions === "ai_assistant") {
-        var currentValue = component.get("v.llmAssistantOpen");
-        component.set("v.llmAssistantOpen", !currentValue);
-        if (!currentValue) {
-          component.set("v.fabMenuOpen", false);
-          component.set("v.helpFormOpen", false);
-        }
-        helper.updateComputedProperties(component);
       } else {
-        // Default to toggle menu when multiple options (both)
+        // Default to toggle menu for custom options
         var currentValue = component.get("v.fabMenuOpen");
         component.set("v.fabMenuOpen", !currentValue);
-        if (!currentValue) {
-          component.set("v.helpFormOpen", false);
-          component.set("v.llmAssistantOpen", false);
-        }
         helper.updateComputedProperties(component);
       }
     } catch (e) {
@@ -186,6 +166,7 @@
     });
   },
 
+  /* COMMENTED OUT - Help Form not used
   toggleHelpForm: function (component, event, helper) {
     var currentValue = component.get("v.helpFormOpen");
     component.set("v.helpFormOpen", !currentValue);
@@ -198,34 +179,16 @@
 
     helper.updateComputedProperties(component);
   },
+  */
 
   toggleFabMenu: function (component, event, helper) {
-    var fabOptions = component.get("v.fabOptions");
-
-    // If not in menu mode, don't toggle the menu
-    if (fabOptions !== "both") {
-      // For single option modes, directly trigger that option
-      if (fabOptions === "help_form") {
-        this.toggleHelpForm(component, event, helper);
-      } else if (fabOptions === "ai_assistant") {
-        this.toggleLlmAssistant(component, event, helper);
-      }
-      return;
-    }
-
-    // Only toggle menu for 'both' option
+    // Toggle menu for custom options
     var currentValue = component.get("v.fabMenuOpen");
     component.set("v.fabMenuOpen", !currentValue);
-
-    // Close other components if the menu is being opened
-    if (!currentValue) {
-      component.set("v.helpFormOpen", false);
-      component.set("v.llmAssistantOpen", false);
-    }
-
     helper.updateComputedProperties(component);
   },
 
+  /* COMMENTED OUT - LLM Assistant not used
   toggleLlmAssistant: function (component, event, helper) {
     var currentValue = component.get("v.llmAssistantOpen");
     component.set("v.llmAssistantOpen", !currentValue);
@@ -238,16 +201,24 @@
 
     helper.updateComputedProperties(component);
   },
+  */
 
   closeAllDialogs: function (component, event, helper) {
     component.set("v.fabMenuOpen", false);
-    component.set("v.helpFormOpen", false);
-    component.set("v.llmAssistantOpen", false);
+    // Removed helpFormOpen and llmAssistantOpen - not used
     helper.updateComputedProperties(component);
   },
 
   afterRender: function (component, event, helper) {
     // Inject SVG icons after rendering
     helper.injectSvgIcons(component);
+  },
+
+  handleDestroy: function(component, event, helper) {
+    // Clean up the icon interval when component is destroyed
+    var iconInterval = component.get("v.iconInterval");
+    if (iconInterval) {
+      clearInterval(iconInterval);
+    }
   }
 });

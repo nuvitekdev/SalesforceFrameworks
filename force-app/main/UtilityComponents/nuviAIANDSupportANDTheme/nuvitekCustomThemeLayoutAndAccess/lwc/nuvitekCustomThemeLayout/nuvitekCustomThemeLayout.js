@@ -70,14 +70,20 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
   @api heroCTASecondaryLabel = "Learn More";
   @api heroCTASecondaryUrl;
 
+  // Banner customization
+  @api bannerTextSize = "40px";
+  @api bannerTextAlign = "center";
+
   // FAB control
   @api showFab = false;
   @api fabUrl;
-  @api fabOptions = "both"; // both, help_form, ai_assistant, url_link
-  @api helpFormLabel = "Help Request";
-  @api aiAssistantLabel = "AI Assistant";
-  @api helpFormIcon = "utility:chat";
-  @api aiAssistantIcon = "utility:einstein";
+  @api fabOptions = "custom"; // custom, url_link
+  @api fabCustomItems = ""; // Format: "Label1,URL1,icon1|Label2,URL2,icon2"
+  // COMMENTED OUT - Help Form and AI Assistant not used
+  // @api helpFormLabel = "Help Request";
+  // @api aiAssistantLabel = "AI Assistant";
+  // @api helpFormIcon = "utility:chat";
+  // @api aiAssistantIcon = "utility:einstein";
 
   // Video background properties
   @api showBackgroundVideo = false;
@@ -92,9 +98,9 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
   // Reactive state tracking
   @track scrolled = false;
   @track mobileMenuOpen = false;
-  @track helpFormOpen = false;
+  // @track helpFormOpen = false; // COMMENTED OUT - not used
   @track fabMenuOpen = false;
-  @track llmAssistantOpen = false;
+  // @track llmAssistantOpen = false; // COMMENTED OUT - not used
   @track styleInjectionTargets = [];
   @track mutationObserver;
   @track ootbComponentsStyled = false;
@@ -168,7 +174,7 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
 
     // Initialize new variables
     this.fabMenuOpen = false;
-    this.llmAssistantOpen = false;
+    // this.llmAssistantOpen = false; // COMMENTED OUT - not used
   }
 
   // Initialize column menus data
@@ -210,42 +216,6 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
     if (!this.ootbComponentsStyled && this.globalThemeOverride) {
       this.applyStylesToOOTBComponents();
       this.ootbComponentsStyled = true;
-    }
-
-    // Set SVG paths for buttons
-    this.renderSvgIcons();
-  }
-
-  // Render SVG icons for the buttons
-  renderSvgIcons() {
-    try {
-      // Main FAB button icon
-      const mainButton = this.template.querySelector(".fab-button svg");
-      if (mainButton) {
-        mainButton.innerHTML = this.mainFabIconSvg;
-      }
-
-      // Help form button icon
-      if (this.showHelpFormOption) {
-        const helpFormButton = this.template.querySelector(
-          ".fab-menu-item:first-child .fab-menu-button svg"
-        );
-        if (helpFormButton) {
-          helpFormButton.innerHTML = this.helpFormIconSvg;
-        }
-      }
-
-      // AI Assistant button icon
-      if (this.showAiAssistantOption) {
-        const aiButton = this.template.querySelector(
-          ".fab-menu-item:last-child .fab-menu-button svg"
-        );
-        if (aiButton) {
-          aiButton.innerHTML = this.aiAssistantIconSvg;
-        }
-      }
-    } catch (error) {
-      console.error("Error rendering SVG icons:", error);
     }
   }
 
@@ -961,6 +931,7 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
     });
   }
 
+  /* COMMENTED OUT - Help Form not used
   // Toggle the help form (which is now the Support Requester)
   toggleHelpForm() {
     this.helpFormOpen = !this.helpFormOpen;
@@ -971,30 +942,15 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
       this.llmAssistantOpen = false;
     }
   }
+  */
 
   // Toggle the FAB menu
   toggleFabMenu() {
-    // If not in menu mode, don't toggle the menu
-    if (this.fabOptions !== "both") {
-      // For single option modes, directly trigger that option
-      if (this.fabOptions === "help_form") {
-        this.toggleHelpForm();
-      } else if (this.fabOptions === "ai_assistant") {
-        this.toggleLlmAssistant();
-      }
-      return;
-    }
-
-    // Only toggle menu for 'both' option
+    // Toggle menu for custom options
     this.fabMenuOpen = !this.fabMenuOpen;
-
-    // Close other components if the menu is being opened
-    if (this.fabMenuOpen) {
-      this.helpFormOpen = false;
-      this.llmAssistantOpen = false;
-    }
   }
 
+  /* COMMENTED OUT - LLM Assistant not used
   // Toggle the LLM Assistant dialog
   toggleLlmAssistant() {
     this.llmAssistantOpen = !this.llmAssistantOpen;
@@ -1005,13 +961,15 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
       this.helpFormOpen = false;
     }
   }
+  */
 
   // Close all dialogs (used for backdrop clicks)
   closeAllDialogs() {
     this.fabMenuOpen = false;
-    this.helpFormOpen = false;
-    this.llmAssistantOpen = false;
+    // Removed helpFormOpen and llmAssistantOpen - not used
   }
+
+  // Custom FAB links now use direct anchor navigation with proper target attributes
 
   // Computed properties
   get currentYear() {
@@ -1079,6 +1037,54 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
 
   get heroSectionClass() {
     return `hero-section layout-${this.heroLayout}`;
+  }
+
+  get heroContainerClass() {
+    let classes = "hero-container";
+    if (this.heroLayout === "banner") {
+      classes += ` align-${this.bannerTextAlign}`;
+    }
+    return classes;
+  }
+
+  get heroContentClass() {
+    let classes = "hero-content";
+    if (this.heroLayout === "banner") {
+      classes += ` align-${this.bannerTextAlign}`;
+    }
+    return classes;
+  }
+
+  get heroTitleClass() {
+    let classes = "hero-title";
+    if (this.heroLayout === "banner") {
+      classes += ` align-${this.bannerTextAlign}`;
+    }
+    return classes;
+  }
+
+  get heroTitleStyle() {
+    if (this.heroLayout === "banner" && this.bannerTextSize) {
+      // Make sure the font-size applies to both the container and all child elements
+      return `font-size: ${this.bannerTextSize} !important;`;
+    }
+    return "";
+  }
+
+  get heroTitleTextStyle() {
+    if (this.heroLayout === "banner" && this.bannerTextSize) {
+      // Ensure the actual text span also gets the font size
+      return `font-size: ${this.bannerTextSize} !important;`;
+    }
+    return "";
+  }
+
+  get heroSubtitleClass() {
+    let classes = "hero-subtitle";
+    if (this.heroLayout === "banner") {
+      classes += ` align-${this.bannerTextAlign}`;
+    }
+    return classes;
   }
 
   // Update the shouldShowFooterColumns getter
@@ -1203,16 +1209,17 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
     return "";
   }
 
+  /* COMMENTED OUT - Help Form dialog not used
   get helpFormDialogClass() {
     return this.helpFormOpen
       ? "dialog support-requester-dialog open"
       : "dialog support-requester-dialog";
   }
+  */
 
   get backdropClass() {
-    return this.helpFormOpen || this.llmAssistantOpen
-      ? "dialog-backdrop active"
-      : "dialog-backdrop";
+    // Simplified - removed helpFormOpen and llmAssistantOpen
+    return "dialog-backdrop";
   }
 
   get isMinimalFooter() {
@@ -1224,11 +1231,14 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
     return this.fabMenuOpen ? "fab-menu open" : "fab-menu";
   }
 
+  /* COMMENTED OUT - LLM Assistant not used
   // Get the class for the LLM Assistant dialog based on its open state
   get llmAssistantDialogClass() {
     return this.llmAssistantOpen ? "help-form-dialog open" : "help-form-dialog";
   }
+  */
 
+  /* COMMENTED OUT - Help Form and AI Assistant not used
   // Helper methods for FAB options
   get showHelpFormOption() {
     return this.fabOptions === "both" || this.fabOptions === "help_form";
@@ -1237,11 +1247,64 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
   get showAiAssistantOption() {
     return this.fabOptions === "both" || this.fabOptions === "ai_assistant";
   }
+  */
 
   get isUrlLink() {
     return this.fabOptions === "url_link";
   }
 
+  get showCustomItems() {
+    return this.fabOptions === "custom" && this.parsedCustomItems.length > 0;
+  }
+
+  get hasAnyMenuItems() {
+    return this.showCustomItems; // Simplified - only custom items now
+  }
+
+  get parsedCustomItems() {
+    if (!this.fabCustomItems || this.fabCustomItems.trim() === "") {
+      return [];
+    }
+
+    try {
+      const itemsList = [];
+      const items = this.fabCustomItems.split('|');
+      
+      items.forEach(item => {
+        if (item && item.trim() !== "") {
+          const parts = item.trim().split(',');
+          
+          if (parts.length >= 2) {
+            const url = parts[1].trim();
+            const isExternal = url.startsWith('http://') || url.startsWith('https://') || url.startsWith('mailto:') || url.startsWith('tel:');
+            
+            const menuItem = {
+              label: parts[0].trim(),
+              url: url,
+              icon: parts[2] ? parts[2].trim() : 'utility:open',
+              iconName: parts[2] ? parts[2].trim() : 'open',
+              target: isExternal ? '_blank' : '_self',
+              rel: isExternal ? 'noopener noreferrer' : null
+            };
+            
+            // Validate the icon name format
+            if (!menuItem.icon.includes(':')) {
+              menuItem.icon = 'utility:' + menuItem.icon;
+            }
+            
+            itemsList.push(menuItem);
+          }
+        }
+      });
+      
+      return itemsList;
+    } catch(e) {
+      console.error("Error parsing custom FAB items:", e);
+      return [];
+    }
+  }
+
+  /* COMMENTED OUT - Help Form icon not used
   // Convert SLDS icon name to SVG path for help form icon
   get helpFormIconSvg() {
     const iconName = this.helpFormIcon.toLowerCase();
@@ -1264,7 +1327,9 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.04346 16.4525C3.22094 16.8088 3.28001 17.2161 3.17712 17.6006L2.58151 19.8267C2.32295 20.793 3.20701 21.677 4.17335 21.4185L6.39939 20.8229C6.78393 20.72 7.19121 20.7791 7.54753 20.9565C8.88837 21.6244 10.4003 22 12 22ZM20 12C20 16.4183 16.4183 20 12 20C10.6867 20 9.44366 19.7117 8.32239 19.1953C7.50777 18.8117 6.56713 18.9307 5.86753 19.3562L4.17335 19.8229L4.63961 18.1288C5.06947 17.4292 5.18846 16.489 4.80525 15.6743C4.28876 14.5528 4 13.3099 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z" fill="currentColor" />`;
     }
   }
+  */
 
+  /* COMMENTED OUT - AI Assistant icon not used
   // Convert SLDS icon name to SVG path for AI assistant icon
   get aiAssistantIconSvg() {
     const iconName = this.aiAssistantIcon.toLowerCase();
@@ -1284,15 +1349,12 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
                     <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
     }
   }
+  */
 
   // Update the main FAB button icon to use the configured options
   get mainFabIconSvg() {
     if (this.isUrlLink) {
       return `<path d="M11 5h2v14h-2z" fill="currentColor"/><path d="M5 11h14v2H5z" fill="currentColor"/>`;
-    } else if (this.fabOptions === "help_form") {
-      return this.helpFormIconSvg;
-    } else if (this.fabOptions === "ai_assistant") {
-      return this.aiAssistantIconSvg;
     } else {
       // Default plus icon for the menu
       return `<path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;

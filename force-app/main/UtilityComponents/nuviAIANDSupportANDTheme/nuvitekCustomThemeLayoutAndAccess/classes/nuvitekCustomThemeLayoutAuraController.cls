@@ -12,6 +12,7 @@ public with sharing class nuvitekCustomThemeLayoutAuraController {
       }
 
       // Get the navigation menu by name
+      // Try both DeveloperName and MasterLabel to match the menu
       List<NavigationMenuItem> menuItems = [
         SELECT
           Id,
@@ -29,7 +30,7 @@ public with sharing class nuvitekCustomThemeLayoutAuraController {
             SELECT Id
             FROM NavigationLinkSet
             WHERE
-              DeveloperName = :menuName
+              (DeveloperName = :menuName OR MasterLabel = :menuName)
               AND NetworkId = :Network.getNetworkId()
           )
         ORDER BY Position ASC

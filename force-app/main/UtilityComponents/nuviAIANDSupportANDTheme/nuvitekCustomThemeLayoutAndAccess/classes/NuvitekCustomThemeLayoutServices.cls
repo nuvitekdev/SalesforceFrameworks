@@ -32,10 +32,11 @@ public without sharing class NuvitekCustomThemeLayoutServices {
           }
         }
       } else {
+        // Try both DeveloperName and MasterLabel to match the menu
         navMenus = [
           SELECT Id, MasterLabel, DeveloperName
           FROM NavigationLinkSet
-          WHERE DeveloperName = :menuName
+          WHERE (DeveloperName = :menuName OR MasterLabel = :menuName)
           LIMIT 1
         ];
       }
