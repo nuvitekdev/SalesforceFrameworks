@@ -71,16 +71,23 @@
             <property
         name="links"
         type="String"
-        label="Tile Links"
+        label="Tile Links (Navigation URLs)"
         default="/page1, /page2, /page3"
-        description="Comma-separated list of links to navigate to when clicked"
+        description="Comma-separated list of URLs for navigation. Examples: /lightning/page/home (internal page), https://example.com (external site), home (named page). Leave empty if using static resource for that tile position."
       />
             <property
         name="bgImages"
         type="String"
-        label="Background Images"
+        label="Background Images (Optional)"
         default=""
-        description="Comma-separated list of image URLs for background images (leave blank for color background)"
+        description="Comma-separated list of image URLs for tile backgrounds. Leave empty for solid color background. Example: https://example.com/image1.jpg, , https://example.com/image3.jpg (second tile has no background image)"
+      />
+            <property
+        name="staticResources"
+        type="String"
+        label="Static Resource Downloads (Optional)"
+        default=""
+        description="Comma-separated list of Salesforce Static Resource API names that will be downloaded when tile is clicked. Use this OR links for each tile, not both. Example: UserManual, , CompanyLogo means tile 1 downloads UserManual, tile 2 uses its link for navigation, tile 3 downloads CompanyLogo. Static resources take priority over links."
       />
             
             <!-- Theme Properties -->

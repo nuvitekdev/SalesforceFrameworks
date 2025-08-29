@@ -63,7 +63,8 @@
       "Bash(sf org login web:*)",
       "Bash(sf project retrieve:*)",
       "mcp__salesforce-enhanced__salesforce_search_objects",
-      "mcp__filesystem__edit_file"
+      "mcp__filesystem__edit_file",
+      "Bash(dos2unix:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

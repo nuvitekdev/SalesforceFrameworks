@@ -2,6 +2,7 @@
 import { LightningElement, api, track, wire } from "lwc";
 import { NavigationMixin } from "lightning/navigation";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
+import { getPathPrefix } from 'lightning/configProvider';
 
 // Import Apex methods
 import getAccessTypesForApp from "@salesforce/apex/NuvitekAccessRequestController.getAccessTypesForApp";
@@ -20,6 +21,7 @@ export default class NuvitekNavigationTiles extends NavigationMixin(
   @api colors = "";
   @api links = "";
   @api bgImages = ""; // Property for background images
+  @api staticResources = ""; // DOWNLOAD FEATURE: Comma-delimited list of static resource API names. When set, clicking the tile downloads the file instead of navigating
 
   // Theme properties from parent theme layout
   @api primaryColor = "#22BDC1"; // Default primary color
@@ -128,7 +130,7 @@ export default class NuvitekNavigationTiles extends NavigationMixin(
 
   // Get a string representation of all properties for change detection
   getPropString() {
-    return `${this.titles}|${this.descriptions}|${this.icons}|${this.colors}|${this.links}|${this.bgImages}|${this.tileStyle}|${this.columns}|${this.primaryColor}|${this.accentColor}|${this.textColor}`;
+    return `${this.titles}|${this.descriptions}|${this.icons}|${this.colors}|${this.links}|${this.bgImages}|${this.staticResources}|${this.tileStyle}|${this.columns}|${this.primaryColor}|${this.accentColor}|${this.textColor}`;
   }
 
   // Computed properties for themed styling
@@ -167,6 +169,8 @@ export default class NuvitekNavigationTiles extends NavigationMixin(
     const colorArray = this.splitAndTrim(this.colors);
     const linkArray = this.splitAndTrim(this.links);
     const bgImageArray = this.splitAndTrim(this.bgImages);
+    // DOWNLOAD FEATURE: Parse static resource names - these tiles will download files instead of navigating
+    const staticResourceArray = this.splitAndTrim(this.staticResources);
 
     this.tilesData = [];
 
@@ -277,6 +281,9 @@ export default class NuvitekNavigationTiles extends NavigationMixin(
           icon: iconArray[i] || "",
           accentColor: accentColor,
           link: linkArray[i] || "",
+          // DOWNLOAD FEATURE: Store static resource info for each tile
+          staticResourceName: staticResourceArray[i] || "", // The API name of the static resource to download
+          isStaticResource: staticResourceArray[i] && staticResourceArray[i].trim() !== "", // Flag to check if this tile downloads a file
           hasIcon: iconArray[i] && iconArray[i].trim() !== "",
           hasBgImage: hasBgImage,
           bgImageUrl: bgImageUrl,
@@ -509,6 +516,13 @@ export default class NuvitekNavigationTiles extends NavigationMixin(
     if (!isMenuClick) {
       const tile = this.tilesData[index];
 
+      // DOWNLOAD FEATURE: Check if this tile should download a static resource instead of navigating
+      // Priority: Static Resource Download > Regular Navigation
+      if (tile.isStaticResource && tile.staticResourceName) {
+        this.downloadStaticResource(tile.staticResourceName);
+        return; // Stop here - don't navigate
+      }
+
       if (!tile || !tile.link) {
         return;
       }
@@ -542,11 +556,74 @@ export default class NuvitekNavigationTiles extends NavigationMixin(
     }
   }
 
+  /**
+   * DOWNLOAD FEATURE: Downloads a Salesforce Static Resource file
+   * @param {String} resourceName - The API name of the static resource (e.g., 'UserManual', 'CompanyLogo')
+   * 
+   * How it works:
+   * 1. Gets the correct path prefix for the org using lightning/configProvider
+   * 2. Constructs the static resource URL using the pattern: {prefix}/resource/{resourceName}
+   * 3. Creates a temporary download link and triggers it
+   * 4. Shows a toast notification to confirm download started
+   * 
+   * Example Static Resource Names:
+   * - 'UserManual' - downloads the UserManual static resource
+   * - 'CompanyTemplate2024' - downloads the CompanyTemplate2024 static resource
+   */
+  downloadStaticResource(resourceName) {
+    try {
+      // Get the path prefix for the org (handles communities, sandboxes, etc.)
+      const prefix = getPathPrefix();
+      
+      // Construct the static resource URL
+      const resourceUrl = `${prefix}/resource/${resourceName}`;
+      
+      // Create a temporary anchor element to trigger the download
+      const downloadLink = document.createElement('a');
+      downloadLink.href = resourceUrl;
+      downloadLink.download = resourceName; // Sets the suggested filename
+      downloadLink.target = '_blank';
+      
+      // Add to page, click it, then remove it (happens instantly, user doesn't see it)
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      
+      // Show success toast with truncated name if too long
+      const displayName = resourceName.length > 30 
+        ? resourceName.substring(0, 27) + '...' 
+        : resourceName;
+      this.showToastNotification(
+        "Download Started",
+        `Opening: ${displayName}`,
+        "success"
+      );
+    } catch (error) {
+      console.error('Error downloading static resource:', error);
+      // Show error toast with truncated name if too long
+      const displayName = resourceName.length > 30 
+        ? resourceName.substring(0, 27) + '...' 
+        : resourceName;
+      
+      this.showToastNotification(
+        "Download Error",
+        `Failed to download: ${displayName}`,
+        "error"
+      );
+    }
+  }
+
   // Original tile click handler - for backward compatibility with existing implementations
   handleTileClick(event) {
     event.stopPropagation();
     const index = parseInt(event.currentTarget.dataset.index, 10);
     const tile = this.tilesData[index];
+
+    // Check if this is a static resource download
+    if (tile.isStaticResource && tile.staticResourceName) {
+      this.downloadStaticResource(tile.staticResourceName);
+      return;
+    }
 
     if (!tile || !tile.link) {
       return;
