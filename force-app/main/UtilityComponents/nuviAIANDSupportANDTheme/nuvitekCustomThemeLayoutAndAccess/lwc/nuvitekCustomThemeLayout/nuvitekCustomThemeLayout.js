@@ -79,11 +79,11 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
   @api fabUrl;
   @api fabOptions = "custom"; // custom, url_link
   @api fabCustomItems = ""; // Format: "Label1,URL1,icon1|Label2,URL2,icon2"
-  // COMMENTED OUT - Help Form and AI Assistant not used
-  // @api helpFormLabel = "Help Request";
-  // @api aiAssistantLabel = "AI Assistant";
-  // @api helpFormIcon = "utility:chat";
-  // @api aiAssistantIcon = "utility:einstein";
+  // Expose properties referenced by design config (even if feature is disabled)
+  @api helpFormLabel = "Help Request";
+  @api aiAssistantLabel = "AI Assistant";
+  @api helpFormIcon = "utility:chat";
+  @api aiAssistantIcon = "utility:einstein";
 
   // Video background properties
   @api showBackgroundVideo = false;
