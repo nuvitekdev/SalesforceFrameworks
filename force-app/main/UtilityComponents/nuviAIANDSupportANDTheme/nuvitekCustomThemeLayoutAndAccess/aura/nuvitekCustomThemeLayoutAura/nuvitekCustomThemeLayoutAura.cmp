@@ -279,47 +279,6 @@
     access="global"
   />
 
-  <!-- Content Layout Configuration - COMMENTED OUT (Not Currently Used but may be required by system) -->
-  <!-- Note: These attributes might be required by Salesforce Theme Layout system even if not used in code -->
-  <!--
-  <aura:attribute
-    name="mainContentLayout"
-    type="String"
-    default="full-width"
-    access="global"
-  />
-  <aura:attribute
-    name="showContentArea1"
-    type="Boolean"
-    default="false"
-    access="global"
-  />
-  <aura:attribute
-    name="showContentArea2"
-    type="Boolean"
-    default="false"
-    access="global"
-  />
-  <aura:attribute
-    name="showContentArea3"
-    type="Boolean"
-    default="false"
-    access="global"
-  />
-  <aura:attribute
-    name="showBeforeMainContent"
-    type="Boolean"
-    default="false"
-    access="global"
-  />
-  <aura:attribute
-    name="showAfterMainContent"
-    type="Boolean"
-    default="false"
-    access="global"
-  />
-  -->
-
   <!-- FAB control -->
   <aura:attribute
     name="showFab"
@@ -446,6 +405,15 @@
 
   <!-- Test property for identification (required by Lightning Page interface) -->
   <aura:attribute name="test" type="String" default="" access="global" />
+
+  <!-- Required by forceCommunity:themeLayout Lightning Page interface -->
+  <!-- These attributes are used by Experience Builder to control layout regions -->
+  <aura:attribute name="mainContentLayout" type="String" default="one-column" access="global" />
+  <aura:attribute name="showContentArea1" type="Boolean" default="true" access="global" />
+  <aura:attribute name="showContentArea2" type="Boolean" default="true" access="global" />
+  <aura:attribute name="showContentArea3" type="Boolean" default="true" access="global" />
+  <aura:attribute name="showBeforeMainContent" type="Boolean" default="true" access="global" />
+  <aura:attribute name="showAfterMainContent" type="Boolean" default="true" access="global" />
 
   <!-- Current year for footer -->
   <aura:attribute name="currentYear" type="Integer" />

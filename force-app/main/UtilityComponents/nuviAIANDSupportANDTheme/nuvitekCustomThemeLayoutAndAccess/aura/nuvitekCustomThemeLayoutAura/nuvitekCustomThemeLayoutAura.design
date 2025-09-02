@@ -1,4 +1,11 @@
 <design:component label="Nuvitek Custom Theme Layout">
+    <!-- Required Theme Layout design attributes for Lightning Page interface -->
+    <design:attribute name="mainContentLayout" label="Main Content Layout" description="Controls the main content layout (e.g., one-column, two-column, three-column)."/>
+    <design:attribute name="showContentArea1" label="Show Content Area 1" description="Toggle visibility of content area 1."/>
+    <design:attribute name="showContentArea2" label="Show Content Area 2" description="Toggle visibility of content area 2."/>
+    <design:attribute name="showContentArea3" label="Show Content Area 3" description="Toggle visibility of content area 3."/>
+    <design:attribute name="showBeforeMainContent" label="Show Before Main Content" description="Toggle visibility of region before main content."/>
+    <design:attribute name="showAfterMainContent" label="Show After Main Content" description="Toggle visibility of region after main content."/>
     <!-- ========================================= -->
     <!-- 🎨 THEME & APPEARANCE SETTINGS -->
     <!-- ========================================= -->
