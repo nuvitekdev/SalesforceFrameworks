@@ -1,4 +1,4 @@
-public with sharing class nuvitekCustomThemeLayoutAuraController {
+public without sharing class nuvitekCustomThemeLayoutAuraController {
   /**
    * Get navigation items for a specified menu
    * @param menuName The name of the navigation menu to retrieve

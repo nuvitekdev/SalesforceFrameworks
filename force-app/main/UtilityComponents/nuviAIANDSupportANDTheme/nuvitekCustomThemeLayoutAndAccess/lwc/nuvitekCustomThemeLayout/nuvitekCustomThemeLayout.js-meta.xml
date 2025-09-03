@@ -276,6 +276,15 @@
         min="0"
         max="100"
       />
+            
+            <!-- Hero Height Configuration -->
+            <property
+        name="heroFullwidthHeight"
+        type="String"
+        default="100vh"
+        label="Hero Fullwidth Height"
+        description="Height for fullwidth hero layout. Examples: '100vh' (full viewport), '80vh' (80% of viewport), '600px' (fixed pixels), '70vh' (70% of viewport)"
+      />
 
             <!-- ========================================= -->
             <!-- FLOATING ACTION BUTTON (FAB) CONFIGURATION -->

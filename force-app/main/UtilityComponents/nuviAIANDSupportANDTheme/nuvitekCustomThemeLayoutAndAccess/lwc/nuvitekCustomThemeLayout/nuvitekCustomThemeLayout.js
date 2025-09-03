@@ -90,6 +90,7 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
   @api backgroundVideoUrl;
   @api backgroundVideoFallbackUrl;
   @api backgroundVideoDarkness = 35;
+  @api heroFullwidthHeight = "100vh";
 
   // Theme control
   @api applyThemeToSlots = false;
@@ -1134,11 +1135,11 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
     const backgroundType = this.detectBackgroundBrightness();
 
     if (backgroundType === "dark") {
-      // Light text for dark backgrounds
-      return "color: rgba(255, 255, 255, 0.95); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);";
+      // Light text for dark backgrounds with increased weight and size
+      return "color: rgba(255, 255, 255, 0.95); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); font-weight: 600; font-size: 2.2em;";
     } else {
-      // Dark text for light backgrounds
-      return "color: rgba(33, 33, 33, 0.95); text-shadow: none;";
+      // Dark text for light backgrounds with increased weight and size
+      return "color: rgba(33, 33, 33, 0.95); text-shadow: none; font-weight: 600; font-size: 2.2em;";
     }
   }
   // For the background URL and other resource paths
@@ -1150,8 +1151,12 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
       this.heroBackgroundImage.trim() !== "" &&
       !this.showBackgroundVideo
     ) {
-      style += `background-image: url(${this.getResourcePath(this.heroBackgroundImage)});`;
-      // Don't add a linear gradient here, we'll use the overlay div instead
+      style += `background-image: url(${this.getResourcePath(this.heroBackgroundImage)}); background-size: cover; background-position: center; background-repeat: no-repeat;`;
+    }
+
+    // Add dynamic height for fullwidth layout - apply to the hero-section element
+    if (this.heroLayout === "fullwidth" && this.heroFullwidthHeight) {
+      style += ` min-height: ${this.heroFullwidthHeight}; height: ${this.heroFullwidthHeight};`;
     }
 
     return style;

@@ -74,6 +74,7 @@
     <design:attribute name="backgroundVideoUrl" label="📹 Background Video URL" description="Video file URL.&#10;&#10;📌 EXAMPLES:&#10;• /resource/BackgroundVideo.mp4&#10;• https://example.com/video.mp4"/>
     <design:attribute name="backgroundVideoFallbackUrl" label="🖼️ Video Fallback Image" description="Image shown if video fails.&#10;&#10;📌 EXAMPLES:&#10;• /resource/VideoFallback.jpg&#10;• https://example.com/fallback.jpg"/>
     <design:attribute name="backgroundVideoDarkness" label="🌑 Video Overlay Darkness" description="Video darkness (0-100).&#10;&#10;📌 VALUES:&#10;• 0 = No overlay&#10;• 35 = Medium darkness&#10;• 100 = Black" default="35"/>
+    <design:attribute name="heroFullwidthHeight" label="📏 Hero Fullwidth Height" description="Height for fullwidth hero layout.&#10;&#10;📌 EXAMPLES:&#10;• 100vh = Full viewport&#10;• 80vh = 80% of viewport&#10;• 600px = Fixed pixels&#10;• 70vh = 70% of viewport" default="100vh"/>
     
     <!-- ========================================= -->
     <!-- 📋 FOOTER CONFIGURATION -->

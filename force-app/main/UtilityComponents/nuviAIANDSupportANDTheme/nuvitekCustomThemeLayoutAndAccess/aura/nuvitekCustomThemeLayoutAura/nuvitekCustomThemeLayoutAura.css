@@ -815,7 +815,7 @@
 }
 
 .THIS .hero-section.layout-fullwidth {
-  min-height: 100vh;
+  min-height: 100vh; /* Default, will be overridden by inline style */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1089,7 +1089,7 @@
 .THIS .hero-subtitle {
   font-size: var(--font-size-xl);
   line-height: 1.5;
-  font-weight: 400;
+  font-weight: 600;
   margin-bottom: var(--spacing-lg);
   margin-top: 12px;
   color: var(--text-secondary);
@@ -1105,7 +1105,7 @@
 .THIS .hero-subtitle {
   font-size: 24px;
   line-height: 1.5;
-  font-weight: 400;
+  font-weight: 600;
   margin-bottom: 48px;
   margin-top: 12px;
   color: var(--text-secondary);
@@ -3109,4 +3109,184 @@
 
 .THIS .theme-dark .custom-fab-text {
   background-color: rgba(0, 0, 0, 0.75);
+}
+
+/* ============================================
+   Enhanced Dark Mode Styles - Complete UI
+   ============================================ */
+
+/* Navigation Bar Dark Mode */
+.THIS .theme-dark .nav-dropdown-item {
+  color: #ffffff !important;
+}
+
+.THIS .theme-dark .nav-dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff !important;
+}
+
+.THIS .theme-dark .mobile-nav-item {
+  color: #ffffff !important;
+}
+
+.THIS .theme-dark .mobile-nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff !important;
+}
+
+.THIS .theme-dark .mobile-nav-dropdown-item {
+  color: #ffffff !important;
+}
+
+.THIS .theme-dark .mobile-nav-dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff !important;
+}
+
+/* Search Bar Dark Mode - Enhanced */
+.THIS .theme-dark .search-input {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.THIS .theme-dark .search-input::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.THIS .theme-dark .search-input:focus {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
+.THIS .theme-dark .search-button {
+  color: #ffffff !important;
+}
+
+.THIS .theme-dark .search-results-dropdown {
+  background-color: #2d2d2f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.THIS .theme-dark .search-result-item {
+  color: #ffffff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.THIS .theme-dark .search-result-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.THIS .theme-dark .result-name {
+  color: #ffffff !important;
+}
+
+.THIS .theme-dark .result-type {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.THIS .theme-dark .no-results {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Footer Dark Mode - Complete */
+.THIS .theme-dark .site-footer {
+  background-color: #1d1d1f !important;
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+.THIS .theme-dark .footer-column-title {
+  color: #ffffff !important;
+}
+
+.THIS .theme-dark .footer-nav-item {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.THIS .theme-dark .footer-nav-item:hover {
+  color: #ffffff !important;
+  background-color: transparent;
+}
+
+.THIS .theme-dark .footer-legal {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.THIS .theme-dark .copyright {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.THIS .theme-dark .footer-tagline-bottom {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.THIS .theme-dark .footer-logo .logo-text {
+  color: #ffffff !important;
+}
+
+.THIS .theme-dark .footer-nav-simplified .footer-nav-item {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.THIS .theme-dark .social-link {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.THIS .theme-dark .social-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff !important;
+}
+
+/* Profile Icon Dark Mode */
+.THIS .theme-dark .profile-icon {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.THIS .theme-dark .profile-icon:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff !important;
+}
+
+/* Hamburger Menu Dark Mode */
+.THIS .theme-dark .hamburger-line {
+  background-color: #ffffff !important;
+}
+
+.THIS .theme-dark .menu-button.active .hamburger-line {
+  background-color: var(--primary-color) !important;
+}
+
+/* Mobile Menu Dark Mode */
+.THIS .theme-dark .mobile-menu {
+  background-color: rgba(29, 29, 31, 0.98);
+}
+
+/* Additional Text Elements */
+.THIS .theme-dark .nav-item-icon {
+  filter: brightness(1.2);
+}
+
+.THIS .theme-dark .dropdown-indicator-svg {
+  color: #ffffff !important;
+}
+
+.THIS .theme-dark .scroll-icon {
+  color: #ffffff !important;
+}
+
+/* SVG Icons Dark Mode */
+.THIS .theme-dark .search-icon-svg,
+.THIS .theme-dark .profile-icon-svg,
+.THIS .theme-dark .cta-icon-svg,
+.THIS .theme-dark .fab-icon-svg,
+.THIS .theme-dark .fab-arrow-svg,
+.THIS .theme-dark .scroll-icon-svg {
+  color: #ffffff !important;
 }

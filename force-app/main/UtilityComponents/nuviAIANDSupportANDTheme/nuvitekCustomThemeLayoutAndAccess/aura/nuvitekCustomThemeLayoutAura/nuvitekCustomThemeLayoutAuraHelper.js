@@ -44,9 +44,12 @@
     
     // Re-inject icons periodically to handle navigation issues
     var iconInterval = setInterval(function() {
-      var fabIcon = component.getElement().querySelector(".fab-icon-svg");
-      if (fabIcon && !fabIcon.innerHTML.trim()) {
-        helper.injectSvgIcons(component);
+      var componentElement = component.getElement();
+      if (componentElement) {
+        var fabIcon = componentElement.querySelector(".fab-icon-svg");
+        if (fabIcon && !fabIcon.innerHTML.trim()) {
+          helper.injectSvgIcons(component);
+        }
       }
     }, 500);
     
@@ -620,6 +623,14 @@
         resourcePath +
         "); background-size: cover; background-position: center; background-repeat: no-repeat;";
     }
+    
+    // Add dynamic height for fullwidth layout - apply both height and min-height
+    var heroLayout = component.get("v.heroLayout");
+    var heroFullwidthHeight = component.get("v.heroFullwidthHeight") || "100vh";
+    if (heroLayout === "fullwidth" && heroFullwidthHeight) {
+      heroBackgroundStyle += " min-height: " + heroFullwidthHeight + "; height: " + heroFullwidthHeight + ";";
+    }
+    
     component.set("v.heroBackgroundStyle", heroBackgroundStyle);
 
     // Update hero overlay style
@@ -627,8 +638,16 @@
     var heroOverlayStyle = this.getHeroOverlayStyle(heroBackgroundDarkness);
     component.set("v.heroOverlayStyle", heroOverlayStyle);
 
-    // Update hero subtitle style
-    var heroSubtitleStyle = this.getHeroSubtitleStyle(heroBackgroundDarkness);
+    // Update hero subtitle style with intelligent detection
+    var heroBackgroundImage = component.get("v.heroBackgroundImage");
+    var showBackgroundVideo = component.get("v.showBackgroundVideo");
+    var themeName = component.get("v.themeName");
+    var heroSubtitleStyle = this.getHeroSubtitleStyle(
+      heroBackgroundDarkness, 
+      heroBackgroundImage, 
+      showBackgroundVideo,
+      themeName
+    );
     component.set("v.heroSubtitleStyle", heroSubtitleStyle);
 
     // Update video overlay style
@@ -789,11 +808,15 @@
     );
   },
 
-  getHeroSubtitleStyle: function (heroBackgroundDarkness) {
+  getHeroSubtitleStyle: function (heroBackgroundDarkness, heroBackgroundImage, showBackgroundVideo, themeName) {
+    // Enhanced contrast detection with better readability
+    // If overlay brightness is higher than 30%, use dark text (light background)
     if (heroBackgroundDarkness > 30) {
-      return "color: rgba(33, 33, 33, 0.95); text-shadow: none;";
+      // Dark text for light backgrounds with increased weight and size
+      return "color: rgba(33, 33, 33, 0.95); text-shadow: none; font-weight: 600; font-size: 2.2em;";
     } else {
-      return "color: rgba(255, 255, 255, 0.95); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);";
+      // Light text for dark backgrounds with increased weight and size
+      return "color: rgba(255, 255, 255, 0.95); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); font-weight: 600; font-size: 2.2em;";
     }
   },
 
