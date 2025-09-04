@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Environmental Analysis</label>
+    <protected>false</protected>
+    <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Operation_Type__c</field>
+        <value xsi:type="xsd:string">EnvironmentalAnalysis</value>
+    </values>
+    <values>
+        <field>Prompt_Template__c</field>
+        <value xsi:type="xsd:string">Analyze this environmental document for federal permit compliance. Provide detailed analysis of:
+
+**ENVIRONMENTAL IMPACT ASSESSMENT:**
+1. **Affected Resources:**
+   - Wildlife species and habitats mentioned
+   - Water resources (streams, wetlands, groundwater)
+   - Air quality considerations
+   - Soil and vegetation impacts
+   - Cultural and archaeological resources
+
+2. **Impact Severity Analysis:**
+   - Direct impacts identified
+   - Indirect/secondary impacts
+   - Cumulative impact considerations
+   - Temporary vs. permanent impacts
+   - Quantified impact metrics where provided
+
+**REGULATORY COMPLIANCE:**
+3. **NEPA Compliance Elements:**
+   - Environmental Assessment (EA) components
+   - Finding of No Significant Impact (FONSI) status
+   - Environmental Impact Statement (EIS) requirements
+   - Categorical exclusion applicability
+   - Public involvement requirements
+
+4. **Species Protection:**
+   - Endangered Species Act considerations
+   - Migratory Bird Treaty Act compliance
+   - Critical habitat designations
+   - Consultation requirements (FWS, NMFS)
+
+**MITIGATION AND MONITORING:**
+5. **Proposed Mitigation Measures:**
+   - Avoidance measures
+   - Minimization strategies
+   - Compensation/restoration plans
+   - Best management practices (BMPs)
+
+6. **Monitoring Requirements:**
+   - Pre-construction surveys
+   - During-construction monitoring
+   - Post-construction monitoring
+   - Reporting frequencies and methods
+
+**RISK ASSESSMENT:**
+7. **Environmental Risk Level:**
+   - LOW: Minimal environmental impact, standard mitigation sufficient
+   - MODERATE: Some environmental concern, enhanced mitigation required
+   - HIGH: Significant environmental impact, extensive mitigation/EIS required
+
+8. **Compliance Issues:**
+   - Missing required studies or assessments
+   - Inadequate mitigation measures
+   - Potential regulatory violations
+   - Additional consultation needs
+
+**OUTPUT FORMAT:**
+Provide results in structured format with clear recommendations for permit approval conditions and any additional environmental work required.</value>
+    </values>
+</CustomMetadata>

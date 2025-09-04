@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Permit Field Extraction</label>
+    <protected>false</protected>
+    <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Operation_Type__c</field>
+        <value xsi:type="xsd:string">FieldExtraction</value>
+    </values>
+    <values>
+        <field>Prompt_Template__c</field>
+        <value xsi:type="xsd:string">Extract structured data fields from this permit application document. Return data in JSON format with the following key-value pairs:
+
+**REQUIRED FIELDS TO EXTRACT:**
+- applicant_name: Full legal name of the applicant/operator
+- applicant_contact: Phone number and email address
+- permit_type: Type of permit requested (drilling, environmental, building, etc.)
+- location_description: Detailed location description
+- coordinates: Latitude/longitude coordinates if present
+- legal_description: Section, township, range, or other legal land description
+- project_description: Brief description of proposed activities
+- start_date: Proposed start date for activities
+- duration: Expected duration of project
+- permit_number: Any existing permit or application numbers referenced
+- regulatory_references: Any CFR, regulation, or code sections mentioned
+- environmental_considerations: Environmental factors or assessments mentioned
+- mitigation_measures: Any proposed mitigation or protection measures
+- contact_info: Primary contact person for this application
+- signature_date: Date of signature on application
+- notary_info: Notary information if document is notarized
+
+**FORMAT REQUIREMENTS:**
+- Use consistent date format: YYYY-MM-DD
+- For coordinates use decimal degrees format
+- For phone numbers use standard format: (XXX) XXX-XXXX
+- Extract exact text, don't interpret or modify
+- If information is not present, use null for the value
+- Include confidence level (0-1) for each extracted field
+
+**SPECIAL INSTRUCTIONS:**
+- Pay attention to checkbox selections and form field values
+- Look for handwritten additions or corrections
+- Note any missing required information
+- Identify document quality issues that might affect accuracy</value>
+    </values>
+</CustomMetadata>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Permit Compliance Check</label>
+    <protected>false</protected>
+    <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Operation_Type__c</field>
+        <value xsi:type="xsd:string">ComplianceCheck</value>
+    </values>
+    <values>
+        <field>Prompt_Template__c</field>
+        <value xsi:type="xsd:string">Perform comprehensive regulatory compliance analysis for this permit document. Evaluate against federal permit requirements:
+
+**DOCUMENT COMPLETENESS CHECK:**
+1. **Required Application Elements:**
+   ✓ Complete application form signed and dated
+   ✓ Legal description of location
+   ✓ Project description and timeline
+   ✓ Operator information and qualifications
+   ✓ Environmental considerations addressed
+   ✓ Mitigation measures proposed
+   ✓ Required fees and bonds
+
+2. **Technical Documentation:**
+   ✓ Engineering plans and specifications
+   ✓ Safety protocols and procedures
+   ✓ Equipment specifications and certifications
+   ✓ Qualified personnel information
+   ✓ Emergency response plans
+
+**REGULATORY COMPLIANCE ANALYSIS:**
+3. **Federal Requirements (CFR Title 30, 40, 50):**
+   - Surface use agreements and notifications
+   - Environmental protection measures
+   - Wildlife protection protocols
+   - Water protection requirements
+   - Air quality compliance
+   - Cultural resource considerations
+
+4. **Agency-Specific Requirements:**
+   - BLM surface management requirements
+   - Forest Service special use permits
+   - EPA environmental permits
+   - FWS biological consultations
+   - State regulatory coordination
+
+**COMPLIANCE STATUS ASSESSMENT:**
+5. **Document Quality:**
+   - COMPLETE: All required elements present and adequate
+   - INCOMPLETE: Missing required information
+   - DEFICIENT: Present but inadequate detail
+   - NON-COMPLIANT: Does not meet regulatory standards
+
+6. **Risk Assessment:**
+   - LOW RISK: Standard processing, minimal issues
+   - MODERATE RISK: Some concerns, additional review needed
+   - HIGH RISK: Significant issues, extensive revision required
+
+**DEFICIENCY IDENTIFICATION:**
+7. **Missing Elements:**
+   - List specific missing required documents/information
+   - Identify incomplete sections requiring additional detail
+   - Note any regulatory citations not addressed
+
+8. **Quality Issues:**
+   - Technical deficiencies in plans or procedures
+   - Inadequate environmental analysis
+   - Insufficient mitigation measures
+   - Incomplete operator qualifications
+
+**RECOMMENDATIONS:**
+9. **Approval Pathway:**
+   - RECOMMEND APPROVAL: Meets all requirements
+   - CONDITIONAL APPROVAL: Minor conditions needed
+   - REQUIRE ADDITIONAL INFORMATION: Significant gaps exist
+   - RECOMMEND DENIAL: Major compliance failures
+
+10. **Next Steps:**
+    - Specific additional information needed
+    - Required consultations or reviews
+    - Estimated processing timeline
+    - Priority level for review
+
+**OUTPUT REQUIREMENTS:**
+Provide clear compliance determination with specific regulatory citations and actionable recommendations for applicant and reviewing staff.</value>
+    </values>
+</CustomMetadata>
