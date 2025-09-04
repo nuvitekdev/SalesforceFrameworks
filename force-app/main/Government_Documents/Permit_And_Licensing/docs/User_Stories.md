@@ -1,8 +1,8 @@
-# DOI Permits and Licensing System - User Stories & Requirements
+# Nuvi Permits and Licensing System - User Stories & Requirements
 
 ## Document Overview
 
-This document provides comprehensive user stories and functional requirements for the DOI Permits and Licensing system, focusing on the Application for Permit to Drill (APD) process. The requirements are organized by user persona and use case, ensuring all stakeholders have clearly defined functionality.
+This document provides comprehensive user stories and functional requirements for the Nuvi Permits and Licensing system, focusing on the Application for Permit to Drill (APD) process. The requirements are organized by user persona and use case, ensuring all stakeholders have clearly defined functionality.
 
 ## User Personas
 
@@ -704,13 +704,14 @@ This document provides comprehensive user stories and functional requirements fo
 
 ## Summary
 
-This comprehensive user story document provides detailed requirements for all major user personas and system functions within the DOI Permits and Licensing system. The stories are designed to support the complex, multi-agency workflow requirements while leveraging AI and modern technology to significantly reduce processing times and improve decision quality.
+This comprehensive user story document provides detailed requirements for all major user personas and system functions within the Nuvi Permits and Licensing system. The stories are designed to support the complex, multi-agency workflow requirements while leveraging AI and modern technology to significantly reduce processing times and improve decision quality.
 
 Each epic represents a major functional area of the system, with individual user stories providing specific, testable requirements. The non-functional requirements ensure the system meets government standards for performance, security, and accessibility while supporting the scale and complexity of federal permit processing operations.
 
-The implementation of these user stories will transform DOI's permit processing from a manual, paper-based system to an efficient, transparent, AI-enhanced digital platform that serves operators, government reviewers, and the public effectively.
+The implementation of these user stories will transform Nuvi's permit processing from a manual, paper-based system to an efficient, transparent, AI-enhanced digital platform that serves operators, government reviewers, and the public effectively.
 
 ---
 *Document Version: 1.0*  
 *Last Updated: September 3, 2025*  
 *Contact: Salesforce Development Team*
+

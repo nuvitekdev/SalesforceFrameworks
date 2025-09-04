@@ -1,15 +1,15 @@
-# DOI APD System - Integration Architecture and Patterns
+# Nuvi APD System - Integration Architecture and Patterns
 
 ## Overview
 
-This document defines the comprehensive integration architecture for the DOI APD system, detailing all external system connections, API specifications, data flow patterns, and error handling strategies required for seamless operation within the federal ecosystem.
+This document defines the comprehensive integration architecture for the Nuvi APD system, detailing all external system connections, API specifications, data flow patterns, and error handling strategies required for seamless operation within the federal ecosystem.
 
 ## Integration Landscape
 
 ### External System Ecosystem
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    DOI APD Integration Landscape                │
+│                    Nuvi APD Integration Landscape                │
 ├─────────────────────────────────────────────────────────────────┤
 │ Financial Systems                                               │
 │ ├─ Pay.gov (Treasury)        ├─ Agency Financial Systems        │
@@ -52,14 +52,14 @@ Authentication Process:
    ├─ client_id: DOI_APD_SYSTEM
    ├─ response_type: code
    ├─ scope: payment_processing
-   ├─ redirect_uri: https://doi-apd.salesforce.com/oauth/callback
+   ├─ redirect_uri: https://Nuvi-apd.salesforce.com/oauth/callback
    └─ state: {cryptographic_random_string}
 
 2. Authorization Code Exchange
    POST https://api.pay.gov/oauth/token
    ├─ grant_type: authorization_code
    ├─ code: {authorization_code}
-   ├─ redirect_uri: https://doi-apd.salesforce.com/oauth/callback
+   ├─ redirect_uri: https://Nuvi-apd.salesforce.com/oauth/callback
    ├─ client_id: DOI_APD_SYSTEM
    └─ client_secret: {encrypted_secret}
 
@@ -104,8 +104,8 @@ Transaction Lifecycle:
      "amount": {application.Fee_Amount__c},
      "currency": "USD",
      "description": "Application for Permit to Drill Fee",
-     "return_url": "https://doi-apd.salesforce.com/payment/success",
-     "cancel_url": "https://doi-apd.salesforce.com/payment/cancel",
+     "return_url": "https://Nuvi-apd.salesforce.com/payment/success",
+     "cancel_url": "https://Nuvi-apd.salesforce.com/payment/cancel",
      "customer_info": {
        "name": "{operator.Primary_Contact_Name__c}",
        "email": "{operator.Primary_Contact_Email__c}",
@@ -143,7 +143,7 @@ Transaction Lifecycle:
    └─ Log transaction initiation
 
 3. Payment Completion Webhook
-   Endpoint: /services/apexrest/doi/payment/webhook
+   Endpoint: /services/apexrest/Nuvi/payment/webhook
    Method: POST
    
    Webhook Payload:
@@ -242,7 +242,7 @@ public class DOI_APD_FeeCalculator {
             ORDER BY Effective_Date__c DESC 
             LIMIT 1
         ];
-        return feeSchedule?.Base_Amount__c ?? 12515.00; // Default DOI APD fee
+        return feeSchedule?.Base_Amount__c ?? 12515.00; // Default Nuvi APD fee
     }
 }
 ```
@@ -284,17 +284,17 @@ Notice Publication Process:
        "document_number": "2025-{sequential_number}",
        "publication_date": "2025-09-10",
        "effective_date": "2025-10-10",
-       "comment_url": "https://doi-apd.salesforce.com/public/comment/{application_id}",
+       "comment_url": "https://Nuvi-apd.salesforce.com/public/comment/{application_id}",
        "comments_close_on": "2025-10-10",
        "docket_id": "BLM-{state}-{year}-{number}",
        "regulation_id_numbers": ["1004-AE42"],
-       "full_text_xml_url": "https://doi-apd.salesforce.com/public/notice/{notice_id}.xml",
+       "full_text_xml_url": "https://Nuvi-apd.salesforce.com/public/notice/{notice_id}.xml",
        "body": "{complete_notice_text}"
      }
    }
 
 3. Comment Collection Integration
-   Webhook Endpoint: /services/apexrest/doi/comments/federalregister
+   Webhook Endpoint: /services/apexrest/Nuvi/comments/federalregister
    
    Comment Processing:
    ├─ Automatic comment ingestion from Federal Register
@@ -455,12 +455,12 @@ Implementation: DOI_PIV_AuthenticationService
 
 SAML 2.0 Configuration:
 Identity Provider: GSA Login.gov / Agency ADFS
-Service Provider: DOI APD Salesforce Org
+Service Provider: Nuvi APD Salesforce Org
 Certificate: X.509 Government issued certificates
 
 Authentication Flow:
 1. User Access Request
-   ├─ User navigates to DOI APD portal
+   ├─ User navigates to Nuvi APD portal
    ├─ System detects government network/CAC card
    ├─ Redirects to appropriate identity provider
    └─ Initiates SAML authentication request
@@ -481,7 +481,7 @@ Authentication Flow:
                              String assertion) {
            
            User user = new User();
-           user.Username = attributes.get('urn:oid:0.9.2342.19200300.100.1.1') + '@doi.gov';
+           user.Username = attributes.get('urn:oid:0.9.2342.19200300.100.1.1') + '@Nuvi.gov';
            user.Email = attributes.get('urn:oid:0.9.2342.19200300.100.1.3');
            user.LastName = attributes.get('urn:oid:2.5.4.4');
            user.FirstName = attributes.get('urn:oid:2.5.4.42');
@@ -870,6 +870,7 @@ public class DOI_IntegrationHealthMonitor {
 ---
 
 **Classification**: For Official Use Only (FOUO)  
-**Integration Architecture Review**: DOI Enterprise Architecture Board  
+**Integration Architecture Review**: Nuvi Enterprise Architecture Board  
 **Next Review**: December 2025  
-**Technical Owner**: DOI Salesforce Integration Team
+**Technical Owner**: Nuvi Salesforce Integration Team
+

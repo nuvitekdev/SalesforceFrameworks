@@ -1,8 +1,8 @@
-# DOI APD System - AI Integration Strategy
+# Nuvi APD System - AI Integration Strategy
 
 ## Executive Summary
 
-This document outlines a comprehensive AI integration strategy for the DOI APD system, leveraging existing Nuvitek AI infrastructure to deliver intelligent automation, predictive analytics, and decision support capabilities throughout the permit application lifecycle.
+This document outlines a comprehensive AI integration strategy for the Nuvi APD system, leveraging existing Nuvitek AI infrastructure to deliver intelligent automation, predictive analytics, and decision support capabilities throughout the permit application lifecycle.
 
 ## AI Integration Philosophy
 
@@ -30,7 +30,7 @@ This document outlines a comprehensive AI integration strategy for the DOI APD s
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                   DOI APD AI Architecture                       │
+│                   Nuvi APD AI Architecture                       │
 ├─────────────────────────────────────────────────────────────────┤
 │ Presentation Layer                                              │
 │ ├─ LWC AI Components     ├─ Experience Cloud AI Portal         │
@@ -670,12 +670,12 @@ Quality Assurance:
 #### LLM Integration Enhancement
 ```apex
 Current Nuvitek AI Features (Enhanced):
-├─ LLM_Prompt_Template__mdt: Expanded with DOI-specific prompts
+├─ LLM_Prompt_Template__mdt: Expanded with Nuvi-specific prompts
 ├─ LLMControllerRefactored.cls: Extended with APD-specific methods
-├─ llmAssistantRefactored LWC: Enhanced with DOI workflow integration
+├─ llmAssistantRefactored LWC: Enhanced with Nuvi workflow integration
 └─ llmConversationDisplay LWC: Customized for government use cases
 
-New DOI-Specific Enhancements:
+New Nuvi-Specific Enhancements:
 ├─ DOI_APD_PromptLibrary: Regulatory-specific prompt templates
 ├─ DOI_ComplianceAnalyzer: Regulatory compliance AI assistant
 ├─ DOI_RiskAssessmentAI: Environmental and operational risk analysis
@@ -729,7 +729,7 @@ AI_Performance_Metrics__mdt:
 
 ### Phase 1: Foundation AI (Months 1-3)
 **Deliverables:**
-- [ ] Enhanced LLM prompt templates for DOI-specific use cases
+- [ ] Enhanced LLM prompt templates for Nuvi-specific use cases
 - [ ] Basic form validation AI integration
 - [ ] Document classification system
 - [ ] AI confidence scoring framework
@@ -812,4 +812,5 @@ AI_Performance_Metrics__mdt:
 **Classification**: For Official Use Only (FOUO)  
 **AI Ethics Review**: Completed - September 2025  
 **Next Model Review**: December 2025  
-**Regulatory Approval**: DOI CIO and AI Ethics Board
+**Regulatory Approval**: Nuvi CIO and AI Ethics Board
+

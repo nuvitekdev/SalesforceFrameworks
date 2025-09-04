@@ -13,7 +13,7 @@
         <div class="slds-col slds-size_1-of-4">
           <div class="fee-display">
             <div class="slds-text-body_small slds-text-color_weak">Application Fee</div>
-            <div class="slds-text-heading_medium slds-text-color_success">$12,515</div>
+            <div class="slds-text-heading_medium slds-text-color_success">{feeDisplay}</div>
           </div>
         </div>
       </div>
@@ -102,7 +102,14 @@
 
           <!-- Step 1: Operator Information -->
           <template if:true={isStep1}>
-            <div class="slds-card">
+            <template if:true={useDynamicStep1}>
+              <div class="slds-card slds-m-bottom_medium">
+                <div class="slds-card__body slds-card__body_inner">
+                  <c-permit-dynamic-fields fields={step1Fields} form-data={permitFormData} onfieldchange={handleDynamicFieldChange}></c-permit-dynamic-fields>
+                </div>
+              </div>
+            </template>
+            <div class="slds-card" style={staticStep1Style}>
               <div class="slds-card__body slds-card__body_inner">
                 <p class="slds-text-body_regular slds-m-bottom_medium">
                   Provide your operator information. This data has been pre-filled from your profile.
@@ -162,7 +169,14 @@
 
           <!-- Step 2: Lease & Location Information -->
           <template if:true={isStep2}>
-            <div class="slds-card">
+            <template if:true={useDynamicStep2}>
+              <div class="slds-card slds-m-bottom_medium">
+                <div class="slds-card__body slds-card__body_inner">
+                  <c-permit-dynamic-fields fields={step2Fields} form-data={permitFormData} onfieldchange={handleDynamicFieldChange}></c-permit-dynamic-fields>
+                </div>
+              </div>
+            </template>
+            <div class="slds-card" style={staticStep2Style}>
               <div class="slds-card__body slds-card__body_inner">
                 <p class="slds-text-body_regular slds-m-bottom_medium">
                   Specify the lease and location details for your drilling operation.
@@ -243,12 +257,22 @@
                   </div>
                 </template>
               </div>
+              <div class="slds-m-top_medium">
+                <c-permit-map latitude={permitFormData.latitude} longitude={permitFormData.longitude} title="Planned Surface Location"></c-permit-map>
+              </div>
             </div>
           </template>
 
-          <!-- Step 3: Well Information -->
+          <!-- Step 3: Well Information (dynamic if available) -->
           <template if:true={isStep3}>
-            <div class="slds-card">
+            <template if:true={useDynamicStep3}>
+              <div class="slds-card slds-m-bottom_medium">
+                <div class="slds-card__body slds-card__body_inner">
+                  <c-permit-dynamic-fields fields={step3Fields} form-data={permitFormData} onfieldchange={handleDynamicFieldChange}></c-permit-dynamic-fields>
+                </div>
+              </div>
+            </template>
+            <div class="slds-card" style={staticStep3Style}>
               <div class="slds-card__body slds-card__body_inner">
                 <p class="slds-text-body_regular slds-m-bottom_medium">
                   Provide detailed information about the well to be drilled.
@@ -334,7 +358,14 @@
 
           <!-- Step 4: Drilling Plan -->
           <template if:true={isStep4}>
-            <div class="slds-card">
+            <template if:true={useDynamicStep4}>
+              <div class="slds-card slds-m-bottom_medium">
+                <div class="slds-card__body slds-card__body_inner">
+                  <c-permit-dynamic-fields fields={step4Fields} form-data={permitFormData} onfieldchange={handleDynamicFieldChange}></c-permit-dynamic-fields>
+                </div>
+              </div>
+            </template>
+            <div class="slds-card" style={staticStep4Style}>
               <div class="slds-card__body slds-card__body_inner">
                 <p class="slds-text-body_regular slds-m-bottom_medium">
                   Provide comprehensive drilling plan details and safety equipment specifications.
@@ -396,7 +427,14 @@
 
           <!-- Step 5: Surface Use Plan (SUPO) -->
           <template if:true={isStep5}>
-            <div class="slds-card">
+            <template if:true={useDynamicStep5}>
+              <div class="slds-card slds-m-bottom_medium">
+                <div class="slds-card__body slds-card__body_inner">
+                  <c-permit-dynamic-fields fields={step5Fields} form-data={permitFormData} onfieldchange={handleDynamicFieldChange}></c-permit-dynamic-fields>
+                </div>
+              </div>
+            </template>
+            <div class="slds-card" style={staticStep5Style}>
               <div class="slds-card__body slds-card__body_inner">
                 <p class="slds-text-body_regular slds-m-bottom_medium">
                   Detail your surface use plan of operations (SUPO) including environmental protection measures.
@@ -521,7 +559,14 @@
 
           <!-- Step 7: Document Upload & Verification -->
           <template if:true={isStep7}>
-            <div class="slds-card">
+            <template if:true={useDynamicStep7}>
+              <div class="slds-card slds-m-bottom_medium">
+                <div class="slds-card__body slds-card__body_inner">
+                  <c-permit-dynamic-fields fields={step7Fields} form-data={permitFormData} onfieldchange={handleDynamicFieldChange}></c-permit-dynamic-fields>
+                </div>
+              </div>
+            </template>
+            <div class="slds-card" style={staticStep7Style}>
               <div class="slds-card__body slds-card__body_inner">
                 <p class="slds-text-body_regular slds-m-bottom_medium">
                   Upload required documents. AI will verify completeness and accuracy.
@@ -628,7 +673,14 @@
 
           <!-- Step 8: Review & Submit -->
           <template if:true={isStep8}>
-            <div class="slds-card">
+            <template if:true={useDynamicStep8}>
+              <div class="slds-card slds-m-bottom_medium">
+                <div class="slds-card__body slds-card__body_inner">
+                  <c-permit-dynamic-fields fields={step8Fields} form-data={permitFormData} onfieldchange={handleDynamicFieldChange}></c-permit-dynamic-fields>
+                </div>
+              </div>
+            </template>
+            <div class="slds-card" style={staticStep8Style}>
               <div class="slds-card__body slds-card__body_inner">
                 <h3 class="slds-text-heading_medium slds-m-bottom_medium">Application Review & Certification</h3>
                 
@@ -825,3 +877,4 @@
 
   </div>
 </template>
+

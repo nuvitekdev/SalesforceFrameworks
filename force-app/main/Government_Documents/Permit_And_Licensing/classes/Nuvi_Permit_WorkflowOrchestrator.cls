@@ -1,9 +1,4 @@
-/**
- * @description Lightweight workflow engine for APD review stages.
- * Creates Tasks for Technical, Environmental (NEPA), Legal, and Final Approval.
- */
-public with sharing class DOI_PAL_WorkflowOrchestrator {
-
+public with sharing class Nuvi_Permit_WorkflowOrchestrator {
     public class WorkflowResponse {
         @AuraEnabled public Id applicationId;
         @AuraEnabled public List<Id> taskIds;
@@ -36,4 +31,3 @@ public with sharing class DOI_PAL_WorkflowOrchestrator {
         return t;
     }
 }
-

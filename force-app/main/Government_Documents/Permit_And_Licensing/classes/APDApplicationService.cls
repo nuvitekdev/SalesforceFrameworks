@@ -10,6 +10,13 @@ public with sharing class APDApplicationService {
 
     @AuraEnabled
     public static SaveResult saveFromWizard(String applicationId, String formDataJson) {
+        // CRUD checks
+        if (!Schema.sObjectType.APD_Application__c.isCreateable() && String.isBlank(applicationId)) {
+            throw new AuraHandledException('Insufficient access to create APD Application');
+        }
+        if (!Schema.sObjectType.APD_Application__c.isUpdateable() && String.isNotBlank(applicationId)) {
+            throw new AuraHandledException('Insufficient access to update APD Application');
+        }
         Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(formDataJson);
 
         SaveResult res = new SaveResult();
@@ -17,18 +24,22 @@ public with sharing class APDApplicationService {
         // 1) Upsert Operator (if not provided)
         Id operatorId = (Id) data.get('operatorId');
         if (operatorId == null) {
+            if (!Schema.sObjectType.Operator__c.isCreateable()) {
+                throw new AuraHandledException('Insufficient access to create Operator');
+            }
             Operator__c op = new Operator__c();
             op.Name = (String) data.get('operatorName');
             op.Street_Address__c = (String) data.get('operatorAddress');
             op.Primary_Contact_Phone__c = (String) data.get('operatorPhone');
             op.Primary_Contact_Email__c = (String) data.get('operatorEmail');
-            insert op;
+            List<SObject> stripped = Security.stripInaccessible(AccessType.CREATABLE, new List<SObject>{ op }).getRecords();
+            insert (Operator__c) stripped[0];
             operatorId = op.Id;
         }
 
         // 2) Upsert APD Application
         APD_Application__c app = (applicationId != null) ?
-            [SELECT Id FROM APD_Application__c WHERE Id = :applicationId LIMIT 1] : new APD_Application__c();
+            [SELECT Id FROM APD_Application__c WHERE Id = :applicationId WITH SECURITY_ENFORCED LIMIT 1] : new APD_Application__c();
 
         app.Operator__c = operatorId;
         app.Submission_Date__c = app.Submission_Date__c == null ? Date.today() : app.Submission_Date__c;
@@ -40,11 +51,20 @@ public with sharing class APDApplicationService {
         }
         if (data.containsKey('wellType')) app.Well_Type__c = (String) data.get('wellType');
 
-        upsert app;
+        if (String.isBlank(applicationId)) {
+            List<SObject> strippedCreate = Security.stripInaccessible(AccessType.CREATABLE, new List<SObject>{ app }).getRecords();
+            insert (APD_Application__c) strippedCreate[0];
+        } else {
+            List<SObject> strippedUpdate = Security.stripInaccessible(AccessType.UPDATABLE, new List<SObject>{ app }).getRecords();
+            update (APD_Application__c) strippedUpdate[0];
+        }
         res.applicationId = app.Id;
 
         // 3) Lease / Agreement (PLSS & geospatial)
         if (data.containsKey('leaseNumber') || data.containsKey('state') || data.containsKey('county') || data.containsKey('legalDescription')) {
+            if (!Schema.sObjectType.Lease_Agreement__c.isCreateable()) {
+                throw new AuraHandledException('Insufficient access to create Lease');
+            }
             Lease_Agreement__c lease = new Lease_Agreement__c();
             lease.Name = (String) data.get('leaseNumber');
             lease.State__c = (String) data.get('state');
@@ -58,18 +78,24 @@ public with sharing class APDApplicationService {
             if (data.containsKey('meridian')) lease.Meridian__c = (String) data.get('meridian');
             // Legal description fallback
             if (data.containsKey('legalDescription') && lease.Section__c == null) lease.Section__c = (String) data.get('legalDescription');
-            insert lease;
+            insert (Lease_Agreement__c) Security.stripInaccessible(AccessType.CREATABLE, new List<SObject>{ lease }).getRecords()[0];
         }
 
         // 4) Well Pad
+        if (!Schema.sObjectType.Well_Pad__c.isCreateable()) {
+            throw new AuraHandledException('Insufficient access to create Well Pad');
+        }
         Well_Pad__c pad = new Well_Pad__c();
         pad.APD_Application__c = app.Id;
         if (data.get('latitude') != null) pad.Pad_Latitude__c = Decimal.valueOf(String.valueOf(data.get('latitude')));
         if (data.get('longitude') != null) pad.Pad_Longitude__c = Decimal.valueOf(String.valueOf(data.get('longitude')));
         if (data.containsKey('accessRoads')) pad.Access_Road_Description__c = (String) data.get('accessRoads');
-        insert pad;
+        insert (Well_Pad__c) Security.stripInaccessible(AccessType.CREATABLE, new List<SObject>{ pad }).getRecords()[0];
 
         // 5) Well (linked to pad)
+        if (!Schema.sObjectType.Well__c.isCreateable()) {
+            throw new AuraHandledException('Insufficient access to create Well');
+        }
         Well__c well = new Well__c();
         well.Well_Pad__c = pad.Id;
         well.Well_Number__c = (String) data.get('wellName');
@@ -82,9 +108,12 @@ public with sharing class APDApplicationService {
         if (data.containsKey('h2sProgramRequired')) well.H2S_Program_Required__c = (Boolean) data.get('h2sProgramRequired');
         if (data.containsKey('reentry')) well.Reentry_Flag__c = (Boolean) data.get('reentry');
         if (data.containsKey('expectedGeologicalFormations')) well.Expected_Formations__c = (String) data.get('expectedGeologicalFormations');
-        insert well;
+        insert (Well__c) Security.stripInaccessible(AccessType.CREATABLE, new List<SObject>{ well }).getRecords()[0];
 
         // 6) Drilling Plan
+        if (!Schema.sObjectType.Drilling_Plan__c.isCreateable()) {
+            throw new AuraHandledException('Insufficient access to create Drilling Plan');
+        }
         Drilling_Plan__c dp = new Drilling_Plan__c();
         dp.APD_Application__c = app.Id;
         dp.Casing_Program__c = (String) data.get('casingProgram');
@@ -93,9 +122,12 @@ public with sharing class APDApplicationService {
         if (data.containsKey('expectedFormationPressures')) dp.Expected_Formation_Pressures__c = (String) data.get('expectedFormationPressures');
         if (data.containsKey('expectedFreshwaterZones')) dp.Expected_Freshwater_Zones__c = (String) data.get('expectedFreshwaterZones');
         if (data.containsKey('expectedLostCirculationZones')) dp.Expected_Lost_Circulation_Zones__c = (String) data.get('expectedLostCirculationZones');
-        insert dp;
+        insert (Drilling_Plan__c) Security.stripInaccessible(AccessType.CREATABLE, new List<SObject>{ dp }).getRecords()[0];
 
         // 7) Surface Use Plan of Operations (SUPO)
+        if (!Schema.sObjectType.Surface_Use_Plan__c.isCreateable()) {
+            throw new AuraHandledException('Insufficient access to create Surface Use Plan');
+        }
         Surface_Use_Plan__c su = new Surface_Use_Plan__c();
         su.APD_Application__c = app.Id;
         su.Roads_Description__c = (String) data.get('accessRoads');
@@ -109,7 +141,7 @@ public with sharing class APDApplicationService {
         if (data.containsKey('interimReclamation')) su.Interim_Reclamation__c = (Boolean) data.get('interimReclamation');
         if (data.containsKey('finalReclamationTimeline')) su.Final_Reclamation_Timeline__c = (String) data.get('finalReclamationTimeline');
         if (data.containsKey('culturalResourcesRequired')) su.Cultural_Archaeological_Surveys__c = ((Boolean) data.get('culturalResourcesRequired')) ? 'Required: Yes' : 'Required: No';
-        insert su;
+        insert (Surface_Use_Plan__c) Security.stripInaccessible(AccessType.CREATABLE, new List<SObject>{ su }).getRecords()[0];
 
         return res;
     }

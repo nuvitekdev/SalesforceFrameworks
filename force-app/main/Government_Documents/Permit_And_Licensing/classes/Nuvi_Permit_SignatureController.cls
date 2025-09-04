@@ -47,6 +47,9 @@ public with sharing class Nuvi_Permit_SignatureController {
       );
 
       // Create Document Package record for tracking
+      if (!Schema.sObjectType.Document_Package__c.isCreateable()) {
+        throw new AuraHandledException('Insufficient access to create Document Package');
+      }
       Document_Package__c docPackage = new Document_Package__c(
         APD_Application__c = applicationId, // Make this generic
         Document_Type__c = documentType,
@@ -59,7 +62,7 @@ public with sharing class Nuvi_Permit_SignatureController {
         Agency_Type__c = agencyType,
         Permit_Type__c = permitType
       );
-      insert docPackage;
+      insert (Document_Package__c) Security.stripInaccessible(AccessType.CREATABLE, new List<SObject>{ docPackage }).getRecords()[0];
 
       // Update application workflow based on document type and signer role
       updatePermitWorkflowStatus(application, documentType, signerRole, workflowStage, agencyType);
@@ -618,8 +621,8 @@ public with sharing class Nuvi_Permit_SignatureController {
 
     // Customize based on agency
     if (agencyType == 'DOI') {
-      basePermissions.put('FIELD_OFFICE_MANAGER', new Set<String>{'DOI_Field_Office_Manager', 'DOI_Approver'});
-      basePermissions.put('NEPA_COORDINATOR', new Set<String>{'DOI_NEPA_Coordinator', 'DOI_Environmental_Reviewer'});
+      basePermissions.put('FIELD_OFFICE_MANAGER', new Set<String>{'Nuvi_Field_Office_Manager', 'Nuvi_Approver'});
+      basePermissions.put('NEPA_COORDINATOR', new Set<String>{'Nuvi_NEPA_Coordinator', 'Nuvi_Environmental_Reviewer'});
     } else if (agencyType == 'EPA') {
       basePermissions.put('EPA_SPECIALIST', new Set<String>{'EPA_Environmental_Specialist', 'EPA_Reviewer'});
       basePermissions.put('REGIONAL_ADMINISTRATOR', new Set<String>{'EPA_Regional_Administrator', 'EPA_Senior_Approver'});
@@ -704,3 +707,4 @@ public with sharing class Nuvi_Permit_SignatureController {
     }
   }
 }
+

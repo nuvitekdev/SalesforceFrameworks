@@ -2,7 +2,7 @@
 
 ## Overview
 
-Multi-role user management system for DOI permit and licensing application. Manages user authentication, role-based access control, and agency-specific permissions across federal departments and external operators.
+Multi-role user management system for Nuvi permit and licensing application. Manages user authentication, role-based access control, and agency-specific permissions across federal departments and external operators.
 
 ## Purpose
 
@@ -205,7 +205,7 @@ User newBLMUser = new User(
     FirstName = 'John',
     LastName = 'Doe',
     Alias = 'jdoe',
-    ProfileId = [SELECT Id FROM Profile WHERE Name = 'DOI BLM Staff'].Id,
+    ProfileId = [SELECT Id FROM Profile WHERE Name = 'Nuvi BLM Staff'].Id,
     UserRoleId = [SELECT Id FROM UserRole WHERE Name = 'BLM Technical Reviewer'].Id
 );
 ```
@@ -248,3 +248,4 @@ PermissionSetAssignment psa = new PermissionSetAssignment(
 - Role definition updates
 - Training material maintenance
 - Help desk support procedures
+

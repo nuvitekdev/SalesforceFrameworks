@@ -1,8 +1,8 @@
-# DOI Permits and Licensing System - Technical Implementation Specification
+# Nuvi Permits and Licensing System - Technical Implementation Specification
 
 ## Executive Summary
 
-This technical specification provides comprehensive implementation guidance for the DOI Permits and Licensing system built on Salesforce Platform. The system transforms the traditional APD processing workflow from a 30+ day manual process into an AI-enhanced, streamlined digital platform that reduces Time-to-Delivery (TTD) while maintaining full regulatory compliance.
+This technical specification provides comprehensive implementation guidance for the Nuvi Permits and Licensing system built on Salesforce Platform. The system transforms the traditional APD processing workflow from a 30+ day manual process into an AI-enhanced, streamlined digital platform that reduces Time-to-Delivery (TTD) while maintaining full regulatory compliance.
 
 ## Implementation Overview
 
@@ -1411,7 +1411,7 @@ public with sharing class DOI_PAL_PaymentController {
             'amount' => payment.DOI_PAL_Amount__c,
             'description' => 'APD Application Fee',
             'reference' => payment.Name,
-            'agencyCode' => 'DOI',
+            'agencyCode' => 'Nuvi',
             'applicationId' => payment.DOI_PAL_APD_Application__c,
             'returnUrl' => getReturnUrl(payment.Id)
         };
@@ -1764,8 +1764,8 @@ public class DOI_PAL_ApplicationController_Test {
             users.add(new User(
                 FirstName = 'Test',
                 LastName = 'User' + i,
-                Email = 'testuser' + i + '@doi.gov',
-                Username = 'testuser' + i + '@doi.gov.test',
+                Email = 'testuser' + i + '@Nuvi.gov',
+                Username = 'testuser' + i + '@Nuvi.gov.test',
                 Alias = 'tuser' + i,
                 ProfileId = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1].Id,
                 TimeZoneSidKey = 'America/Denver',
@@ -2450,7 +2450,7 @@ public with sharing class DOI_PAL_SecurityManager {
     }
     
     private static Boolean isOperatorUser(User user) {
-        return user.Profile.Name == 'DOI PAL Operator' ||
+        return user.Profile.Name == 'Nuvi PAL Operator' ||
                user.DOI_PAL_Role__c == 'Operator';
     }
     
@@ -2528,7 +2528,7 @@ public with sharing class DOI_PAL_SecurityManager {
 #### GitHub Actions CI/CD Pipeline
 ```yaml
 # .github/workflows/deploy.yml
-name: DOI PAL Deployment Pipeline
+name: Nuvi PAL Deployment Pipeline
 
 on:
   push:
@@ -2670,7 +2670,7 @@ jobs:
 ```json
 // config/project-scratch-def.json
 {
-    "orgName": "DOI Permits and Licensing",
+    "orgName": "Nuvi Permits and Licensing",
     "edition": "Enterprise",
     "features": ["EnableSetPasswordInApi", "AuthorApex"],
     "settings": {
@@ -2852,7 +2852,7 @@ public class DOI_PAL_DataArchivalService implements Database.Batchable<sObject>,
         // Schedule next run for tomorrow
         if(!Test.isRunningTest()) {
             System.schedule(
-                'DOI PAL Daily Archival ' + Datetime.now().format(),
+                'Nuvi PAL Daily Archival ' + Datetime.now().format(),
                 '0 0 2 * * ?', // 2 AM daily
                 new DOI_PAL_DataArchivalService()
             );
@@ -2863,7 +2863,7 @@ public class DOI_PAL_DataArchivalService implements Database.Batchable<sObject>,
 
 ## Conclusion
 
-This comprehensive technical specification provides a complete implementation roadmap for the DOI Permits and Licensing system. The architecture leverages Salesforce platform capabilities while incorporating AI services, external integrations, and government compliance requirements.
+This comprehensive technical specification provides a complete implementation roadmap for the Nuvi Permits and Licensing system. The architecture leverages Salesforce platform capabilities while incorporating AI services, external integrations, and government compliance requirements.
 
 Key implementation highlights:
 
@@ -2900,3 +2900,4 @@ Implementation success requires close collaboration between development teams, s
 *Last Updated: September 3, 2025*  
 *Total Pages: 87*  
 *Contact: Salesforce Development Team*
+

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Complex workflow management system for DOI permit review processes. Orchestrates multi-agency reviews, approval chains, SLA tracking, and escalation procedures across sequential and parallel review stages.
+Complex workflow management system for Nuvi permit review processes. Orchestrates multi-agency reviews, approval chains, SLA tracking, and escalation procedures across sequential and parallel review stages.
 
 ## Purpose
 
@@ -183,3 +183,4 @@ DOI_PAL_Workflow_Stage__c technicalReview = new DOI_PAL_Workflow_Stage__c(
 - Reviewer certification tracking
 - Workflow configuration change management
 - Performance reporting for oversight agencies
+

@@ -1,4 +1,4 @@
-# DOI Permits and Licensing System - Updated Implementation Plan
+# Nuvi Permits and Licensing System - Updated Implementation Plan
 
 ## Executive Summary
 
@@ -34,7 +34,7 @@ Your existing `documentManagement` component will handle:
 
 #### 1.1 APD Application Wizard (LWC)
 ```
-Component: doi-apd-application-wizard
+Component: Nuvi-apd-application-wizard
 Purpose: Multi-step APD submission with AI validation
 Integration: Uses documentManagement for file uploads
 Key Features:
@@ -47,7 +47,7 @@ Key Features:
 
 #### 1.2 Case Management Dashboard (LWC)
 ```
-Component: doi-case-management-dashboard  
+Component: Nuvi-case-management-dashboard  
 Purpose: Multi-agency review coordination
 Integration: Displays documents from documentManagement
 Key Features:
@@ -59,7 +59,7 @@ Key Features:
 
 #### 1.3 Digital Signature Workflow (LWC + PDF Signer)
 ```
-Component: doi-signature-workflow
+Component: Nuvi-signature-workflow
 Purpose: Digital document signing in review process
 Integration: Extends pdfSigner with workflow context
 Key Features:
@@ -71,7 +71,7 @@ Key Features:
 
 #### 1.4 NEPA Assessment Builder (LWC)
 ```
-Component: doi-nepa-assessment-builder
+Component: Nuvi-nepa-assessment-builder
 Purpose: Environmental assessment document generation
 Integration: Uses documentManagement for template storage
 Key Features:
@@ -140,7 +140,7 @@ public class DOI_PAL_GISAnalysisEngine {
 **Extension of your existing pdfSigner component:**
 
 ```javascript
-// doi-apd-signature-manager.js (extends pdfSigner)
+// Nuvi-apd-signature-manager.js (extends pdfSigner)
 import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 
@@ -174,7 +174,7 @@ export default class DoiApdSignatureManager extends NavigationMixin(LightningEle
 **Extension of your existing documentManagement component:**
 
 ```javascript
-// doi-apd-document-manager.js (extends documentManagement)
+// Nuvi-apd-document-manager.js (extends documentManagement)
 export default class DoiApdDocumentManager extends LightningElement {
     @api recordId;
     @api applicationType = 'APD';
@@ -355,7 +355,7 @@ public class DOI_PAL_APDDocumentController extends FolderFilesController {
 **Step-by-Step Instructions:**
 
 1. **Setup > Dashboards > New Dashboard**
-2. **Dashboard Name**: "DOI APD Performance Dashboard"
+2. **Dashboard Name**: "Nuvi APD Performance Dashboard"
 3. **Running User**: Select system admin or integration user
 4. **Add Components**:
 
@@ -467,30 +467,30 @@ Access: Public
     
     <!-- Search Component -->
     <div class="slds-col slds-size_12-of-12">
-        <c-doi-public-apd-search
+        <c-Nuvi-public-apd-search
             primary-color="#22BDC1"
             accent-color="#D5DF23"
             max-results="50"
             show-map="true">
-        </c-doi-public-apd-search>
+        </c-Nuvi-public-apd-search>
     </div>
     
     <!-- Results Component -->  
     <div class="slds-col slds-size_8-of-12">
-        <c-doi-public-apd-results
+        <c-Nuvi-public-apd-results
             results-per-page="10"
             show-status-filter="true"
             show-location-filter="true">
-        </c-doi-public-apd-results>
+        </c-Nuvi-public-apd-results>
     </div>
     
     <!-- Map Component -->
     <div class="slds-col slds-size_4-of-12">
-        <c-doi-public-apd-map
+        <c-Nuvi-public-apd-map
             zoom-level="6"
             marker-clustering="true"
             show-legend="true">
-        </c-doi-public-apd-map>
+        </c-Nuvi-public-apd-map>
     </div>
     
 </div>
@@ -498,9 +498,9 @@ Access: Public
 
 ##### SEO Configuration
 ```
-Page Title: DOI Oil & Gas Permit Search
+Page Title: Nuvi Oil & Gas Permit Search
 Meta Description: Search and track Department of Interior oil and gas drilling permits. View environmental assessments and public documents.
-Keywords: DOI permits, oil gas drilling, environmental assessment, public records
+Keywords: Nuvi permits, oil gas drilling, environmental assessment, public records
 Canonical URL: /public-apd-search
 ```
 
@@ -509,11 +509,11 @@ Canonical URL: /public-apd-search
 ##### Navigation Setup
 ```
 Primary Navigation:
-- Dashboard (doi-operator-dashboard)
-- My Applications (doi-my-applications) 
-- Submit New APD (doi-apd-wizard)
+- Dashboard (Nuvi-operator-dashboard)
+- My Applications (Nuvi-my-applications) 
+- Submit New APD (Nuvi-apd-wizard)
 - Document Center (enhanced documentManagement)
-- Status Tracking (doi-status-tracker)
+- Status Tracking (Nuvi-status-tracker)
 
 Secondary Navigation:
 - Help & Resources
@@ -529,20 +529,20 @@ Secondary Navigation:
     
     <!-- Status Overview -->
     <div class="slds-col slds-size_6-of-12">
-        <c-doi-operator-status-overview
+        <c-Nuvi-operator-status-overview
             record-id="{!$User.ContactId}"
             show-metrics="true"
             chart-type="donut">
-        </c-doi-operator-status-overview>
+        </c-Nuvi-operator-status-overview>
     </div>
     
     <!-- Recent Activity -->
     <div class="slds-col slds-size_6-of-12">
-        <c-doi-recent-activity
+        <c-Nuvi-recent-activity
             record-id="{!$User.ContactId}"
             activity-limit="10"
             show-timeline="true">
-        </c-doi-recent-activity>
+        </c-Nuvi-recent-activity>
     </div>
     
     <!-- Quick Actions -->
@@ -717,8 +717,9 @@ force-app/main/Government_Documents/Permit_And_Licensing/
 
 ---
 
-This updated plan leverages your existing utility components while focusing on robust LWC/Apex development and providing comprehensive declarative configuration guides. The integration of PDF Signer and Document Management components creates a seamless, powerful platform that transforms DOI's permit processing capabilities.
+This updated plan leverages your existing utility components while focusing on robust LWC/Apex development and providing comprehensive declarative configuration guides. The integration of PDF Signer and Document Management components creates a seamless, powerful platform that transforms Nuvi's permit processing capabilities.
 
 *Document Version: 2.0*  
 *Last Updated: September 3, 2025*  
 *Contact: Salesforce Development Team*
+

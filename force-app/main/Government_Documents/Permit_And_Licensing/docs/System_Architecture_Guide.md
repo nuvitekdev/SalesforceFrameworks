@@ -1,8 +1,8 @@
-# DOI Permits and Licensing System - Complete Architecture & Implementation Guide
+# Nuvi Permits and Licensing System - Complete Architecture & Implementation Guide
 
 ## Executive Summary
 
-This document outlines the comprehensive architecture for a next-generation DOI Permits and Licensing application built on Salesforce platform. The system transforms the current 30+ day APD processing timeline into an AI-enhanced, streamlined workflow that significantly reduces Time-to-Delivery (TTD) while ensuring full regulatory compliance.
+This document outlines the comprehensive architecture for a next-generation Nuvi Permits and Licensing application built on Salesforce platform. The system transforms the current 30+ day APD processing timeline into an AI-enhanced, streamlined workflow that significantly reduces Time-to-Delivery (TTD) while ensuring full regulatory compliance.
 
 ## System Overview
 
@@ -641,7 +641,7 @@ DOI_PAL_Workflow_Task__c {
 - **Stakeholder Engagement**: Enhanced public participation
 - **Decision Quality**: More consistent and well-documented decisions
 - **Regulatory Compliance**: Full adherence to federal requirements
-- **Innovation Leadership**: Establish DOI as digital government leader
+- **Innovation Leadership**: Establish Nuvi as digital government leader
 
 ## Risk Management
 
@@ -659,9 +659,9 @@ DOI_PAL_Workflow_Task__c {
 
 ## Conclusion
 
-This comprehensive architecture provides a roadmap for transforming DOI's permit processing capabilities through innovative use of Salesforce platform features, AI integration, and modern user experience design. The system will significantly reduce processing times while enhancing transparency, compliance, and stakeholder engagement.
+This comprehensive architecture provides a roadmap for transforming Nuvi's permit processing capabilities through innovative use of Salesforce platform features, AI integration, and modern user experience design. The system will significantly reduce processing times while enhancing transparency, compliance, and stakeholder engagement.
 
-The modular architecture ensures scalability to handle the full spectrum of DOI's 23+ permit types, while the AI-powered automation capabilities position the department at the forefront of digital government services.
+The modular architecture ensures scalability to handle the full spectrum of Nuvi's 23+ permit types, while the AI-powered automation capabilities position the department at the forefront of digital government services.
 
 Implementation success depends on close collaboration between technical teams, subject matter experts, and end users throughout the development lifecycle. The phased approach allows for iterative refinement and continuous improvement based on real-world usage and feedback.
 
@@ -669,3 +669,13 @@ Implementation success depends on close collaboration between technical teams, s
 *Document Version: 1.0*  
 *Last Updated: September 3, 2025*  
 *Contact: Salesforce Development Team*
+ 
+## Addendum: Integrations, Events, and LWR Notes
+
+- Payments: Pay.gov (Named Credential: PayGov). The example callout code is commented out until integration is available. Tests use safe fallbacks. Configure the Named Credential and CSP Trusted Sites when ready.
+- GIS: ArcGIS REST (Trusted Sites). Use `GISProximityService` as a placeholder until endpoints are configured. Replace with real REST invocations when service details are available.
+- Platform Events: `Nuvi_Permit_Status_Change__e` is provided (ApplicationId, Stage, Message). Publish via `StatusEventPublisher.publishStatusChange()` after key transitions. Subscribe using Apex triggers for notifications and dashboards.
+- LWR/Experience Cloud: Use LWR pages (LWC-only). Add `nuviPermitApplicationWizard`, `nuviPermitDocumentManager`, `nuviPermitSignatureManager`, and `permitMap` to appropriate pages. Ensure CSP Trusted Sites include external LLMs, ArcGIS, and Pay.gov.
+
+
+

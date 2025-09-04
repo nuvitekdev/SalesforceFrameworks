@@ -2,7 +2,7 @@
 
 ## Overview
 
-Public-facing portal interface for permit applicants and operators to interact with the DOI permit and licensing system. Provides secure, user-friendly access to application submission, status tracking, document management, and payment processing.
+Public-facing portal interface for permit applicants and operators to interact with the Nuvi permit and licensing system. Provides secure, user-friendly access to application submission, status tracking, document management, and payment processing.
 
 ## Purpose
 
@@ -30,19 +30,17 @@ Delivers comprehensive self-service capabilities including:
 ## Key Components
 
 ### Lightning Web Components
-- `doiPalOperatorDashboard` - Main operator dashboard
-- `doiPalApplicationTracker` - Application status timeline
-- `doiPalDocumentUploader` - Secure file upload interface
-- `doiPalPaymentProcessor` - Payment and fee management
-- `doiPalPublicSearch` - Public application search
-- `doiPalContactReviewer` - Communication interface
+- `nuviPermitApplicationWizard` - Permit intake wizard (LWR page)
+- `nuviPermitDocumentManager` - Secure file upload and management
+- `nuviPermitSignatureManager` - Electronic signatures
+- `permitMap` - Map display for surface/bottom hole locations
 
 ### Apex Classes
-- `DOI_PAL_PublicPortalController` - Main portal orchestration
-- `DOI_PAL_PublicApplicationService` - Application management
-- `DOI_PAL_PublicDocumentService` - Document handling
-- `DOI_PAL_PublicPaymentService` - Payment processing
-- `DOI_PAL_PublicSearchService` - Public record search
+- `APDApplicationService` - Application save from wizard
+- `Nuvi_Permit_DocumentController` - Document management
+- `Nuvi_Permit_SignatureController` - Signature workflows
+- `PayGovService` - Payment intent service (Named Credential: PayGov)
+- `GISProximityService` - Proximity alerts (stub; replace with ArcGIS/USGS)
 
 ### Custom Objects
 - `DOI_PAL_Portal_Session__c` - User session tracking
@@ -55,7 +53,7 @@ Delivers comprehensive self-service capabilities including:
 ### Responsive Dashboard
 ```
 ┌─────────────────────────────────────────────────┐
-│ DOI Permits & Licensing Portal                  │
+│ Nuvi Permits & Licensing Portal                  │
 ├─────────────────────────────────────────────────┤
 │ Welcome, [Operator Name]                        │
 │                                                 │
@@ -244,14 +242,14 @@ export default class DoiPalOperatorDashboard extends LightningElement {
 
 ### Custom Portal Branding
 ```css
-/* Custom CSS for DOI branding */
-.doi-portal-header {
+/* Custom CSS for Nuvi branding */
+.Nuvi-portal-header {
     background: linear-gradient(135deg, #1e3a5f 0%, #2c5f41 100%);
     color: white;
     padding: 1rem 2rem;
 }
 
-.doi-card {
+.Nuvi-card {
     border-left: 4px solid #2c5f41;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     border-radius: 8px;
@@ -317,3 +315,10 @@ export default class DoiPalOperatorDashboard extends LightningElement {
 - Performance metrics
 - Error rate tracking
 - User satisfaction surveys
+### LWR Configuration Notes
+- Use LWR template; add App Pages for the wizard and status views.
+- Add components to pages: `nuviPermitApplicationWizard`, `nuviPermitDocumentManager`, `nuviPermitSignatureManager`, `permitMap`.
+- CSP Trusted Sites: LLM providers, ArcGIS domains, and pay.gov endpoint.
+- Named Credential: Create `PayGov` and assign to integration profile.
+
+

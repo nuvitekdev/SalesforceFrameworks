@@ -2,7 +2,7 @@
 
 ## Overview
 
-Core application processing module for DOI permit and licensing system. Handles intake, validation, and management of various permit types including APD (Application for Permit to Drill), mining permits, recreation permits, and general land use permits.
+Core application processing module for Nuvi permit and licensing system. Handles intake, validation, and management of various permit types including APD (Application for Permit to Drill), mining permits, recreation permits, and general land use permits.
 
 ## Purpose
 
@@ -140,3 +140,4 @@ const fees = await calculateFees({
 - Document retention follows federal records management standards
 - Fee calculations must be auditable and traceable
 - Status changes trigger required notifications per 43 CFR regulations
+

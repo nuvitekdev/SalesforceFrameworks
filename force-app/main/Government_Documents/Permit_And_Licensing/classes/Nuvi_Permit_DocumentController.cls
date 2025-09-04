@@ -192,6 +192,9 @@ public with sharing class Nuvi_Permit_DocumentController {
       ];
 
       // Create Document Package record for tracking
+      if (!Schema.sObjectType.Document_Package__c.isCreateable()) {
+        throw new AuraHandledException('Insufficient access to create Document Package');
+      }
       Document_Package__c docPackage = new Document_Package__c(
         APD_Application__c = applicationId, // Make this generic field name
         Content_Version_Id__c = newFile.Id,
@@ -203,16 +206,16 @@ public with sharing class Nuvi_Permit_DocumentController {
         Agency_Type__c = agencyType,
         Permit_Type__c = permitType
       );
-      insert docPackage;
+      insert (Document_Package__c) Security.stripInaccessible(AccessType.CREATABLE, new List<SObject>{ docPackage }).getRecords()[0];
 
       // **AI PROCESSING: Automatically analyze uploaded document**
-      PermitAIService.PermitAIResult aiResult = null;
+      Nuvi_Permit_AIService.PermitAIResult aiResult = null;
       try {
         // Determine AI operation based on document type and folder
         String aiOperation = determineAIOperation(documentType, folderName, newFile.FileType);
         
         // Process document with AI
-        aiResult = PermitAIService.processPermitDocument(
+        aiResult = Nuvi_Permit_AIService.processPermitDocument(
           newFile.Id,
           aiOperation,
           documentType,
@@ -221,11 +224,14 @@ public with sharing class Nuvi_Permit_DocumentController {
         );
         
         // Update document package with AI results
+        if (!Schema.sObjectType.Document_Package__c.isUpdateable()) {
+          throw new AuraHandledException('Insufficient access to update Document Package');
+        }
         docPackage.AI_Confidence_Score__c = aiResult.confidence;
         docPackage.AI_Risk_Score__c = aiResult.riskScore;
         docPackage.AI_Analysis_Status__c = 'Completed';
         docPackage.AI_Recommendations__c = String.join(aiResult.recommendations, '; ');
-        update docPackage;
+        update (Document_Package__c) Security.stripInaccessible(AccessType.UPDATABLE, new List<SObject>{ docPackage }).getRecords()[0];
         
       } catch (Exception aiError) {
         System.debug('AI processing error: ' + aiError.getMessage());
@@ -786,3 +792,4 @@ public with sharing class Nuvi_Permit_DocumentController {
     }
   }
 }
+

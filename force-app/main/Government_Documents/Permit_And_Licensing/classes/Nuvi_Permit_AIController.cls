@@ -504,8 +504,34 @@ public with sharing class Nuvi_Permit_AIController {
     }
     
     // Placeholder methods - to be implemented with agency-specific logic
-    private static String getApplicationDocumentContent(String applicationId) { return ''; }
-    private static String getProximityData(Decimal lat, Decimal lng, String agencyType) { return ''; }
+    private static String getApplicationDocumentContent(String applicationId) {
+        try {
+            List<Document_Package__c> pkgs = [
+                SELECT Id, Document_Type__c, Content_Version_Id__c, Status__c, Signer_Role__c, Workflow_Stage__c
+                FROM Document_Package__c
+                WHERE APD_Application__c = :applicationId
+                WITH SECURITY_ENFORCED
+                LIMIT 50
+            ];
+            if (pkgs.isEmpty()) return '';
+            List<String> lines = new List<String>();
+            for (Document_Package__c p : pkgs) {
+                lines.add('- ' + (p.Document_Type__c == null ? 'Document' : p.Document_Type__c) +
+                          ' | Status: ' + (p.Status__c == null ? 'N/A' : p.Status__c) +
+                          ' | Stage: ' + (p.Workflow_Stage__c == null ? 'N/A' : p.Workflow_Stage__c));
+            }
+            return String.join(lines, '\n');
+        } catch (Exception e) {
+            return '';
+        }
+    }
+
+    private static String getProximityData(Decimal lat, Decimal lng, String agencyType) {
+        List<String> lines = new List<String>();
+        lines.add('Coordinates: ' + String.valueOf(lat) + ', ' + String.valueOf(lng));
+        lines.add('Agency: ' + agencyType);
+        return String.join(lines, '\n');
+    }
     private static String getPermitRequirementsChecklist(String permitType, String agencyType) {
         try {
             List<Permit_Form_Config__mdt> cfgs = [
@@ -527,14 +553,85 @@ public with sharing class Nuvi_Permit_AIController {
         }
     }
 
-    private static String buildEnvironmentalAnalysisContext(String applicationId, String agencyType) { return ''; }
-    private static List<String> getPermitFieldsForExtraction(String permitType, String agencyType) { return new List<String>(); }
-    private static Map<String, Object> getApplicantProfileData(String applicantId) { return new Map<String, Object>(); }
-    private static Map<String, Object> formatExtractedFieldsForPermit(Map<String, Object> fields, String permitType, String agencyType) { return fields; }
-    private static PermitAnalysisResult parsePermitAnalysisResponse(String response, String applicationId) { return new PermitAnalysisResult(); }
-    private static LocationAnalysisResult parseLocationAnalysisResponse(String response, String agencyType) { return new LocationAnalysisResult(); }
-    private static DocumentVerificationResult parseDocumentVerificationResponse(String response, String permitType) { return new DocumentVerificationResult(); }
-    private static EnvironmentalAnalysisResult parseEnvironmentalAnalysisResponse(String response, String agencyType) { return new EnvironmentalAnalysisResult(); }
+    private static String buildEnvironmentalAnalysisContext(String applicationId, String agencyType) {
+        try {
+            APD_Application__c app = [
+                SELECT Id, Latitude__c, Longitude__c, State_Location__c, County__c, BLM_Field_Office__c
+                FROM APD_Application__c WHERE Id = :applicationId WITH SECURITY_ENFORCED LIMIT 1
+            ];
+            List<String> lines = new List<String>();
+            lines.add('Agency: ' + agencyType);
+            lines.add('State: ' + app.State_Location__c + '; County: ' + app.County__c);
+            lines.add('Field Office: ' + app.BLM_Field_Office__c);
+            lines.add('Coords: ' + String.valueOf(app.Latitude__c) + ', ' + String.valueOf(app.Longitude__c));
+            return String.join(lines, '\n');
+        } catch (Exception e) {
+            return '';
+        }
+    }
+
+    private static List<String> getPermitFieldsForExtraction(String permitType, String agencyType) {
+        return new List<String>{
+            'operatorName','operatorEmail','leaseNumber','latitude','longitude','wellName','apiNumber','wellType','totalDepth'
+        };
+    }
+
+    private static Map<String, Object> getApplicantProfileData(String applicantId) {
+        return new Map<String, Object>();
+    }
+
+    private static Map<String, Object> formatExtractedFieldsForPermit(Map<String, Object> fields, String permitType, String agencyType) {
+        return fields == null ? new Map<String, Object>() : fields;
+    }
+
+    private static PermitAnalysisResult parsePermitAnalysisResponse(String response, String applicationId) {
+        PermitAnalysisResult r = new PermitAnalysisResult();
+        r.analysisText = response;
+        r.confidenceScore = (response != null && response.length() > 0) ? 0.8 : 0.3;
+        r.riskLevel = (response != null && response.toLowerCase().contains('risk')) ? 'Medium' : 'Low';
+        r.recommendations = 'See analysis';
+        r.missingDocuments = new List<String>();
+        r.environmentalFlags = new List<String>();
+        r.workflowRecommendations = new List<String>();
+        return r;
+    }
+
+    private static LocationAnalysisResult parseLocationAnalysisResponse(String response, String agencyType) {
+        LocationAnalysisResult r = new LocationAnalysisResult();
+        r.analysisText = response;
+        r.proximityAlerts = new List<String>();
+        r.environmentalRisk = 'Low';
+        r.hasSensitiveAreas = response != null && response.toLowerCase().contains('sensitive');
+        r.environmentalReviewLevel = 'EA';
+        r.mitigationRecommendations = new List<String>();
+        r.agencyType = agencyType;
+        return r;
+    }
+
+    private static DocumentVerificationResult parseDocumentVerificationResponse(String response, String permitType) {
+        DocumentVerificationResult r = new DocumentVerificationResult();
+        r.completenessScore = (response == null) ? 0 : 8;
+        r.missingDocuments = new List<String>();
+        r.qualityIssues = new List<String>();
+        r.returnToApplicantItems = new List<String>();
+        r.processingRecommendation = 'Proceed';
+        r.timelineImpact = 'None';
+        r.permitType = permitType;
+        r.agencyType = null;
+        return r;
+    }
+
+    private static EnvironmentalAnalysisResult parseEnvironmentalAnalysisResponse(String response, String agencyType) {
+        EnvironmentalAnalysisResult r = new EnvironmentalAnalysisResult();
+        r.recommendedLevel = (response != null && response.toLowerCase().contains('eis')) ? 'EIS' : 'EA';
+        r.rationale = 'See analysis';
+        r.requiredCoordination = new List<String>();
+        r.requiredSpecialists = new List<String>();
+        r.timelineEstimate = '90-120 days';
+        r.riskAssessment = 'Low';
+        r.agencyType = agencyType;
+        return r;
+    }
     private static PublicCommentAnalysis parsePublicCommentAnalysis(String response, Integer count) { return new PublicCommentAnalysis('', new List<String>(), 'Low', count); }
     private static void updateApplicationWithAIResults(String applicationId, PermitAnalysisResult result, String agencyType) { }
     private static void updateDocumentPackagesWithVerification(String applicationId, DocumentVerificationResult result) { }

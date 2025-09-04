@@ -1,8 +1,8 @@
-# DOI APD System - Technical Blueprint
+# Nuvi APD System - Technical Blueprint
 
 ## Executive Summary
 
-This document outlines a comprehensive, enterprise-grade Salesforce architecture for the Department of Interior's Application for Permit to Drill (APD) system. The solution addresses 100% of Form 3160-3 requirements while providing scalability for 12+ years and supporting all 23+ permit types across multiple DOI agencies.
+This document outlines a comprehensive, enterprise-grade Salesforce architecture for the Department of Interior's Application for Permit to Drill (APD) system. The solution addresses 100% of Form 3160-3 requirements while providing scalability for 12+ years and supporting all 23+ permit types across multiple Nuvi agencies.
 
 ## Architecture Overview
 
@@ -18,7 +18,7 @@ This document outlines a comprehensive, enterprise-grade Salesforce architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    DOI APD Salesforce Platform                  │
+│                    Nuvi APD Salesforce Platform                  │
 ├─────────────────────────────────────────────────────────────────┤
 │ Public Portal Layer (Experience Cloud)                         │
 │ ├─ Applicant Self-Service     ├─ Agency Staff Portal          │
@@ -470,4 +470,5 @@ External Users:
 **Document Version**: 1.0  
 **Last Updated**: September 2025  
 **Next Review**: March 2026  
-**Owner**: DOI Salesforce Architecture Team
+**Owner**: Nuvi Salesforce Architecture Team
+

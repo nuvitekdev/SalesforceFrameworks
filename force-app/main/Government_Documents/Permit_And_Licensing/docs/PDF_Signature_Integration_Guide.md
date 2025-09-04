@@ -1,8 +1,8 @@
-# DOI Permits - PDF Signer Integration Guide
+# Nuvi Permits - PDF Signer Integration Guide
 
 ## Overview
 
-This guide details how your existing **PDF Signer** component integrates seamlessly into the DOI APD workflow, enabling digital signatures at critical approval stages while maintaining full audit compliance and workflow automation.
+This guide details how your existing **PDF Signer** component integrates seamlessly into the Nuvi APD workflow, enabling digital signatures at critical approval stages while maintaining full audit compliance and workflow automation.
 
 ## PDF Signer Integration Architecture
 
@@ -60,7 +60,7 @@ graph TD
 
 ## Enhanced LWC Components
 
-### 1. DOI APD Signature Manager (Extends your pdfSigner)
+### 1. Nuvi APD Signature Manager (Extends your pdfSigner)
 
 ```javascript
 // doiApdSignatureManager.js
@@ -355,7 +355,7 @@ export default class DoiSignatureWorkflow extends LightningElement {
 
 ## Enhanced Apex Controllers
 
-### 1. DOI APD Signature Controller (Extends PdfSignController)
+### 1. Nuvi APD Signature Controller (Extends PdfSignController)
 
 ```apex
 public with sharing class DOI_PAL_APDSignatureController extends PdfSignController {
@@ -669,7 +669,7 @@ public class APD_Signature_Audit__c extends SObject {
         </div>
         
         <!-- Signature Component -->
-        <c-doi-apd-signature-manager
+        <c-Nuvi-apd-signature-manager
             record-id={recordId}
             document-type="EA"
             signer-role="NEPA_COORDINATOR"
@@ -677,7 +677,7 @@ public class APD_Signature_Audit__c extends SObject {
             primary-color="#22BDC1"
             accent-color="#D5DF23"
             onSigningComplete={handleSigningComplete}>
-        </c-doi-apd-signature-manager>
+        </c-Nuvi-apd-signature-manager>
         
     </lightning-card>
 </template>
@@ -716,35 +716,35 @@ public class APD_Signature_Audit__c extends SObject {
         <!-- Current Signing Stage -->
         <div class="slds-p-around_medium">
             <template if:true={showEASigning}>
-                <c-doi-apd-signature-manager
+                <c-Nuvi-apd-signature-manager
                     record-id={recordId}
                     document-type="EA"
                     signer-role="NEPA_COORDINATOR">
-                </c-doi-apd-signature-manager>
+                </c-Nuvi-apd-signature-manager>
             </template>
             
             <template if:true={showFONSISigning}>
-                <c-doi-apd-signature-manager
+                <c-Nuvi-apd-signature-manager
                     record-id={recordId}
                     document-type="FONSI"
                     signer-role="FIELD_OFFICE_MANAGER">
-                </c-doi-apd-signature-manager>
+                </c-Nuvi-apd-signature-manager>
             </template>
             
             <template if:true={showAPDApproval}>
-                <c-doi-apd-signature-manager
+                <c-Nuvi-apd-signature-manager
                     record-id={recordId}
                     document-type="APD_APPROVAL"
                     signer-role="FIELD_OFFICE_MANAGER">
-                </c-doi-apd-signature-manager>
+                </c-Nuvi-apd-signature-manager>
             </template>
             
             <template if:true={showOperatorAck}>
-                <c-doi-apd-signature-manager
+                <c-Nuvi-apd-signature-manager
                     record-id={recordId}
                     document-type="OPERATOR_ACK"
                     signer-role="OPERATOR">
-                </c-doi-apd-signature-manager>
+                </c-Nuvi-apd-signature-manager>
             </template>
         </div>
         
@@ -987,3 +987,4 @@ This comprehensive PDF Signer integration transforms your existing component int
 *Integration Version: 1.0*  
 *Last Updated: September 3, 2025*  
 *Compatibility: Extends existing pdfSigner component*
+

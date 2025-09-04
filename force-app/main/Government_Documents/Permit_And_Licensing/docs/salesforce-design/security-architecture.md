@@ -1,8 +1,8 @@
-# DOI APD System - Security Architecture
+# Nuvi APD System - Security Architecture
 
 ## Overview
 
-This document defines a comprehensive, multi-layered security architecture for the DOI APD system, supporting secure multi-agency collaboration while maintaining strict data segregation and audit compliance for federal operations.
+This document defines a comprehensive, multi-layered security architecture for the Nuvi APD system, supporting secure multi-agency collaboration while maintaining strict data segregation and audit compliance for federal operations.
 
 ## Security Design Principles
 
@@ -164,7 +164,7 @@ System Permissions:
 └─ Schedule Reports
 
 App Permissions:
-└─ Access to all DOI applications
+└─ Access to all Nuvi applications
 ```
 
 #### 2. DOI_BLM_Field_Manager
@@ -993,4 +993,5 @@ Legal Hold Procedures:
 **Sensitivity**: Government Internal Use  
 **Review Cycle**: Quarterly security review required  
 **Next Review Date**: December 2025  
-**Approval**: DOI CISO and Salesforce Security Team
+**Approval**: Nuvi CISO and Salesforce Security Team
+

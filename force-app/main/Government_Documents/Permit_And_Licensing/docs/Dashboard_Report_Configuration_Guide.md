@@ -1,4 +1,4 @@
-# DOI Permits System - Dashboard & Report Building Guides
+# Nuvi Permit System - Dashboard & Report Building Guides
 
 ## Table of Contents
 
@@ -12,12 +12,24 @@
 
 ## Executive Dashboard Setup
 
-### Dashboard 1: DOI APD Executive Overview
+### Additional Recommended Dashboards (LWR)
+- Permit Status & SLA Dashboard
+  - KPIs: Submitted, Under Review, Approved, Rejected
+  - SLA breach counter; Average days per stage
+  - Source: `APD_Application__c` and mirrored `Nuvi_Permit_Status_Change__e`
+- AI Analysis Dashboard
+  - Documents processed; Average confidence; Risk distribution
+  - Top recommendations and missing elements (from `Document_Package__c` AI fields)
+- Documents & Signatures Dashboard
+  - Uploaded vs Required documents per application
+  - Signatures pending by role; Turnaround times
+
+### Dashboard 1: Nuvi Permit Executive Overview
 
 #### Dashboard Configuration
 ```
-Dashboard Name: DOI APD Executive Overview
-Folder: DOI Permits - Executive Reports
+Dashboard Name: Nuvi Permit Executive Overview
+Folder: Nuvi Permit - Executive Reports
 Running User: System Administrator
 Refresh Frequency: Every 2 hours during business hours
 Layout: 3x4 Grid (12 components)
@@ -122,7 +134,7 @@ Chart Properties:
 - Sort Order: Descending
 - Max Bars: 10
 - Show Percentage: Yes
-- Color: Single color (DOI Blue)
+- Color: Single color (Nuvi Blue)
 
 Size: 2x1
 Position: Bottom Left
@@ -149,8 +161,8 @@ Position: Bottom Right
 #### Step 1: Navigate to Dashboards
 1. Go to **App Launcher** → **Dashboards**
 2. Click **New Dashboard**
-3. Enter **Dashboard Name**: "DOI APD Executive Overview"
-4. Select **Folder**: Create new folder "DOI Permits - Executive Reports"
+3. Enter **Dashboard Name**: "Nuvi Permit Executive Overview"
+4. Select **Folder**: Create new folder "Nuvi Permit - Executive Reports"
 5. Choose **Running User**: System Administrator or dedicated integration user
 
 #### Step 2: Set Dashboard Properties
@@ -236,7 +248,7 @@ Position: Bottom Right
 #### Configuration Details
 ```
 Report Name: APD Status Summary
-Folder: DOI Permits - Operational Reports
+Folder: Nuvi Permits - Operational Reports
 Description: Summary of all APDs by current processing stage
 
 Fields to Include:
@@ -500,7 +512,7 @@ Chart Support:
 
 #### Dashboard Layout (3x3 Grid)
 ```
-Dashboard Name: DOI APD Operational Performance
+Dashboard Name: Nuvi APD Operational Performance
 Target Users: Field Office Managers, Operations Staff
 Refresh: Every hour during business hours
 
@@ -593,7 +605,7 @@ Color coding: Green (meets target), Yellow (close), Red (below)
 
 #### AI Analytics Components
 ```
-Dashboard Name: DOI APD AI Performance Analytics
+Dashboard Name: Nuvi APD AI Performance Analytics
 Purpose: Monitor AI system effectiveness and accuracy
 
 Components:
@@ -728,7 +740,7 @@ Approved Fields for FOIA:
 
 #### Configuration
 ```
-Dashboard Name: DOI Field Inspector Mobile Dashboard
+Dashboard Name: Nuvi Field Inspector Mobile Dashboard
 Target Device: Tablets and large phones
 Layout: Single column, scrollable
 Components: 6 key metrics optimized for mobile
@@ -821,10 +833,10 @@ Offline Support:
 
 #### Weekly Executive Summary
 ```
-Report: DOI APD Weekly Executive Summary
+Report: Nuvi APD Weekly Executive Summary
 Schedule: Every Monday at 6:00 AM MT
 Recipients: 
-- DOI Executive Team
+- Nuvi Executive Team
 - Field Office Managers
 - Regional Directors
 
@@ -1010,8 +1022,11 @@ Solutions:
 
 ---
 
-This comprehensive guide provides step-by-step instructions for creating all necessary dashboards and reports to support the DOI Permits system. Each configuration is detailed with specific field mappings, formatting options, and best practices to ensure successful implementation.
+This comprehensive guide provides step-by-step instructions for creating all necessary dashboards and reports to support the Nuvi Permit System. Each configuration is detailed with specific field mappings, formatting options, and best practices to ensure successful implementation.
 
 *Guide Version: 1.0*  
 *Last Updated: September 3, 2025*  
 *Compatibility: Salesforce Lightning Experience*
+
+
+

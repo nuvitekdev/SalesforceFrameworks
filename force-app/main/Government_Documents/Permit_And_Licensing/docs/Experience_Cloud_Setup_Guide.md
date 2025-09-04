@@ -1,4 +1,4 @@
-# DOI Permits System - Experience Cloud Configuration Guide
+# Nuvi Permit System - Experience Cloud Configuration Guide
 
 ## Table of Contents
 
@@ -13,17 +13,17 @@
 
 ## Experience Cloud Site Setup
 
-### Site 1: DOI Public APD Portal
+### Site 1: Nuvi Public APD Portal
 
 #### Initial Site Configuration
 ```
-Site Name: DOI Public Permit Portal
-Template: Customer Service (Aura) - Modified for government use
-URL: https://doi-permits.force.com (or custom domain)
+Site Name: Nuvi Public Permit Portal
+Template: LWR (Lightning Web Runtime) - LWC-only pages
+URL: https://Nuvi-permits.force.com (or custom domain)
 Purpose: Public access to permit information and transparency
 Access: Public (no login required for basic search)
 Theme: Government/Professional
-Primary Colors: #22BDC1 (DOI Blue), #D5DF23 (DOI Green)
+Primary Colors: #22BDC1 (Nuvi Blue), #D5DF23 (Nuvi Green)
 ```
 
 #### Step-by-Step Site Creation
@@ -33,26 +33,54 @@ Primary Colors: #22BDC1 (DOI Blue), #D5DF23 (DOI Green)
 2. **New** → **Create**
 3. **Template Selection**: "Customer Service"
 4. **Site Details**:
-   - Name: "DOI Public Permit Portal"
-   - URL Path: "doi-permits"
+   - Name: "Nuvi Public Permit Portal"
+   - URL Path: "Nuvi-permits"
    - Description: "Public access to Department of Interior drilling permits"
 
 ##### Step 2: Basic Site Configuration
 1. **Administration** → **Settings** → **General**
    ```
    Site Settings:
-   - Site Name: DOI Public Permit Portal
+   - Site Name: Nuvi Public Permit Portal
    - Site Description: Search and track oil & gas drilling permits
    - Default Language: English (US)
    - Time Zone: Mountain Time (US & Canada)
    - Currency: USD
    ```
 
+##### Step 3: Add LWC Pages and Components (LWR)
+1. Create App Page "Permit Application" and add:
+   - `nuviPermitApplicationWizard` (main region)
+   - `nuviPermitDocumentManager` (secondary region, optional)
+   - `nuviPermitSignatureManager` (secondary region, optional)
+2. Create App Page "Permit Status" and add:
+   - `permitMap` (top region)
+   - `nuviPermitDocumentManager` (main)
+3. Publish the site after adding navigation entries.
+
+##### Step 4: CSP Trusted Sites (LWR)
+Add CSP Trusted Sites for:
+- LLM providers in use (OpenAI/Anthropic/Google/OpenRouter as applicable)
+- ArcGIS REST API (if using maps): `https://*.arcgis.com`, `https://*.arcgisonline.com`
+- Pay.gov endpoint via Named Credential domain
+
+##### Step 5: Named Credentials
+Create Named Credential `PayGov` (HTTP Callout) pointing to pay.gov REST endpoint; enable per-profile access.
+
+##### Step 6: Authentication & SSO
+- Configure SSO (SAML/OIDC) for registered users (operator/reviewer)
+- Keep guest access limited to read-only public pages; do not allow guest data submission
+
+##### Step 7: Platform Events & Dashboards
+- Verify `Nuvi_Permit_Status_Change__e` is deployed and active.
+- Add an Apex subscriber trigger (included) that writes to `Nuvi_Permit_Status_Log__c`.
+- Build a dashboard page sourcing from `Nuvi_Permit_Status_Log__c` to show stage transitions and SLA metrics.
+
 2. **Administration** → **Login & Registration**
    ```
    Public Access Settings:
    - Allow Public Access: Enabled
-   - Public User Profile: DOI Public Portal User
+   - Public User Profile: Nuvi Public Portal User
    - Guest User Sharing: Restricted (security-focused)
    - Registration: Optional (for enhanced features)
    ```
@@ -61,10 +89,10 @@ Primary Colors: #22BDC1 (DOI Blue), #D5DF23 (DOI Green)
 1. **Builder** → **Settings** → **Theme**
 2. **Custom Theme Configuration**:
    ```css
-   /* DOI Brand Colors */
+   /* Nuvi Brand Colors */
    :root {
-     --primary-color: #22BDC1;        /* DOI Teal */
-     --secondary-color: #D5DF23;      /* DOI Lime */
+     --primary-color: #22BDC1;        /* Nuvi Teal */
+     --secondary-color: #D5DF23;      /* Nuvi Lime */
      --accent-color: #1f4e79;         /* Government Blue */
      --success-color: #4CAF50;        /* Green */
      --warning-color: #FF9800;        /* Orange */
@@ -123,7 +151,7 @@ Navigation Structure:
 ##### Footer Configuration
 ```
 Footer Links:
-├── About DOI
+├── About Nuvi
 ├── Privacy Policy
 ├── Terms of Use
 ├── Accessibility Statement (Section 508)
@@ -140,9 +168,9 @@ Footer Links:
 
 #### Portal Configuration
 ```
-Site Name: DOI Operator Services Portal
+Site Name: Nuvi Operator Services Portal
 Template: Partner Central
-URL: https://operators.doi-permits.force.com
+URL: https://operators.Nuvi-permits.force.com
 Access: Login Required (Authenticated Users Only)
 User Types: External Users (Operators, Consultants, Legal Representatives)
 Security: Enhanced (PIV card integration where applicable)
@@ -236,7 +264,7 @@ Add the Nuvitek Custom Theme Layout to your Experience Cloud pages:
     <!-- Main Hero Content -->
     <div class="hero-content">
         <div class="hero-title-section">
-            <h1 class="animated-title">DOI Permit Portal</h1>
+            <h1 class="animated-title">Nuvi Permit Portal</h1>
             <div class="subtitle-with-stats">
                 <p class="hero-subtitle">Real-time permit management and compliance tracking</p>
                 <div class="inline-stats">
@@ -499,7 +527,7 @@ Add the Nuvitek Custom Theme Layout to your Experience Cloud pages:
 
 2. **User Profile Configuration**:
    ```
-   Profile: DOI Operator Portal User
+   Profile: Nuvi Operator Portal User
    Object Permissions:
    - APD Applications: Read/Create (own records only)
    - APD Documents: Read/Create (own records only)
@@ -534,7 +562,7 @@ Access: Public (no authentication required)
         
         <!-- Page Header -->
         <div class="slds-text-align_center slds-m-bottom_large">
-            <h1 class="slds-text-heading_large">DOI Oil & Gas Permit Search</h1>
+            <h1 class="slds-text-heading_large">Nuvi Oil & Gas Permit Search</h1>
             <p class="slds-text-body_regular">
                 Search and track Department of Interior drilling permits. 
                 Access environmental documents and public records.
@@ -542,13 +570,13 @@ Access: Public (no authentication required)
         </div>
         
         <!-- Quick Search Component -->
-        <c-doi-public-search-hero
+        <c-Nuvi-public-search-hero
             placeholder="Search by operator, location, or permit number..."
             show-filters="true"
             default-radius="50"
             primary-color="#22BDC1"
             accent-color="#D5DF23">
-        </c-doi-public-search-hero>
+        </c-Nuvi-public-search-hero>
         
     </div>
 </div>
@@ -561,29 +589,29 @@ Access: Public (no authentication required)
         <div class="slds-col slds-size_8-of-12 slds-large-size_8-of-12">
             
             <!-- Search Filters Bar -->
-            <c-doi-search-filters
+            <c-Nuvi-search-filters
                 show-date-range="true"
                 show-status-filter="true"
                 show-location-filter="true"
                 show-operator-filter="true"
                 show-environmental-filter="true">
-            </c-doi-search-filters>
+            </c-Nuvi-search-filters>
             
             <!-- Search Results List -->
-            <c-doi-public-search-results
+            <c-Nuvi-public-search-results
                 results-per-page="25"
                 show-snippets="true"
                 show-document-count="true"
                 enable-sorting="true"
                 sort-options="relevance,date,location,status">
-            </c-doi-public-search-results>
+            </c-Nuvi-public-search-results>
             
         </div>
         
         <!-- Right Column: Interactive Map -->
         <div class="slds-col slds-size_4-of-12 slds-large-size_4-of-12">
             
-            <c-doi-public-permit-map
+            <c-Nuvi-public-permit-map
                 zoom-level="6"
                 center-state="US"
                 marker-clustering="true"
@@ -591,7 +619,7 @@ Access: Public (no authentication required)
                 show-filters="true"
                 satellite-view="false"
                 height="600px">
-            </c-doi-public-permit-map>
+            </c-Nuvi-public-permit-map>
             
         </div>
         
@@ -602,25 +630,25 @@ Access: Public (no authentication required)
 <div class="slds-container_large slds-p-around_large">
     
     <!-- Statistics Dashboard -->
-    <c-doi-public-statistics
+    <c-Nuvi-public-statistics
         show-totals="true"
         show-trends="true" 
         time-period="last-12-months"
         chart-type="summary">
-    </c-doi-public-statistics>
+    </c-Nuvi-public-statistics>
     
     <!-- Recent Activity Feed -->
-    <c-doi-recent-public-activity
+    <c-Nuvi-recent-public-activity
         activity-limit="10"
         show-environmental-docs="true"
         show-decisions="true"
         show-public-comments="true">
-    </c-doi-recent-public-activity>
+    </c-Nuvi-recent-public-activity>
     
 </div>
 ```
 
-#### LWC Component: DOI Public Search Hero
+#### LWC Component: Nuvi Public Search Hero
 
 ```javascript
 // doiPublicSearchHero.js
@@ -670,7 +698,7 @@ export default class DoiPublicSearchHero extends NavigationMixin(LightningElemen
     applyCustomStyling() {
         const style = document.createElement('style');
         style.innerText = `
-            .doi-search-hero {
+            .Nuvi-search-hero {
                 --primary-color: ${this.primaryColor};
                 --accent-color: ${this.accentColor};
             }
@@ -818,7 +846,7 @@ export default class DoiPublicSearchHero extends NavigationMixin(LightningElemen
 ```html
 <!-- doiPublicSearchHero.html -->
 <template>
-    <div class="doi-search-hero slds-card slds-p-around_large">
+    <div class="Nuvi-search-hero slds-card slds-p-around_large">
         
         <!-- Main Search Input -->
         <div class="slds-form-element slds-m-bottom_medium">
@@ -880,10 +908,10 @@ export default class DoiPublicSearchHero extends NavigationMixin(LightningElemen
         <template if:true={showAdvancedFilters}>
             <div class="slds-section slds-is-open slds-m-top_medium">
                 <div class="slds-section__content">
-                    <c-doi-advanced-search-filters
+                    <c-Nuvi-advanced-search-filters
                         selected-filters={selectedFilters}
                         onfilterchange={handleFilterChange}>
-                    </c-doi-advanced-search-filters>
+                    </c-Nuvi-advanced-search-filters>
                 </div>
             </div>
         </template>
@@ -1016,11 +1044,11 @@ export default class DoiPublicApdDetail extends LightningElement {
                 <template if:true={environmentalData}>
                     <lightning-card title="Environmental Review Summary" icon-name="custom:custom85" class="slds-m-top_medium">
                         <div class="slds-p-horizontal_small">
-                            <c-doi-environmental-summary-public
+                            <c-Nuvi-environmental-summary-public
                                 environmental-data={environmentalData}
                                 show-mitigation="true"
                                 show-consultations="true">
-                            </c-doi-environmental-summary-public>
+                            </c-Nuvi-environmental-summary-public>
                         </div>
                     </lightning-card>
                 </template>
@@ -1028,12 +1056,12 @@ export default class DoiPublicApdDetail extends LightningElement {
                 <!-- Public Documents -->
                 <lightning-card title="Public Documents" icon-name="standard:document" class="slds-m-top_medium">
                     <div class="slds-p-horizontal_small">
-                        <c-doi-public-document-list
+                        <c-Nuvi-public-document-list
                             documents={publicDocuments}
                             show-preview="true"
                             allow-download="true"
                             document-types="EA,FONSI,Decision_Record">
-                        </c-doi-public-document-list>
+                        </c-Nuvi-public-document-list>
                     </div>
                 </lightning-card>
                 
@@ -1041,12 +1069,12 @@ export default class DoiPublicApdDetail extends LightningElement {
                 <template if:true={showPublicComments}>
                     <lightning-card title="Public Comment Period" icon-name="standard:feedback" class="slds-m-top_medium">
                         <div class="slds-p-horizontal_small">
-                            <c-doi-public-comment-section
+                            <c-Nuvi-public-comment-section
                                 apd-id={recordId}
                                 allow-new-comments={acceptingComments}
                                 show-comment-count="true"
                                 moderated="true">
-                            </c-doi-public-comment-section>
+                            </c-Nuvi-public-comment-section>
                         </div>
                     </lightning-card>
                 </template>
@@ -1059,24 +1087,24 @@ export default class DoiPublicApdDetail extends LightningElement {
                 <!-- Processing Timeline -->
                 <lightning-card title="Processing Timeline" icon-name="utility:timeline">
                     <div class="slds-p-horizontal_small">
-                        <c-doi-public-timeline
+                        <c-Nuvi-public-timeline
                             timeline-data={timelineData}
                             show-estimates="true"
                             compact-view="true">
-                        </c-doi-public-timeline>
+                        </c-Nuvi-public-timeline>
                     </div>
                 </lightning-card>
                 
                 <!-- Location Map (General Area Only) -->
                 <lightning-card title="General Location" icon-name="utility:location" class="slds-m-top_medium">
                     <div class="slds-p-horizontal_small">
-                        <c-doi-general-location-map
+                        <c-Nuvi-general-location-map
                             state={apdData.state}
                             county={apdData.county}
                             zoom-level="8"
                             show-exact-location="false"
                             height="300px">
-                        </c-doi-general-location-map>
+                        </c-Nuvi-general-location-map>
                     </div>
                 </lightning-card>
                 
@@ -1152,45 +1180,45 @@ Personalization: Dynamic content based on operator
     <div class="slds-grid slds-gutters slds-wrap slds-m-bottom_large">
         
         <div class="slds-col slds-size_3-of-12">
-            <c-doi-status-card
+            <c-Nuvi-status-card
                 title="Active Applications"
                 count={activeCount}
                 icon="custom:custom63"
                 variant="info"
                 onclick={handleViewActive}>
-            </c-doi-status-card>
+            </c-Nuvi-status-card>
         </div>
         
         <div class="slds-col slds-size_3-of-12">
-            <c-doi-status-card
+            <c-Nuvi-status-card
                 title="Pending Documents"
                 count={pendingDocsCount}
                 icon="standard:document"
                 variant="warning"
                 urgent={hasPendingDocs}
                 onclick={handleViewPending}>
-            </c-doi-status-card>
+            </c-Nuvi-status-card>
         </div>
         
         <div class="slds-col slds-size_3-of-12">
-            <c-doi-status-card
+            <c-Nuvi-status-card
                 title="Approved This Year"
                 count={approvedCount}
                 icon="utility:success"
                 variant="success"
                 onclick={handleViewApproved}>
-            </c-doi-status-card>
+            </c-Nuvi-status-card>
         </div>
         
         <div class="slds-col slds-size_3-of-12">
-            <c-doi-status-card
+            <c-Nuvi-status-card
                 title="Compliance Items"
                 count={complianceCount}
                 icon="utility:warning"
                 variant="error"
                 urgent={hasComplianceIssues}
                 onclick={handleViewCompliance}>
-            </c-doi-status-card>
+            </c-Nuvi-status-card>
         </div>
         
     </div>
@@ -1224,26 +1252,26 @@ Personalization: Dynamic content based on operator
                 </div>
                 
                 <div class="slds-p-horizontal_small">
-                    <c-doi-operator-application-list
+                    <c-Nuvi-operator-application-list
                         operator-id={operatorId}
                         max-records="10"
                         show-actions="true"
                         sortable="true"
                         filterable="true">
-                    </c-doi-operator-application-list>
+                    </c-Nuvi-operator-application-list>
                 </div>
             </lightning-card>
             
             <!-- Recent Activity Feed -->
             <lightning-card title="Recent Activity" icon-name="utility:activity" class="slds-m-top_medium">
                 <div class="slds-p-horizontal_small">
-                    <c-doi-activity-timeline
+                    <c-Nuvi-activity-timeline
                         operator-id={operatorId}
                         activity-limit="15"
                         show-system-activities="true"
                         show-user-activities="true"
                         time-range="30">
-                    </c-doi-activity-timeline>
+                    </c-Nuvi-activity-timeline>
                 </div>
             </lightning-card>
             
@@ -1304,24 +1332,24 @@ Personalization: Dynamic content based on operator
             <!-- Important Notifications -->
             <lightning-card title="Important Notices" icon-name="utility:notification" class="slds-m-top_medium">
                 <div class="slds-p-horizontal_small">
-                    <c-doi-operator-notifications
+                    <c-Nuvi-operator-notifications
                         operator-id={operatorId}
                         notification-types="deadline,compliance,system"
                         max-notifications="5"
                         auto-refresh="true">
-                    </c-doi-operator-notifications>
+                    </c-Nuvi-operator-notifications>
                 </div>
             </lightning-card>
             
             <!-- Compliance Status -->
             <lightning-card title="Compliance Overview" icon-name="utility:shield" class="slds-m-top_medium">
                 <div class="slds-p-horizontal_small">
-                    <c-doi-compliance-status
+                    <c-Nuvi-compliance-status
                         operator-id={operatorId}
                         show-upcoming-deadlines="true"
                         show-overdue-items="true"
                         alert-on-issues="true">
-                    </c-doi-compliance-status>
+                    </c-Nuvi-compliance-status>
                 </div>
             </lightning-card>
             
@@ -1374,7 +1402,7 @@ export default class DoiOperatorApdWizard extends LightningElement {
     
     initializeDocumentManager() {
         // Initialize document management with APD-specific structure
-        this.documentManager = this.template.querySelector('c-doi-apd-document-manager');
+        this.documentManager = this.template.querySelector('c-Nuvi-apd-document-manager');
         if (this.documentManager) {
             this.documentManager.initialize({
                 recordType: 'APD_Application',
@@ -1528,7 +1556,7 @@ export default class DoiPublicCommentSystem extends LightningElement {
 #### Public Portal Security
 ```apex
 // Public User Profile Configuration
-Profile: DOI Public Portal User
+Profile: Nuvi Public Portal User
 
 Object Permissions:
 - APD_Application__c: Read (public records only)
@@ -1555,7 +1583,7 @@ Session Settings: 2-hour timeout for anonymous users
 #### Operator Portal Security
 ```apex
 // Operator Portal User Profile
-Profile: DOI Operator Portal User
+Profile: Nuvi Operator Portal User
 
 Object Permissions:
 - APD_Application__c: Read (own records), Create
@@ -1715,8 +1743,8 @@ Criteria:
 ```json
 // manifest.json for PWA capabilities
 {
-  "name": "DOI Permits Portal",
-  "short_name": "DOI Permits",
+  "name": "Nuvi Permits Portal",
+  "short_name": "Nuvi Permits",
   "description": "Department of Interior Oil & Gas Permits",
   "start_url": "/",
   "display": "standalone",
@@ -1748,13 +1776,13 @@ Criteria:
 ```javascript
 // Service Worker for Offline Capability
 // sw.js
-const CACHE_NAME = 'doi-permits-v1';
+const CACHE_NAME = 'Nuvi-permits-v1';
 const urlsToCache = [
   '/',
   '/search',
   '/static/css/main.css',
   '/static/js/main.js',
-  '/static/images/doi-logo.png'
+  '/static/images/Nuvi-logo.png'
 ];
 
 self.addEventListener('install', event => {
@@ -1830,7 +1858,7 @@ class DOIPerformanceMonitor {
     respect_dnt: true,
     cookie_expires: 0, // Session only
     
-    // Custom dimensions for DOI tracking
+    // Custom dimensions for Nuvi tracking
     custom_map: {
       'custom_dimension_1': 'user_type',     // Public, Operator, Government
       'custom_dimension_2': 'permit_type',   // APD, etc.
@@ -2532,3 +2560,6 @@ This comprehensive Experience Cloud guide provides complete configuration instru
 *Guide Version: 1.0*  
 *Last Updated: September 3, 2025*  
 *Compliance: Section 508, WCAG 2.1 AA, Government Web Standards*
+
+
+

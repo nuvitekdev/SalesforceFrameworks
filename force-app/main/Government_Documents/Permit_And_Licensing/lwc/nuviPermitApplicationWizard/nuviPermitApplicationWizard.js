@@ -15,6 +15,8 @@ import getLLMConfigurations from '@salesforce/apex/LLMControllerRefactored.getLL
 // Import document upload
 import uploadPermitFile from '@salesforce/apex/Nuvi_Permit_DocumentController.uploadPermitFile';
 import saveFromWizard from '@salesforce/apex/APDApplicationService.saveFromWizard';
+import getFormConfiguration from '@salesforce/apex/Nuvi_Permit_FormController.getFormConfiguration';
+import calculateApplicationFee from '@salesforce/apex/Nuvi_Permit_FormController.calculateApplicationFee';
 
 export default class NuviPermitApplicationWizard extends NavigationMixin(LightningElement) {
     // Wizard state management
@@ -104,6 +106,17 @@ export default class NuviPermitApplicationWizard extends NavigationMixin(Lightni
     @track estimatedProcessingTime = '90-120 days';
     @track requiredCoordinatingAgencies = [];
 
+    // Fee configuration
+    @track baseFee = 0;
+    get feeDisplay() {
+        try {
+            const amount = this.baseFee || this.permitFormData.feeAmount || 0;
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        } catch (e) {
+            return `$${this.baseFee || this.permitFormData.feeAmount || 0}`;
+        }
+    }
+
     // Wire methods
     @wire(getLLMConfigurations)
     wiredLLMConfigs(result) {
@@ -114,6 +127,27 @@ export default class NuviPermitApplicationWizard extends NavigationMixin(Lightni
             }));
         } else if (result.error) {
             console.error('Error loading LLM configurations:', result.error);
+        }
+    }
+
+    connectedCallback() {
+        this.loadFeeConfiguration();
+    }
+
+    async loadFeeConfiguration() {
+        try {
+            this.isLoading = true;
+            const cfg = await getFormConfiguration({ permitTypeName: 'DRILLING', agencyType: 'FEDERAL' });
+            if (cfg && cfg.feeCalculation && cfg.feeCalculation.baseFee) {
+                this.baseFee = cfg.feeCalculation.baseFee;
+            }
+            if (cfg && cfg.steps) {
+                this.metadataSteps = cfg.steps;
+            }
+        } catch (e) {
+            console.error('Fee configuration load error', e);
+        } finally {
+            this.isLoading = false;
         }
     }
 
@@ -420,6 +454,36 @@ export default class NuviPermitApplicationWizard extends NavigationMixin(Lightni
         if (['latitude', 'longitude', 'legalDescription'].includes(fieldName)) {
             this.debounceLocationAnalysis();
         }
+
+        // Recalculate fee when priority or core fields change
+        if (['priorityLevel', 'padSizeAcres'].includes(fieldName)) {
+            this.recalculateFee();
+        }
+    }
+
+    // Dynamic metadata support for Step 1
+    metadataSteps = [];
+    get useDynamicStep1() {
+        return (this.step1Fields && this.step1Fields.length > 0);
+    }
+    get step1Fields() {
+        const steps = this.metadataSteps || [];
+        const s = steps.find(x => x && x.name === 'Operator Information');
+        return s && s.fields ? s.fields : [];
+    }
+    get staticStep1Style() {
+        return this.useDynamicStep1 ? 'display:none;' : '';
+    }
+    handleDynamicFieldChange(event) {
+        const { name, value } = event.detail || {};
+        if (!name) return;
+        this.permitFormData[name] = value;
+        if (['priorityLevel', 'padSizeAcres'].includes(name)) {
+            this.recalculateFee();
+        }
+        if (['latitude', 'longitude', 'legalDescription'].includes(name)) {
+            this.debounceLocationAnalysis();
+        }
     }
 
     // File upload handlers
@@ -609,6 +673,119 @@ export default class NuviPermitApplicationWizard extends NavigationMixin(Lightni
         return { Id: saveResp.applicationId };
     }
 
+    // Dynamic metadata support for Steps 1–5
+    metadataSteps = [];
+    // Step 1
+    get useDynamicStep1() {
+        return (this.step1Fields && this.step1Fields.length > 0);
+    }
+    get step1Fields() {
+        const steps = this.metadataSteps || [];
+        const s = steps.find(x => x && x.name === 'Operator Information');
+        return s && s.fields ? s.fields : [];
+    }
+    get staticStep1Style() {
+        return this.useDynamicStep1 ? 'display:none;' : '';
+    }
+    // Step 2
+    get useDynamicStep2() {
+        return (this.step2Fields && this.step2Fields.length > 0);
+    }
+    get step2Fields() {
+        const steps = this.metadataSteps || [];
+        const s = steps.find(x => x && (x.name === 'Lease & Location' || x.name === 'Lease \u0026 Location'));
+        return s && s.fields ? s.fields : [];
+    }
+    get staticStep2Style() {
+        return this.useDynamicStep2 ? 'display:none;' : '';
+    }
+    // Step 3
+    get useDynamicStep3() {
+        return (this.step3Fields && this.step3Fields.length > 0);
+    }
+    get step3Fields() {
+        const steps = this.metadataSteps || [];
+        const s = steps.find(x => x && x.name && x.name.toLowerCase().includes('well'));
+        return s && s.fields ? s.fields : [];
+    }
+    get staticStep3Style() {
+        return this.useDynamicStep3 ? 'display:none;' : '';
+    }
+    // Step 4
+    get useDynamicStep4() {
+        return (this.step4Fields && this.step4Fields.length > 0);
+    }
+    get step4Fields() {
+        const steps = this.metadataSteps || [];
+        const s = steps.find(x => x && x.name && x.name.toLowerCase().includes('drilling'));
+        return s && s.fields ? s.fields : [];
+    }
+    get staticStep4Style() {
+        return this.useDynamicStep4 ? 'display:none;' : '';
+    }
+    // Step 5
+    get useDynamicStep5() {
+        return (this.step5Fields && this.step5Fields.length > 0);
+    }
+    get step5Fields() {
+        const steps = this.metadataSteps || [];
+        const s = steps.find(x => x && x.name && (x.name.includes('SUPO') || x.name.toLowerCase().includes('surface')));
+        return s && s.fields ? s.fields : [];
+    }
+    get staticStep5Style() {
+        return this.useDynamicStep5 ? 'display:none;' : '';
+    }
+
+    // Step 6 (Supporting)
+    get useDynamicStep6() {
+        return (this.step6Fields && this.step6Fields.length > 0);
+    }
+    get step6Fields() {
+        const steps = this.metadataSteps || [];
+        const s = steps.find(x => x && x.name && x.name.toLowerCase().includes('support'));
+        return s && s.fields ? s.fields : [];
+    }
+    get staticStep6Style() {
+        return this.useDynamicStep6 ? 'display:none;' : '';
+    }
+
+    // Step 7 (Documents)
+    get useDynamicStep7() {
+        return (this.step7Fields && this.step7Fields.length > 0);
+    }
+    get step7Fields() {
+        const steps = this.metadataSteps || [];
+        const s = steps.find(x => x && x.name && x.name.toLowerCase().includes('document'));
+        return s && s.fields ? s.fields : [];
+    }
+    get staticStep7Style() {
+        return this.useDynamicStep7 ? 'display:none;' : '';
+    }
+
+    // Step 8 (Review & Submit)
+    get useDynamicStep8() {
+        return (this.step8Fields && this.step8Fields.length > 0);
+    }
+    get step8Fields() {
+        const steps = this.metadataSteps || [];
+        const s = steps.find(x => x && x.name && x.name.toLowerCase().includes('review'));
+        return s && s.fields ? s.fields : [];
+    }
+    get staticStep8Style() {
+        return this.useDynamicStep8 ? 'display:none;' : '';
+    }
+    handleDynamicFieldChange(event) {
+        const { name, value } = event.detail || {};
+        if (!name) return;
+        this.permitFormData[name] = value;
+        if (['priorityLevel', 'padSizeAcres'].includes(name)) {
+            this.recalculateFee();
+        }
+        if (['latitude', 'longitude', 'legalDescription'].includes(name)) {
+            this.debounceLocationAnalysis();
+        }
+    }
+
     // Validation methods
     isStep1Valid() {
         return this.permitFormData.operatorName && 
@@ -691,6 +868,19 @@ export default class NuviPermitApplicationWizard extends NavigationMixin(Lightni
         if (this.permitFormData.priorityLevel === 'Emergency') baseTime = Math.max(5, baseTime * 0.2);
         
         return `${Math.round(baseTime)}-${Math.round(baseTime * 1.3)} days`;
+    }
+
+    async recalculateFee() {
+        try {
+            const total = await calculateApplicationFee({
+                permitTypeName: 'DRILLING',
+                formData: JSON.stringify(this.permitFormData),
+                priorityLevel: this.permitFormData.priorityLevel || 'Standard'
+            });
+            this.baseFee = total;
+        } catch (e) {
+            console.error('Fee calculation error', e);
+        }
     }
 
     fileToBase64(file) {

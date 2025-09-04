@@ -13,7 +13,7 @@ import { loadScript } from 'lightning/platformResourceLoader';
 import PDF_LIB from '@salesforce/resourceUrl/pdf_lib';
 import SIGNATURE_PAD from '@salesforce/resourceUrl/signature_pad';
 
-export default class DoiApdSignatureManager extends NavigationMixin(LightningElement) {
+export default class NuviPermitSignatureManager extends NavigationMixin(LightningElement) {
     // API properties
     @api recordId; // APD Application ID
     @api documentType = 'INITIAL_REVIEW'; // INITIAL_REVIEW, EA_DOCUMENT, FONSI, APD_APPROVAL, OPERATOR_ACK, INSPECTION_REPORT
@@ -514,3 +514,4 @@ export default class DoiApdSignatureManager extends NavigationMixin(LightningEle
         });
     }
 }
+

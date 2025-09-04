@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Bond_Type__c</fullName>
+    <description>Type of well bond coverage</description>
+    <externalId>false</externalId>
+    <label>Bond Type</label>
+    <required>true</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Nationwide</fullName>
+                <default>false</default>
+                <label>Nationwide</label>
+            </value>
+            <value>
+                <fullName>Statewide</fullName>
+                <default>false</default>
+                <label>Statewide</label>
+            </value>
+            <value>
+                <fullName>Lease</fullName>
+                <default>false</default>
+                <label>Lease</label>
+            </value>
+            <value>
+                <fullName>Individual Well</fullName>
+                <default>false</default>
+                <label>Individual Well</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

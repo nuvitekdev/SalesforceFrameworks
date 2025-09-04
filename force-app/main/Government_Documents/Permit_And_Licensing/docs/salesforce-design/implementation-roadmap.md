@@ -1,8 +1,8 @@
-# DOI APD System - Implementation Roadmap
+# Nuvi APD System - Implementation Roadmap
 
 ## Executive Summary
 
-This comprehensive implementation roadmap outlines the phased deployment of the DOI APD system over 12 months, delivering a complete, enterprise-grade solution that transforms permit processing efficiency while maintaining strict compliance with federal regulations and security requirements.
+This comprehensive implementation roadmap outlines the phased deployment of the Nuvi APD system over 12 months, delivering a complete, enterprise-grade solution that transforms permit processing efficiency while maintaining strict compliance with federal regulations and security requirements.
 
 ## Strategic Implementation Approach
 
@@ -65,7 +65,7 @@ Phase 4 (Months 10-12): Advanced Analytics & Optimization
 - [ ] **Salesforce Org Configuration**
   - Production org provisioning with Enterprise+ licensing
   - Sandbox environment setup (Development, Testing, UAT, Training)
-  - SSO integration with DOI identity providers
+  - SSO integration with Nuvi identity providers
   - PIV/CAC authentication configuration
   - VPN and network security configuration
 
@@ -219,7 +219,7 @@ Phase 4 (Months 10-12): Advanced Analytics & Optimization
   - Monthly financial reporting dashboard
   - Audit trail maintenance for all transactions
   - Exception handling and manual review processes
-  - Integration with DOI financial systems
+  - Integration with Nuvi financial systems
 
 **Success Criteria:**
 - Payment processing completes within 2 minutes end-to-end
@@ -273,7 +273,7 @@ Phase 4 (Months 10-12): Advanced Analytics & Optimization
   ```
 
 - [ ] **Custom AI Prompt Development**
-  - DOI-specific regulatory knowledge integration
+  - Nuvi-specific regulatory knowledge integration
   - Form 3160-3 validation prompt templates
   - Environmental impact assessment prompts
   - Technical review assistance prompts
@@ -633,7 +633,7 @@ Phase 4 (Months 10-12): Advanced Analytics & Optimization
 #### Week 37-38: Next-Generation AI Capabilities
 **Technical Deliverables:**
 - [ ] **Advanced AI Model Deployment**
-  - Custom machine learning models trained on DOI-specific data
+  - Custom machine learning models trained on Nuvi-specific data
   - Natural language processing for document analysis
   - Computer vision for map and diagram analysis
   - Predictive modeling for environmental impact assessment
@@ -910,8 +910,8 @@ Risk Monitoring Schedule:
 Escalation Procedures:
 ├─ Level 1: Project Manager (operational issues)
 ├─ Level 2: Program Director (significant risks)
-├─ Level 3: DOI CIO (critical issues)
-├─ Level 4: DOI Leadership (crisis situations)
+├─ Level 3: Nuvi CIO (critical issues)
+├─ Level 4: Nuvi Leadership (crisis situations)
 └─ External: OMB/Congress (major program impacts)
 
 Risk Response Strategies:
@@ -1133,9 +1133,10 @@ Performance Management:
 ---
 
 **Document Status**: Final Implementation Plan  
-**Approval Required**: DOI CIO, Program Director, Steering Committee  
+**Approval Required**: Nuvi CIO, Program Director, Steering Committee  
 **Implementation Start Date**: January 1, 2026  
-**Executive Sponsor**: DOI Deputy Secretary for Policy and Programs  
+**Executive Sponsor**: Nuvi Deputy Secretary for Policy and Programs  
 **Program Manager**: [To be assigned]  
-**Technical Lead**: DOI Chief Data Officer  
+**Technical Lead**: Nuvi Chief Data Officer  
 **Business Lead**: BLM Assistant Director for Minerals and Realty
+

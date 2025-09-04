@@ -2,7 +2,7 @@
 
 ## Overview
 
-Advanced AI-powered document processing and analysis services for DOI permit applications. Leverages machine learning and natural language processing to automate document validation, content extraction, risk assessment, and compliance checking.
+Advanced AI-powered document processing and analysis services for Nuvi permit applications. Leverages machine learning and natural language processing to automate document validation, content extraction, risk assessment, and compliance checking.
 
 ## Purpose
 
@@ -130,7 +130,7 @@ Total Risk Score = (Environmental * 0.4) + (Technical * 0.3) + (Regulatory * 0.2
 - **Salesforce Einstein**: Platform-native AI capabilities
 
 ### Custom Models
-- DOI-specific terminology models
+- Nuvi-specific terminology models
 - Regulatory compliance classifiers
 - Risk prediction algorithms
 - Document type categorization
@@ -269,3 +269,4 @@ DOI_PAL_AI_Model_Config__c config = new DOI_PAL_AI_Model_Config__c(
 - Computer vision for maps/diagrams
 - Advanced regulatory intelligence
 - Automated workflow optimization
+
