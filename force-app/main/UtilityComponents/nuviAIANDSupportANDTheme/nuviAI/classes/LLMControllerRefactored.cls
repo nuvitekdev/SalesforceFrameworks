@@ -33,7 +33,7 @@ public with sharing class LLMControllerRefactored {
         String contextPrompt
     ) {
         try {
-            validateInputs(prompt, selectedLLM);
+            validateInputs(prompt, selectedLLM, operation);
             
             LLM_Configuration__mdt config = getLLMConfig(selectedLLM);
             
@@ -267,9 +267,47 @@ public with sharing class LLMControllerRefactored {
                 0.3
             );
             
-            return parseExtractedFields(aiResponse, targetFieldApiNames, recordId);
+            return buildFieldExtractionResult(recordId, targetFieldApiNames, aiResponse);
         } catch (Exception e) {
             throw new AuraHandledException('Error extracting fields: ' + e.getMessage());
+        }
+    }
+
+    @AuraEnabled
+    public static Map<String, Object> extractFieldsFromAnalyzedContent(
+        String recordId,
+        List<String> analyzedDocumentContents,
+        List<String> targetFieldApiNames,
+        String selectedLLM
+    ) {
+        try {
+            if (String.isBlank(recordId)) {
+                throw new AuraHandledException('Record ID is required');
+            }
+            if (analyzedDocumentContents == null || analyzedDocumentContents.isEmpty()) {
+                throw new AuraHandledException('No analyzed content provided');
+            }
+            if (targetFieldApiNames == null || targetFieldApiNames.isEmpty()) {
+                throw new AuraHandledException('No fields selected for extraction');
+            }
+
+            LLM_Configuration__mdt config = getLLMConfig(selectedLLM);
+            String extractionPrompt = LLMPromptManager.getPromptTemplate('FieldExtraction', 'fieldextraction');
+            extractionPrompt += 'Requested Fields: ' + String.join(targetFieldApiNames, ', ') + '\n\n';
+            extractionPrompt += 'Document Content (Analyzed):\n' + String.join(analyzedDocumentContents, '\n\n');
+
+            String aiResponse = LLMHttpService.makeLLMCall(
+                config.Provider__c,
+                config.Model_Name__c,
+                config.API_Key__c,
+                extractionPrompt,
+                4000,
+                0.3
+            );
+
+            return buildFieldExtractionResult(recordId, targetFieldApiNames, aiResponse);
+        } catch (Exception e) {
+            throw new AuraHandledException('Error extracting fields from analyzed content: ' + e.getMessage());
         }
     }
     
@@ -287,7 +325,28 @@ public with sharing class LLMControllerRefactored {
             
             for (String fieldName : fieldValues.keySet()) {
                 if (hasFieldAccess(objectName, fieldName, 'UPDATE')) {
-                    record.put(fieldName, fieldValues.get(fieldName));
+                    Object value = fieldValues.get(fieldName);
+                    try {
+                        Schema.DescribeFieldResult fieldDescribe = Schema.getGlobalDescribe().get(objectName).getDescribe().fields.getMap().get(fieldName).getDescribe();
+                        Schema.DisplayType fieldType = fieldDescribe.getType();
+                        if (value == null) {
+                            record.put(fieldName, null);
+                        } else if (fieldType == Schema.DisplayType.DATE) {
+                            record.put(fieldName, (value instanceof Date) ? value : Date.valueOf(String.valueOf(value)));
+                        } else if (fieldType == Schema.DisplayType.DATETIME) {
+                            record.put(fieldName, (value instanceof Datetime) ? value : Datetime.valueOf(String.valueOf(value)));
+                        } else if (fieldType == Schema.DisplayType.BOOLEAN) {
+                            record.put(fieldName, (value instanceof Boolean) ? value : Boolean.valueOf(String.valueOf(value)));
+                        } else if (fieldType == Schema.DisplayType.CURRENCY || fieldType == Schema.DisplayType.DOUBLE) {
+                            record.put(fieldName, (value instanceof Decimal) ? value : Decimal.valueOf(String.valueOf(value)));
+                        } else if (fieldType == Schema.DisplayType.INTEGER) {
+                            record.put(fieldName, (value instanceof Integer) ? value : Integer.valueOf(String.valueOf(value)));
+                        } else {
+                            record.put(fieldName, String.valueOf(value));
+                        }
+                    } catch (Exception typeEx) {
+                        throw new AuraHandledException('Invalid value format for field ' + fieldName + ': ' + typeEx.getMessage());
+                    }
                 }
             }
             
@@ -298,8 +357,19 @@ public with sharing class LLMControllerRefactored {
     }
     
     // Private helper methods
-    private static void validateInputs(String prompt, String selectedLLM) {
-        if (String.isBlank(prompt)) {
+    private static void validateInputs(String prompt, String selectedLLM, String operation) {
+        // Allow empty prompt for certain operations that rely on context
+        // e.g., summarize/report/anomaly/documentanalysis/fieldextraction/imageanalysis
+        Boolean promptRequired = true;
+        if (String.isNotBlank(operation)) {
+            String op = operation.toLowerCase();
+            // Only strictly require a prompt for ad-hoc questions
+            if (op != 'question' && op != 'ask') {
+                promptRequired = false;
+            }
+        }
+
+        if (promptRequired && String.isBlank(prompt)) {
             throw new AuraHandledException('Please enter a prompt');
         }
         if (String.isBlank(selectedLLM)) {
@@ -396,15 +466,7 @@ public with sharing class LLMControllerRefactored {
         return imageData;
     }
     
-    private static String processWithVisionAPI(
-        LLM_Configuration__mdt config,
-        String prompt,
-        List<Map<String, Object>> imageData
-    ) {
-        // Implementation for vision API processing
-        // This would handle the specific API calls for image analysis
-        return 'Image analysis result';
-    }
+    // Removed unused placeholder processWithVisionAPI overload (Object map)
     
     private static List<String> extractPdfContents(List<String> contentDocumentIds) {
         // Implementation for PDF content extraction
@@ -446,18 +508,80 @@ public with sharing class LLMControllerRefactored {
         }
     }
     
-    private static Map<String, Object> parseExtractedFields(
-        String aiResponse,
-        List<String> targetFieldApiNames,
-        String recordId
-    ) {
-        // Implementation for parsing AI response into field values
-        Map<String, Object> result = new Map<String, Object>{
-            'fields' => new List<Map<String, Object>>(),
-            'recordId' => recordId
-        };
-        
-        return result;
+    private static Map<String, Object> buildFieldExtractionResult(String recordId, List<String> targetFieldApiNames, String aiResponse) {
+        try {
+            Id recId = Id.valueOf(recordId);
+            String objectName = recId.getSObjectType().getDescribe().getName();
+            Map<String, Schema.SObjectField> allFieldsMap = Schema.getGlobalDescribe().get(objectName).getDescribe().fields.getMap();
+
+            // Prepare base map with metadata and current values
+            Map<String, Map<String, Object>> fieldsData = new Map<String, Map<String, Object>>();
+            List<String> fieldsToQuery = new List<String>();
+            for (String fieldName : targetFieldApiNames) {
+                if (allFieldsMap.containsKey(fieldName)) {
+                    Schema.DescribeFieldResult dfr = allFieldsMap.get(fieldName).getDescribe();
+                    if (dfr.isAccessible()) {
+                        Map<String, Object> fieldInfo = new Map<String, Object>{
+                            'apiName' => fieldName,
+                            'label' => dfr.getLabel(),
+                            'type' => dfr.getType().name(),
+                            'currentValue' => null,
+                            'suggestedValues' => new List<String>()
+                        };
+                        fieldsData.put(fieldName, fieldInfo);
+                        fieldsToQuery.add(fieldName);
+                    }
+                }
+            }
+            if (!fieldsToQuery.isEmpty()) {
+                String soql = 'SELECT ' + String.join(fieldsToQuery, ',') + ' FROM ' + objectName + ' WHERE Id = :recId LIMIT 1';
+                SObject rec = Database.query(soql);
+                for (String fn : fieldsToQuery) {
+                    if (fieldsData.containsKey(fn)) {
+                        fieldsData.get(fn).put('currentValue', rec.get(fn));
+                    }
+                }
+            }
+
+            // Clean and parse AI JSON into suggestions map
+            String cleaned = aiResponse;
+            if (cleaned == null) cleaned = '';
+            if (cleaned.startsWith('```json')) {
+                cleaned = cleaned.substring('```json'.length());
+            }
+            if (cleaned.endsWith('```')) {
+                cleaned = cleaned.substring(0, cleaned.length() - 3);
+            }
+            cleaned = cleaned.trim();
+
+            Map<String, Object> aiSuggestions;
+            try {
+                aiSuggestions = (Map<String, Object>) JSON.deserializeUntyped(cleaned);
+            } catch (Exception je) {
+                aiSuggestions = new Map<String, Object>();
+            }
+
+            if (aiSuggestions != null) {
+                for (String fieldName : targetFieldApiNames) {
+                    if (fieldsData.containsKey(fieldName) && aiSuggestions.containsKey(fieldName)) {
+                        Object raw = aiSuggestions.get(fieldName);
+                        if (raw instanceof List<Object>) {
+                            List<String> sugg = new List<String>();
+                            for (Object o : (List<Object>) raw) {
+                                if (o != null) sugg.add(String.valueOf(o));
+                            }
+                            fieldsData.get(fieldName).put('suggestedValues', sugg);
+                        } else if (raw instanceof String) {
+                            fieldsData.get(fieldName).put('suggestedValues', new List<String>{ (String) raw });
+                        }
+                    }
+                }
+            }
+
+            return new Map<String, Object>{ 'fields' => fieldsData, 'recordId' => recordId };
+        } catch (Exception e) {
+            throw new AuraHandledException('Error building extraction result: ' + e.getMessage());
+        }
     }
     
     @TestVisible

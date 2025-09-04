@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>BLM_Field_Office__c</fullName>
+    <deprecated>false</deprecated>
+    <description>The Bureau of Land Management field office with jurisdiction over the proposed drilling location.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Select the BLM field office responsible for reviewing this APD based on the drilling location.</inlineHelpText>
+    <label>BLM Field Office</label>
+    <required>true</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>true</sorted>
+            <value>
+                <fullName>Bakersfield Field Office</fullName>
+                <default>false</default>
+                <label>Bakersfield Field Office</label>
+            </value>
+            <value>
+                <fullName>Buffalo Field Office</fullName>
+                <default>false</default>
+                <label>Buffalo Field Office</label>
+            </value>
+            <value>
+                <fullName>Carlsbad Field Office</fullName>
+                <default>false</default>
+                <label>Carlsbad Field Office</label>
+            </value>
+            <value>
+                <fullName>Casper Field Office</fullName>
+                <default>false</default>
+                <label>Casper Field Office</label>
+            </value>
+            <value>
+                <fullName>Colorado River Valley Field Office</fullName>
+                <default>false</default>
+                <label>Colorado River Valley Field Office</label>
+            </value>
+            <value>
+                <fullName>Grand Junction Field Office</fullName>
+                <default>false</default>
+                <label>Grand Junction Field Office</label>
+            </value>
+            <value>
+                <fullName>Little Snake Field Office</fullName>
+                <default>false</default>
+                <label>Little Snake Field Office</label>
+            </value>
+            <value>
+                <fullName>Miles City Field Office</fullName>
+                <default>false</default>
+                <label>Miles City Field Office</label>
+            </value>
+            <value>
+                <fullName>Rawlins Field Office</fullName>
+                <default>false</default>
+                <label>Rawlins Field Office</label>
+            </value>
+            <value>
+                <fullName>White River Field Office</fullName>
+                <default>false</default>
+                <label>White River Field Office</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>APD Federal</label>
+    <protected>false</protected>
+    <values>
+        <field>Agency_Type__c</field>
+        <value xsi:type="xsd:string">FEDERAL</value>
+    </values>
+    <values>
+        <field>Permit_Type__c</field>
+        <value xsi:type="xsd:string">DRILLING</value>
+    </values>
+    <values>
+        <field>Steps_JSON__c</field>
+        <value xsi:type="xsd:string">{"steps":[{"name":"Operator Information","stepNumber":1,"fields":[{"name":"operatorName","type":"text","label":"Operator Name","required":true},{"name":"operatorAddress","type":"text","label":"Address","required":true},{"name":"operatorPhone","type":"tel","label":"Phone","required":true},{"name":"operatorEmail","type":"email","label":"Email","required":true},{"name":"operatorCode","type":"text","label":"Operator Code","required":false}]},{"name":"Lease &amp; Location","stepNumber":2,"fields":[{"name":"leaseNumber","type":"text","label":"Lease Number","required":true},{"name":"meridian","type":"text","label":"Meridian","required":false},{"name":"township","type":"text","label":"Township","required":false},{"name":"range","type":"text","label":"Range","required":false},{"name":"section","type":"text","label":"Section","required":false},{"name":"legalDescription","type":"textarea","label":"Legal Description (PLSS)","required":true},{"name":"latitude","type":"number","label":"Latitude","required":true},{"name":"longitude","type":"number","label":"Longitude","required":true},{"name":"county","type":"text","label":"County","required":false},{"name":"state","type":"text","label":"State","required":true}]},{"name":"Well Information","stepNumber":3,"fields":[{"name":"wellName","type":"text","label":"Well Name","required":true},{"name":"apiNumber","type":"text","label":"API Number","required":false},{"name":"wellType","type":"picklist","label":"Well Type","required":true,"options":["Oil","Gas","Oil &amp; Gas","Injection","Disposal","Observation","Water Supply","Geothermal","CBM"]},{"name":"totalDepth","type":"number","label":"Proposed MD (ft)","required":true}]},{"name":"Drilling Plan","stepNumber":4,"fields":[{"name":"wellboreDesign","type":"textarea","label":"Wellbore Design","required":false},{"name":"casingProgram","type":"textarea","label":"Casing Program","required":true},{"name":"mudProgram","type":"textarea","label":"Mud Program","required":true},{"name":"blowoutPreventionEquipment","type":"textarea","label":"BOP Program","required":true},{"name":"expectedFormationPressures","type":"textarea","label":"Expected Formation Pressures","required":false},{"name":"expectedFreshwaterZones","type":"textarea","label":"Expected Freshwater Zones","required":false},{"name":"expectedLostCirculationZones","type":"textarea","label":"Expected Lost Circulation Zones","required":false}]},{"name":"SUPO","stepNumber":5,"fields":[{"name":"wellPadLayout","type":"textarea","label":"Well Pad Layout","required":false},{"name":"accessRoads","type":"textarea","label":"Access Roads","required":false},{"name":"reclamationPlan","type":"textarea","label":"Reclamation Plan","required":true},{"name":"waterSourceDetails","type":"textarea","label":"Water Source","required":true}]},{"name":"Supporting","stepNumber":6,"fields":[{"name":"bondingType","type":"text","label":"Bond Type","required":false},{"name":"culturalResourcesRequired","type":"checkbox","label":"Cultural Resources Survey Required?","required":false}]},{"name":"Documents","stepNumber":7,"fields":[]},{"name":"Review &amp; Submit","stepNumber":8,"fields":[{"name":"priorityLevel","type":"picklist","label":"Priority","required":false,"options":["Standard","Expedited","Emergency"]},{"name":"expectedSpudDate","type":"date","label":"Expected Spud Date","required":false}]}]}</value>
+    </values>
+    <values>
+        <field>Required_Documents_JSON__c</field>
+        <value xsi:type="xsd:string">[{"type":"APD_FORM","name":"APD Application Form"},{"type":"WELL_PLAN","name":"Well Plan"}]</value>
+    </values>
+    <values>
+        <field>Optional_Documents_JSON__c</field>
+        <value xsi:type="xsd:string">[{"type":"REFERENCE_DOC","name":"Reference Document"}]</value>
+    </values>
+    <values>
+        <field>Fee_Rules_JSON__c</field>
+        <value xsi:type="xsd:string">{"rules":[{"field":"padSizeAcres","threshold":2,"rate":500,"description":"Additional fee per acre over 2"}]}</value>
+    </values>
+</CustomMetadata>

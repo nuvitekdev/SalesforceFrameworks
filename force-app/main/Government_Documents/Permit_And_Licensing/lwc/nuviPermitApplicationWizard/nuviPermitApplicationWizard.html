@@ -1,0 +1,827 @@
+<template>
+  <div class="permit-wizard-container">
+    
+    <!-- Header Section -->
+    <div class="wizard-header">
+      <div class="slds-grid slds-grid_align-spread slds-m-bottom_medium">
+        <div class="slds-col">
+          <h1 class="slds-text-heading_large">Permit Application Wizard</h1>
+          <p class="slds-text-body_regular slds-text-color_weak">
+            Multi-Agency Permit Application System - Oil & Gas Development
+          </p>
+        </div>
+        <div class="slds-col slds-size_1-of-4">
+          <div class="fee-display">
+            <div class="slds-text-body_small slds-text-color_weak">Application Fee</div>
+            <div class="slds-text-heading_medium slds-text-color_success">$12,515</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Indicator -->
+      <div class="slds-progress-bar slds-progress-bar_circular slds-m-bottom_medium">
+        <span class="slds-progress-bar__value" style={progressBarStyle}>
+          <span class="slds-assistive-text">Progress: {progressPercentage}%</span>
+        </span>
+      </div>
+      
+      <div class="slds-progress">
+        <ol class="slds-progress__list">
+          <li class={step1ProgressClass}>
+            <span class="slds-progress__marker"></span>
+            <div class="slds-progress__item_content">
+              <div class="slds-text-body_small">Operator Info</div>
+            </div>
+          </li>
+          <li class={step2ProgressClass}>
+            <span class="slds-progress__marker"></span>
+            <div class="slds-progress__item_content">
+              <div class="slds-text-body_small">Location</div>
+            </div>
+          </li>
+          <li class={step3ProgressClass}>
+            <span class="slds-progress__marker"></span>
+            <div class="slds-progress__item_content">
+              <div class="slds-text-body_small">Well Info</div>
+            </div>
+          </li>
+          <li class={step4ProgressClass}>
+            <span class="slds-progress__marker"></span>
+            <div class="slds-progress__item_content">
+              <div class="slds-text-body_small">Drilling Plan</div>
+            </div>
+          </li>
+          <li class={step5ProgressClass}>
+            <span class="slds-progress__marker"></span>
+            <div class="slds-progress__item_content">
+              <div class="slds-text-body_small">Surface Plan</div>
+            </div>
+          </li>
+          <li class={step6ProgressClass}>
+            <span class="slds-progress__marker"></span>
+            <div class="slds-progress__item_content">
+              <div class="slds-text-body_small">Supporting</div>
+            </div>
+          </li>
+          <li class={step7ProgressClass}>
+            <span class="slds-progress__marker"></span>
+            <div class="slds-progress__item_content">
+              <div class="slds-text-body_small">Documents</div>
+            </div>
+          </li>
+          <li class={step8ProgressClass}>
+            <span class="slds-progress__marker"></span>
+            <div class="slds-progress__item_content">
+              <div class="slds-text-body_small">Submit</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="wizard-body slds-grid slds-wrap">
+      
+      <!-- Main Form Content -->
+      <div class="form-content slds-col slds-size_3-of-4 slds-p-horizontal_medium">
+        
+        <!-- Loading Spinner -->
+        <template if:true={isLoading}>
+          <div class="slds-spinner_container">
+            <div role="status" class="slds-spinner slds-spinner_medium">
+              <span class="slds-assistive-text">Loading...</span>
+              <div class="slds-spinner__dot-a"></div>
+              <div class="slds-spinner__dot-b"></div>
+            </div>
+          </div>
+        </template>
+
+        <div class="step-content" if:false={isLoading}>
+          <h2 class="slds-text-heading_medium slds-m-bottom_medium">
+            Step {currentStep}: {currentStepTitle}
+          </h2>
+
+          <!-- Step 1: Operator Information -->
+          <template if:true={isStep1}>
+            <div class="slds-card">
+              <div class="slds-card__body slds-card__body_inner">
+                <p class="slds-text-body_regular slds-m-bottom_medium">
+                  Provide your operator information. This data has been pre-filled from your profile.
+                </p>
+                
+                <div class="slds-grid slds-wrap slds-gutters">
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input
+                      label="Operator Name *"
+                      value={permitFormData.operatorName}
+                      data-field="operatorName"
+                      onchange={handleInputChange}
+                      required>
+                    </lightning-input>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input
+                      label="Operator Code"
+                      value={permitFormData.operatorCode}
+                      data-field="operatorCode"
+                      onchange={handleInputChange}>
+                    </lightning-input>
+                  </div>
+                  <div class="slds-col slds-size_1-of-1">
+                    <lightning-textarea
+                      label="Operator Address *"
+                      value={permitFormData.operatorAddress}
+                      data-field="operatorAddress"
+                      onchange={handleInputChange}
+                      required>
+                    </lightning-textarea>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input
+                      type="tel"
+                      label="Phone Number *"
+                      value={permitFormData.operatorPhone}
+                      data-field="operatorPhone"
+                      onchange={handleInputChange}
+                      required>
+                    </lightning-input>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input
+                      type="email"
+                      label="Email Address *"
+                      value={permitFormData.operatorEmail}
+                      data-field="operatorEmail"
+                      onchange={handleInputChange}
+                      required>
+                    </lightning-input>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- Step 2: Lease & Location Information -->
+          <template if:true={isStep2}>
+            <div class="slds-card">
+              <div class="slds-card__body slds-card__body_inner">
+                <p class="slds-text-body_regular slds-m-bottom_medium">
+                  Specify the lease and location details for your drilling operation.
+                </p>
+                
+                <div class="slds-grid slds-wrap slds-gutters">
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input
+                      label="Federal Lease Number *"
+                      value={permitFormData.leaseNumber}
+                      data-field="leaseNumber"
+                      onchange={handleInputChange}
+                      required>
+                    </lightning-input>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input
+                      label="BLM Field Office"
+                      value={permitFormData.blmFieldOffice}
+                      data-field="blmFieldOffice"
+                      disabled
+                      readonly>
+                    </lightning-input>
+                  </div>
+                  <div class="slds-col slds-size_1-of-1">
+                    <lightning-textarea
+                      label="Legal Land Description (PLSS) *"
+                      value={permitFormData.legalDescription}
+                      data-field="legalDescription"
+                      onchange={handleInputChange}
+                      placeholder="Example: NW¼ NE¼, Section 14, T12N, R101W, 6th PM"
+                      required>
+                    </lightning-textarea>
+                  </div>
+                  <div class="slds-col slds-size_1-of-3">
+                    <lightning-input
+                      type="number"
+                      label="Latitude *"
+                      value={permitFormData.latitude}
+                      data-field="latitude"
+                      onchange={handleInputChange}
+                      step="0.000001"
+                      formatter="decimal"
+                      required>
+                    </lightning-input>
+                  </div>
+                  <div class="slds-col slds-size_1-of-3">
+                    <lightning-input
+                      type="number"
+                      label="Longitude *"
+                      value={permitFormData.longitude}
+                      data-field="longitude"
+                      onchange={handleInputChange}
+                      step="0.000001"
+                      formatter="decimal"
+                      required>
+                    </lightning-input>
+                  </div>
+                  <div class="slds-col slds-size_1-of-3">
+                    <lightning-input
+                      label="County"
+                      value={permitFormData.county}
+                      data-field="county"
+                      onchange={handleInputChange}>
+                    </lightning-input>
+                  </div>
+                </div>
+
+                <!-- Proximity Alerts -->
+                <template if:true={proximityAlerts.length}>
+                  <div class="slds-notify slds-notify_alert slds-alert_warning slds-m-top_medium">
+                    <h2>⚠️ Location Proximity Alerts</h2>
+                    <ul class="slds-list_dotted">
+                      <template for:each={proximityAlerts} for:item="alert">
+                        <li key={alert} class="slds-list__item">{alert}</li>
+                      </template>
+                    </ul>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+
+          <!-- Step 3: Well Information -->
+          <template if:true={isStep3}>
+            <div class="slds-card">
+              <div class="slds-card__body slds-card__body_inner">
+                <p class="slds-text-body_regular slds-m-bottom_medium">
+                  Provide detailed information about the well to be drilled.
+                </p>
+                
+                <div class="slds-grid slds-wrap slds-gutters">
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input
+                      label="Well Name *"
+                      value={permitFormData.wellName}
+                      data-field="wellName"
+                      onchange={handleInputChange}
+                      required>
+                    </lightning-input>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input
+                      label="API Number"
+                      value={permitFormData.apiNumber}
+                      data-field="apiNumber"
+                      onchange={handleInputChange}
+                      placeholder="XX-XXX-XXXXX-XX-XX">
+                    </lightning-input>
+                  </div>
+                  <div class="slds-col slds-size_1-of-3">
+                    <lightning-combobox
+                      label="Well Type *"
+                      value={permitFormData.wellType}
+                      data-field="wellType"
+                      options={wellTypeOptions}
+                      onchange={handleInputChange}
+                      required>
+                    </lightning-combobox>
+                  </div>
+                  <div class="slds-col slds-size_1-of-3">
+                    <lightning-input
+                      type="number"
+                      label="Total Depth (feet) *"
+                      value={permitFormData.totalDepth}
+                      data-field="totalDepth"
+                      onchange={handleInputChange}
+                      required>
+                    </lightning-input>
+                  </div>
+                  <div class="slds-col slds-size_1-of-3">
+                    <lightning-combobox
+                      label="Priority Level"
+                      value={permitFormData.priorityLevel}
+                      data-field="priorityLevel"
+                      options={priorityLevelOptions}
+                      onchange={handleInputChange}>
+                    </lightning-combobox>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-textarea
+                      label="Surface Location"
+                      value={permitFormData.surfaceLocation}
+                      data-field="surfaceLocation"
+                      onchange={handleInputChange}>
+                    </lightning-textarea>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-textarea
+                      label="Bottom Hole Location"
+                      value={permitFormData.bottomHoleLocation}
+                      data-field="bottomHoleLocation"
+                      onchange={handleInputChange}>
+                    </lightning-textarea>
+                  </div>
+                  <div class="slds-col slds-size_1-of-1">
+                    <lightning-input
+                      type="date"
+                      label="Expected Spud Date"
+                      value={permitFormData.expectedSpudDate}
+                      data-field="expectedSpudDate"
+                      onchange={handleInputChange}>
+                    </lightning-input>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- Step 4: Drilling Plan -->
+          <template if:true={isStep4}>
+            <div class="slds-card">
+              <div class="slds-card__body slds-card__body_inner">
+                <p class="slds-text-body_regular slds-m-bottom_medium">
+                  Provide comprehensive drilling plan details and safety equipment specifications.
+                </p>
+                
+                <div class="slds-grid slds-wrap slds-gutters">
+                  <div class="slds-col slds-size_1-of-1">
+                    <lightning-textarea
+                      label="Wellbore Design *"
+                      value={permitFormData.wellboreDesign}
+                      data-field="wellboreDesign"
+                      onchange={handleInputChange}
+                      placeholder="Describe hole sizes, directional plan, and completion design"
+                      required>
+                    </lightning-textarea>
+                  </div>
+                  <div class="slds-col slds-size_1-of-1">
+                    <lightning-textarea
+                      label="Casing and Cementing Program *"
+                      value={permitFormData.casingProgram}
+                      data-field="casingProgram"
+                      onchange={handleInputChange}
+                      placeholder="Detail casing strings, weights, grades, and cementing procedures"
+                      required>
+                    </lightning-textarea>
+                  </div>
+                  <div class="slds-col slds-size_1-of-1">
+                    <lightning-textarea
+                      label="Blowout Prevention Equipment (BOPE) *"
+                      value={permitFormData.blowoutPreventionEquipment}
+                      data-field="blowoutPreventionEquipment"
+                      onchange={handleInputChange}
+                      placeholder="Specify BOP stack configuration, pressure ratings, and testing procedures"
+                      required>
+                    </lightning-textarea>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-textarea
+                      label="Mud Program"
+                      value={permitFormData.mudProgram}
+                      data-field="mudProgram"
+                      onchange={handleInputChange}
+                      placeholder="Drilling fluid specifications and weight program">
+                    </lightning-textarea>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-textarea
+                      label="Expected Geological Formations"
+                      value={permitFormData.expectedGeologicalFormations}
+                      data-field="expectedGeologicalFormations"
+                      onchange={handleInputChange}
+                      placeholder="List formations to be penetrated with expected depths">
+                    </lightning-textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- Step 5: Surface Use Plan (SUPO) -->
+          <template if:true={isStep5}>
+            <div class="slds-card">
+              <div class="slds-card__body slds-card__body_inner">
+                <p class="slds-text-body_regular slds-m-bottom_medium">
+                  Detail your surface use plan of operations (SUPO) including environmental protection measures.
+                </p>
+                
+                <div class="slds-grid slds-wrap slds-gutters">
+                  <div class="slds-col slds-size_1-of-1">
+                    <lightning-textarea
+                      label="Well Pad Layout *"
+                      value={permitFormData.wellPadLayout}
+                      data-field="wellPadLayout"
+                      onchange={handleInputChange}
+                      placeholder="Describe pad dimensions, equipment placement, and facilities"
+                      required>
+                    </lightning-textarea>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-textarea
+                      label="Access Roads"
+                      value={permitFormData.accessRoads}
+                      data-field="accessRoads"
+                      onchange={handleInputChange}
+                      placeholder="Detail new road construction and existing road usage">
+                    </lightning-textarea>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-textarea
+                      label="Pipelines and Infrastructure"
+                      value={permitFormData.pipelines}
+                      data-field="pipelines"
+                      onchange={handleInputChange}
+                      placeholder="Describe gathering lines, power lines, and other infrastructure">
+                    </lightning-textarea>
+                  </div>
+                  <div class="slds-col slds-size_1-of-1">
+                    <lightning-textarea
+                      label="Construction Methods"
+                      value={permitFormData.constructionMethods}
+                      data-field="constructionMethods"
+                      onchange={handleInputChange}
+                      placeholder="Detail construction techniques and timeline">
+                    </lightning-textarea>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-textarea
+                      label="Reclamation Plan *"
+                      value={permitFormData.reclamationPlan}
+                      data-field="reclamationPlan"
+                      onchange={handleInputChange}
+                      placeholder="Describe restoration methods, seed mixes, and success criteria"
+                      required>
+                    </lightning-textarea>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-textarea
+                      label="Waste Management Plan *"
+                      value={permitFormData.wasteManagementPlan}
+                      data-field="wasteManagementPlan"
+                      onchange={handleInputChange}
+                      placeholder="Detail handling of drilling fluids, cuttings, and produced water"
+                      required>
+                    </lightning-textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- Step 6: Supporting Information -->
+          <template if:true={isStep6}>
+            <div class="slds-card">
+              <div class="slds-card__body slds-card__body_inner">
+                <p class="slds-text-body_regular slds-m-bottom_medium">
+                  Provide supporting information required for permit processing.
+                </p>
+                
+                <div class="slds-grid slds-wrap slds-gutters">
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-combobox
+                      label="Bonding Type *"
+                      value={permitFormData.bondingType}
+                      data-field="bondingType"
+                      options={bondingTypeOptions}
+                      onchange={handleInputChange}
+                      required>
+                    </lightning-combobox>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input
+                      type="checkbox"
+                      label="Cultural Resources Survey Required"
+                      checked={permitFormData.culturalResourcesRequired}
+                      data-field="culturalResourcesRequired"
+                      onchange={handleInputChange}>
+                    </lightning-input>
+                  </div>
+                  <div class="slds-col slds-size_1-of-1">
+                    <lightning-textarea
+                      label="Water Source Details"
+                      value={permitFormData.waterSourceDetails}
+                      data-field="waterSourceDetails"
+                      onchange={handleInputChange}
+                      placeholder="Describe water sources, quantities, and hydrological data">
+                    </lightning-textarea>
+                  </div>
+                </div>
+
+                <!-- Environmental Prediction -->
+                <div class="slds-box slds-theme_info slds-m-top_medium">
+                  <h3 class="slds-text-heading_small">🤖 AI Environmental Assessment Prediction</h3>
+                  <p class="slds-m-top_small">
+                    <strong>Predicted NEPA Level:</strong> {predictedNEPALevel}<br/>
+                    <strong>Estimated Processing Time:</strong> {estimatedProcessingTime}<br/>
+                    <template if:true={requiredCoordinatingAgencies.length}>
+                      <strong>Required Agency Coordination:</strong> {requiredCoordinatingAgencies}
+                    </template>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- Step 7: Document Upload & Verification -->
+          <template if:true={isStep7}>
+            <div class="slds-card">
+              <div class="slds-card__body slds-card__body_inner">
+                <p class="slds-text-body_regular slds-m-bottom_medium">
+                  Upload required documents. AI will verify completeness and accuracy.
+                </p>
+                
+                <!-- File Upload Section -->
+                <div class="slds-form-element slds-m-bottom_medium">
+                  <label class="slds-form-element__label">Upload Permit Documents</label>
+                  <div class="slds-form-element__control">
+                    <div class="slds-file-selector slds-file-selector_files">
+                      <div class="slds-file-selector__dropzone">
+                        <input
+                          type="file"
+                          class="slds-file-selector__input slds-assistive-text"
+                          accept=".pdf,.doc,.docx,.xls,.xlsx"
+                          id="file-upload-input"
+                          multiple
+                          onchange={handleFileUpload}
+                        />
+                        <label class="slds-file-selector__body" for="file-upload-input">
+                          <span class="slds-file-selector__button slds-button slds-button_neutral">
+                            <lightning-icon icon-name="utility:upload" size="small"></lightning-icon>
+                            Upload Documents
+                          </span>
+                          <span class="slds-file-selector__text slds-medium-show">or drop files here</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Required Documents Checklist -->
+                <div class="slds-box slds-theme_shade slds-m-bottom_medium">
+                  <h4 class="slds-text-heading_small slds-m-bottom_small">Required Documents Checklist</h4>
+                  <ul class="slds-list_dotted">
+                    <li class="slds-list__item">✓ Permit Application Form</li>
+                    <li class="slds-list__item">✓ Drilling Plan with wellbore design and safety equipment</li>
+                    <li class="slds-list__item">✓ Surface Use Plan of Operations (SUPO)</li>
+                    <li class="slds-list__item">✓ Certified Survey Plat</li>
+                    <li class="slds-list__item">✓ Bonding Information</li>
+                    <li class="slds-list__item">• Cultural Resources Report (if required)</li>
+                    <li class="slds-list__item">• Water Source Data</li>
+                  </ul>
+                </div>
+
+                <!-- Uploaded Files List -->
+                <template if:true={uploadedFiles.length}>
+                  <div class="slds-m-bottom_medium">
+                    <h4 class="slds-text-heading_small slds-m-bottom_small">Uploaded Documents ({uploadedFiles.length})</h4>
+                    <div class="uploaded-files-list">
+                      <template for:each={uploadedFiles} for:item="file">
+                        <div key={file.name} class="slds-media slds-media_small slds-m-bottom_x-small">
+                          <div class="slds-media__figure">
+                            <lightning-icon icon-name="doctype:pdf" size="small"></lightning-icon>
+                          </div>
+                          <div class="slds-media__body">
+                            <div class="slds-text-body_small">
+                              <strong>{file.name}</strong> ({file.type})
+                            </div>
+                            <div class="slds-text-color_weak slds-text-body_x-small">
+                              Uploaded: {file.uploadDate}
+                            </div>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+
+                <!-- Document Verification Results -->
+                <template if:true={documentVerification}>
+                  <div class="slds-box slds-theme_{documentVerificationTheme} slds-m-top_medium">
+                    <h4 class="slds-text-heading_small">🤖 AI Document Verification Results</h4>
+                    <div class="slds-grid slds-wrap slds-gutters slds-m-top_small">
+                      <div class="slds-col slds-size_1-of-3">
+                        <div class="slds-text-align_center">
+                          <div class="slds-text-heading_large">{documentVerification.completenessScore}/10</div>
+                          <div class="slds-text-body_small">Completeness Score</div>
+                        </div>
+                      </div>
+                      <div class="slds-col slds-size_2-of-3">
+                        <template if:true={missingDocuments.length}>
+                          <div class="slds-text-body_small slds-text-color_error">
+                            <strong>Missing Items:</strong>
+                            <ul class="slds-list_dotted">
+                              <template for:each={missingDocuments} for:item="missing">
+                                <li key={missing} class="slds-list__item">{missing}</li>
+                              </template>
+                            </ul>
+                          </div>
+                        </template>
+                        <template if:false={missingDocuments.length}>
+                          <div class="slds-text-body_small slds-text-color_success">
+                            ✓ All required documents appear to be present and complete
+                          </div>
+                        </template>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+
+          <!-- Step 8: Review & Submit -->
+          <template if:true={isStep8}>
+            <div class="slds-card">
+              <div class="slds-card__body slds-card__body_inner">
+                <h3 class="slds-text-heading_medium slds-m-bottom_medium">Application Review & Certification</h3>
+                
+                <!-- Application Summary -->
+                <div class="slds-box slds-theme_shade slds-m-bottom_medium">
+                  <h4 class="slds-text-heading_small slds-m-bottom_small">Application Summary</h4>
+                  <div class="slds-grid slds-wrap slds-gutters">
+                    <div class="slds-col slds-size_1-of-2">
+                      <strong>Operator:</strong> {permitFormData.operatorName}<br/>
+                      <strong>Well Name:</strong> {permitFormData.wellName}<br/>
+                      <strong>Well Type:</strong> {permitFormData.wellType}<br/>
+                      <strong>Total Depth:</strong> {permitFormData.totalDepth} feet<br/>
+                      <strong>Priority Level:</strong> {permitFormData.priorityLevel}
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                      <strong>Lease Number:</strong> {permitFormData.leaseNumber}<br/>
+                      <strong>Location:</strong> {permitFormData.legalDescription}<br/>
+                      <strong>Field Office:</strong> {permitFormData.blmFieldOffice}<br/>
+                      <strong>Fee Amount:</strong> ${permitFormData.feeAmount}<br/>
+                      <strong>Documents:</strong> {uploadedFiles.length} uploaded
+                    </div>
+                  </div>
+                </div>
+
+                <!-- AI Final Analysis -->
+                <div class="slds-box slds-theme_info slds-m-bottom_medium">
+                  <h4 class="slds-text-heading_small">🤖 AI Final Application Analysis</h4>
+                  <div class="slds-m-top_small">
+                    <strong>Estimated Processing Time:</strong> {estimatedProcessingTime}<br/>
+                    <strong>Predicted NEPA Level:</strong> {predictedNEPALevel}<br/>
+                    <template if:true={proximityAlerts.length}>
+                      <strong>Environmental Considerations:</strong> {proximityAlerts.length} proximity alerts<br/>
+                    </template>
+                    <strong>Application Completeness:</strong> 
+                    <template if:true={documentVerification}>
+                      {documentVerification.completenessScore}/10
+                    </template>
+                    <template if:false={documentVerification}>
+                      Pending document verification
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Operator Certification -->
+                <div class="slds-form-element slds-m-bottom_medium">
+                  <label class="slds-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={permitFormData.operatorCertification}
+                      data-field="operatorCertification"
+                      onchange={handleInputChange}
+                    />
+                    <span class="slds-checkbox_faux"></span>
+                    <span class="slds-checkbox__label">
+                      <span class="slds-form-element__label">
+                        I certify that the information provided is true, complete, and accurate to the best of my knowledge. 
+                        I understand that providing false information may result in permit denial and potential legal action.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="slds-text-align_center">
+                  <lightning-button
+                    variant="brand"
+                    label="Submit Permit Application"
+                    onclick={handleSubmitApplication}
+                    disabled={isSaving}
+                    class="submit-button">
+                  </lightning-button>
+                  <template if:true={isSaving}>
+                    <div class="slds-m-top_small">
+                      <lightning-spinner alternative-text="Submitting application..." size="small"></lightning-spinner>
+                      <p class="slds-text-body_small">Processing your application...</p>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </template>
+
+        </div>
+      </div>
+
+      <!-- AI Assistant Sidebar -->
+      <div class="ai-assistant-sidebar slds-col slds-size_1-of-4" if:true={showAIAssistant}>
+        <div class="slds-card ai-assistant-card">
+          <div class="slds-card__header">
+            <div class="slds-media slds-media_center">
+              <div class="slds-media__figure">
+                <lightning-icon icon-name="utility:einstein" size="small" variant="inverse"></lightning-icon>
+              </div>
+              <div class="slds-media__body">
+                <h2 class="slds-card__header-title">
+                  <span class="slds-text-heading_small">AI Assistant</span>
+                </h2>
+              </div>
+            </div>
+          </div>
+          
+          <div class="slds-card__body slds-card__body_inner ai-assistant-body">
+            
+            <!-- LLM Selection -->
+            <div class="slds-form-element slds-m-bottom_medium">
+              <lightning-combobox
+                label="AI Model"
+                value={selectedLLM}
+                options={availableLLMs}
+                data-field="selectedLLM"
+                onchange={handleInputChange}
+                variant="label-hidden">
+              </lightning-combobox>
+            </div>
+
+            <!-- AI Recommendations -->
+            <div class="ai-recommendations">
+              <h3 class="slds-text-heading_x-small slds-m-bottom_small">💡 Recommendations</h3>
+              <div class="recommendations-list">
+                <template for:each={aiRecommendations} for:item="recommendation">
+                  <div key={recommendation.timestamp} class="recommendation-item slds-m-bottom_small">
+                    <div class="slds-notify slds-notify_toast slds-theme_{recommendation.type}">
+                      <div class="slds-notify__content">
+                        <h2 class="slds-text-heading_x-small">{recommendation.title}</h2>
+                        <div class="slds-text-body_x-small slds-m-top_x-small">
+                          {recommendation.message}
+                        </div>
+                        <div class="slds-text-body_x-small slds-text-color_weak slds-m-top_x-small">
+                          {recommendation.timestamp}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <!-- AI Flags -->
+            <template if:true={aiFlags.length}>
+              <div class="ai-flags slds-m-top_medium">
+                <h3 class="slds-text-heading_x-small slds-m-bottom_small">🚩 Attention Items</h3>
+                <div class="flags-list">
+                  <template for:each={aiFlags} for:item="flag">
+                    <div key={flag.timestamp} class="flag-item slds-m-bottom_small">
+                      <div class="slds-notify slds-notify_alert slds-alert_{flag.type}">
+                        <h2 class="slds-text-heading_x-small">{flag.title}</h2>
+                        <div class="slds-text-body_x-small slds-m-top_x-small">
+                          {flag.message}
+                        </div>
+                        <div class="slds-text-body_x-small slds-text-color_weak slds-m-top_x-small">
+                          {flag.timestamp}
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Navigation Footer -->
+    <div class="wizard-footer slds-card__footer">
+      <div class="slds-grid slds-grid_align-spread">
+        <div class="slds-col">
+          <lightning-button
+            variant="neutral"
+            label="Previous"
+            onclick={handlePreviousStep}
+            disabled={isPreviousDisabled}>
+          </lightning-button>
+        </div>
+        <div class="slds-col">
+          <div class="step-indicator">
+            Step {currentStep} of {totalSteps}
+          </div>
+        </div>
+        <div class="slds-col">
+          <template if:false={isStep8}>
+            <lightning-button
+              variant="brand"
+              label="Next"
+              onclick={handleNextStep}
+              disabled={isNextDisabled}>
+            </lightning-button>
+          </template>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</template>

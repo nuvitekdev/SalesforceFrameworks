@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Lease_Type__c</fullName>
+    <externalId>false</externalId>
+    <label>Lease Type</label>
+    <required>true</required>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Federal</fullName>
+                <default>false</default>
+                <label>Federal</label>
+            </value>
+            <value>
+                <fullName>State</fullName>
+                <default>false</default>
+                <label>State</label>
+            </value>
+            <value>
+                <fullName>Fee</fullName>
+                <default>false</default>
+                <label>Fee</label>
+            </value>
+            <value>
+                <fullName>Tribal</fullName>
+                <default>false</default>
+                <label>Tribal</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <description>Type of lease under which the drilling will occur - Federal, State, Fee, or Tribal</description>
+    <inlineHelpText>Select the type of lease where drilling operations will take place as specified in Form 3160-3 Section 2</inlineHelpText>
+</CustomField>

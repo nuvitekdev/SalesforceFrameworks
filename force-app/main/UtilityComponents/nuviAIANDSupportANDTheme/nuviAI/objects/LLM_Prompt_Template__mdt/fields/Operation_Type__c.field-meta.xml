@@ -44,6 +44,16 @@
                 <default>false</default>
                 <label>Image Analysis</label>
             </value>
+            <value>
+                <fullName>ComplianceCheck</fullName>
+                <default>false</default>
+                <label>Compliance Check</label>
+            </value>
+            <value>
+                <fullName>EnvironmentalAnalysis</fullName>
+                <default>false</default>
+                <label>Environmental Analysis</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

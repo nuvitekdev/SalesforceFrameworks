@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>NEPA_Level__c</fullName>
+    <deprecated>false</deprecated>
+    <description>Level of NEPA compliance required based on environmental impact assessment. Determines the depth and complexity of environmental review.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Select the appropriate NEPA review level based on environmental impact analysis.</inlineHelpText>
+    <label>NEPA Level</label>
+    <required>true</required>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Categorical Exclusion (CX)</fullName>
+                <default>false</default>
+                <label>Categorical Exclusion (CX)</label>
+            </value>
+            <value>
+                <fullName>Environmental Assessment (EA)</fullName>
+                <default>true</default>
+                <label>Environmental Assessment (EA)</label>
+            </value>
+            <value>
+                <fullName>Environmental Impact Statement (EIS)</fullName>
+                <default>false</default>
+                <label>Environmental Impact Statement (EIS)</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

@@ -1,0 +1,153 @@
+:host {
+    /* Color system (kept in sync with original) */
+    --primary-color: #22BDC1;
+    --primary-dark: #1a9599;
+    --primary-light: #63d1d4;
+    --primary-text-color: #FFFFFF;
+
+    --accent-color: #D5DF23;
+    --accent-dark: #b8c11e;
+    --accent-light: #e1e95c;
+    --accent-text-color: #000000;
+
+    --text-color: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --background: #ffffff;
+    --background-alt: #f5f5f7;
+    --background-elevated: #fbfbfd;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-subtle: rgba(0, 0, 0, 0.05);
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+}
+
+:host.theme-dark {
+    --text-color: #f5f5f7;
+    --text-secondary: #a1a1a6;
+    --background: #1d1d1f;
+    --background-alt: #2d2d2f;
+    --background-elevated: #2a2a2c;
+    --border-color: rgba(255,255,255,0.15);
+    --border-subtle: rgba(255,255,255,0.08);
+}
+
+/* Card styling to mirror original */
+:host lightning-card {
+    --sds-c-card-color-background: var(--background) !important;
+    --sds-c-card-shadow: var(--shadow-md) !important;
+    --sds-c-card-radius-border: var(--radius-md) !important;
+    border: none !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+lightning-card:hover {
+    box-shadow: var(--shadow-lg) !important;
+}
+
+/* Inputs */
+lightning-textarea, lightning-combobox {
+    --slds-c-input-radius-border: var(--radius-sm) !important;
+    --slds-c-input-color-border: var(--border-color) !important;
+    --slds-c-input-color-background: var(--background) !important;
+}
+
+.slds-text-heading_small, .slds-text-color_weak {
+    color: var(--text-color);
+}
+
+/* Comparison/anomaly banners lean on SLDS theme classes already */
+
+/* Headings spacing */
+.slds-text-heading_small {
+    margin-bottom: 0.5rem;
+}
+
+/* Button visual polish (mimic original custom buttons) */
+:host lightning-button .slds-button {
+    border-radius: var(--radius-sm) !important;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+:host lightning-button .slds-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Subtle center ripple on press */
+:host lightning-button .slds-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1px;
+    height: 1px;
+    background: radial-gradient(circle, rgba(34,189,193,0.35) 0%, rgba(34,189,193,0.25) 40%, rgba(34,189,193,0.0) 70%);
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.45s ease, opacity 0.8s ease;
+    opacity: 0.9;
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+:host lightning-button .slds-button:active::after {
+    transform: translate(-50%, -50%) scale(180);
+    opacity: 0;
+}
+
+/* Alert/banners subtle border for clarity */
+:host .slds-notify_alert {
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+/* Copy icon spacing */
+:host lightning-button-icon.slds-m-right_x-small {
+    margin-right: 0.5rem;
+}
+
+/* Title layout and badges (mirrors original) */
+.title-container { display: flex; align-items: center; }
+.title-left { display: flex; align-items: center; }
+.title-spacer { flex: 1; }
+.title-right { margin-left: auto; display: flex; align-items: center; }
+.scan-badge { display: flex; align-items: center; border-radius: 12px; padding: 0.25rem 0.75rem; font-size: 12px; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: rgba(34,189,193, 0.15); color: var(--primary-color); }
+.scan-badge:hover { background: rgba(34,189,193,0.25); transform: translateY(-1px); }
+.bot-icon svg { fill: var(--primary-color) !important; }
+
+/* Custom buttons like original */
+.action-buttons-container { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.custom-button { display: flex; align-items: center; justify-content: center; height: 2.5rem; border-radius: var(--radius-sm); padding: 0 1.25rem; font-weight: 500; font-size: 14px; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; border: none; outline: none; box-shadow: var(--shadow-sm); }
+.custom-button:disabled { opacity: 0.6; cursor: not-allowed; }
+.custom-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.primary-button { background-color: var(--primary-color); color: var(--primary-text-color); }
+.primary-button:hover:not(:disabled) { background-color: var(--primary-dark); }
+.secondary-button { background-color: rgba(34,189,193,0.1); color: var(--primary-color); }
+.secondary-button:hover:not(:disabled) { background-color: rgba(34,189,193,0.2); }
+.button-icon { display: flex; align-items: center; justify-content: center; margin-right: 0.5rem; }
+.button-icon svg { fill: currentColor; }
+.button-label { display: inline-block; }
+
+/* Ripple for custom buttons */
+.custom-button::after { content: ''; position: absolute; top: 50%; left: 50%; width: 1px; height: 1px; background: radial-gradient(circle, rgba(34,189,193,0.35) 0%, rgba(34,189,193,0.25) 40%, rgba(34,189,193,0.0) 70%); transform: translate(-50%, -50%) scale(0); transition: transform 0.45s ease, opacity 0.8s ease; opacity: 0.9; pointer-events: none; border-radius: 50%; }
+.custom-button:active::after { transform: translate(-50%, -50%) scale(180); opacity: 0; }
+
+@media (max-width: 600px) { .action-buttons-container { flex-direction: column; } .custom-button { width: 100%; } }
+
+/* Response container styling (mirrors original) */
+.response-container { background-color: var(--background-elevated); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm); position: relative; overflow: hidden; }
+.model-badge { display: inline-flex; align-items: center; background-color: var(--primary-color) !important; color: var(--primary-text-color) !important; border-radius: 16px; padding: 0.25rem 0.75rem; font-weight: 500; font-size: 0.75rem; box-shadow: var(--shadow-sm); }
+.response-text { line-height: 1.6; font-size: var(--font-size-md); color: var(--text-color); word-break: break-word; }
+.copy-button:hover { background-color: rgba(34,189,193,0.2) !important; }

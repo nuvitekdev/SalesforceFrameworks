@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Fee_Amount__c</fullName>
+    <defaultValue>12515</defaultValue>
+    <deprecated>false</deprecated>
+    <description>Required processing fee for the APD application as mandated by federal regulations. Standard fee is $12,515 unless exempted or modified by special circumstances.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Standard APD processing fee is $12,515. This may be modified based on application type or special circumstances.</inlineHelpText>
+    <label>Fee Amount</label>
+    <precision>18</precision>
+    <required>true</required>
+    <scale>2</scale>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Currency</type>
+</CustomField>

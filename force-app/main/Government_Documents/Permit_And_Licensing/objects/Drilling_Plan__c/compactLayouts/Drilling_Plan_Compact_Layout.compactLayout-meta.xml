@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Drilling_Plan_Compact_Layout</fullName>
+    <fields>Name</fields>
+    <fields>Plan_Status__c</fields>
+    <fields>Drilling_Method__c</fields>
+    <fields>Drilling_Contractor__c</fields>
+    <fields>Approved_By__c</fields>
+    <fields>Approval_Date__c</fields>
+    <label>Drilling Plan Compact Layout</label>
+</CompactLayout>

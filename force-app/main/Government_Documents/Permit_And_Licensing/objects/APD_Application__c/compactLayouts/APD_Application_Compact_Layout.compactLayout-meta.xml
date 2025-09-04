@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>APD_Application_Compact_Layout</fullName>
+    <fields>Application_Number__c</fields>
+    <fields>Status__c</fields>
+    <fields>Operator__c</fields>
+    <fields>BLM_Field_Office__c</fields>
+    <fields>Well_Type__c</fields>
+    <fields>Priority_Level__c</fields>
+    <label>APD Application Compact Layout</label>
+</CompactLayout>

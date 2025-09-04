@@ -1,0 +1,1097 @@
+:host {
+  /* Nuvitek Theme Variables */
+  --primary-color: #22bdc1;
+  --primary-color-rgb: 34, 189, 193;
+  --primary-dark: #1a9599;
+  --primary-light: #63d1d4;
+  --accent-color: #d5df23;
+  --accent-color-rgb: 213, 223, 35;
+  --accent-dark: #b8bf1f;
+  --accent-light: #e6ed5a;
+  --text-color: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #a1a1a6;
+  --background-color: #ffffff;
+  --background-alt: #f5f5f7;
+  --background-elevated: #fbfbfd;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.15);
+  
+  /* Border radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+  
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 48px;
+  
+  /* Transitions */
+  --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-medium: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-slow: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-bounce: 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+  
+  /* Typography */
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.apd-signature-manager {
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.6s ease-out;
+  background: var(--background-alt);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  position: relative;
+}
+
+.apd-signature-manager::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color) 0%, var(--accent-color) 100%);
+}
+
+.step-container {
+  min-height: 500px;
+  padding: var(--spacing-lg);
+  background: var(--background-elevated);
+  border-radius: var(--radius-lg);
+  margin: var(--spacing-md);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-medium);
+  position: relative;
+  overflow: hidden;
+}
+
+.step-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(var(--primary-color-rgb), 0.02) 0%, 
+    rgba(var(--accent-color-rgb), 0.02) 100%);
+  pointer-events: none;
+}
+
+.step-container:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Progress Indicator Styling */
+.slds-progress__item {
+  position: relative;
+}
+
+.slds-progress__marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Step-specific progress styling */
+.step0Class .slds-progress__marker,
+.step1Class .slds-progress__marker,
+.step2Class .slds-progress__marker,
+.step3Class .slds-progress__marker,
+.step4Class .slds-progress__marker,
+.step5Class .slds-progress__marker {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+  border: 3px solid white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transition: all var(--transition-medium);
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+
+.step0Class .slds-progress__marker:hover,
+.step1Class .slds-progress__marker:hover,
+.step2Class .slds-progress__marker:hover,
+.step3Class .slds-progress__marker:hover,
+.step4Class .slds-progress__marker:hover,
+.step5Class .slds-progress__marker:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 20px rgba(var(--primary-color-rgb), 0.6);
+}
+
+/* Active step marker */
+.slds-is-active .slds-progress__marker {
+  background: var(--accent-color);
+  animation: pulseActive 2s infinite;
+  transform: scale(1.1);
+}
+
+@keyframes pulseActive {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(var(--accent-color-rgb), 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--accent-color-rgb), 0);
+  }
+}
+
+/* PDF Preview Styling */
+.pdf-preview-container {
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--background-alt);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-medium);
+  position: relative;
+}
+
+.pdf-preview-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color) 0%, var(--accent-color) 100%);
+  z-index: 1;
+}
+
+.pdf-preview-container:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary-color);
+}
+
+.pdf-preview {
+  border: none;
+  display: block;
+}
+
+.pdf-signature-placement {
+  border: 3px solid var(--primary-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: rgba(var(--primary-color-rgb), 0.05);
+  backdrop-filter: blur(10px);
+  transition: all var(--transition-medium);
+  position: relative;
+}
+
+.pdf-signature-placement::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color) 0%, var(--accent-color) 100%);
+  z-index: 1;
+}
+
+.pdf-signature-placement:hover {
+  border-color: var(--accent-color);
+  background: rgba(var(--accent-color-rgb), 0.08);
+  transform: scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+
+.pdf-overlay {
+  background: rgba(var(--primary-color-rgb), 0.05);
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(2px);
+  border-radius: var(--radius-sm);
+}
+
+.pdf-overlay:hover {
+  background: rgba(var(--primary-color-rgb), 0.12);
+  transform: scale(1.02);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(4px);
+}
+
+.pdf-overlay:active {
+  background: rgba(var(--accent-color-rgb), 0.15);
+  transform: scale(0.98);
+}
+
+/* Signature Canvas Styling */
+.signature-canvas-container {
+  text-align: center;
+  padding: var(--spacing-md);
+  background: var(--background-elevated);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin: var(--spacing-md) 0;
+  position: relative;
+}
+
+.signature-canvas-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color) 0%, var(--accent-color) 100%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.canvas-wrapper {
+  display: inline-block;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 3px solid var(--primary-color);
+  transition: all var(--transition-medium);
+  position: relative;
+}
+
+.canvas-wrapper:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--accent-color);
+}
+
+.canvas-wrapper::after {
+  content: '✍️ Sign Here';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(var(--accent-color-rgb), 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.canvas-wrapper:hover::after {
+  opacity: 1;
+}
+
+.signature-pad {
+  display: block;
+  cursor: crosshair;
+  background: white;
+  transition: all var(--transition-fast);
+}
+
+.signature-pad:hover {
+  box-shadow: inset 0 0 10px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.signature-pad:active {
+  background: rgba(var(--primary-color-rgb), 0.02);
+}
+
+/* Typed Signature Preview */
+.typed-signature-preview {
+  text-align: center;
+  padding: var(--spacing-md);
+  background: var(--background-elevated);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin: var(--spacing-md) 0;
+  position: relative;
+}
+
+.typed-signature-preview::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color) 0%, var(--accent-color) 100%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.signature-preview {
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-width: 500px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+  border: 2px solid var(--primary-color);
+  transition: all var(--transition-medium);
+  position: relative;
+  overflow: hidden;
+}
+
+.signature-preview::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(var(--primary-color-rgb), 0.02) 0%, 
+    rgba(var(--accent-color-rgb), 0.02) 100%);
+  pointer-events: none;
+}
+
+.signature-preview:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--accent-color);
+}
+
+/* Signature Placement Indicators */
+.signature-placement {
+  background: rgba(var(--primary-color-rgb), 0.15);
+  border: 3px dashed var(--primary-color);
+  border-radius: var(--radius-md);
+  pointer-events: auto;
+  cursor: move;
+  transition: all var(--transition-medium);
+  backdrop-filter: blur(5px);
+  position: relative;
+  overflow: hidden;
+}
+
+.signature-placement::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(var(--primary-color-rgb), 0.1) 0%, 
+    rgba(var(--accent-color-rgb), 0.1) 100%);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.signature-placement:hover {
+  background: rgba(var(--accent-color-rgb), 0.2);
+  border-color: var(--accent-color);
+  transform: scale(1.05) rotate(1deg);
+  box-shadow: var(--shadow-lg);
+}
+
+.signature-placement:hover::before {
+  opacity: 1;
+}
+
+.signature-placement::after {
+  content: '✨ Signature Applied';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--primary-color);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(10px);
+  z-index: 2;
+  animation: signaturePulse 2s infinite;
+}
+
+@keyframes signaturePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+/* Review Checklist */
+.review-checklist {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+  background: var(--background-elevated);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) var(--background-alt);
+}
+
+.review-checklist::-webkit-scrollbar {
+  width: 6px;
+}
+
+.review-checklist::-webkit-scrollbar-track {
+  background: var(--background-alt);
+}
+
+.review-checklist::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: var(--radius-full);
+}
+
+.review-checklist::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+.review-checkbox:checked + .slds-checkbox_faux {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+  border-color: var(--primary-color);
+  animation: checkboxSuccess 0.4s var(--transition-bounce);
+}
+
+@keyframes checkboxSuccess {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* File Upload Styling */
+.slds-file-selector__dropzone {
+  border: 3px dashed var(--primary-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  text-align: center;
+  transition: all var(--transition-medium);
+  background: rgba(var(--primary-color-rgb), 0.03);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(5px);
+}
+
+.slds-file-selector__dropzone::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(var(--primary-color-rgb), 0.05) 0%, 
+    rgba(var(--accent-color-rgb), 0.05) 100%);
+  opacity: 0;
+  transition: opacity var(--transition-medium);
+}
+
+.slds-file-selector__dropzone:hover {
+  border-color: var(--accent-color);
+  background: rgba(var(--accent-color-rgb), 0.08);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+
+.slds-file-selector__dropzone:hover::before {
+  opacity: 1;
+}
+
+.slds-file-selector__dropzone.drag-over {
+  border-color: var(--accent-color);
+  border-style: solid;
+  background: rgba(var(--accent-color-rgb), 0.12);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-xl);
+  animation: dragPulse 0.5s infinite;
+}
+
+@keyframes dragPulse {
+  0%, 100% {
+    border-color: var(--accent-color);
+  }
+  50% {
+    border-color: var(--primary-color);
+  }
+}
+
+.slds-file-selector__button {
+  margin-bottom: 0.5rem;
+}
+
+/* Completion Summary */
+.completion-summary {
+  text-align: left;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+  background: var(--background-elevated);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.completion-summary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color) 0%, var(--accent-color) 100%);
+}
+
+.completion-summary::after {
+  content: '✨';
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  font-size: 2rem;
+  opacity: 0.3;
+  animation: sparkle 3s infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: rotate(180deg) scale(1.2);
+  }
+}
+
+.completion-summary p {
+  margin: var(--spacing-xs) 0;
+  color: var(--text-color);
+  line-height: 1.6;
+  position: relative;
+  z-index: 2;
+}
+
+.completion-summary p:first-child {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Loading States */
+.slds-spinner_container {
+  position: relative;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--background-color), 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  margin: var(--spacing-md);
+}
+
+.slds-spinner {
+  color: var(--primary-color);
+}
+
+.slds-spinner::before {
+  border-color: var(--primary-color) transparent var(--primary-color) transparent;
+  animation: spinnerRotate 1.2s linear infinite;
+}
+
+@keyframes spinnerRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(var(--background-color), 0.9);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  border-radius: inherit;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.loading-text {
+  margin-top: var(--spacing-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Alert Customization */
+.slds-alert_success {
+  background: rgba(var(--accent-color-rgb), 0.08);
+  border: 3px solid var(--accent-color);
+  border-left-width: 5px;
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(10px);
+  animation: successSlide 0.5s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.slds-alert_success::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(var(--accent-color-rgb), 0.05) 0%, 
+    rgba(var(--primary-color-rgb), 0.05) 100%);
+  pointer-events: none;
+}
+
+.slds-alert_error {
+  background: rgba(229, 62, 62, 0.08);
+  border: 3px solid #e53e3e;
+  border-left-width: 5px;
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(10px);
+  animation: errorShake 0.5s ease-out;
+}
+
+@keyframes successSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+  20%, 40%, 60%, 80% { transform: translateX(3px); }
+}
+
+.slds-alert {
+  margin-bottom: var(--spacing-sm);
+  transition: all var(--transition-medium);
+}
+
+.slds-alert:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Button Customizations */
+.slds-button_brand {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 50%, var(--accent-color) 100%);
+  border: none;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  padding: 0.875rem 2rem;
+  transition: all var(--transition-medium);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+}
+
+.slds-button_brand::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left var(--transition-medium);
+}
+
+.slds-button_brand:hover::before {
+  left: 100%;
+}
+
+.slds-button_brand:hover,
+.slds-button_brand:focus {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 50%, var(--accent-light) 100%);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: var(--shadow-xl), 0 0 20px rgba(var(--primary-color-rgb), 0.4);
+}
+
+.slds-button_neutral {
+  background: var(--background-elevated);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-full);
+  color: var(--text-color);
+  font-weight: 600;
+  padding: 0.875rem 2rem;
+  transition: all var(--transition-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+  backdrop-filter: blur(10px);
+}
+
+.slds-button_neutral:hover,
+.slds-button_neutral:focus {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--shadow-lg);
+  background: rgba(var(--primary-color-rgb), 0.05);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .apd-signature-manager {
+    margin: var(--spacing-xs);
+  }
+  
+  .step-container {
+    margin: var(--spacing-sm);
+    padding: var(--spacing-md);
+  }
+}
+
+@media (max-width: 768px) {
+  .apd-signature-manager {
+    margin: var(--spacing-xs);
+    border-radius: var(--radius-md);
+  }
+  
+  .step-container {
+    padding: var(--spacing-sm);
+    min-height: 400px;
+    margin: var(--spacing-xs);
+  }
+  
+  .pdf-preview {
+    height: 350px !important;
+  }
+  
+  .signature-pad {
+    width: 100% !important;
+    max-width: 400px;
+  }
+  
+  .canvas-wrapper {
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .signature-preview {
+    max-width: 100%;
+  }
+  
+  .completion-summary {
+    max-width: 100%;
+    padding: var(--spacing-md);
+  }
+  
+  .slds-grid {
+    display: block;
+  }
+  
+  .slds-grid > * {
+    margin-bottom: var(--spacing-sm);
+    width: 100%;
+  }
+  
+  .slds-button_brand,
+  .slds-button_neutral {
+    width: 100%;
+    margin-bottom: var(--spacing-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .step-container {
+    padding: var(--spacing-sm);
+    min-height: 350px;
+  }
+  
+  .pdf-preview {
+    height: 250px !important;
+  }
+  
+  .signature-pad {
+    max-width: 300px;
+  }
+  
+  .canvas-wrapper {
+    max-width: 300px;
+  }
+  
+  .signature-canvas-container,
+  .typed-signature-preview {
+    padding: var(--spacing-sm);
+  }
+  
+  .completion-summary {
+    padding: var(--spacing-sm);
+    font-size: 0.9rem;
+  }
+  
+  .slds-file-selector__dropzone {
+    padding: var(--spacing-md);
+  }
+}
+
+/* Accessibility Enhancements */
+.signature-pad:focus {
+  outline: 3px solid var(--accent-color);
+  outline-offset: 3px;
+  animation: focusPulse 1s infinite;
+}
+
+.pdf-overlay:focus {
+  outline: 3px solid var(--accent-color);
+  outline-offset: -3px;
+  animation: focusPulse 1s infinite;
+}
+
+.slds-button:focus,
+.slds-input:focus,
+.slds-textarea:focus {
+  outline: 3px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+.slds-button:focus-visible,
+.slds-input:focus-visible,
+.slds-textarea:focus-visible {
+  outline: 3px solid var(--accent-color);
+  outline-offset: 3px;
+  animation: focusPulse 1s infinite;
+}
+
+@keyframes focusPulse {
+  0%, 100% {
+    outline-color: var(--accent-color);
+    outline-width: 3px;
+  }
+  50% {
+    outline-color: var(--primary-color);
+    outline-width: 4px;
+  }
+}
+
+/* Screen Reader Support */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :host {
+    --text-color: #f2f2f7;
+    --text-secondary: #8e8e93;
+    --text-tertiary: #636366;
+    --background-color: #000000;
+    --background-alt: #1c1c1e;
+    --background-elevated: #2c2c2e;
+    --border-color: rgba(255, 255, 255, 0.15);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+  }
+  
+  .signature-pad {
+    background: var(--background-elevated);
+  }
+  
+  .signature-preview {
+    background: var(--background-elevated);
+    color: var(--text-color);
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :host {
+    --primary-color: #000000;
+    --accent-color: #ffff00;
+    --text-color: #000000;
+    --background-color: #ffffff;
+    --border-color: #000000;
+  }
+  
+  .pdf-overlay {
+    background: rgba(0, 0, 0, 0.2);
+    border: 2px solid #000000;
+  }
+  
+  .signature-placement {
+    background: rgba(0, 0, 0, 0.3);
+    border: 3px solid #000000;
+  }
+  
+  .slds-file-selector__dropzone {
+    border: 3px solid #000000;
+  }
+  
+  .slds-button_brand {
+    background: #000000;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+  }
+  
+  .canvas-wrapper {
+    border: 3px solid #000000;
+  }
+}
+
+/* Reduce Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Additional Visual Effects */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes springIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) rotate(-5deg);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.step-container {
+  animation: fadeIn 0.6s var(--transition-bounce);
+}
+
+.signature-canvas-container,
+.typed-signature-preview {
+  animation: springIn 0.8s var(--transition-bounce);
+}
+
+.pdf-preview-container {
+  animation: slideInFromLeft 0.5s ease-out;
+}
+
+/* Micro-interactions */
+.canvas-wrapper:active {
+  transform: scale(0.98);
+}
+
+.signature-preview:active {
+  transform: scale(0.98);
+}
+
+/* Success states */
+.signature-success {
+  animation: successPulse 1s ease-in-out;
+}
+
+@keyframes successPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(var(--accent-color-rgb), 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(var(--accent-color-rgb), 0);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .slds-card__header,
+  .slds-card__footer,
+  .slds-button,
+  .slds-button-group {
+    display: none !important;
+  }
+  
+  .step-container {
+    min-height: auto;
+    box-shadow: none;
+    border: 1px solid #000;
+    background: white;
+  }
+  
+  .apd-signature-manager {
+    background: white;
+    box-shadow: none;
+  }
+  
+  .pdf-preview-container {
+    border: 2px solid #000;
+    background: white;
+  }
+  
+  .signature-canvas-container,
+  .typed-signature-preview,
+  .completion-summary {
+    background: white;
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  * {
+    color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  
+  .signature-placement::after {
+    color: #000 !important;
+    background: white !important;
+  }
+}

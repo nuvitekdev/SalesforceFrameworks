@@ -1,0 +1,813 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>Accept</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Accept</actionName>
+        <formFactor>Large</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Accept</actionName>
+        <formFactor>Small</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>CancelEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>CancelEdit</actionName>
+        <formFactor>Large</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>CancelEdit</actionName>
+        <formFactor>Small</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Clone</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Clone</actionName>
+        <formFactor>Large</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Clone</actionName>
+        <formFactor>Small</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Delete</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Delete</actionName>
+        <formFactor>Large</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Delete</actionName>
+        <formFactor>Small</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Edit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Edit</actionName>
+        <formFactor>Large</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Edit</actionName>
+        <formFactor>Small</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>List</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>List</actionName>
+        <formFactor>Large</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>List</actionName>
+        <formFactor>Small</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>New</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>New</actionName>
+        <formFactor>Large</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>New</actionName>
+        <formFactor>Small</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>SaveEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>SaveEdit</actionName>
+        <formFactor>Large</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>SaveEdit</actionName>
+        <formFactor>Small</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <formFactor>Large</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <formFactor>Small</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>View</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>View</actionName>
+        <formFactor>Large</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>View</actionName>
+        <formFactor>Small</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    
+    <allowInChatterGroups>true</allowInChatterGroups>
+    <compactLayoutAssignment>Surface_Use_Plan_Compact_Layout</compactLayoutAssignment>
+    <deploymentStatus>Deployed</deploymentStatus>
+    <enableActivities>true</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>true</enableHistory>
+    <enableLicensing>false</enableLicensing>
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <externalSharingModel>ControlledByParent</externalSharingModel>
+    <label>Surface Use Plan</label>
+    <nameField>
+        <displayFormat>SUPO-{0000000}</displayFormat>
+        <label>SUPO Number</label>
+        <trackHistory>true</trackHistory>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Surface Use Plans</pluralLabel>
+    <searchLayouts/>
+    <sharingModel>ControlledByParent</sharingModel>
+    <visibility>Public</visibility>
+    
+    <!-- APD Application Relationship -->
+    <fields>
+        <fullName>APD_Application__c</fullName>
+        <externalId>false</externalId>
+        <label>APD Application</label>
+        <referenceTo>APD_Application__c</referenceTo>
+        <relationshipLabel>Surface Use Plans</relationshipLabel>
+        <relationshipName>Surface_Use_Plans</relationshipName>
+        <relationshipOrder>0</relationshipOrder>
+        <reparentableMasterDetail>false</reparentableMasterDetail>
+        <required>false</required>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>MasterDetail</type>
+        <writeRequiresMasterRead>false</writeRequiresMasterRead>
+    </fields>
+    
+    <!-- SUPO Narrative -->
+    <fields>
+        <fullName>SUPO_Narrative__c</fullName>
+        <externalId>false</externalId>
+        <label>SUPO Narrative</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>10</visibleLines>
+        <description>Detailed narrative describing surface use and operations plan</description>
+    </fields>
+    
+    <!-- Roads and Access -->
+    <fields>
+        <fullName>Roads_Description__c</fullName>
+        <externalId>false</externalId>
+        <label>Roads Description</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>8</visibleLines>
+        <description>Description of access roads including construction, improvement, and maintenance plans</description>
+    </fields>
+    
+    <fields>
+        <fullName>New_Road_Construction__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>New Road Construction</label>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    
+    <fields>
+        <fullName>Road_Improvement__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Road Improvement</label>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    
+    <fields>
+        <fullName>Total_Road_Miles_New__c</fullName>
+        <externalId>false</externalId>
+        <label>Total Road Miles - New</label>
+        <precision>6</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    
+    <fields>
+        <fullName>Total_Road_Miles_Improved__c</fullName>
+        <externalId>false</externalId>
+        <label>Total Road Miles - Improved</label>
+        <precision>6</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    
+    <fields>
+        <fullName>Road_Width_Feet__c</fullName>
+        <externalId>false</externalId>
+        <label>Road Width (Feet)</label>
+        <precision>3</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    
+    <!-- Facilities Location -->
+    <fields>
+        <fullName>Facilities_Location__c</fullName>
+        <externalId>false</externalId>
+        <label>Facilities Location</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>8</visibleLines>
+        <description>Description of all facility locations and their coordinates</description>
+    </fields>
+    
+    <fields>
+        <fullName>Processing_Facilities__c</fullName>
+        <externalId>false</externalId>
+        <label>Processing Facilities</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>MultiselectPicklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Gas Processing Plant</fullName>
+                    <default>false</default>
+                    <label>Gas Processing Plant</label>
+                </value>
+                <value>
+                    <fullName>Oil Battery</fullName>
+                    <default>false</default>
+                    <label>Oil Battery</label>
+                </value>
+                <value>
+                    <fullName>Compressor Station</fullName>
+                    <default>false</default>
+                    <label>Compressor Station</label>
+                </value>
+                <value>
+                    <fullName>Dehydration Unit</fullName>
+                    <default>false</default>
+                    <label>Dehydration Unit</label>
+                </value>
+                <value>
+                    <fullName>Metering Station</fullName>
+                    <default>false</default>
+                    <label>Metering Station</label>
+                </value>
+                <value>
+                    <fullName>Central Tank Battery</fullName>
+                    <default>false</default>
+                    <label>Central Tank Battery</label>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
+        <visibleLines>4</visibleLines>
+    </fields>
+    
+    <fields>
+        <fullName>Support_Facilities__c</fullName>
+        <externalId>false</externalId>
+        <label>Support Facilities</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>MultiselectPicklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Equipment Staging Area</fullName>
+                    <default>false</default>
+                    <label>Equipment Staging Area</label>
+                </value>
+                <value>
+                    <fullName>Pipe Yard</fullName>
+                    <default>false</default>
+                    <label>Pipe Yard</label>
+                </value>
+                <value>
+                    <fullName>Material Storage</fullName>
+                    <default>false</default>
+                    <label>Material Storage</label>
+                </value>
+                <value>
+                    <fullName>Maintenance Shop</fullName>
+                    <default>false</default>
+                    <label>Maintenance Shop</label>
+                </value>
+                <value>
+                    <fullName>Office Trailer</fullName>
+                    <default>false</default>
+                    <label>Office Trailer</label>
+                </value>
+                <value>
+                    <fullName>Water Storage</fullName>
+                    <default>false</default>
+                    <label>Water Storage</label>
+                </value>
+                <value>
+                    <fullName>Waste Storage</fullName>
+                    <default>false</default>
+                    <label>Waste Storage</label>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
+        <visibleLines>4</visibleLines>
+    </fields>
+    
+    <!-- Water Source -->
+    <fields>
+        <fullName>Water_Source__c</fullName>
+        <externalId>false</externalId>
+        <label>Water Source</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>5</visibleLines>
+        <description>Description of water sources for drilling and operations</description>
+    </fields>
+    
+    <fields>
+        <fullName>Water_Source_Type__c</fullName>
+        <externalId>false</externalId>
+        <label>Water Source Type</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>MultiselectPicklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Groundwater Well</fullName>
+                    <default>false</default>
+                    <label>Groundwater Well</label>
+                </value>
+                <value>
+                    <fullName>Surface Water</fullName>
+                    <default>false</default>
+                    <label>Surface Water</label>
+                </value>
+                <value>
+                    <fullName>Municipal Supply</fullName>
+                    <default>false</default>
+                    <label>Municipal Supply</label>
+                </value>
+                <value>
+                    <fullName>Produced Water</fullName>
+                    <default>false</default>
+                    <label>Produced Water</label>
+                </value>
+                <value>
+                    <fullName>Recycled Water</fullName>
+                    <default>false</default>
+                    <label>Recycled Water</label>
+                </value>
+                <value>
+                    <fullName>Trucked Water</fullName>
+                    <default>false</default>
+                    <label>Trucked Water</label>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
+        <visibleLines>4</visibleLines>
+    </fields>
+    
+    <fields>
+        <fullName>Water_Rights_Required__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Water Rights Required</label>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    
+    <fields>
+        <fullName>Estimated_Water_Usage_Gallons__c</fullName>
+        <externalId>false</externalId>
+        <label>Estimated Water Usage (Gallons)</label>
+        <precision>12</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    
+    <!-- Reclamation Plan -->
+    <fields>
+        <fullName>Reclamation_Plan__c</fullName>
+        <externalId>false</externalId>
+        <label>Reclamation Plan</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>8</visibleLines>
+        <description>Detailed plan for site reclamation and restoration</description>
+    </fields>
+    
+    <fields>
+        <fullName>Interim_Reclamation__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Interim Reclamation</label>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+        <description>Indicates if interim reclamation will be performed</description>
+    </fields>
+    
+    <fields>
+        <fullName>Final_Reclamation_Timeline__c</fullName>
+        <externalId>false</externalId>
+        <label>Final Reclamation Timeline</label>
+        <length>1000</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+    </fields>
+    
+    <fields>
+        <fullName>Seed_Mix__c</fullName>
+        <externalId>false</externalId>
+        <label>Seed Mix</label>
+        <length>1000</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+        <description>Seed mix specifications for reclamation</description>
+    </fields>
+    
+    <!-- Cultural and Archaeological Surveys -->
+    <fields>
+        <fullName>Cultural_Archaeological_Surveys__c</fullName>
+        <externalId>false</externalId>
+        <label>Cultural/Archaeological Surveys</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>5</visibleLines>
+        <description>Results and recommendations from cultural and archaeological surveys</description>
+    </fields>
+    
+    <fields>
+        <fullName>Cultural_Survey_Complete__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Cultural Survey Complete</label>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    
+    <fields>
+        <fullName>Cultural_Resources_Identified__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Cultural Resources Identified</label>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    
+    <fields>
+        <fullName>SHPO_Consultation_Required__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>SHPO Consultation Required</label>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+        <description>State Historic Preservation Office consultation required</description>
+    </fields>
+    
+    <!-- Wildlife and Vegetation Surveys -->
+    <fields>
+        <fullName>Wildlife_Vegetation_Surveys__c</fullName>
+        <externalId>false</externalId>
+        <label>Wildlife/Vegetation Surveys</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>5</visibleLines>
+        <description>Results and recommendations from wildlife and vegetation surveys</description>
+    </fields>
+    
+    <fields>
+        <fullName>Wildlife_Survey_Complete__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Wildlife Survey Complete</label>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    
+    <fields>
+        <fullName>Threatened_Endangered_Species__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Threatened/Endangered Species</label>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    
+    <fields>
+        <fullName>Species_of_Concern__c</fullName>
+        <externalId>false</externalId>
+        <label>Species of Concern</label>
+        <length>1000</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+        <description>List of threatened, endangered, or sensitive species in the area</description>
+    </fields>
+    
+    <fields>
+        <fullName>Seasonal_Restrictions__c</fullName>
+        <externalId>false</externalId>
+        <label>Seasonal Restrictions</label>
+        <length>1000</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+        <description>Seasonal restrictions for wildlife protection</description>
+    </fields>
+    
+    <!-- Environmental Protection Measures -->
+    <fields>
+        <fullName>Soil_Protection_Measures__c</fullName>
+        <externalId>false</externalId>
+        <label>Soil Protection Measures</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>5</visibleLines>
+    </fields>
+    
+    <fields>
+        <fullName>Erosion_Control_Plan__c</fullName>
+        <externalId>false</externalId>
+        <label>Erosion Control Plan</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>5</visibleLines>
+    </fields>
+    
+    <fields>
+        <fullName>Weed_Control_Plan__c</fullName>
+        <externalId>false</externalId>
+        <label>Weed Control Plan</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+    </fields>
+    
+    <!-- Visual Impact Assessment -->
+    <fields>
+        <fullName>Visual_Impact_Assessment__c</fullName>
+        <externalId>false</externalId>
+        <label>Visual Impact Assessment</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>5</visibleLines>
+        <description>Assessment of visual impacts and mitigation measures</description>
+    </fields>
+    
+    <fields>
+        <fullName>Visual_Mitigation_Required__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Visual Mitigation Required</label>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    
+    <!-- Air Quality -->
+    <fields>
+        <fullName>Air_Quality_Impact__c</fullName>
+        <externalId>false</externalId>
+        <label>Air Quality Impact</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Minimal</fullName>
+                    <default>true</default>
+                    <label>Minimal</label>
+                </value>
+                <value>
+                    <fullName>Moderate</fullName>
+                    <default>false</default>
+                    <label>Moderate</label>
+                </value>
+                <value>
+                    <fullName>Significant</fullName>
+                    <default>false</default>
+                    <label>Significant</label>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
+    </fields>
+    
+    <fields>
+        <fullName>Dust_Control_Plan__c</fullName>
+        <externalId>false</externalId>
+        <label>Dust Control Plan</label>
+        <length>1000</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+    </fields>
+    
+    <!-- Status and Approval -->
+    <fields>
+        <fullName>SUPO_Status__c</fullName>
+        <externalId>false</externalId>
+        <label>SUPO Status</label>
+        <required>false</required>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Draft</fullName>
+                    <default>true</default>
+                    <label>Draft</label>
+                </value>
+                <value>
+                    <fullName>Under Review</fullName>
+                    <default>false</default>
+                    <label>Under Review</label>
+                </value>
+                <value>
+                    <fullName>Approved</fullName>
+                    <default>false</default>
+                    <label>Approved</label>
+                </value>
+                <value>
+                    <fullName>Requires Revision</fullName>
+                    <default>false</default>
+                    <label>Requires Revision</label>
+                </value>
+                <value>
+                    <fullName>Rejected</fullName>
+                    <default>false</default>
+                    <label>Rejected</label>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
+    </fields>
+    
+    <fields>
+        <fullName>Environmental_Review_Date__c</fullName>
+        <externalId>false</externalId>
+        <label>Environmental Review Date</label>
+        <required>false</required>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    
+    <fields>
+        <fullName>Approved_By__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Approved By</label>
+        <referenceTo>User</referenceTo>
+        <relationshipName>Surface_Use_Plans_Approved</relationshipName>
+        <required>false</required>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    
+    <fields>
+        <fullName>Approval_Date__c</fullName>
+        <externalId>false</externalId>
+        <label>Approval Date</label>
+        <required>false</required>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    
+    <!-- Review Comments -->
+    <fields>
+        <fullName>Review_Comments__c</fullName>
+        <externalId>false</externalId>
+        <label>Review Comments</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>5</visibleLines>
+        <description>Comments from environmental reviewers</description>
+    </fields>
+    
+    <!-- Notes -->
+    <fields>
+        <fullName>Notes__c</fullName>
+        <externalId>false</externalId>
+        <label>Notes</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>5</visibleLines>
+    </fields>
+</CustomObject>

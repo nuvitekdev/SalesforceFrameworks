@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Well_Type__c</fullName>
+    <deprecated>false</deprecated>
+    <description>Classification of the proposed well based on drilling technique and resource extraction method.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Select the type of well being proposed for this APD application.</inlineHelpText>
+    <label>Well Type</label>
+    <required>true</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Vertical</fullName>
+                <default>false</default>
+                <label>Vertical</label>
+            </value>
+            <value>
+                <fullName>Horizontal</fullName>
+                <default>false</default>
+                <label>Horizontal</label>
+            </value>
+            <value>
+                <fullName>Directional</fullName>
+                <default>false</default>
+                <label>Directional</label>
+            </value>
+            <value>
+                <fullName>Multi-lateral</fullName>
+                <default>false</default>
+                <label>Multi-lateral</label>
+            </value>
+            <value>
+                <fullName>Re-entry</fullName>
+                <default>false</default>
+                <label>Re-entry</label>
+            </value>
+            <value>
+                <fullName>Sidetrack</fullName>
+                <default>false</default>
+                <label>Sidetrack</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

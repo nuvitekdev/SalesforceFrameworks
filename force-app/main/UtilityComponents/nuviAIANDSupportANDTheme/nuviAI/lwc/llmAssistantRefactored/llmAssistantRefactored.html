@@ -1,11 +1,19 @@
 <template>
+    <div style={componentStyle} data-flow-context={conversationOutput}>
     <lightning-card>
         <!-- Title Section -->
         <div slot="title">
-            <div class="slds-grid slds-grid_align-spread">
-                <div class="slds-col">
-                    <lightning-icon icon-name="standard:bot" size="small" class="slds-m-right_small"></lightning-icon>
-                    <span class="slds-text-heading_small">{cardTitle}</span>
+            <div class="title-container">
+                <div class="title-left">
+                    <lightning-icon icon-name="standard:bot" size="small" class="slds-m-right_small bot-icon"></lightning-icon>
+                    <span class="title-text">{cardTitle}</span>
+                </div>
+                <div class="title-spacer"></div>
+                <div class="title-right" if:true={pageComponentsScanned}>
+                    <span class="scan-badge">
+                        <lightning-icon icon-name="utility:success" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                        Page scanned
+                    </span>
                 </div>
             </div>
         </div>
@@ -49,54 +57,95 @@
             ></lightning-textarea>
 
             <!-- Action Buttons -->
-            <div class="slds-button-group slds-m-bottom_medium">
-                <lightning-button
-                    variant="brand"
-                    label={askButtonLabel}
-                    onclick={handleAsk}
-                    disabled={isAskDisabled}
-                ></lightning-button>
+            <div class="action-buttons-container slds-m-bottom_medium">
+                <!-- Ask -->
+                <button class="custom-button primary-button" onclick={handleAsk} disabled={areActionsDisabled}>
+                    <span class="button-icon">
+                        <svg width="16" height="16" viewBox="0 0 52 52"><path d="M30.2 3.2c-2.4-2.4-6.3-2.4-8.7 0-2.4 2.4-2.4 6.3 0 8.7l1.4 1.4c.7.7 1.9.2 1.9-.8V9.3c0-1.8 1.6-3.4 3.4-3.4h3.2c1 0 1.5-1.2.8-1.9L30.2 3.2zM33.5 15.5h-14c-.8 0-1.5.7-1.5 1.5v14c0 .8.7 1.5 1.5 1.5h14c.8 0 1.5-.7 1.5-1.5V17c0-.8-.7-1.5-1.5-1.5zM26.5 40h-7c-.8 0-1.5.7-1.5 1.5v3c0 .8.7 1.5 1.5 1.5h7c.8 0 1.5-.7 1.5-1.5v-3c0-.8-.7-1.5-1.5-1.5zM39.5 40h-7c-.8 0-1.5.7-1.5 1.5v3c0 .8.7 1.5 1.5 1.5h7c.8 0 1.5-.7 1.5-1.5z"></path></svg>
+                    </span>
+                    <span class="button-label">{askButtonLabel}</span>
+                </button>
 
+                <!-- Summarize / Analyze Record -->
                 <template if:true={effectiveRecordId}>
-                    <lightning-button
-                        variant="neutral"
-                        label="Summarize"
-                        onclick={handleSummarize}
-                        disabled={isAskDisabled}
-                    ></lightning-button>
+                    <button class="custom-button secondary-button" onclick={handleSummarize} disabled={areActionsDisabled}>
+                        <span class="button-icon">
+                            <svg width="16" height="16" viewBox="0 0 52 52"><path d="M5 40.5c0 .8.7 1.5 1.5 1.5H8v2c0 1.1.9 2 2 2h32c1.1 0 2-.9 2-2v-30c0-1.1-.9-2-2-2H10c-1.1 0-2 .9-2 2v2H6.5c-.8 0-1.5.7-1.5 1.5v5c0 .8.7 1.5 1.5 1.5H8v4H6.5c-.8 0-1.5.7-1.5 1.5v5c0 .8.7 1.5 1.5 1.5H8v4H6.5c-.8 0-1.5.7-1.5 1.5v5zM36 20c0 .6-.4 1-1 1H17c-.6 0-1-.4-1-1v-2c0-.6.4-1 1-1h18c.6 0 1 .4 1 1v2zm0 8c0 .6-.4 1-1 1H17c-.6 0-1-.4-1-1v-2c0-.6.4-1 1-1h18c.6 0 1 .4 1 1v2zm-18 7c0-.6.4-1 1-1h12c.6 0 1 .4 1 1v2c0 .6-.4 1-1 1H19c-.6 0-1-.4-1-1v-2z"></path></svg>
+                        </span>
+                        <span class="button-label">Analyze Record</span>
+                    </button>
                 </template>
 
+                <!-- Analyze Images -->
                 <template if:true={showImageAnalysisButton}>
-                    <lightning-button
-                        variant="neutral"
-                        label="Analyze Images"
-                        onclick={handleAnalyzeImages}
-                        disabled={isAskDisabled}
-                    ></lightning-button>
+                    <button class="custom-button secondary-button" onclick={handleAnalyzeImages} disabled={areActionsDisabled}>
+                        <span class="button-icon"><svg width="16" height="16" viewBox="0 0 52 52"><path d="M10 2h32c2.2 0 4 1.8 4 4v40c0 2.2-1.8 4-4 4H10c-2.2 0-4-1.8-4-4V6c0-2.2 1.8-4 4-4zm2 4v18l7.5-5 7.5 5V6H12zm12 18c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm8 12c0-4.4-3.6-8-8-8s-8 3.6-8 8v4h16v-4z"/></svg></span>
+                        <span class="button-label">Analyze Images</span>
+                    </button>
                 </template>
 
+                <!-- Analyze Documents -->
                 <template if:true={showAnalyzeButton}>
-                    <lightning-button
-                        variant="neutral"
-                        label="Analyze Documents"
-                        onclick={handleShowDocumentModal}
-                        disabled={isAskDisabled}
-                    ></lightning-button>
+                    <button class="custom-button secondary-button" onclick={handleShowDocumentModal} disabled={areActionsDisabled}>
+                        <span class="button-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.9 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-2v-2h2v2zm0-4h-2v-2h2v2zm-2-4H8V8h2v2z"/></svg></span>
+                        <span class="button-label">Analyze Documents</span>
+                    </button>
                 </template>
 
+                <!-- Generate Report -->
                 <template if:true={enableGenerateReport}>
-                    <lightning-button
-                        variant="neutral"
-                        label="Generate Report"
-                        onclick={handleGenerateReport}
-                        disabled={isAskDisabled}
-                    ></lightning-button>
+                    <button class="custom-button secondary-button" onclick={handleGenerateReport} disabled={areActionsDisabled}>
+                        <span class="button-icon"><svg width="16" height="16" viewBox="0 0 52 52"><path d="M8 6h36a2 2 0 012 2v36a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2zm6 30h24v-4H14v4zm0-10h24v-4H14v4zm0-10h24V12H14v4z"/></svg></span>
+                        <span class="button-label">Generate Report</span>
+                    </button>
                 </template>
-            </div>
+
+                <!-- Compare -->
+                <template if:true={enableComparison}>
+                    <button class="custom-button secondary-button" onclick={handleComparisonClick} disabled={areActionsDisabled}>
+                        <span class="button-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 3H5a2 2 0 00-2 2v5h2V5h5V3zm4 0h5a2 2 0 012 2v5h-2V5h-5V3zM3 14v5a2 2 0 002 2h5v-2H5v-5H3zm16 7a2 2 0 002-2v-5h-2v5h-5v2h5z"/></svg></span>
+                        <span class="button-label">Compare</span>
+                    </button>
+                </template>
+            </div><!-- Current Response -->
+            <template if:true={response}>
+                <div class="response-container slds-m-top_medium">
+                    <div class="slds-grid slds-grid_align-center slds-gutters slds-m-bottom_small">
+                        <div class="slds-col slds-size_12-of-12">
+                            <span class="model-badge slds-badge slds-theme_success slds-m-bottom_small" style="white-space: normal;">
+                                Response generated using {responseModelLabel}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="response-text">
+                        <lightning-formatted-rich-text value={formattedResponse}></lightning-formatted-rich-text>
+                    </div>
+                    <div class="slds-grid slds-grid_align-end slds-m-top_medium">
+                        <lightning-button-icon 
+                            icon-name="utility:copy_to_clipboard" 
+                            alternative-text="Copy to clipboard" 
+                            title="Copy to clipboard"
+                            onclick={handleCopyResponse}
+                            class="slds-m-left_x-small copy-button">
+                        </lightning-button-icon>
+                    </div>
+                    <template if:true={analysisFieldApiName}>
+                        <div class="slds-m-top_small">
+                            <lightning-button
+                                variant="brand-outline"
+                                label="Save Analysis to Field"
+                                onclick={handleSaveAnalysisClick}
+                            ></lightning-button>
+                        </div>
+                    </template>
+                </div>
+            </template>
 
             <!-- Conversation Display Component -->
             <c-llm-conversation-display
                 conversation-history={conversationHistory}
+                conversation-summary={conversationSummary}
+                history-info={historyLimitMessage}
                 user-chat-bubble-color={userChatBubbleColor}
                 user-chat-text-color={userChatTextColor}
                 ai-chat-bubble-color={aiChatBubbleColor}
@@ -105,13 +154,25 @@
                 is-loading={isLoading}
                 onclearconversation={handleClearConversation}
                 ontogglehistory={handleToggleHistory}
+                oncopymessage={handleCopyMessage}
             ></c-llm-conversation-display>
 
-            <!-- Current Response -->
-            <template if:true={response}>
-                <div class="slds-box slds-m-top_medium">
-                    <h3 class="slds-text-heading_small slds-m-bottom_small">Response</h3>
-                    <lightning-formatted-rich-text value={response}></lightning-formatted-rich-text>
+            <!-- Comparison Banner -->
+            <template if:true={showComparisonBanner}>
+                <div class="slds-notify slds-notify_alert slds-m-vertical_medium {comparisonBannerClass}">
+                    <span class="slds-assistive-text">status</span>
+                    <lightning-icon icon-name={comparisonIconName} size="small" class="slds-m-right_small"></lightning-icon>
+                    <div class="slds-notify__content">
+                        <h2 class="slds-text-heading_small">Standards Compliance: {comparisonBannerMessage}</h2>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Comparison Details -->
+            <template if:true={comparisonResult}>
+                <div class="slds-box slds-m-top_small">
+                    <h3 class="slds-text-heading_small slds-m-bottom_small">Comparison Result</h3>
+                    <lightning-formatted-rich-text value={comparisonResultHtml}></lightning-formatted-rich-text>
                 </div>
             </template>
 
@@ -124,6 +185,147 @@
                 oncancel={handleDocumentModalCancel}
                 onconfirm={handleDocumentModalConfirm}
             ></c-llm-document-modal>
+
+            <!-- Field Extraction Modal -->
+            <c-llm-field-extraction-modal
+                show-modal={showExtractFieldsModal}
+                fields={extractedFieldsData}
+                oncancel={handleFieldExtractionCancel}
+                onconfirm={handleFieldExtractionConfirm}
+            ></c-llm-field-extraction-modal>
+
+            <!-- Comparison Modal -->
+            <template if:true={showComparisonModal}>
+                <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                                    title="Close"
+                                    onclick={handleComparisonModalCancel}>
+                                <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse" size="small"></lightning-icon>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                            <h2 class="slds-modal__title slds-hyphenate">Content to Compare</h2>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <lightning-textarea
+                                name="comparisonInput"
+                                label="Paste or type the content to evaluate"
+                                value={comparisonInput}
+                                onchange={handleComparisonInputChange}
+                                placeholder="Enter text to evaluate against the configured rules"
+                                class="slds-m-bottom_small"
+                            ></lightning-textarea>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <button class="slds-button slds-button_neutral" onclick={handleComparisonModalCancel}>Cancel</button>
+                            <button class="slds-button slds-button_brand" onclick={handleComparisonModalConfirm} disabled={comparisonCheckLoading}>
+                                Compare
+                            </button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+
+            <!-- Save Analysis Modal -->
+            <template if:true={showSaveAnalysisModal}>
+                <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                                    title="Close"
+                                    onclick={handleSaveAnalysisCancel}>
+                                <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse" size="small"></lightning-icon>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                            <h2 class="slds-modal__title slds-hyphenate">Save Analysis</h2>
+                            <p>Preview the synopsis to save to {analysisFieldApiName} (characters: {analysisSummaryCharCount}/600)</p>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <lightning-textarea
+                                name="analysisSummary"
+                                label="Synopsis"
+                                value={analysisSummary}
+                                disabled
+                            ></lightning-textarea>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <button class="slds-button slds-button_neutral" onclick={handleSaveAnalysisCancel}>Cancel</button>
+                            <button class="slds-button slds-button_brand" onclick={handleSaveAnalysisConfirm}>Save</button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+
+            <!-- Report Modal -->
+            <template if:true={showReportModal}>
+                <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleReportModalClose}>
+                                <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse" size="small"></lightning-icon>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                            <h2 class="slds-modal__title slds-hyphenate">Generated Report</h2>
+                            <div class="slds-m-top_small slds-grid slds-grid_align-spread">
+                                <div class="slds-col">
+                                    <lightning-combobox
+                                        name="chartType"
+                                        label="Chart Type"
+                                        value={reportChartType}
+                                        options={chartTypeOptions}
+                                        onchange={handleChartTypeChange}
+                                    ></lightning-combobox>
+                                </div>
+                            </div>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <template if:true={reportError}>
+                                <div class="slds-text-color_error slds-m-bottom_small">{reportError}</div>
+                            </template>
+                            <template if:true={reportData}>
+                                <template if:true={reportData.chartData.labels.length}>
+                                    <template if:false={isTable}>
+                                        <div style="height: 320px;">
+                                            <canvas class="chart-canvas"></canvas>
+                                        </div>
+                                    </template>
+                                    <template if:true={isTable}>
+                                        <div class="slds-m-top_small">
+                                            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                                <thead>
+                                                    <tr><th>Category</th><th>Value</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <template for:each={reportData.records} for:item="rec">
+                                                        <tr key={rec.label}><td>{rec.label}</td><td>{rec.value}</td></tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </template>
+                                </template>
+                                <template if:false={reportData.chartData.labels.length}>
+                                    <p>No structured data detected. Raw response shown below.</p>
+                                </template>
+                                <div class="slds-m-top_medium">
+                                    <h3 class="slds-text-heading_small slds-m-bottom_x-small">AI Response</h3>
+                                    <lightning-formatted-rich-text value={reportData.rawResponse}></lightning-formatted-rich-text>
+                                </div>
+                            </template>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <button class="slds-button slds-button_brand" onclick={handleReportModalClose}>Close</button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
         </div>
     </lightning-card>
+    </div>
 </template>
+
+

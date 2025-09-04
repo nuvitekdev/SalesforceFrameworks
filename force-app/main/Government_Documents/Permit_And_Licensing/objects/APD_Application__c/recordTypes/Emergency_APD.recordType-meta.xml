@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Emergency_APD</fullName>
+    <active>true</active>
+    <businessProcess>Emergency_APD_Process</businessProcess>
+    <description>Emergency APD applications requiring immediate processing (typically 1-5 days). Reserved for situations involving imminent safety hazards, environmental threats, or critical infrastructure needs.</description>
+    <label>Emergency APD</label>
+    <picklistValues>
+        <picklist>Priority_Level__c</picklist>
+        <values>
+            <fullName>Emergency</fullName>
+            <default>true</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Status__c</picklist>
+        <values>
+            <fullName>Draft</fullName>
+            <default>true</default>
+        </values>
+        <values>
+            <fullName>Submitted</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Under Review</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Pending Decision</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Approved</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Approved with Conditions</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Denied</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Withdrawn</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Suspended</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Well_Type__c</picklist>
+        <values>
+            <fullName>Vertical</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Horizontal</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Directional</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Multi-lateral</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Re-entry</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Sidetrack</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>BLM_Field_Office__c</picklist>
+        <values>
+            <fullName>Bakersfield Field Office</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Buffalo Field Office</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Carlsbad Field Office</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Casper Field Office</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Colorado River Valley Field Office</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Grand Junction Field Office</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Little Snake Field Office</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Miles City Field Office</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Rawlins Field Office</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>White River Field Office</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>

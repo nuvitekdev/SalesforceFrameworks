@@ -1,0 +1,103 @@
+ADP  3160-3  Form  Fields  
+(based  on  AFMSS  electronic  form  example)  
+Operator  Information  Section  
+Desc  Field  Type  Field  Size  Req’d  Values  
+Operator  Name  Text  255  Yes  Legal  entity  
+Address  Text  255  Yes  Mailing  address  
+City  Text  100  Yes   
+State  Dropdown  2  Yes  US  states/territories  
+Zip  Code  Text  10  Yes  #####  /  #####-####  
+Contact  Name  Text  150  Yes  Primary  representative  
+Contact  Phone  Text  20  Yes  ###-###-####  
+Contact  Email  Text  150  Yes  Valid  email  
+Bond  Number(s)  Text  30  Yes  Fed  or  state  well  bond  
+Bond  Type  Dropdown  N/A  Yes  Nationwide,  Statewide,  Lease,  Individual  Well  
+ 
+Lease/Agreement  Information  Section   
+Desc  Field  Type  Field  Size  Req’d  Values  
+Lease  Type  Single-select,  dropdown  or  checkbox  or  radio  button  
+N/A  Yes  Federal,  State,  Fee,  Tribal  
+Will  this  well  produce  from  this  lease?  
+Single-select,  dropdown  or  checkbox  or  radio  button  
+N/A  Yes  Yes  No  
+Lease  Number  Text  30  Yes  e.g.,  NM-12345  
+Unit  or  CA  Agreement  Number  
+Text  30  No   
+Elevation  (MSL)  Text  100  Yes   
+Latitude  Text  100  Yes   
+
+
+
+Longitude  
+State  Text  100  Yes   
+Meridian  Text  100  Yes   
+County  Text  100  Yes   
+Township  Text  100  Yes   
+Range  Text  100  Yes   
+Section  Text  100  Yes   
+ 
+Well  Pad  Information   
+Desc  Field  Type  Field  Size  Req’d  Values  
+Pad  Name  Text  100  Yes  Operator-assigned  
+Pad  ID  System/Auto  N/A  System  Auto-generated  in  AFMSS  
+Number  of  Wells  on  Pad  
+Number  3  Yes  Integer  
+Surface  Ownership  Dropdown  N/A  Yes  Federal,  Tribal,  State,  Fee  
+Surface  Owner  Name  Text  150  Conditional  Required  if  non-federal  
+Pad  Polygon  /  Map  GIS  Upload  N/A  Yes  Shape  file,  KMZ,  etc.  
+Access  Road  Description  
+Text  1000  Conditional  Required  if  new  road  
+Facilities  on  Pad  Multi-select  N/A  Optional  Separator  tanks,  flare,  compressor,  etc.  
+ 
+Well  Information   
+Desc  Field  Type  Field  Size  Req’d  Values  
+Well  Name  &  Number  Text  100  Yes  Must  follow  API  naming  
+API  Well  Number  Text  15  Conditional  Assigned  if  existing  wellbore  
+Well  Type  Dropdown  N/A  Yes  Oil,  Gas,  CBM,  Injection,  Exploratory  
+Well  Orientation  Dropdown  N/A  Yes  Vertical,  Directional,  Horizontal,  Sidetrack  
+Field/Pool  Name  Text  100  Yes  Reservoir  name  
+
+
+
+Proposed  MD  /  TVD  Number  6,0  Yes  Depth  in  feet  
+Bottom  Hole  Location  PLSS  /  Lat-Long  
+N/A  Yes  Coordinates  
+Surface  Hole  Location  PLSS  /  Lat-Long  
+N/A  Yes  Coordinates  
+Kickoff  Point  Number  6,0  Conditional  Required  for  directional/horizontal  
+H ₂ S  Program  Required  Checkbox  Conditional  Yes/No   
+Is  this  a  reentry?  Checkbox  Yes  Yes/No   
+ 
+Drilling  Plan  Information   
+Desc  Field  Type  Field  Size  Req’d  Values  
+Drilling  Plan  Narrative  File  Upload  N/A  Yes  PDF/Word  
+Casing  Program  Table  Table  N/A  Yes  Casing  size,  grade,  weight,  setting  depth  
+Cement  Program  Table  Table  N/A  Yes  Slurry  design,  yield,  interval  
+Mud  Program  Text  1000  Yes  Type,  properties,  weight  
+BOP  Program  Dropdown  +  Text  
+N/A  Yes  Surface/intermediate/production  details  
+Expected  Formation  Pressures  
+Text  1000  Optional  psi  ranges  
+Expected  Freshwater  Zones  
+Text  1000  Yes  Protection  requirements  
+Expected  Lost  Circulation  Zones  
+Text  1000  Optional  Narrative  
+Variance  Requests  Multi-line  Text  1000  Conditional  Specific  CFR  variances  
+ 
+Surface  User  Plan  of  Operations  (SUPO)   
+Desc  Field  Type  Field  Size  Req’d  Values  
+SUPO  Narrative  File  Upload  N/A  Yes  PDF/Word  
+Existing  Roads  Description  
+Text  1000  Yes  Condition,  upgrades  
+New  Road  Description  Text  1000  Conditional  Required  if  new  construction  
+
+
+
+Location  of  Facilities  Text/Map  N/A  Yes  On/near  pad  
+Water  Source  Text  500  Yes  Source  name,  capacity  
+Reclamation  Plan  Text  1000  Yes  Interim  &  final  
+Cultural/Archaeological  Survey  
+File  Upload  N/A  Conditional  Required  in  sensitive  areas  
+Wildlife/Vegetation  Surveys  
+File  Upload  N/A  Conditional  If  applicable  
+ 

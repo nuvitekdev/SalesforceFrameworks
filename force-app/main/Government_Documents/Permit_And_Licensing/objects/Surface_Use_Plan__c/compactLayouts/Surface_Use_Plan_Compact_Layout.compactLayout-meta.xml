@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Surface_Use_Plan_Compact_Layout</fullName>
+    <fields>Name</fields>
+    <fields>SUPO_Status__c</fields>
+    <fields>New_Road_Construction__c</fields>
+    <fields>Cultural_Survey_Complete__c</fields>
+    <fields>Wildlife_Survey_Complete__c</fields>
+    <fields>Approved_By__c</fields>
+    <label>Surface Use Plan Compact Layout</label>
+</CompactLayout>

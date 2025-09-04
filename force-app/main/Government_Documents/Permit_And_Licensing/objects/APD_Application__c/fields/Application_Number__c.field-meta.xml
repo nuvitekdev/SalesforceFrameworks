@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Application_Number__c</fullName>
+    <caseSensitive>false</caseSensitive>
+    <deprecated>false</deprecated>
+    <description>Unique identifier for the APD application as assigned by the operator or system. Must follow DOI application numbering standards.</description>
+    <externalId>true</externalId>
+    <inlineHelpText>Enter the unique application number for this APD. This number will be used for tracking and correspondence.</inlineHelpText>
+    <label>Application Number</label>
+    <length>50</length>
+    <required>true</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>true</unique>
+</CustomField>

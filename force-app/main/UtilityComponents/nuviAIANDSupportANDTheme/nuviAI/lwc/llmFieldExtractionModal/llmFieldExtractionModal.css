@@ -1,0 +1,9 @@
+.field-list {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.slds-modal__content {
+    background: #fafaf9;
+}
+

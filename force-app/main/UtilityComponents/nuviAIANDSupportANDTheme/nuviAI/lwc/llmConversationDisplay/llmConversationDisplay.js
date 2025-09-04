@@ -9,6 +9,8 @@ export default class LlmConversationDisplay extends LightningElement {
     @api aiChatTextColor = '#000000';
     @api showHistory = false;
     @api isLoading = false;
+    @api conversationSummary = '';
+    @api historyInfo = '';
 
     get displayedMessages() {
         return this.conversationHistory.map(msg => ({
@@ -16,7 +18,8 @@ export default class LlmConversationDisplay extends LightningElement {
             formattedContent: this.formatContent(msg.content),
             formattedTime: msg.timestamp || MessageFormatter.formatTimestamp(),
             messageClass: this.getMessageClass(msg.isUser),
-            bubbleStyle: this.getBubbleStyle(msg.isUser)
+            bubbleStyle: this.getBubbleStyle(msg.isUser),
+            senderName: msg.isUser ? 'You' : 'AI Assistant'
         }));
     }
 
@@ -25,7 +28,11 @@ export default class LlmConversationDisplay extends LightningElement {
     }
 
     get conversationContainerClass() {
-        return `conversation-container ${this.showHistory ? '' : 'slds-hide'}`;
+        return 'conversation-container';
+    }
+
+    get toggleIconName() {
+        return this.showHistory ? 'utility:chevronup' : 'utility:chevrondown';
     }
 
     formatContent(content) {
@@ -59,5 +66,12 @@ export default class LlmConversationDisplay extends LightningElement {
 
     handleToggleHistory() {
         this.dispatchEvent(new CustomEvent('togglehistory'));
+    }
+
+    handleCopyClick(event) {
+        const content = event.currentTarget?.dataset?.message || '';
+        this.dispatchEvent(new CustomEvent('copymessage', {
+            detail: { content }
+        }));
     }
 }

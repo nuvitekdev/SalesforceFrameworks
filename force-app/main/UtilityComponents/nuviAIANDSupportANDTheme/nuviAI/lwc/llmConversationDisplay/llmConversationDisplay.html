@@ -5,11 +5,12 @@
             <h3 class="slds-text-heading_small">Conversation History</h3>
             <div>
                 <lightning-button-icon
-                    icon-name="utility:expand_alt"
+                    icon-name={toggleIconName}
                     alternative-text="Toggle History"
                     title="Toggle History"
                     onclick={handleToggleHistory}
-                    class="slds-m-left_x-small"
+                    class="toggle-chat-button slds-m-left_x-small"
+                    data-expanded={showHistory}
                 ></lightning-button-icon>
                 <lightning-button-icon
                     icon-name="utility:clear"
@@ -21,18 +22,40 @@
             </div>
         </div>
 
-        <div class={conversationContainerClass}>
+        <template if:true={historyInfo}>
+            <div class="history-info slds-text-body_small slds-text-color_weak slds-m-top_x-small slds-m-bottom_x-small">{historyInfo}</div>
+        </template>
+        <template if:true={conversationSummary}>
+            <div class="summary-container slds-m-bottom_small">
+                <div class="summary-header">
+                    <span class="summary-title">Summary</span>
+                </div>
+                <div class="summary-content">
+                    <lightning-formatted-rich-text value={conversationSummary}></lightning-formatted-rich-text>
+                </div>
+            </div>
+        </template>
+
+        <div class={conversationContainerClass} data-expanded={showHistory}>
             <template for:each={displayedMessages} for:item="msg">
                 <div key={msg.id} class={msg.messageClass}>
                     <div class="message-bubble" style={msg.bubbleStyle}>
                         <div class="message-header">
                             <span class="message-sender">
-                                {msg.isUser ? 'You' : 'AI Assistant'}
+                                {msg.senderName}
                             </span>
                             <span class="message-time">{msg.formattedTime}</span>
+                            <lightning-button-icon
+                                icon-name="utility:copy"
+                                alternative-text="Copy"
+                                title="Copy message"
+                                size="xx-small"
+                                class="slds-m-left_x-small"
+                                onclick={handleCopyClick}
+                                data-message={msg.content}
+                            ></lightning-button-icon>
                         </div>
                         <div class="message-content" 
-                             lwc:dom="manual" 
                              data-message-id={msg.id}>
                             <lightning-formatted-rich-text
                                 value={msg.formattedContent}
@@ -45,10 +68,16 @@
     </div>
 
     <!-- Loading Indicator -->
-    <div if:true={isLoading} class="slds-is-relative slds-m-vertical_medium">
-        <lightning-spinner
-            alternative-text="Processing..."
-            size="small"
-        ></lightning-spinner>
+    <div if:true={isLoading} class="enhanced-loading-container slds-m-vertical_medium">
+        <div class="loading-content">
+            <div class="loading-info">
+                <div class="loading-text">Processing your request...</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>

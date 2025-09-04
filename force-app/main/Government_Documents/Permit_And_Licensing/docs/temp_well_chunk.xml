@@ -1,0 +1,365 @@
+        <label>Kickoff Point Depth (ft)</label>
+        <precision>8</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+        <description>Depth where directional drilling begins</description>
+    </fields>
+    
+    <fields>
+        <fullName>Maximum_Inclination__c</fullName>
+        <externalId>false</externalId>
+        <label>Maximum Inclination (degrees)</label>
+        <precision>5</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    
+    <fields>
+        <fullName>Azimuth__c</fullName>
+        <externalId>false</externalId>
+        <label>Azimuth (degrees)</label>
+        <precision>5</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+        <description>Direction of horizontal leg (0-360 degrees)</description>
+    </fields>
+    
+    <!-- H2S Program -->
+    <fields>
+        <fullName>H2S_Program_Required__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>H2S Program Required</label>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+        <description>Indicates if Hydrogen Sulfide program is required</description>
+    </fields>
+    
+    <fields>
+        <fullName>Expected_H2S_Concentration__c</fullName>
+        <externalId>false</externalId>
+        <label>Expected H2S Concentration (ppm)</label>
+        <precision>8</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    
+    <!-- Reentry Information -->
+    <fields>
+        <fullName>Reentry_Flag__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Reentry Flag</label>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+        <description>Indicates if this is a reentry operation</description>
+    </fields>
+    
+    <fields>
+        <fullName>Original_Well_API__c</fullName>
+        <externalId>false</externalId>
+        <label>Original Well API</label>
+        <length>20</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+        <description>API number of original well for reentry operations</description>
+    </fields>
+    
+    <fields>
+        <fullName>Reason_for_Reentry__c</fullName>
+        <externalId>false</externalId>
+        <label>Reason for Reentry</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Deepening</fullName>
+                    <default>false</default>
+                    <label>Deepening</label>
+                </value>
+                <value>
+                    <fullName>Sidetrack</fullName>
+                    <default>false</default>
+                    <label>Sidetrack</label>
+                </value>
+                <value>
+                    <fullName>Workover</fullName>
+                    <default>false</default>
+                    <label>Workover</label>
+                </value>
+                <value>
+                    <fullName>Completion</fullName>
+                    <default>false</default>
+                    <label>Completion</label>
+                </value>
+                <value>
+                    <fullName>Plugback</fullName>
+                    <default>false</default>
+                    <label>Plugback</label>
+                </value>
+                <value>
+                    <fullName>Zone Change</fullName>
+                    <default>false</default>
+                    <label>Zone Change</label>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
+    </fields>
+    
+    <!-- Expected Formations -->
+    <fields>
+        <fullName>Primary_Target_Formation__c</fullName>
+        <externalId>false</externalId>
+        <label>Primary Target Formation</label>
+        <length>100</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    
+    <fields>
+        <fullName>Secondary_Target_Formation__c</fullName>
+        <externalId>false</externalId>
+        <label>Secondary Target Formation</label>
+        <length>100</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    
+    <fields>
+        <fullName>Expected_Formations__c</fullName>
+        <externalId>false</externalId>
+        <label>Expected Formations</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>5</visibleLines>
+        <description>List of all formations expected to be encountered</description>
+    </fields>
+    
+    <!-- Production Information -->
+    <fields>
+        <fullName>Estimated_Daily_Production__c</fullName>
+        <externalId>false</externalId>
+        <label>Estimated Daily Production</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+        <description>Estimated daily production (oil bbls/day, gas mcf/day)</description>
+    </fields>
+    
+    <fields>
+        <fullName>Estimated_Ultimate_Recovery__c</fullName>
+        <externalId>false</externalId>
+        <label>Estimated Ultimate Recovery</label>
+        <length>255</length>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+        <description>Estimated ultimate recovery over well life</description>
+    </fields>
+    
+    <!-- Completion Information -->
+    <fields>
+        <fullName>Planned_Completion_Type__c</fullName>
+        <externalId>false</externalId>
+        <label>Planned Completion Type</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Open Hole</fullName>
+                    <default>false</default>
+                    <label>Open Hole</label>
+                </value>
+                <value>
+                    <fullName>Cased Hole - Perforated</fullName>
+                    <default>false</default>
+                    <label>Cased Hole - Perforated</label>
+                </value>
+                <value>
+                    <fullName>Hydraulic Fracturing</fullName>
+                    <default>false</default>
+                    <label>Hydraulic Fracturing</label>
+                </value>
+                <value>
+                    <fullName>Multi-Stage Fracturing</fullName>
+                    <default>false</default>
+                    <label>Multi-Stage Fracturing</label>
+                </value>
+                <value>
+                    <fullName>Acidizing</fullName>
+                    <default>false</default>
+                    <label>Acidizing</label>
+                </value>
+                <value>
+                    <fullName>Natural Flow</fullName>
+                    <default>false</default>
+                    <label>Natural Flow</label>
+                </value>
+                <value>
+                    <fullName>Artificial Lift</fullName>
+                    <default>false</default>
+                    <label>Artificial Lift</label>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
+    </fields>
+    
+    <fields>
+        <fullName>Hydraulic_Fracturing_Planned__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Hydraulic Fracturing Planned</label>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    
+    <fields>
+        <fullName>Number_of_Frac_Stages__c</fullName>
+        <externalId>false</externalId>
+        <label>Number of Frac Stages</label>
+        <precision>3</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    
+    <!-- Status and Timing -->
+    <fields>
+        <fullName>Well_Status__c</fullName>
+        <externalId>false</externalId>
+        <label>Well Status</label>
+        <required>false</required>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Proposed</fullName>
+                    <default>true</default>
+                    <label>Proposed</label>
+                </value>
+                <value>
+                    <fullName>Approved</fullName>
+                    <default>false</default>
+                    <label>Approved</label>
+                </value>
+                <value>
+                    <fullName>Drilling</fullName>
+                    <default>false</default>
+                    <label>Drilling</label>
+                </value>
+                <value>
+                    <fullName>Completed</fullName>
+                    <default>false</default>
+                    <label>Completed</label>
+                </value>
+                <value>
+                    <fullName>Producing</fullName>
+                    <default>false</default>
+                    <label>Producing</label>
+                </value>
+                <value>
+                    <fullName>Shut-in</fullName>
+                    <default>false</default>
+                    <label>Shut-in</label>
+                </value>
+                <value>
+                    <fullName>Abandoned</fullName>
+                    <default>false</default>
+                    <label>Abandoned</label>
+                </value>
+                <value>
+                    <fullName>Plugged</fullName>
+                    <default>false</default>
+                    <label>Plugged</label>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
+    </fields>
+    
+    <fields>
+        <fullName>Planned_Spud_Date__c</fullName>
+        <externalId>false</externalId>
+        <label>Planned Spud Date</label>
+        <required>false</required>
+        <trackHistory>true</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    
+    <fields>
+        <fullName>Estimated_Drilling_Days__c</fullName>
+        <externalId>false</externalId>
+        <label>Estimated Drilling Days</label>
+        <precision>4</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    
+    <!-- Notes -->
+    <fields>
+        <fullName>Notes__c</fullName>
+        <externalId>false</externalId>
+        <label>Notes</label>
+        <length>32768</length>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>5</visibleLines>
+    </fields>
+</CustomObject>
