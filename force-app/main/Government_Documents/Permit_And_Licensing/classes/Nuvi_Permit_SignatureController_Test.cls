@@ -13,4 +13,3 @@ private class Nuvi_Permit_SignatureController_Test {
         System.assertNotEquals(null, sigs, 'Should return a list (possibly empty)');
     }
 }
-

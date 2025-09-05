@@ -25,4 +25,3 @@
 .stat.approved .value { color: var(--nuvi-primary); }
 .stat.pending .value { color: #ff9f0a; }
 .stat.draft .value { color: #6e6e73; }
-

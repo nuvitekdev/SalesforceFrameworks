@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Lease_Number__c</fullName>
+    <description>Official lease number for the property where drilling will occur</description>
     <externalId>true</externalId>
+    <inlineHelpText>Enter the official lease number as shown on lease documents (e.g., MTM-12345)</inlineHelpText>
     <label>Lease Number</label>
     <length>30</length>
     <required>true</required>
+    <trackFeedHistory>false</trackFeedHistory>
     <trackHistory>true</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Text</type>
     <unique>false</unique>
-    <description>Official lease number for the property where drilling will occur</description>
-    <inlineHelpText>Enter the official lease number as shown on lease documents (e.g., MTM-12345)</inlineHelpText>
 </CustomField>

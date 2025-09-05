@@ -2,16 +2,26 @@
 <CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
     <brand>
         <headerColor>#22BDC1</headerColor>
+        <logo>usda</logo>
+        <logoVersion>1</logoVersion>
+        <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
     </brand>
-    <description>Nuvi Permit workspace app</description>
+    <description>Permit &amp; Licensing workspace for applications, reviews, environmental planning, assets/payments, and analytics with executive insights.</description>
+    <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
     <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
     <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
     <label>Nuvi Permit</label>
     <navType>Standard</navType>
-    <formFactors>Large</formFactors>
-    <formFactors>Small</formFactors>
-    <tabs>standard-Report</tabs>
-    <tabs>standard-Dashboard</tabs>
+    <tabs>Nuvi_Permit_Center</tabs>
+    <tabs>Nuvi_Permit_Analytics</tabs>
+    <tabs>Nuvi_Permit_Executive</tabs>
+    <tabs>Nuvi_Permit_Applications_Hub</tabs>
+    <tabs>Nuvi_Permit_Reviews_Hub</tabs>
+    <tabs>Nuvi_Permit_Environmental_Hub</tabs>
+    <tabs>Nuvi_Permit_Assets_Hub</tabs>
     <tabs>APD_Application__c</tabs>
     <tabs>Review_Task__c</tabs>
     <tabs>Public_Comment__c</tabs>

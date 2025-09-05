@@ -2,7 +2,6 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>API_Number__c</fullName>
     <caseSensitive>false</caseSensitive>
-    <deprecated>false</deprecated>
     <description>American Petroleum Institute (API) well number - unique 14-digit identifier assigned to each well by regulatory authorities.</description>
     <externalId>true</externalId>
     <inlineHelpText>Enter the 14-digit API number in format: XX-XXX-XXXXX-XX-XX. This is a unique identifier for the well.</inlineHelpText>

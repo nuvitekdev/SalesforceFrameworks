@@ -3,7 +3,9 @@
     <fullName>AI_Processing_Error__c</fullName>
     <label>AI Processing Error</label>
     <length>32768</length>
-    <visibleLines>3</visibleLines>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
     <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
 </CustomField>
-

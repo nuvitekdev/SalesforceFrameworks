@@ -4,4 +4,3 @@ public with sharing class Nuvi_Permit_GISProximityService {
         return GISProximityService.getProximityAlerts(latitude, longitude);
     }
 }
-

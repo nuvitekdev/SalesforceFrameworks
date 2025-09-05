@@ -42,4 +42,3 @@ export default class NuviPermitPublicCommentsManager extends LightningElement {
     setTimeout(() => { return; }, 0);
   }
 }
-

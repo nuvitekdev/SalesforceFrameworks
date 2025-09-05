@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Unit_Agreement_Number__c</fullName>
+    <description>Unit agreement number if the lease is part of a unitized development</description>
     <externalId>false</externalId>
+    <inlineHelpText>Enter unit agreement number if applicable (required for unitized developments)</inlineHelpText>
     <label>Unit Agreement Number</label>
     <length>30</length>
     <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Text</type>
     <unique>false</unique>
-    <description>Unit agreement number if the lease is part of a unitized development</description>
-    <inlineHelpText>Enter unit agreement number if applicable (required for unitized developments)</inlineHelpText>
 </CustomField>

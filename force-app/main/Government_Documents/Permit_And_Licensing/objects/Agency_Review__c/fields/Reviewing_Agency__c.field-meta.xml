@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Reviewing_Agency__c</fullName>
-    <deprecated>false</deprecated>
     <description>The federal agency responsible for conducting this specific review of the APD application.</description>
-    <externalId>false</externalId>
     <inlineHelpText>Select the agency conducting this review.</inlineHelpText>
     <label>Reviewing Agency</label>
     <required>true</required>
+    <trackFeedHistory>false</trackFeedHistory>
     <trackHistory>true</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Picklist</type>
@@ -30,9 +29,9 @@
                 <label>Bureau of Indian Affairs (BIA)</label>
             </value>
             <value>
-                <fullName>Solicitor's Office (SOL)</fullName>
+                <fullName>Solicitor&apos;s Office (SOL)</fullName>
                 <default>false</default>
-                <label>Solicitor's Office (SOL)</label>
+                <label>Solicitor&apos;s Office (SOL)</label>
             </value>
             <value>
                 <fullName>Fish and Wildlife Service (FWS)</fullName>

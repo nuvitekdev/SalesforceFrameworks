@@ -149,4 +149,3 @@ export default class NuviPermitPrint extends NavigationMixin(LightningElement) {
   navigateToSigner() { this[NavigationMixin.Navigate]({ type: 'standard__recordPage', attributes: { recordId: this.recordId, objectApiName: 'APD_Application__c', actionName: 'view' } }); }
   showToast(title, message, variant) { this.dispatchEvent(new ShowToastEvent({ title, message, variant })); }
 }
-

@@ -12,4 +12,3 @@ export default class NuviPermitOperatorDashboard extends LightningElement {
   @wire(getMyDashboard)
   wired({ data }) { if (data) this.data = data; }
 }
-

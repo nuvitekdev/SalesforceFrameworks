@@ -363,4 +363,3 @@ public with sharing class Nuvi_Permit_ApplicationService {
      */
     public class InsufficientPermissionsException extends Exception {}
 }
-

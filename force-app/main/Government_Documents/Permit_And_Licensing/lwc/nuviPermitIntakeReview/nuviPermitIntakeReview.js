@@ -16,4 +16,3 @@ export default class NuviPermitIntakeReview extends LightningElement {
     setTimeout(() => { return; }, 0);
   }
 }
-

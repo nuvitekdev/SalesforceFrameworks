@@ -65,6 +65,8 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
   @api heroBackgroundImage;
   @api heroTitle = "Experience the Future Today";
   @api heroSubtitle = "Discover innovative solutions designed with you in mind";
+  @api heroTitleSize; // e.g., "40px"
+  @api heroSubtitleSize; // e.g., "20px"
   @api heroCTAPrimaryLabel = "Get Started";
   @api heroCTAPrimaryUrl;
   @api heroCTASecondaryLabel = "Learn More";
@@ -99,9 +101,9 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
   // Reactive state tracking
   @track scrolled = false;
   @track mobileMenuOpen = false;
-  // @track helpFormOpen = false; // COMMENTED OUT - not used
+  @track helpFormOpen = false;
   @track fabMenuOpen = false;
-  // @track llmAssistantOpen = false; // COMMENTED OUT - not used
+  @track llmAssistantOpen = false;
   @track styleInjectionTargets = [];
   @track mutationObserver;
   @track ootbComponentsStyled = false;
@@ -932,7 +934,6 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
     });
   }
 
-  /* COMMENTED OUT - Help Form not used
   // Toggle the help form (which is now the Support Requester)
   toggleHelpForm() {
     this.helpFormOpen = !this.helpFormOpen;
@@ -943,7 +944,6 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
       this.llmAssistantOpen = false;
     }
   }
-  */
 
   // Toggle the FAB menu
   toggleFabMenu() {
@@ -951,7 +951,6 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
     this.fabMenuOpen = !this.fabMenuOpen;
   }
 
-  /* COMMENTED OUT - LLM Assistant not used
   // Toggle the LLM Assistant dialog
   toggleLlmAssistant() {
     this.llmAssistantOpen = !this.llmAssistantOpen;
@@ -962,12 +961,12 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
       this.helpFormOpen = false;
     }
   }
-  */
 
   // Close all dialogs (used for backdrop clicks)
   closeAllDialogs() {
     this.fabMenuOpen = false;
-    // Removed helpFormOpen and llmAssistantOpen - not used
+    this.helpFormOpen = false;
+    this.llmAssistantOpen = false;
   }
 
   // Custom FAB links now use direct anchor navigation with proper target attributes
@@ -1065,16 +1064,22 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
   }
 
   get heroTitleStyle() {
+    // Highest precedence: explicit heroTitleSize
+    if (this.heroTitleSize && this.heroTitleSize.trim() !== "") {
+      return `font-size: ${this.heroTitleSize} !important;`;
+    }
+    // Fallback for banner layout specific size
     if (this.heroLayout === "banner" && this.bannerTextSize) {
-      // Make sure the font-size applies to both the container and all child elements
       return `font-size: ${this.bannerTextSize} !important;`;
     }
     return "";
   }
 
   get heroTitleTextStyle() {
+    if (this.heroTitleSize && this.heroTitleSize.trim() !== "") {
+      return `font-size: ${this.heroTitleSize} !important;`;
+    }
     if (this.heroLayout === "banner" && this.bannerTextSize) {
-      // Ensure the actual text span also gets the font size
       return `font-size: ${this.bannerTextSize} !important;`;
     }
     return "";
@@ -1133,14 +1138,13 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
   // Computed property for the subtitle style
   get heroSubtitleStyle() {
     const backgroundType = this.detectBackgroundBrightness();
-
-    if (backgroundType === "dark") {
-      // Light text for dark backgrounds with increased weight and size
-      return "color: rgba(255, 255, 255, 0.95); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); font-weight: 600; font-size: 2.2em;";
-    } else {
-      // Dark text for light backgrounds with increased weight and size
-      return "color: rgba(33, 33, 33, 0.95); text-shadow: none; font-weight: 600; font-size: 2.2em;";
+    const base = backgroundType === "dark"
+      ? "color: rgba(255, 255, 255, 0.95); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); font-weight: 600;"
+      : "color: rgba(33, 33, 33, 0.95); text-shadow: none; font-weight: 600;";
+    if (this.heroSubtitleSize && this.heroSubtitleSize.trim() !== "") {
+      return `${base} font-size: ${this.heroSubtitleSize} !important;`;
     }
+    return `${base} font-size: 2.2em;`;
   }
   // For the background URL and other resource paths
   get heroBackgroundStyle() {
@@ -1214,17 +1218,14 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
     return "";
   }
 
-  /* COMMENTED OUT - Help Form dialog not used
   get helpFormDialogClass() {
     return this.helpFormOpen
       ? "dialog support-requester-dialog open"
       : "dialog support-requester-dialog";
   }
-  */
 
   get backdropClass() {
-    // Simplified - removed helpFormOpen and llmAssistantOpen
-    return "dialog-backdrop";
+    return this.helpFormOpen || this.llmAssistantOpen ? "dialog-backdrop open" : "dialog-backdrop";
   }
 
   get isMinimalFooter() {
@@ -1236,14 +1237,11 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
     return this.fabMenuOpen ? "fab-menu open" : "fab-menu";
   }
 
-  /* COMMENTED OUT - LLM Assistant not used
   // Get the class for the LLM Assistant dialog based on its open state
   get llmAssistantDialogClass() {
     return this.llmAssistantOpen ? "help-form-dialog open" : "help-form-dialog";
   }
-  */
 
-  /* COMMENTED OUT - Help Form and AI Assistant not used
   // Helper methods for FAB options
   get showHelpFormOption() {
     return this.fabOptions === "both" || this.fabOptions === "help_form";
@@ -1252,7 +1250,6 @@ export default class NuvitekCustomThemeLayout extends NavigationMixin(
   get showAiAssistantOption() {
     return this.fabOptions === "both" || this.fabOptions === "ai_assistant";
   }
-  */
 
   get isUrlLink() {
     return this.fabOptions === "url_link";

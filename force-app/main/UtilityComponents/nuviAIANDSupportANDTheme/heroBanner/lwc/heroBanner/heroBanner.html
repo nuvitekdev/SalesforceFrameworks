@@ -1,5 +1,21 @@
 <template>
-  <div class="hero-banner" style={bannerStyle}>
+  <div class={heroBannerClass} style={bannerStyle}>
+    <!-- Background video (optional) -->
+    <div class="hero-video-container" if:true={showBackgroundVideo}>
+      <template if:true={resolvedVideoUrl}>
+        <video
+          class="hero-background-video"
+          autoplay
+          loop
+          muted
+          playsinline
+          poster={resolvedFallbackUrl}
+        >
+          <source src={resolvedVideoUrl} type="video/mp4" />
+        </video>
+        <div class="hero-video-overlay" style={videoOverlayStyle}></div>
+      </template>
+    </div>
     <div class="hero-content">
       <div class="hero-content-wrapper">
         <div class="logo-container" if:true={logoUrl}>

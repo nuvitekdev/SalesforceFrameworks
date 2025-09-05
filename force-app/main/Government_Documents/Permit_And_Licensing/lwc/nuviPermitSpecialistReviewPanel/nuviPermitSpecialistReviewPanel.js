@@ -14,4 +14,3 @@ export default class NuviPermitSpecialistReviewPanel extends LightningElement {
   @wire(listDocuments, { applicationId: '$recordId' })
   wiredDocs({ data }) { if (data) this.docs = data; }
 }
-

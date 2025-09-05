@@ -2,7 +2,6 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Expected_Formation_Pressures__c</fullName>
     <description>Expected formation pressures (psi ranges) along the proposed wellbore</description>
-    <externalId>false</externalId>
     <inlineHelpText>Provide expected formation pressures and any abnormal pressure zones</inlineHelpText>
     <label>Expected Formation Pressures</label>
     <length>32768</length>
@@ -11,4 +10,3 @@
     <type>LongTextArea</type>
     <visibleLines>5</visibleLines>
 </CustomField>
-

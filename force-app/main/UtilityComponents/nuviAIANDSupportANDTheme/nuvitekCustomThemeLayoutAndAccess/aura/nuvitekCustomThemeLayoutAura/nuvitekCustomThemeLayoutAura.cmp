@@ -433,6 +433,9 @@
   <aura:attribute name="heroBackgroundStyle" type="String" />
   <aura:attribute name="heroOverlayStyle" type="String" />
   <aura:attribute name="heroSubtitleStyle" type="String" />
+  <!-- Hero font size overrides -->
+  <aura:attribute name="heroTitleSize" type="String" access="global" />
+  <aura:attribute name="heroSubtitleSize" type="String" access="global" />
   <aura:attribute name="heroFullwidthHeight" type="String" default="100vh" />
   <aura:attribute name="videoOverlayStyle" type="String" />
   <aura:attribute name="resolvedVideoUrl" type="String" />

@@ -2,7 +2,5 @@
 <CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
     <customObject>true</customObject>
     <description>Public Comments</description>
-    <label>Public Comments</label>
-    <motif>Custom56: Chat</motif>
-    
+    <motif>Custom56: Bottle</motif>
 </CustomTab>

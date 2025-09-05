@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Decision_Date__c</fullName>
-    <deprecated>false</deprecated>
     <description>Date when the final decision (approval, denial, or conditional approval) was made on the APD application.</description>
-    <externalId>false</externalId>
     <inlineHelpText>The date the final decision was made on this application. Automatically populated when status changes to approved, denied, or conditionally approved.</inlineHelpText>
     <label>Decision Date</label>
     <required>false</required>

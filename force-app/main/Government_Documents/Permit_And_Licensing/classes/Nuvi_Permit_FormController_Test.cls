@@ -14,4 +14,3 @@ private class Nuvi_Permit_FormController_Test {
         System.assertEquals(true, validation.containsKey('isValid'), 'Validation result should have isValid');
     }
 }
-

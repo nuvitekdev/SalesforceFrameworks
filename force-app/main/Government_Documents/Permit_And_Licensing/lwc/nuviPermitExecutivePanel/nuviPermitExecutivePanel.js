@@ -28,4 +28,3 @@ export default class NuviPermitExecutivePanel extends LightningElement {
   get avgTtdDisplay() { return (this.kpis && this.kpis.avgTTD != null) ? `${Math.round(this.kpis.avgTTD)} days` : '—'; }
   get approvalRateDisplay() { return (this.kpis && this.kpis.approvalRate != null) ? `${Math.round(this.kpis.approvalRate)}%` : '—'; }
 }
-

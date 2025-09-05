@@ -41,4 +41,3 @@ public with sharing class Nuvi_Permit_OperatorController {
         return d;
     }
 }
-

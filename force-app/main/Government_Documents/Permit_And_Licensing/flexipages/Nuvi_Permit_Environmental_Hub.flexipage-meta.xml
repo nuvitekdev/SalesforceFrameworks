@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>accentColor</name>
+                    <value>#D5DF23</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>colors</name>
+                    <value>#2E7D32, #1565C0, #8E24AA</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>columns</name>
+                    <value>3</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>descriptions</name>
+                    <value>Environmental review records, NEPA compliance tracking, Surface planning and approvals</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>icons</name>
+                    <value>utility:task, utility:table, utility:layout</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>links</name>
+                    <value>/lightning/o/Environmental_Assessment__c/list, /lightning/o/NEPA_Assessment__c/list, /lightning/o/Surface_Use_Plan__c/list</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>primaryColor</name>
+                    <value>#22BDC1</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>textColor</name>
+                    <value>#1d1d1f</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>tileStyle</name>
+                    <value>modern</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>titles</name>
+                    <value>Environmental Assessments, NEPA Assessments, Surface Use Plans</value>
+                </componentInstanceProperties>
+                <componentName>nuvitekNavigationTiles</componentName>
+                <identifier>c_nuvitekNavigationTiles_env</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>main</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <masterLabel>Nuvi Permit Environmental Hub</masterLabel>
+    <template>
+        <name>flexipage:defaultAppHomeTemplate</name>
+    </template>
+    <type>AppPage</type>
+</FlexiPage>

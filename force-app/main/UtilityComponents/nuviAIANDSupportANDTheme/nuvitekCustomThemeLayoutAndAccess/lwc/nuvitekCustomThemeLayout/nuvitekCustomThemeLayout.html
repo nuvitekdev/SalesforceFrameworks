@@ -722,21 +722,21 @@
 
       <!-- FAB Menu Options - Original Style -->
       <div class={fabMenuClass} if:false={isUrlLink}>
-        <!-- Help Request Option - COMMENTED OUT -->
-        <!-- <div class="fab-menu-item" if:true={showHelpFormOption}>
+        <!-- Help Request Option -->
+        <div class="fab-menu-item" if:true={showHelpFormOption}>
           <button class="fab-menu-label fab-menu-button-text" onclick={toggleHelpForm} aria-label={helpFormLabel}>
             <lightning-icon icon-name="utility:question" size="x-small" alternative-text="Help Request" class="fab-menu-text-icon"></lightning-icon>
             {helpFormLabel}
           </button>
-        </div> -->
+        </div>
 
-        <!-- AI Assistant Option - COMMENTED OUT -->
-        <!-- <div class="fab-menu-item" if:true={showAiAssistantOption}>
+        <!-- AI Assistant Option -->
+        <div class="fab-menu-item" if:true={showAiAssistantOption}>
           <button class="fab-menu-label fab-menu-button-text" onclick={toggleLlmAssistant} aria-label={aiAssistantLabel}>
             <lightning-icon icon-name="utility:einstein" size="x-small" alternative-text="AI Assistant" class="fab-menu-text-icon"></lightning-icon>
             {aiAssistantLabel}
           </button>
-        </div> -->
+        </div>
         
         <!-- Custom FAB Menu Items -->
         <template if:true={showCustomItems}>
@@ -754,8 +754,7 @@
         </template>
       </div>
 
-      <!-- Help Form Dialog - COMMENTED OUT -->
-      <!--
+      <!-- Help Form Dialog -->
       <div class={helpFormDialogClass}>
           <div class="support-requester-content">
               <c-support-requester
@@ -774,11 +773,9 @@
                     </svg>
                 </button>
             </div>
-      -->
           
 
-      <!-- LLM Assistant Dialog - COMMENTED OUT -->
-      <!--
+      <!-- LLM Assistant Dialog -->
       <div class={llmAssistantDialogClass}>
           <div class="help-form-dialog-header">
               <h2 class="help-form-title">AI Assistant</h2>
@@ -793,7 +790,6 @@
               <c-llm-assistant primary-color={primaryColor} accent-color={accentColor}></c-llm-assistant>
           </div>
       </div>
-      -->
 
       <!-- Overlay backdrop when dialogs are open -->
       <div class={backdropClass} onclick={closeAllDialogs}></div>

@@ -792,4 +792,3 @@ public with sharing class Nuvi_Permit_DocumentController {
     }
   }
 }
-

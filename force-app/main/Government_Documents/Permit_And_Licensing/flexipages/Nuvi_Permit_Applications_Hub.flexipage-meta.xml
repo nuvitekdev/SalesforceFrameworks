@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>accentColor</name>
+                    <value>#D5DF23</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>colors</name>
+                    <value>#22BDC1, #0a84ff, #ff9f0a, #734DFF</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>columns</name>
+                    <value>3</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>descriptions</name>
+                    <value>View and manage APD applications, Create a new application, Manage required document bundles, Review historical status changes</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>icons</name>
+                    <value>standard:document, utility:new, utility:file, utility:log_a_call</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>links</name>
+                    <value>/lightning/o/APD_Application__c/list, /lightning/o/APD_Application__c/new, /lightning/o/Document_Package__c/list, /lightning/o/Nuvi_Permit_Status_Log__c/list</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>primaryColor</name>
+                    <value>#22BDC1</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>textColor</name>
+                    <value>#1d1d1f</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>tileStyle</name>
+                    <value>modern</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>titles</name>
+                    <value>My Applications, New APD Application, Document Packages, Status Log</value>
+                </componentInstanceProperties>
+                <componentName>nuvitekNavigationTiles</componentName>
+                <identifier>c_nuvitekNavigationTiles_app</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>main</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <masterLabel>Nuvi Permit Applications Hub</masterLabel>
+    <template>
+        <name>flexipage:defaultAppHomeTemplate</name>
+    </template>
+    <type>AppPage</type>
+</FlexiPage>

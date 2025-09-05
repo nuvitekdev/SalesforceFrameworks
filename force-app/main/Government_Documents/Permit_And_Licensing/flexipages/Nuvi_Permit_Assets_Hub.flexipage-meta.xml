@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>accentColor</name>
+                    <value>#D5DF23</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>colors</name>
+                    <value>#0071e3, #30d158, #ffd60a, #ff9f0a, #ff375f</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>columns</name>
+                    <value>3</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>descriptions</name>
+                    <value>Manage operators/contacts, Track wells information, Manage pad locations, Track lease agreements, Payment records and status</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>icons</name>
+                    <value>standard:account, utility:flow, utility:layout, standard:contract, utility:moneybag</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>links</name>
+                    <value>/lightning/o/Operator__c/list, /lightning/o/Well__c/list, /lightning/o/Well_Pad__c/list, /lightning/o/Lease_Agreement__c/list, /lightning/o/Payment_Record__c/list</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>primaryColor</name>
+                    <value>#22BDC1</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>textColor</name>
+                    <value>#1d1d1f</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>tileStyle</name>
+                    <value>modern</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>titles</name>
+                    <value>Operators, Wells, Well Pads, Lease Agreements, Payments</value>
+                </componentInstanceProperties>
+                <componentName>nuvitekNavigationTiles</componentName>
+                <identifier>c_nuvitekNavigationTiles_assets</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>main</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <masterLabel>Nuvi Permit Assets Hub</masterLabel>
+    <template>
+        <name>flexipage:defaultAppHomeTemplate</name>
+    </template>
+    <type>AppPage</type>
+</FlexiPage>

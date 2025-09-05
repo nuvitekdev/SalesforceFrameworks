@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Elevation_MSL__c</fullName>
+    <description>Ground elevation at well site in feet above mean sea level</description>
     <externalId>false</externalId>
+    <inlineHelpText>Enter elevation in feet above mean sea level (e.g., 5280.50)</inlineHelpText>
     <label>Elevation (MSL)</label>
     <precision>10</precision>
     <required>false</required>
     <scale>2</scale>
+    <trackFeedHistory>false</trackFeedHistory>
     <trackHistory>true</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Number</type>
     <unique>false</unique>
-    <description>Ground elevation at well site in feet above mean sea level</description>
-    <inlineHelpText>Enter elevation in feet above mean sea level (e.g., 5280.50)</inlineHelpText>
 </CustomField>

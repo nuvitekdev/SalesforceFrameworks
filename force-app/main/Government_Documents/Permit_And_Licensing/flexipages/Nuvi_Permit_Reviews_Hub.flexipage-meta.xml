@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>accentColor</name>
+                    <value>#D5DF23</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>colors</name>
+                    <value>#ff3b30, #34c759, #5856d6</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>columns</name>
+                    <value>3</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>descriptions</name>
+                    <value>Manage review workload and SLAs, Manage public input and responses, Review assignment queues</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>icons</name>
+                    <value>utility:task, utility:chat, utility:record</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>links</name>
+                    <value>/lightning/o/Review_Task__c/list, /lightning/o/Public_Comment__c/list, /lightning/o/Review_Task__c/list</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>primaryColor</name>
+                    <value>#22BDC1</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>textColor</name>
+                    <value>#1d1d1f</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>tileStyle</name>
+                    <value>modern</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>titles</name>
+                    <value>Review Tasks, Public Comments, Assignments</value>
+                </componentInstanceProperties>
+                <componentName>nuvitekNavigationTiles</componentName>
+                <identifier>c_nuvitekNavigationTiles_reviews</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>main</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <masterLabel>Nuvi Permit Reviews Hub</masterLabel>
+    <template>
+        <name>flexipage:defaultAppHomeTemplate</name>
+    </template>
+    <type>AppPage</type>
+</FlexiPage>

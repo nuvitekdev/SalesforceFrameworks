@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Township__c</fullName>
+    <description>Township designation in the Public Land Survey System</description>
     <externalId>false</externalId>
+    <inlineHelpText>Enter township (e.g., T1N, T15S). Include direction (N/S)</inlineHelpText>
     <label>Township</label>
     <length>100</length>
     <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Text</type>
     <unique>false</unique>
-    <description>Township designation in the Public Land Survey System</description>
-    <inlineHelpText>Enter township (e.g., T1N, T15S). Include direction (N/S)</inlineHelpText>
 </CustomField>

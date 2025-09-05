@@ -19,4 +19,3 @@ export default class NuviPermitMap extends LightningElement {
         ];
     }
 }
-

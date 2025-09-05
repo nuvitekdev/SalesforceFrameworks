@@ -44,4 +44,3 @@ private class APDApplicationService_Test {
         System.assert(supos == 1, 'Should create one Surface Use Plan');
     }
 }
-

@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Priority_Level__c</fullName>
-    <deprecated>false</deprecated>
     <description>Processing priority level for the APD application based on application type, emergency status, or special circumstances.</description>
-    <externalId>false</externalId>
     <inlineHelpText>Indicates the processing priority. Emergency APDs receive highest priority, followed by expedited applications.</inlineHelpText>
     <label>Priority Level</label>
     <required>true</required>

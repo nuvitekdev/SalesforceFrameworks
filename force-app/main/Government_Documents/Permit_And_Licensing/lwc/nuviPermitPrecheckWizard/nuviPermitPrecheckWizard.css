@@ -2,4 +2,3 @@
 .nuvi-card { background:#fff; border-radius:16px; border:1px solid rgba(0,0,0,0.06); box-shadow:0 10px 30px rgba(0,0,0,0.06); }
 .slds-text-heading_medium, .slds-text-heading_large { color: var(--nuvi-text); font-weight:700; }
 .slds-button_brand { background-color: var(--nuvi-primary); border-color: var(--nuvi-primary); }
-

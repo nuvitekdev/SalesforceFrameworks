@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Will_Produce_From_Lease__c</fullName>
-    <externalId>false</externalId>
-    <label>Will Produce From Lease</label>
     <defaultValue>false</defaultValue>
-    <required>false</required>
+    <description>Indicates if the well will produce from the lease being applied for</description>
+    <inlineHelpText>Check if this well will produce from the lease specified in this APD application</inlineHelpText>
+    <label>Will Produce From Lease</label>
+    <trackFeedHistory>false</trackFeedHistory>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Checkbox</type>
-    <description>Indicates if the well will produce from the lease being applied for</description>
-    <inlineHelpText>Check if this well will produce from the lease specified in this APD application</inlineHelpText>
 </CustomField>

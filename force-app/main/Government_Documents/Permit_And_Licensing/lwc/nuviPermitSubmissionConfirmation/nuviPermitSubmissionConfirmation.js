@@ -23,4 +23,3 @@ export default class NuviPermitSubmissionConfirmation extends NavigationMixin(Li
     });
   }
 }
-

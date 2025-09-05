@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Surface_Location__c</fullName>
-    <deprecated>false</deprecated>
     <description>Surface location coordinates and legal description where the well will be positioned at ground level.</description>
     <externalId>false</externalId>
     <inlineHelpText>Enter the surface location using legal description format (e.g., NW1/4 SE1/4 Section 12, T2N, R3W).</inlineHelpText>

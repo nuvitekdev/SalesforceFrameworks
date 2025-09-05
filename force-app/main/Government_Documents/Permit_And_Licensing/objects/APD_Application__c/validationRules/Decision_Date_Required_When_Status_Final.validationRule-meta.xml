@@ -5,9 +5,9 @@
     <description>Ensures that a Decision Date is entered when the application status is set to a final status (Approved, Approved with Conditions, or Denied).</description>
     <errorConditionFormula>AND(
     OR(
-        ISPICKVAL(Status__c, "Approved"),
-        ISPICKVAL(Status__c, "Approved with Conditions"), 
-        ISPICKVAL(Status__c, "Denied")
+        ISPICKVAL(Status__c, &quot;Approved&quot;),
+        ISPICKVAL(Status__c, &quot;Approved with Conditions&quot;), 
+        ISPICKVAL(Status__c, &quot;Denied&quot;)
     ),
     ISBLANK(Decision_Date__c)
 )</errorConditionFormula>

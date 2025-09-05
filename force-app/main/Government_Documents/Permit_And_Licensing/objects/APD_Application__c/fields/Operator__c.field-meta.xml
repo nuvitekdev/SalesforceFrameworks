@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Operator__c</fullName>
-    <deprecated>false</deprecated>
+    <deleteConstraint>Restrict</deleteConstraint>
     <description>The oil and gas operator company responsible for this APD application and subsequent drilling operations.</description>
-    <externalId>false</externalId>
     <inlineHelpText>Select the operator company that is submitting this APD application.</inlineHelpText>
     <label>Operator</label>
     <referenceTo>Account</referenceTo>
     <relationshipLabel>APD Applications</relationshipLabel>
     <relationshipName>APD_Applications</relationshipName>
     <required>true</required>
-    <deleteConstraint>Restrict</deleteConstraint>
     <trackFeedHistory>false</trackFeedHistory>
     <trackHistory>true</trackHistory>
     <trackTrending>false</trackTrending>

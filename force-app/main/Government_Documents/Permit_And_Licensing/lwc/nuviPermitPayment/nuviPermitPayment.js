@@ -41,4 +41,3 @@ export default class NuviPermitPayment extends LightningElement {
     }
   }
 }
-

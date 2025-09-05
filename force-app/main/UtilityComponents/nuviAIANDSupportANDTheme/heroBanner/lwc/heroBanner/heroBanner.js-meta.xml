@@ -62,6 +62,31 @@
         default="#ffffff"
         description="Color of the subtitle text (e.g., #ffffff, red, rgb(255,255,255))"
       />
+            <property
+        name="showBackgroundVideo"
+        type="Boolean"
+        label="Show Background Video"
+        description="Enable an MP4 background video for the banner"
+      />
+            <property
+        name="backgroundVideoUrl"
+        type="String"
+        label="Background Video (Static Resource Name)"
+        description="Name of the static resource for the MP4 video"
+      />
+            <property
+        name="backgroundVideoFallbackUrl"
+        type="String"
+        label="Video Poster/Fallback Image (Static Resource Name)"
+        description="Static resource name for the fallback poster image"
+      />
+            <property
+        name="backgroundVideoDarkness"
+        type="Integer"
+        label="Video Overlay Darkness (0-100)"
+        default="35"
+        description="Overlay darkness over the background video (0=no overlay, 100=black)"
+      />
         </targetConfig>
         <targetConfig targets="lightning__FlowScreen">
             <property
@@ -109,6 +134,31 @@
         default="#ffffff"
         description="Color of the subtitle text (e.g., #ffffff, red, rgb(255,255,255))"
       />
+            <property
+        name="showBackgroundVideo"
+        type="Boolean"
+        label="Show Background Video"
+        description="Enable an MP4 background video for the banner"
+      />
+            <property
+        name="backgroundVideoUrl"
+        type="String"
+        label="Background Video (Static Resource Name)"
+        description="Name of the static resource for the MP4 video"
+      />
+            <property
+        name="backgroundVideoFallbackUrl"
+        type="String"
+        label="Video Poster/Fallback Image (Static Resource Name)"
+        description="Static resource name for the fallback poster image"
+      />
+            <property
+        name="backgroundVideoDarkness"
+        type="Integer"
+        label="Video Overlay Darkness (0-100)"
+        default="35"
+        description="Overlay darkness over the background video (0=no overlay, 100=black)"
+      />
         </targetConfig>
         <targetConfig targets="lightningCommunity__Default">
              <property
@@ -155,6 +205,31 @@
         label="Subtitle Text Color"
         default="#ffffff"
         description="Color of the subtitle text (e.g., #ffffff, red, rgb(255,255,255))"
+      />
+            <property
+        name="showBackgroundVideo"
+        type="Boolean"
+        label="Show Background Video"
+        description="Enable an MP4 background video for the banner"
+      />
+            <property
+        name="backgroundVideoUrl"
+        type="String"
+        label="Background Video (Static Resource Name)"
+        description="Name of the static resource for the MP4 video"
+      />
+            <property
+        name="backgroundVideoFallbackUrl"
+        type="String"
+        label="Video Poster/Fallback Image (Static Resource Name)"
+        description="Static resource name for the fallback poster image"
+      />
+            <property
+        name="backgroundVideoDarkness"
+        type="Integer"
+        label="Video Overlay Darkness (0-100)"
+        default="35"
+        description="Overlay darkness over the background video (0=no overlay, 100=black)"
       />
         </targetConfig>
     </targetConfigs>

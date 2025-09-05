@@ -3,7 +3,7 @@
     <fullName>Comment_Text__c</fullName>
     <label>Comment Text</label>
     <length>32768</length>
+    <trackTrending>false</trackTrending>
     <type>LongTextArea</type>
     <visibleLines>5</visibleLines>
 </CustomField>
-

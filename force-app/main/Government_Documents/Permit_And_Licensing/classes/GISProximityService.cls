@@ -16,4 +16,3 @@ public with sharing class GISProximityService {
         return alerts;
     }
 }
-

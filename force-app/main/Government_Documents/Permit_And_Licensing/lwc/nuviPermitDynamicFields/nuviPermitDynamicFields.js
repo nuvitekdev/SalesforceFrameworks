@@ -34,4 +34,3 @@ export default class NuviPermitDynamicFields extends LightningElement {
         this.dispatchEvent(new CustomEvent('fieldchange', { detail: { name, value } }));
     }
 }
-

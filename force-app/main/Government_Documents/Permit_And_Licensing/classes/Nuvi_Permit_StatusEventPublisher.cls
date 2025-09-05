@@ -4,4 +4,3 @@ public with sharing class Nuvi_Permit_StatusEventPublisher {
         StatusEventPublisher.publishStatusChange(applicationId, stage, message);
     }
 }
-

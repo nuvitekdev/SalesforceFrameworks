@@ -10,6 +10,12 @@ export default class HeroBanner extends LightningElement {
   @api headerTextColor = "#ffffff";
   @api subtitleTextColor = "#ffffff";
 
+  // Background video support (mirrors nuvitekCustomThemeLayout behavior)
+  @api showBackgroundVideo = false;
+  @api backgroundVideoUrl; // Static resource name for video (mp4)
+  @api backgroundVideoFallbackUrl; // Static resource name for poster/fallback image
+  @api backgroundVideoDarkness = 35; // 0-100 overlay darkness
+
   connectedCallback() {
     if (this.logo) {
       console.log("Logo static resource name:", this.logo);
@@ -43,7 +49,8 @@ export default class HeroBanner extends LightningElement {
 
   get bannerStyle() {
     let style = `height: ${this.height};`;
-    if (this.backgroundImage) {
+    // Only show background image when not using video
+    if (this.backgroundImage && !this.showBackgroundVideo) {
       style += `background-image: url(${this.backgroundImageUrl});`;
     }
     return style;
@@ -72,5 +79,36 @@ export default class HeroBanner extends LightningElement {
 
   get subtitleStyle() {
     return `color: ${this.subtitleTextColor};`;
+  }
+
+  // Build full resource path with Experience Cloud awareness (reuses existing pattern)
+  getResourcePath(resourceName) {
+    if (!resourceName) return "";
+    const path = window.location.pathname;
+    const isExperienceCloud = path.includes("/s/") || path.includes("/site/");
+    return isExperienceCloud
+      ? `${window.location.origin}/sfsites/c/resource/${resourceName}`
+      : `${window.location.origin}/resource/${resourceName}`;
+  }
+
+  get resolvedVideoUrl() {
+    return this.backgroundVideoUrl
+      ? this.getResourcePath(this.backgroundVideoUrl)
+      : "";
+  }
+
+  get resolvedFallbackUrl() {
+    return this.backgroundVideoFallbackUrl
+      ? this.getResourcePath(this.backgroundVideoFallbackUrl)
+      : "";
+  }
+
+  get videoOverlayStyle() {
+    const opacity = Math.max(0, Math.min(100, Number(this.backgroundVideoDarkness))) / 100;
+    return `background-color: rgba(0, 0, 0, ${opacity});`;
+  }
+
+  get heroBannerClass() {
+    return this.showBackgroundVideo ? "hero-banner has-video" : "hero-banner";
   }
 }

@@ -8,4 +8,3 @@ private class GISProximityService_Test {
         System.assertNotEquals(null, alerts);
     }
 }
-

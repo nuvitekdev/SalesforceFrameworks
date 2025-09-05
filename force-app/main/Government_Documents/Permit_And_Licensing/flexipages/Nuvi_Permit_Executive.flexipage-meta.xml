@@ -3,7 +3,7 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>c:nuviPermitExecutivePanel</componentName>
+                <componentName>nuviPermitExecutivePanel</componentName>
                 <identifier>c_nuviPermitExecutivePanel_main</identifier>
             </componentInstance>
         </itemInstances>

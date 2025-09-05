@@ -23,4 +23,3 @@ export default class NuviPermitReviewAssignment extends LightningElement {
     await createReviewTasks({ req: { applicationId: this.recordId, specialistRoles: this.selectedRoles, slaDays: this.slaDays } });
   }
 }
-

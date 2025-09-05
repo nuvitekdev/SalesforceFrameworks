@@ -547,22 +547,30 @@
     component.set("v.heroSectionClass", "hero-section layout-" + heroLayout);
 
     // Banner-specific CSS classes
+    var explicitTitleSize = component.get("v.heroTitleSize");
     if (heroLayout === "banner") {
       var bannerTextSize = component.get("v.bannerTextSize") || "40px";
       var bannerTextAlign = component.get("v.bannerTextAlign") || "center";
-      
+
       component.set("v.heroContainerClass", "hero-container align-" + bannerTextAlign);
       component.set("v.heroContentClass", "hero-content align-" + bannerTextAlign);
       component.set("v.heroTitleClass", "hero-title align-" + bannerTextAlign);
-      component.set("v.heroTitleStyle", "font-size: " + bannerTextSize + " !important;");
-      component.set("v.heroTitleTextStyle", "font-size: " + bannerTextSize + " !important;");
+
+      var effectiveTitleSize = explicitTitleSize && explicitTitleSize.trim() !== "" ? explicitTitleSize : bannerTextSize;
+      component.set("v.heroTitleStyle", "font-size: " + effectiveTitleSize + " !important;");
+      component.set("v.heroTitleTextStyle", "font-size: " + effectiveTitleSize + " !important;");
       component.set("v.heroSubtitleClass", "hero-subtitle align-" + bannerTextAlign);
     } else {
       component.set("v.heroContainerClass", "hero-container");
       component.set("v.heroContentClass", "hero-content");
       component.set("v.heroTitleClass", "hero-title");
-      component.set("v.heroTitleStyle", "");
-      component.set("v.heroTitleTextStyle", "");
+      if (explicitTitleSize && explicitTitleSize.trim() !== "") {
+        component.set("v.heroTitleStyle", "font-size: " + explicitTitleSize + " !important;");
+        component.set("v.heroTitleTextStyle", "font-size: " + explicitTitleSize + " !important;");
+      } else {
+        component.set("v.heroTitleStyle", "");
+        component.set("v.heroTitleTextStyle", "");
+      }
       component.set("v.heroSubtitleClass", "hero-subtitle");
     }
 
@@ -642,11 +650,13 @@
     var heroBackgroundImage = component.get("v.heroBackgroundImage");
     var showBackgroundVideo = component.get("v.showBackgroundVideo");
     var themeName = component.get("v.themeName");
+    var subtitleSize = component.get("v.heroSubtitleSize");
     var heroSubtitleStyle = this.getHeroSubtitleStyle(
-      heroBackgroundDarkness, 
-      heroBackgroundImage, 
+      heroBackgroundDarkness,
+      heroBackgroundImage,
       showBackgroundVideo,
-      themeName
+      themeName,
+      subtitleSize
     );
     component.set("v.heroSubtitleStyle", heroSubtitleStyle);
 
@@ -808,16 +818,20 @@
     );
   },
 
-  getHeroSubtitleStyle: function (heroBackgroundDarkness, heroBackgroundImage, showBackgroundVideo, themeName) {
+  getHeroSubtitleStyle: function (heroBackgroundDarkness, heroBackgroundImage, showBackgroundVideo, themeName, subtitleSize) {
     // Enhanced contrast detection with better readability
-    // If overlay brightness is higher than 30%, use dark text (light background)
+    var base;
     if (heroBackgroundDarkness > 30) {
-      // Dark text for light backgrounds with increased weight and size
-      return "color: rgba(33, 33, 33, 0.95); text-shadow: none; font-weight: 600; font-size: 2.2em;";
+      // Dark text for light backgrounds
+      base = "color: rgba(33, 33, 33, 0.95); text-shadow: none; font-weight: 600;";
     } else {
-      // Light text for dark backgrounds with increased weight and size
-      return "color: rgba(255, 255, 255, 0.95); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); font-weight: 600; font-size: 2.2em;";
+      // Light text for dark backgrounds
+      base = "color: rgba(255, 255, 255, 0.95); text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); font-weight: 600;";
     }
+    if (subtitleSize && subtitleSize.trim() !== "") {
+      return base + " font-size: " + subtitleSize + " !important;";
+    }
+    return base + " font-size: 2.2em;";
   },
 
   getSafeValue: function (value, defaultValue) {

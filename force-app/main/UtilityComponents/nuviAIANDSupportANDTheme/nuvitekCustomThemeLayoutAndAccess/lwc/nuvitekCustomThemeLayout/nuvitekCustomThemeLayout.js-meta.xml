@@ -195,6 +195,18 @@
         description="Supporting text for hero section"
       />
             <property
+        name="heroTitleSize"
+        type="String"
+        label="Hero Title Font Size (e.g., 40px)"
+        description="Overrides the hero title text size. Example: '32px', '40px', '56px'. Leave blank to use defaults/layout styles"
+      />
+            <property
+        name="heroSubtitleSize"
+        type="String"
+        label="Hero Subtitle Font Size (e.g., 20px)"
+        description="Overrides the hero subtitle text size. Example: '16px', '20px', '24px'. Leave blank to use defaults"
+      />
+            <property
         name="heroCTAPrimaryLabel"
         type="String"
         default="Get Started"

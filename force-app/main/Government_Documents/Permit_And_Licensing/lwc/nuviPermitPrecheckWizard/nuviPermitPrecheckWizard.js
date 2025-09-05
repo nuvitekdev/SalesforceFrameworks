@@ -48,4 +48,3 @@ export default class NuviPermitPrecheckWizard extends LightningElement {
     }, bubbles: true, composed: true }));
   }
 }
-
