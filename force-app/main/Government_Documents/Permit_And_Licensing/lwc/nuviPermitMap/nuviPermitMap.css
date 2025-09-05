@@ -1,0 +1,12 @@
+:host {
+  --nuvi-primary: var(--primary-color, #22BDC1);
+  --nuvi-text: var(--text-color, #1d1d1f);
+}
+
+.nuvi-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+}
+

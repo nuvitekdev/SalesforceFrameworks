@@ -1,0 +1,18 @@
+<template>
+  <div class="slds-card slds-p-around_medium nuvi-card">
+    <div class="slds-text-heading_medium slds-m-bottom_small">APD Payment</div>
+    <div class="slds-m-bottom_small">Amount Due: {amountDisplay}</div>
+    <lightning-combobox label="Method" value={method} options={methodOptions} onchange={handleMethod}></lightning-combobox>
+    <div class="slds-m-top_medium">
+      <lightning-button variant="brand" label="Process Payment (Demo)" onclick={process}></lightning-button>
+    </div>
+    <template if:true={result}>
+      <div class="slds-m-top_medium">
+        <p>Status: {result.status}</p>
+        <p>Reference: {result.reference}</p>
+        <p>Message: {result.message}</p>
+      </div>
+    </template>
+  </div>
+  </div>
+</template>

@@ -1,0 +1,32 @@
+<template>
+  <div class="slds-card slds-p-around_medium">
+    <div class="slds-text-heading_medium slds-m-bottom_small">Environmental Assessment (EA) Builder</div>
+    <div class="slds-grid slds-gutters slds-wrap">
+      <div class="slds-col slds-size_1-of-1 slds-large-size_6-of-12">
+        <lightning-combobox label="NEPA Level" value={nepaLevel} options={nepaOptions} onchange={handleNepa}></lightning-combobox>
+        <lightning-textarea class="slds-m-top_small" label="1. Purpose and Need" value={purpose} onchange={handlePurpose} rows="4"></lightning-textarea>
+        <lightning-textarea class="slds-m-top_small" label="2. Proposed Action" value={proposed} onchange={handleProposed} rows="4"></lightning-textarea>
+        <lightning-textarea class="slds-m-top_small" label="3. Environmental Impacts" value={impacts} onchange={handleImpacts} rows="6"></lightning-textarea>
+        <lightning-textarea class="slds-m-top_small" label="4. Mitigation Measures" value={mitigations} onchange={handleMitigations} rows="4"></lightning-textarea>
+        <lightning-textarea class="slds-m-top_small" label="5. Consultation & Coordination" value={consultation} onchange={handleConsultation} rows="4"></lightning-textarea>
+
+        <div class="slds-m-top_medium">
+          <lightning-button label="Import from APD" onclick={importFromApd}></lightning-button>
+          <lightning-button class="slds-m-left_small" label="Import from Specialist" onclick={importFromSpecialists}></lightning-button>
+          <lightning-button class="slds-m-left_small" label="AI Suggest (Demo)" onclick={aiSuggest}></lightning-button>
+        </div>
+        <div class="slds-m-top_medium">
+          <lightning-button variant="neutral" label="Preview PDF" onclick={previewPdf}></lightning-button>
+          <lightning-button class="slds-m-left_small" variant="brand" label="Save Draft" onclick={saveDraft} disabled={isSaving}></lightning-button>
+          <lightning-button class="slds-m-left_small" variant="brand" label="Submit for Review" onclick={submitForReview} disabled={isSaving}></lightning-button>
+        </div>
+      </div>
+      <div class="slds-col slds-size_1-of-1 slds-large-size_6-of-12">
+        <template if:true={pdfUrl}>
+          <iframe class="pdf-frame" src={pdfUrl} title="EA Preview"></iframe>
+        </template>
+      </div>
+    </div>
+  </div>
+</template>
+

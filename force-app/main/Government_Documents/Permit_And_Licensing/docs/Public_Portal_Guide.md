@@ -33,7 +33,7 @@ Delivers comprehensive self-service capabilities including:
 - `nuviPermitApplicationWizard` - Permit intake wizard (LWR page)
 - `nuviPermitDocumentManager` - Secure file upload and management
 - `nuviPermitSignatureManager` - Electronic signatures
-- `permitMap` - Map display for surface/bottom hole locations
+- `nuviPermitMap` - Map display for surface/bottom hole locations
 
 ### Apex Classes
 - `APDApplicationService` - Application save from wizard
@@ -317,7 +317,7 @@ export default class DoiPalOperatorDashboard extends LightningElement {
 - User satisfaction surveys
 ### LWR Configuration Notes
 - Use LWR template; add App Pages for the wizard and status views.
-- Add components to pages: `nuviPermitApplicationWizard`, `nuviPermitDocumentManager`, `nuviPermitSignatureManager`, `permitMap`.
+- Add components to pages: `nuviPermitApplicationWizard`, `nuviPermitDocumentManager`, `nuviPermitSignatureManager`, `nuviPermitMap`.
 - CSP Trusted Sites: LLM providers, ArcGIS domains, and pay.gov endpoint.
 - Named Credential: Create `PayGov` and assign to integration profile.
 

@@ -1,0 +1,23 @@
+:host {
+  --nuvi-primary: var(--primary-color, #22BDC1);
+  --nuvi-accent: var(--accent-color, #D5DF23);
+  --nuvi-text: var(--text-color, #1d1d1f);
+}
+
+.nuvi-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+}
+
+.slds-text-heading_medium {
+  color: var(--nuvi-text);
+  font-weight: 700;
+}
+
+.stat .value { font-weight: 700; }
+.stat.approved .value { color: var(--nuvi-primary); }
+.stat.pending .value { color: #ff9f0a; }
+.stat.draft .value { color: #6e6e73; }
+

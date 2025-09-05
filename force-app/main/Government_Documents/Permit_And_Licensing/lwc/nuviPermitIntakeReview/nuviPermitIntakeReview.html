@@ -1,0 +1,33 @@
+<template>
+  <div class="slds-card slds-p-around_medium nuvi-card">
+    <div class="slds-text-heading_medium slds-m-bottom_small">Intake Review</div>
+    <template if:true={summary}>
+      <p>APD: {summary.applicationNumber} | Status: {summary.status}</p>
+      <p class="slds-m-top_small">NEPA Recommendation: <b>{summary.nepaRecommendation}</b> — {summary.nepaReason}</p>
+      <template if:true={summary.proximityAlerts.length}>
+        <div class="slds-m-top_small">
+          <div class="slds-text-title">Proximity Alerts</div>
+          <ul>
+            <template for:each={summary.proximityAlerts} for:item="a">
+              <li key={a}>• {a}</li>
+            </template>
+          </ul>
+        </div>
+      </template>
+      <template if:true={summary.missingDocuments.length}>
+        <div class="slds-m-top_small">
+          <div class="slds-text-title">Missing Documents</div>
+          <ul>
+            <template for:each={summary.missingDocuments} for:item="d">
+              <li key={d}>• {d}</li>
+            </template>
+          </ul>
+        </div>
+      </template>
+      <p class="slds-m-top_small">Fee: ${summary.feeAmount} | Paid: {summary.feePaid}</p>
+      <div class="slds-m-top_medium">
+        <lightning-button variant="brand" label="Complete Intake (Create Specialist Tasks)" onclick={completeIntake}></lightning-button>
+      </div>
+    </template>
+  </div>
+</template>

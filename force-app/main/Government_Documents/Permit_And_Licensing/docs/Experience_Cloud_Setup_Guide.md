@@ -64,7 +64,7 @@ Primary Colors: #22BDC1 (Nuvi Blue), #D5DF23 (Nuvi Green)
    - `nuviPermitDocumentManager` (secondary region, optional)
    - `nuviPermitSignatureManager` (secondary region, optional)
 2. Create App Page "Permit Status" and add:
-   - `permitMap` (top region)
+   - `nuviPermitMap` (top region)
    - `nuviPermitDocumentManager` (main)
 3. Publish the site after adding navigation entries.
 

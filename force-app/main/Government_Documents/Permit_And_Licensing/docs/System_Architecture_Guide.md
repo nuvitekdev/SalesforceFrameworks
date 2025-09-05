@@ -675,7 +675,7 @@ Implementation success depends on close collaboration between technical teams, s
 - Payments: Pay.gov (Named Credential: PayGov). The example callout code is commented out until integration is available. Tests use safe fallbacks. Configure the Named Credential and CSP Trusted Sites when ready.
 - GIS: ArcGIS REST (Trusted Sites). Use `GISProximityService` as a placeholder until endpoints are configured. Replace with real REST invocations when service details are available.
 - Platform Events: `Nuvi_Permit_Status_Change__e` is provided (ApplicationId, Stage, Message). Publish via `StatusEventPublisher.publishStatusChange()` after key transitions. Subscribe using Apex triggers for notifications and dashboards.
-- LWR/Experience Cloud: Use LWR pages (LWC-only). Add `nuviPermitApplicationWizard`, `nuviPermitDocumentManager`, `nuviPermitSignatureManager`, and `permitMap` to appropriate pages. Ensure CSP Trusted Sites include external LLMs, ArcGIS, and Pay.gov.
+- LWR/Experience Cloud: Use LWR pages (LWC-only). Add `nuviPermitApplicationWizard`, `nuviPermitDocumentManager`, `nuviPermitSignatureManager`, and `nuviPermitMap` to appropriate pages. Ensure CSP Trusted Sites include external LLMs, ArcGIS, and Pay.gov.
 
 
 

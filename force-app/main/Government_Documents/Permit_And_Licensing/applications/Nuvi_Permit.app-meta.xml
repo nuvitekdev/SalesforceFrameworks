@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#22BDC1</headerColor>
+    </brand>
+    <description>Nuvi Permit workspace app</description>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <label>Nuvi Permit</label>
+    <navType>Standard</navType>
+    <formFactors>Large</formFactors>
+    <formFactors>Small</formFactors>
+    <tabs>standard-Report</tabs>
+    <tabs>standard-Dashboard</tabs>
+    <tabs>APD_Application__c</tabs>
+    <tabs>Review_Task__c</tabs>
+    <tabs>Public_Comment__c</tabs>
+    <tabs>Payment_Record__c</tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>

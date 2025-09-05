@@ -1,0 +1,25 @@
+<template>
+  <div class="slds-card slds-p-around_medium nuvi-card">
+    <div class="slds-text-heading_medium slds-m-bottom_small nuvi-heading">Permits Executive Panel</div>
+
+    <template if:true={kpis}>
+      <div class="slds-grid slds-gutters slds-m-bottom_medium">
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12"><div class="stat"><div class="label">Avg TTD</div><div class="value">{avgTtdDisplay}</div></div></div>
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12"><div class="stat"><div class="label">Approval Rate</div><div class="value">{approvalRateDisplay}</div></div></div>
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12"><div class="stat"><div class="label">In Progress</div><div class="value">{kpis.inProgress}</div></div></div>
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12"><div class="stat"><div class="label">Total</div><div class="value">{kpis.total}</div></div></div>
+      </div>
+    </template>
+
+    <div class="slds-grid slds-gutters slds-wrap">
+      <div class="slds-col slds-size_1-of-1 slds-large-size_6-of-12 slds-m-bottom_medium">
+        <div class="slds-text-title slds-m-bottom_x-small">Bottleneck Analysis (Open Tasks)</div>
+        <lightning-datatable key-field="taskType" data={bottlenecks} columns={bottleneckColumns} hide-checkbox-column></lightning-datatable>
+      </div>
+      <div class="slds-col slds-size_1-of-1 slds-large-size_6-of-12 slds-m-bottom_medium">
+        <div class="slds-text-title slds-m-bottom_x-small">By Field Office</div>
+        <lightning-datatable key-field="officeName" data={offices} columns={officeColumns} hide-checkbox-column></lightning-datatable>
+      </div>
+    </div>
+  </div>
+</template>

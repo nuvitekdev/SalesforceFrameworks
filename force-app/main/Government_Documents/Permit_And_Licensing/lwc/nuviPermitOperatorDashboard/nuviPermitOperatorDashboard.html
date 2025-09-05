@@ -1,0 +1,17 @@
+<template>
+  <div class="slds-card slds-p-around_medium nuvi-card">
+    <div class="slds-text-heading_medium slds-m-bottom_small">My Permits Dashboard</div>
+    <template if:true={data}>
+      <div class="slds-grid slds-gutters slds-m-bottom_medium">
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12"><div class="stat"><div class="label">Total</div><div class="value">{data.total}</div></div></div>
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12"><div class="stat approved"><div class="label">Approved</div><div class="value">{data.approved}</div></div></div>
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12"><div class="stat pending"><div class="label">Pending</div><div class="value">{data.pending}</div></div></div>
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12"><div class="stat draft"><div class="label">Draft</div><div class="value">{data.draft}</div></div></div>
+      </div>
+      <lightning-datatable key-field="id" data={data.recent} columns={columns}></lightning-datatable>
+    </template>
+  </div>
+  </div>
+  </c-nuvitek-custom-theme-layout>
+  </div>
+</template>

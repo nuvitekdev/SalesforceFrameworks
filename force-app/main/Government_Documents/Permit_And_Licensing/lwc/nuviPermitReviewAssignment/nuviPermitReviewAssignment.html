@@ -1,0 +1,10 @@
+<template>
+  <div class="slds-card slds-p-around_medium nuvi-card">
+    <div class="slds-text-heading_medium slds-m-bottom_small">Assign Technical Reviews</div>
+    <lightning-dual-listbox name="roles" label="Specialist Roles" source-label="Available" selected-label="Selected" options={roleOptions} value={selectedRoles} onchange={handleRoles}></lightning-dual-listbox>
+    <lightning-input class="slds-m-top_small" type="number" label="SLA (days)" value={slaDays} onchange={handleSla}></lightning-input>
+    <div class="slds-m-top_medium">
+      <lightning-button variant="brand" label="Create Tasks" onclick={createTasks}></lightning-button>
+    </div>
+  </div>
+</template>

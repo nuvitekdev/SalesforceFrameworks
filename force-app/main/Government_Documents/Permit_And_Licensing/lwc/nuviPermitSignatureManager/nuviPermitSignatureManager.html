@@ -1,6 +1,6 @@
 <template>
   <!-- Certificate Generation -->
-  <c-permit-print record-id={recordId}
+  <c-nuvi-permit-print record-id={recordId}
                   agency-type="FEDERAL"
                   permit-type="DRILLING"
                   primary-color={primaryColor}
@@ -8,7 +8,7 @@
                   default-folder="Application_Documents"
                   show-inline-signer="false"
                   oncertificategenerated={handleCertificateGenerated}>
-  </c-permit-print>
+  </c-nuvi-permit-print>
 
   <div class="slds-card slds-m-around_medium">
     <div class="slds-card__header slds-grid">

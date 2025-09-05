@@ -1,0 +1,25 @@
+<template>
+  <div class="slds-card slds-p-around_medium nuvi-card">
+    <div class="slds-text-heading_medium slds-m-bottom_small">Pre‑Application Eligibility Check</div>
+    <lightning-input type="text" label="Federal Lease Number" value={leaseNumber} onchange={handleLeaseChange}></lightning-input>
+    <lightning-input type="text" label="Surface Access Agreement #" value={surfaceAgreement} onchange={handleSurfaceChange}></lightning-input>
+    <lightning-combobox label="Surface Rights Type" value={surfaceType} options={surfaceTypeOptions} onchange={handleSurfaceType}></lightning-combobox>
+    <lightning-combobox label="Bond Type" value={bondType} options={bondTypeOptions} onchange={handleBondType}></lightning-combobox>
+    <lightning-input type="text" label="Bond Number" value={bondNumber} onchange={handleBondNumber}></lightning-input>
+
+    <div class="slds-m-top_medium">
+      <lightning-button label="Verify Lease" onclick={verifyLease}></lightning-button>
+      <lightning-button class="slds-m-left_small" label="Verify Bond" onclick={verifyBond}></lightning-button>
+      <lightning-button class="slds-m-left_small" variant="brand" label="Continue" onclick={handleContinue}></lightning-button>
+    </div>
+
+    <template if:true={messages.length}>
+      <div class="slds-m-top_medium">
+        <template for:each={messages} for:item="m">
+          <div key={m} class="slds-text-color_success">{m}</div>
+        </template>
+      </div>
+    </template>
+  </div>
+  </div>
+</template>

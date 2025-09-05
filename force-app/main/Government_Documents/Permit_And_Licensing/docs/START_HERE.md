@@ -20,18 +20,27 @@ Before you start
 - Drag these components onto the canvas:
   - `c:nuviPermitApplicationWizard` (intake)
   - `c:nuviPermitDocumentManager` (folders + uploads)
-  - `c:permitPrint` (makes the certificate PDF)
+  - `c:nuviPermitPrint` (makes the certificate PDF)
   - `c:nuviPermitSignatureManager` (wraps shared `c:pdfSigner` to sign)
-  - Optional: `c:permitMap`
+  - Optional: `c:nuviPermitMap`
 - Activate for Desktop
+
+2a) Staff home (Executive view)
+- Setup > App Builder > New > App Page > Name: Permits Executive
+- Drag: `c:nuviPermitExecutivePanel` (KPIs, bottlenecks, office summary)
+- Optionally add the dashboard: Dashboards > Nuvi_Permit > Nuvi Permit Executive
 
 3) Public portal (LWR)
 - Setup > Digital Experiences > All Sites > New > Build Your Own (LWR) > Name: Permit Portal
-- Open Experience Builder and make 3 pages:
+- Open Experience Builder and make 6 pages:
+  - Dashboard: add `c:nuviPermitOperatorDashboard` (optional)
+  - Pre-Check: add `c:nuviPermitPrecheckWizard`
   - Apply: add `c:nuviPermitApplicationWizard`
   - My Documents: add `c:nuviPermitDocumentManager`
   - Sign: add `c:nuviPermitSignatureManager`
-- Add these to navigation and Publish
+  - Payment: add `c:nuviPermitPayment`
+  - Confirmation: add `c:nuviPermitSubmissionConfirmation`
+- Add these to navigation (or link buttons) and Publish
 
 Record context (important)
 - Pages that act on a specific application need the record. Open from the record page or pass `?recordId=<Id>` in the URL.
@@ -43,11 +52,20 @@ Record context (important)
 - Start with 250. It doesn’t charge real money; it returns a demo response.
 
 5) Certificates (make + sign)
-- Option A (fast): Use `c:permitPrint` to generate a simple certificate PDF. Click “Save to Record,” then open the Sign page and sign it.
+- Option A (fast): Use `c:nuviPermitPrint` to generate a simple certificate PDF. Click “Save to Record,” then open the Sign page and sign it.
 - Option B (bring your template): Upload a PDF template to the application’s Documents folder, then open Sign and sign it.
 - Option C (design your own): Use `c:pdfCreatorDragDrop` (in UtilityComponents) to design a certificate and save it, then sign.
 
-Tip: After you click “Save to Record” in `c:permitPrint`, the signer auto‑opens the generated PDF on the sign page.
+ Tip: After you click “Save to Record” in `c:nuviPermitPrint`, the signer auto‑opens the generated PDF on the sign page.
+
+7) Internal workspace pages (optional for demo)
+- App Builder > new App Pages to mirror agency workflow:
+  - Intake Review: add `c:nuviPermitIntakeReview`
+  - Assign Reviews: add `c:nuviPermitReviewAssignment`
+  - EA Builder: add `c:nuviPermitEABuilder`
+  - Specialist Review: add `c:nuviPermitSpecialistReviewPanel`
+  - Public Comments: add `c:nuviPermitPublicCommentsManager`
+  - Manager Approval: add `c:nuviPermitManagerApproval`
 
 6) Suggested demo (5 minutes)
 - Staff: Open “Permit Operations,” submit application, upload a doc, click “Create Payment Intent,” generate certificate, then sign it.
