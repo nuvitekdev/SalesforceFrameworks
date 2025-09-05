@@ -1,0 +1,17 @@
+:host {
+  --primary-color: #22bdc1;
+  --accent-color: #d5df23;
+}
+
+.pdf-frame {
+  width: 100%;
+  height: 600px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.controls lightning-input,
+.controls lightning-combobox {
+  width: 100%;
+}
+

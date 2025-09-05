@@ -1,5 +1,15 @@
 # Nuvi Permit System - Experience Cloud Configuration Guide
 
+Quick LWR Setup (5 minutes)
+- Setup > Digital Experiences > All Sites > New > Build Your Own (LWR)
+- Name: Permit Portal > Create
+- In Experience Builder, add pages and components:
+  - Apply: `c:nuviPermitApplicationWizard`
+  - My Documents: `c:nuviPermitDocumentManager`
+  - Sign: `c:nuviPermitSignatureManager`
+- Add to navigation > Publish
+- Tip: Open pages from a record or pass `?recordId=<Id>`
+
 ## Table of Contents
 
 1. [Experience Cloud Site Setup](#experience-cloud-site-setup)

@@ -52,6 +52,38 @@
         default="213, 223, 35"
         description="RGB equivalent of Accent Color (e.g., '213, 223, 35') for use in rgba() shadows."
       />
+            <!-- Preload options -->
+            <property
+        name="presetContentVersionId"
+        type="String"
+        label="Preset ContentVersion Id"
+        description="If provided, signer opens this PDF immediately (skip upload)."
+      />
+            <property
+        name="presetDocumentUrl"
+        type="String"
+        label="Preset Document URL"
+        description="Alternate way to preload a PDF by URL (e.g., /sfc/servlet.shepherd/document/download/069...)."
+      />
+            <property
+        name="presetFilename"
+        type="String"
+        label="Preset Filename"
+        description="Shown in the UI when preloading a PDF."
+      />
+            <property
+        name="requiredSignatures"
+        type="Integer"
+        label="Required Signatures"
+        default="1"
+        description="Minimum number of signatures to place before saving."
+      />
+            <property
+        name="signerRole"
+        type="String"
+        label="Signer Role"
+        description="Label for the active signer (included in completion event)."
+      />
         </targetConfig>
         <targetConfig targets="lightning__FlowScreen">
             <property
@@ -88,6 +120,38 @@
         label="Accent Color RGB"
         default="213, 223, 35"
         description="RGB equivalent of Accent Color (e.g., '213, 223, 35') for use in rgba() shadows."
+      />
+            <!-- Preload options for Flow -->
+            <property
+        name="presetContentVersionId"
+        type="String"
+        label="Preset ContentVersion Id"
+        description="If provided, signer opens this PDF immediately (skip upload)."
+      />
+            <property
+        name="presetDocumentUrl"
+        type="String"
+        label="Preset Document URL"
+        description="Alternate way to preload a PDF by URL."
+      />
+            <property
+        name="presetFilename"
+        type="String"
+        label="Preset Filename"
+        description="Shown in the UI when preloading a PDF."
+      />
+            <property
+        name="requiredSignatures"
+        type="Integer"
+        label="Required Signatures"
+        default="1"
+        description="Minimum number of signatures to place before saving."
+      />
+            <property
+        name="signerRole"
+        type="String"
+        label="Signer Role"
+        description="Label for the active signer (included in completion event)."
       />
         </targetConfig>
     </targetConfigs>

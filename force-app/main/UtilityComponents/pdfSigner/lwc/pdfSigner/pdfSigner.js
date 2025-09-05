@@ -21,6 +21,8 @@ export default class PdfSigner extends LightningElement {
   @api accentColor = "#D5DF23";
   @api primaryColorRgb = "34, 189, 193";
   @api accentColorRgb = "213, 223, 35";
+  @api requiredSignatures = 1; // Minimum number of signatures to place before save
+  @api signerRole; // Optional: current signer role label (for events/audit)
 
   // User information
   userId = Id;
@@ -69,6 +71,11 @@ export default class PdfSigner extends LightningElement {
   pdfFilename = ""; // original PDF file name
   libsLoaded = false; // Track if libraries are loaded
   contentVersionId = null; // ID of the content version for preview
+  @api presetContentVersionId; // NEW: allow parent to provide an existing ContentVersion to sign
+  @api presetDocumentUrl; // NEW: allow parent to provide a direct doc URL
+  @api presetFilename; // OPTIONAL: display name when loading by URL
+  isPreviewTemporary = false; // track if preview CV was created by this component
+  _presetInitialized = false; // avoid double-initialization
   canvasElement; // Reference to canvas element
   ctx; // Canvas context
   @track fontLoaded = false; // Track if signature font is loaded
@@ -180,6 +187,8 @@ export default class PdfSigner extends LightningElement {
           // Save references to globals
           this.PDFLib = window.PDFLib;
           console.log("Libraries loaded successfully");
+          // If a preset was provided, initialize from it once libs are ready
+          this.initializeFromPresetIfProvided();
         })
         .catch((error) => {
           console.error("Error loading libraries", error);
@@ -228,6 +237,77 @@ export default class PdfSigner extends LightningElement {
     if (this.currentStep === 3 && this.useMultiPageView) {
       this.renderPdfPagesForSigning();
     }
+  }
+
+  // Initialize from @api presets if provided (only once)
+  async initializeFromPresetIfProvided() {
+    if (this._presetInitialized) return;
+    const hasCv = !!this.presetContentVersionId;
+    const hasUrl = !!this.presetDocumentUrl;
+    if (!hasCv && !hasUrl) return;
+
+    try {
+      this._presetInitialized = true;
+      this.isLoading = true;
+
+      let docUrl = this.presetDocumentUrl;
+      if (!docUrl && hasCv) {
+        try {
+          docUrl = await getDocumentUrl({ contentVersionId: this.presetContentVersionId });
+        } catch (e) {
+          console.error("Failed to get document URL for preset CV:", e);
+          this._presetInitialized = false; // allow retry
+          this.isLoading = false;
+          this.showToast("Error", "Could not open provided PDF", "error");
+          return;
+        }
+      }
+
+      if (!docUrl) {
+        this.isLoading = false;
+        return;
+      }
+
+      // Fetch PDF bytes and load in pdf-lib for placement/signing
+      const res = await fetch(docUrl);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      const buf = await res.arrayBuffer();
+      const uint8 = new Uint8Array(buf);
+      this.pdfDoc = await this.PDFLib.PDFDocument.load(uint8);
+      await this.analyzePdfOrientation();
+
+      // Update component state for preview
+      this.pdfPreviewUrl = docUrl;
+      this.pdfFilename = this.presetFilename || this.pdfFilename || "Document.pdf";
+      this.contentVersionId = this.presetContentVersionId || null; // not temporary
+      this.isPreviewTemporary = false;
+      this.currentStep = 1; // jump to preview
+      this.updatePathClasses();
+    } catch (e) {
+      console.error("initializeFromPresetIfProvided error", e);
+      this._presetInitialized = false; // allow retry on next render
+      this.showToast("Error", "Failed to load preset PDF", "error");
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  // Public API to load by ContentVersion Id at runtime
+  @api
+  async loadPdfByContentVersionId(contentVersionId, filename) {
+    this.presetContentVersionId = contentVersionId;
+    if (filename) this.presetFilename = filename;
+    await this.initializeFromPresetIfProvided();
+  }
+
+  // Public API to load by direct document URL
+  @api
+  async loadPdfByUrl(documentUrl, filename) {
+    this.presetDocumentUrl = documentUrl;
+    if (filename) this.presetFilename = filename;
+    await this.initializeFromPresetIfProvided();
   }
 
   // Load the signature font and ensure it's ready to use
@@ -1229,6 +1309,17 @@ export default class PdfSigner extends LightningElement {
       return;
     }
 
+    // Enforce minimum number of signatures if configured
+    const minRequired = parseInt(this.requiredSignatures, 10) || 1;
+    if (this.placedSignatures.length < minRequired) {
+      this.showToast(
+        "Warning",
+        `Please place at least ${minRequired} signature${minRequired > 1 ? 's' : ''} before saving`,
+        "warning"
+      );
+      return;
+    }
+
     // Show spinner
     this.isSaving = true;
 
@@ -1370,8 +1461,8 @@ export default class PdfSigner extends LightningElement {
         isTemporary: false
       });
 
-      // Delete temporary file (if one was created)
-      if (this.contentVersionId) {
+      // Delete temporary file (if one was created by this component)
+      if (this.isPreviewTemporary && this.contentVersionId) {
         try {
           await deleteTemporaryPdf({ contentVersionId: this.contentVersionId });
           console.log("Temporary PDF deleted successfully");
@@ -1381,7 +1472,7 @@ export default class PdfSigner extends LightningElement {
         this.contentVersionId = null;
       }
 
-      // Trigger file download for user
+     // Trigger file download for user
       const blob = new Blob([modifiedBytes], { type: "application/pdf" });
       const downloadUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1391,6 +1482,29 @@ export default class PdfSigner extends LightningElement {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(downloadUrl);
+
+      // Get URL for downstream routing / next signer
+      let documentUrl = '';
+      try {
+        documentUrl = await getDocumentUrl({ contentVersionId: resultId });
+      } catch (e) {
+        console.warn('Could not fetch document URL for saved PDF', e);
+      }
+
+      // Fire completion event so parent flows can route to next signer
+      const evt = new CustomEvent('signingcomplete', {
+        detail: {
+          contentVersionId: resultId,
+          documentUrl,
+          fileName,
+          placedSignatures: this.placedSignatures.length,
+          requiredSignatures: minRequired,
+          signerRole: this.signerRole || null
+        },
+        bubbles: true,
+        composed: true
+      });
+      this.dispatchEvent(evt);
 
       // Show success message & move to final step
       this.successMessage = "Signed PDF saved successfully!";
@@ -1997,6 +2111,7 @@ export default class PdfSigner extends LightningElement {
             recordId: this.effectiveRecordId,
             isTemporary: true
           });
+          this.isPreviewTemporary = true;
           const docUrl = await getDocumentUrl({
             contentVersionId: this.contentVersionId
           });
@@ -2072,8 +2187,8 @@ export default class PdfSigner extends LightningElement {
     this.signatureText = "";
     this.signatureMode = "draw";
 
-    // Delete temporary ContentVersion
-    if (this.contentVersionId) {
+    // Delete temporary ContentVersion only if we created it
+    if (this.isPreviewTemporary && this.contentVersionId) {
       console.log(
         "handleClearPdf: Requesting deletion of temporary ContentVersion:",
         this.contentVersionId
@@ -2087,6 +2202,11 @@ export default class PdfSigner extends LightningElement {
         });
       this.contentVersionId = null; // Clear ID regardless of delete success
     }
+    // If it wasn't temporary, just clear the reference
+    if (!this.isPreviewTemporary) {
+      this.contentVersionId = null;
+    }
+    this.isPreviewTemporary = false;
 
     // Reset to step 0
     this.currentStep = 0;

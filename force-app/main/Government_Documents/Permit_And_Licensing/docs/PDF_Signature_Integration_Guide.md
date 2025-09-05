@@ -353,6 +353,77 @@ export default class DoiSignatureWorkflow extends LightningElement {
 }
 ```
 
+### 2. Using PDF Signer Without Upload (Preload a File)
+
+You can now open a PDF directly in the signer without asking the user to upload first.
+
+Options:
+- Provide a Content Version Id
+- Provide a direct Document URL
+- Or call an imperative API from a parent component
+
+Static configuration (Record Page / App Builder):
+
+```html
+<!-- Preload by ContentVersion Id -->
+<c-pdf-signer record-id={recordId}
+              preset-content-version-id="068XXXXXXXXXXXX"
+              preset-filename="APD_Approval.pdf">
+</c-pdf-signer>
+
+<!-- Or preload by direct URL (e.g., /sfc/servlet.shepherd/document/download/069...) -->
+<c-pdf-signer record-id={recordId}
+              preset-document-url="/sfc/servlet.shepherd/document/download/069XXXXXXXXXXXX"
+              preset-filename="EA_Document.pdf">
+</c-pdf-signer>
+```
+
+Imperative usage (from a parent LWC):
+
+```js
+// parent.js
+@track cvId;
+
+handleOpenSigner() {
+  const signer = this.template.querySelector('c-pdf-signer');
+  signer.loadPdfByContentVersionId(this.cvId, 'Approval.pdf');
+}
+
+handleOpenByUrl() {
+  const signer = this.template.querySelector('c-pdf-signer');
+  signer.loadPdfByUrl('/sfc/servlet.shepherd/document/download/069XXXXXXXXXXXX', 'EA.pdf');
+}
+```
+
+Notes:
+- The signer still supports the original “Upload PDF” step.
+- Temporary files the signer creates for preview are auto-cleaned; preloaded documents are not deleted.
+- Works on LWR sites and internal pages. Ensure the user has access to the file.
+
+### 3. Multi‑Signer Flows (Sequential Signing)
+
+- Configure the signer for each step with `requiredSignatures` (e.g., 1 for signature only, 2 for signature + initials) and an optional `signerRole` for clarity.
+- When a signer clicks Save, the signer fires `signingcomplete` with details including the new `contentVersionId`.
+- Use that ID to preload the next step’s signer via `presetContentVersionId` or the imperative API.
+
+Example:
+
+```html
+<c-pdf-signer signer-role="NEPA_COORDINATOR"
+              required-signatures="1"
+              onsigningcomplete={handleSigned}></c-pdf-signer>
+```
+
+```js
+handleSigned(evt) {
+  const { contentVersionId } = evt.detail;
+  // Route to next signer (e.g., Field Office Manager), preload same document
+  // Next page/component:
+  const signer = this.template.querySelector('c-pdf-signer');
+  signer.loadPdfByContentVersionId(contentVersionId, 'FONSI_for_Signature.pdf');
+}
+```
+
 ## Enhanced Apex Controllers
 
 ### 1. Nuvi APD Signature Controller (Extends PdfSignController)

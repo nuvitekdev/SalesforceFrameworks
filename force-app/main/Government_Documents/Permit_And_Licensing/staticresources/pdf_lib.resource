@@ -1,1 +1,0 @@
-window.PDFLib = window.PDFLib || { PDFDocument: { load: async function() { return { getPageCount: function(){return 1;}, getPage: function(){ return { drawImage: function(){}, drawText: function(){} }; }, save: async function(){ return new Uint8Array([]); } }; } } };

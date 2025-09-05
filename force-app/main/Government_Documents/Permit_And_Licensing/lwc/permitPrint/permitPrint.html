@@ -1,0 +1,85 @@
+<template>
+  <div class="slds-card slds-m-around_medium">
+    <div class="slds-card__header slds-grid">
+      <header class="slds-media slds-media_center slds-has-flexi-truncate">
+        <div class="slds-media__figure">
+          <lightning-icon icon-name="utility:print" size="small"></lightning-icon>
+        </div>
+        <div class="slds-media__body">
+          <h2 class="slds-card__header-title">
+            <span>Permit Certificate Generator</span>
+          </h2>
+        </div>
+      </header>
+    </div>
+    <div class="slds-card__body slds-card__body_inner">
+      <div class="controls slds-m-bottom_medium">
+        <div class="slds-grid slds-wrap slds-gutters_small">
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
+            <lightning-input type="text" label="Certificate Title" value={certificateTitle} onchange={handleTitleChange}></lightning-input>
+          </div>
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
+            <lightning-combobox
+              label="Target Folder"
+              value={targetFolder}
+              options={folderOptions}
+              onchange={handleFolderChange}
+            ></lightning-combobox>
+          </div>
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
+            <lightning-input type="text" label="File Name" value={fileName} onchange={handleFileNameChange}></lightning-input>
+          </div>
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12 slds-align_absolute-center">
+            <lightning-button label="Generate PDF" variant="brand" onclick={generatePdf} disabled={isGenerating}></lightning-button>
+          </div>
+        </div>
+      </div>
+
+      <template if:true={isGenerating}>
+        <div class="slds-m-vertical_medium slds-align_absolute-center">
+          <lightning-spinner alternative-text="Generating PDF..." size="small"></lightning-spinner>
+        </div>
+      </template>
+
+      <template if:true={pdfUrl}>
+        <div class="preview slds-m-vertical_medium">
+          <iframe class="pdf-frame" src={pdfUrl} title="Permit Certificate Preview"></iframe>
+        </div>
+        <div class="slds-grid slds-gutters_small slds-m-top_small">
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_4-of-12">
+            <lightning-button-icon icon-name="utility:download" alternative-text="Download" title="Download" onclick={downloadPdf}></lightning-button-icon>
+            <span class="slds-m-left_x-small">Download</span>
+          </div>
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_4-of-12">
+            <lightning-button label="Save to Record" variant="brand" onclick={saveToRecord} disabled={isSaving}></lightning-button>
+          </div>
+          <div class="slds-col slds-size_1-of-1 slds-medium-size_4-of-12 slds-text-align_right">
+            <lightning-button label="Open Signer" onclick={navigateToSigner}></lightning-button>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Optional: Inline signer directly below -->
+  <template if:true={showInlineSigner}>
+    <div class="slds-card slds-m-around_medium">
+      <div class="slds-card__header slds-grid">
+        <header class="slds-media slds-media_center slds-has-flexi-truncate">
+          <div class="slds-media__figure">
+            <lightning-icon icon-name="utility:signature" size="small"></lightning-icon>
+          </div>
+          <div class="slds-media__body">
+            <h2 class="slds-card__header-title">
+              <span>Sign Document</span>
+            </h2>
+          </div>
+        </header>
+      </div>
+      <div class="slds-card__body slds-card__body_inner">
+        <c-pdf-signer record-id={recordId} primary-color={primaryColor} accent-color={accentColor}></c-pdf-signer>
+      </div>
+    </div>
+  </template>
+</template>
+

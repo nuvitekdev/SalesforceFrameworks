@@ -81,6 +81,11 @@ The PDF Signer component can be added to:
    - **Record ID** (optional): The ID of the record to associate the signed file with.
    - **Primary Color**: Main theme color (default: #22BDC1).
    - **Accent Color**: Secondary theme color (default: #D5DF23).
+   - **Preset ContentVersion Id (optional)**: If set, the signer opens this PDF immediately (no upload step).
+   - **Preset Document URL (optional)**: Alternate way to preload a PDF by URL.
+   - **Preset Filename (optional)**: Friendly name shown in the UI when preloading.
+   - **Required Signatures (optional)**: Minimum signatures that must be placed before saving (default: 1).
+   - **Signer Role (optional)**: Optional label for the active signer; included in completion events.
 
 ### Usage
 
@@ -89,6 +94,48 @@ The PDF Signer component can be added to:
 3. **Sign**: Choose between drawing or typing your signature.
 4. **Place**: Drag, resize, and position your signature(s) on the document.
 5. **Save**: Click "Save Signed PDF" to create the signed document.
+
+### Open a PDF Without Uploading
+
+Static configuration (Record/App page):
+
+```html
+<c-pdf-signer record-id={recordId}
+              preset-content-version-id="068XXXXXXXXXXXX"
+              preset-filename="Approval.pdf">
+</c-pdf-signer>
+```
+
+Imperative (from a parent LWC):
+
+```js
+const signer = this.template.querySelector('c-pdf-signer');
+await signer.loadPdfByContentVersionId('068XXXXXXXXXXXX', 'Approval.pdf');
+// or
+await signer.loadPdfByUrl('/sfc/servlet.shepherd/document/download/069XXXXXXXXXXXX', 'EA.pdf');
+```
+
+### Multi‑Signer Pattern
+
+- Set `requiredSignatures` to the number needed from the current signer (e.g., 2 for signature + initials).
+- After save, the component fires a `signingcomplete` event with:
+  - `contentVersionId`, `documentUrl`, `fileName`, `placedSignatures`, `requiredSignatures`, `signerRole`.
+- Use the event to route to the next signer and preload the just‑saved file via `presetContentVersionId` or the imperative API.
+
+Example parent handler:
+
+```html
+<c-pdf-signer onsigningcomplete={handleSigned}></c-pdf-signer>
+```
+
+```js
+handleSigned(evt) {
+  const { contentVersionId } = evt.detail;
+  // Notify/assign next signer, then on their page:
+  const signer = this.template.querySelector('c-pdf-signer');
+  signer.loadPdfByContentVersionId(contentVersionId, 'Approval_next.pdf');
+}
+```
 
 ## Technical Details
 
