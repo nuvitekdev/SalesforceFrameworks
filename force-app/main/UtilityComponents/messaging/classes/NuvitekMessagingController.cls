@@ -1267,7 +1267,8 @@ public with sharing class NuvitekMessagingController {
           configName,
           prompt,
           'no summarize', // Use the summarize operation type
-          null // No related objects needed
+          null, // No related objects needed
+          null  // No report objects
         );
 
         // Return the formatted summary from the AI model

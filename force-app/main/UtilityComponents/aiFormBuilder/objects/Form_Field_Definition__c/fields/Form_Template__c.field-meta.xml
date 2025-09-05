@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Form_Template__c</fullName>
+    <description>Parent template</description>
+    <externalId>false</externalId>
+    <label>Form Template</label>
+    <referenceTo>Form_Template__c</referenceTo>
+    <relationshipLabel>Field Definitions</relationshipLabel>
+    <relationshipName>Field_Definitions</relationshipName>
+    <reparentableMasterDetail>true</reparentableMasterDetail>
+    <trackTrending>false</trackTrending>
+    <type>MasterDetail</type>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+</CustomField>
+

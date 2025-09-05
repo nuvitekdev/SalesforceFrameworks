@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>AI_Service_Used__c</fullName>
+    <description>AI provider/model used</description>
+    <externalId>false</externalId>
+    <label>AI Service Used</label>
+    <length>255</length>
+    <type>Text</type>
+</CustomField>
+

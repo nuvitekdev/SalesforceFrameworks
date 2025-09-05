@@ -1,0 +1,114 @@
+<template>
+    <lightning-card title="AI Form Builder" icon-name="utility:setup_assistant_guide">
+        <template if:true={templateId}>
+            <div slot="actions">
+                <lightning-button-icon icon-name="utility:delete" alternative-text="Delete Template" title="Delete Template" onclick={handleDeleteTemplate}></lightning-button-icon>
+            </div>
+        </template>
+        <div class="afb-container slds-p-horizontal_medium slds-p-vertical_small">
+            <template if:false={templateId}>
+                <div class="afb-hero slds-grid slds-gutters">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3">
+                        <lightning-input type="text" label="Template Name" value={name} onchange={onName}></lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 slds-p-top_large slds-text-align_right">
+                        <lightning-button variant="brand" label="Create Template" onclick={createTemplate} disabled={disableCreate}></lightning-button>
+                    </div>
+                </div>
+            </template>
+
+            <template if:true={templateId}>
+                <div class="title-row slds-m-bottom_medium slds-grid slds-wrap slds-grid_vertical-align-center">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3 slds-p-bottom_x-small">
+                        <lightning-formatted-text value={_templateId}></lightning-formatted-text>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 slds-text-align_right">
+                        <template if:true={tInfo}>
+                            <span class="pill pill--status" title="Status">{tInfo.status}</span>
+                            <span class="pill" title="Version">v{tInfo.version}</span>
+                            <span class="pill" title="Confidence">{tInfo.confidence}</span>
+                        </template>
+                    </div>
+                </div>
+                <div class="upload-row slds-m-bottom_medium">
+                    <lightning-file-upload
+                        label="Upload Form Image or PDF"
+                        name="fileUploader"
+                        record-id={templateId}
+                        onuploadfinished={onUploadFinished}
+                        accept=".png,.jpg,.jpeg,.pdf"
+                        >
+                    </lightning-file-upload>
+                    <lightning-button class="slds-m-left_small" label="Refresh File" onclick={refreshFile}></lightning-button>
+                    <lightning-button class="slds-m-left_x-small" label="Open File" onclick={openFile} disabled={disableOpenFile}></lightning-button>
+                </div>
+
+
+                <div class="action-buttons-container slds-m-vertical_medium">
+                    <lightning-button variant="brand" label="Run AI Extraction" onclick={runExtraction} disabled={processing}></lightning-button>
+                    <template if:true={processing}> <lightning-spinner alternative-text="Processing" size="small"></lightning-spinner> </template>
+                    <lightning-button class="slds-m-left_small" label="Preview Form" onclick={openPreview} disabled={disablePreview}></lightning-button>
+                </div>
+
+                <template if:true={fields.length}>
+                    <div class="slds-m-vertical_small">
+                        <lightning-button label="Publish Template" variant="success" onclick={publish}></lightning-button>
+                        <lightning-button class="slds-m-left_small" label="Save Reviewed Fields" onclick={saveReviewed}></lightning-button>
+                    </div>
+                    <div class="tablewrap">
+                        <table class="afb-table slds-table slds-table_cell-buffer">
+                            <thead>
+                                <tr>
+                                    <th>Label</th>
+                                    <th>API Name</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Page</th>
+                                    <th>X</th>
+                                    <th>Y</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={fields} for:item="f" for:index="index">
+                                    <tr key={f.key}>
+                                        <td><input class="slds-input" data-idx={index} data-key="label" value={f.label} onchange={onFieldChange}/></td>
+                                        <td><input class="slds-input" data-idx={index} data-key="apiName" value={f.apiName} onchange={onFieldChange}/></td>
+                                        <td>
+                                            <select class="slds-select" data-idx={index} data-key="type" value={f.type} onchange={onFieldChange}>
+                                                <template for:each={typeOptions} for:item="t">
+                                                    <option key={t} value={t}>{t}</option>
+                                                </template>
+                                            </select>
+                                        </td>
+                                        <td><lightning-input type="checkbox" data-idx={index} data-key="required" checked={f.required} onchange={onFieldBool}></lightning-input></td>
+                                        <td><input class="slds-input small" data-idx={index} data-key="page" value={f.page} onchange={onFieldChange}/></td>
+                                        <td><input class="slds-input small" data-idx={index} data-key="x" value={f.x} onchange={onFieldChange}/></td>
+                                        <td><input class="slds-input small" data-idx={index} data-key="y" value={f.y} onchange={onFieldChange}/></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </lightning-card>
+
+    <template if:true={showPreview}>
+        <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="modal-heading-01" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium">Form Preview</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <c-dynamic-form-renderer template-id={_templateId}></c-dynamic-form-renderer>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Delete Template" variant="destructive" onclick={handleDeleteTemplate}></lightning-button>
+                    <lightning-button label="Close" onclick={closePreview}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

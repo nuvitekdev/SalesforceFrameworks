@@ -1,0 +1,48 @@
+<template>
+    <lightning-card title="Dynamic Form" icon-name="utility:contract">
+        <div class="slds-p-around_medium">
+            <template if:true={fields.length}>
+                <template for:each={grouped} for:item="grp">
+                    <div key={grp.key} class="section slds-m-vertical_small">
+                        <template if:true={grp.key}>
+                            <h3 class="slds-text-title_caps slds-m-bottom_x-small">{grp.key}</h3>
+                        </template>
+                        <div class="slds-grid slds-wrap slds-gutters">
+                            <template for:each={grp.items} for:item="f" for:index="index">
+                                <div key={f.Id} class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                    <template if:true={f._isText}>
+                                        <lightning-input data-id={f.Id} type="text" label={f.Field_Label__c} required={f.Is_Required__c}></lightning-input>
+                                    </template>
+                                    <template if:true={f._isTextArea}>
+                                        <lightning-textarea data-id={f.Id} label={f.Field_Label__c} required={f.Is_Required__c}></lightning-textarea>
+                                    </template>
+                                    <template if:true={f._isNumber}>
+                                        <lightning-input data-id={f.Id} type="number" label={f.Field_Label__c} required={f.Is_Required__c}></lightning-input>
+                                    </template>
+                                    <template if:true={f._isDate}>
+                                        <lightning-input data-id={f.Id} type="date" label={f.Field_Label__c} required={f.Is_Required__c}></lightning-input>
+                                    </template>
+                                    <template if:true={f._isDateTime}>
+                                        <lightning-input data-id={f.Id} type="datetime" label={f.Field_Label__c} required={f.Is_Required__c}></lightning-input>
+                                    </template>
+                                    <template if:true={f._isCheckbox}>
+                                        <lightning-input data-id={f.Id} type="checkbox" label={f.Field_Label__c} checked={f.Is_Required__c}></lightning-input>
+                                    </template>
+                                    <template if:true={f._isPicklist}>
+                                        <lightning-combobox data-id={f.Id} label={f.Field_Label__c} options={f._options} required={f.Is_Required__c}></lightning-combobox>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+                <div class="slds-m-top_medium">
+                    <lightning-button variant="brand" label="Submit" onclick={submit}></lightning-button>
+                </div>
+            </template>
+            <template if:false={fields.length}>
+                <lightning-formatted-text value="No fields defined for this template."></lightning-formatted-text>
+            </template>
+        </div>
+    </lightning-card>
+</template>

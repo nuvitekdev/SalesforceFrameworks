@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Template__c</fullName>
+    <description>Related Form Template</description>
+    <externalId>false</externalId>
+    <label>Template</label>
+    <referenceTo>Form_Template__c</referenceTo>
+    <relationshipLabel>Generation Logs</relationshipLabel>
+    <relationshipName>Generation_Logs</relationshipName>
+    <type>Lookup</type>
+</CustomField>
+

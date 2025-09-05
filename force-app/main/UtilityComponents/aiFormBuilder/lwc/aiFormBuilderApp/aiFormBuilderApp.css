@@ -1,0 +1,128 @@
+:host {
+  display: block;
+  box-sizing: border-box;
+  /* Theme vars aligned with nuvitekCustomThemeLayout & nuviAI */
+  --primary-color: #22BDC1;
+  --primary-dark: #1a9599;
+  --primary-light: #63d1d4;
+  --accent-color: #D5DF23;
+  --text-color: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --background: #ffffff;
+  --background-alt: #f5f5f7;
+  --background-elevated: #fbfbfd;
+  --border-color: rgba(0,0,0,0.1);
+  --border-subtle: rgba(0,0,0,0.06);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 28px rgba(0,0,0,0.12);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+}
+
+/* Card polish to match theme */
+lightning-card {
+  --sds-c-card-color-background: var(--background) !important;
+  --sds-c-card-shadow: var(--shadow-md) !important;
+  --sds-c-card-radius-border: var(--radius-lg) !important;
+}
+lightning-card:hover { box-shadow: var(--shadow-lg) !important; }
+
+.afb-container { max-width: 1200px; margin: 0 auto; }
+
+/* Hero row when creating a new template */
+.afb-hero {
+  background: linear-gradient(135deg, rgba(34,189,193,0.12), rgba(213,223,35,0.10));
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.06);
+}
+
+.title-row lightning-formatted-text { font-weight: 600; color: var(--text-color); }
+
+.upload-row { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
+
+/* Buttons */
+lightning-button .slds-button {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+lightning-button .slds-button:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+lightning-button .slds-button::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%; width: 1px; height: 1px;
+  background: radial-gradient(circle, rgba(34,189,193,0.35) 0%, rgba(34,189,193,0.25) 40%, rgba(34,189,193,0.0) 70%);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.45s ease, opacity 0.8s ease;
+  opacity: 0.9; pointer-events: none; border-radius: 50%;
+}
+lightning-button .slds-button:active::after { transform: translate(-50%, -50%) scale(180); opacity: 0; }
+
+.action-buttons-container { display: flex; align-items: center; gap: .5rem; }
+
+/* Preview area */
+.preview {
+  height: 420px;
+  max-width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--background-elevated);
+  box-shadow: var(--shadow-sm);
+}
+.preview iframe { width: 100%; height: 100%; display: block; }
+
+/* Table polish */
+.tablewrap { overflow-x: auto; max-width: 100%; }
+.tablewrap table { width: 100%; }
+.afb-table thead th {
+  position: sticky; top: 0;
+  background: linear-gradient(180deg, #fff, #fbfbfd);
+  border-bottom: 1px solid var(--border-subtle);
+  z-index: 1;
+}
+.afb-table tbody tr:hover { background: rgba(34,189,193,0.04); }
+.small { width: 80px; }
+
+/* Inputs inside table */
+.afb-table .slds-input, .afb-table .slds-select {
+  border-radius: var(--radius-sm);
+  border-color: var(--border-subtle);
+  background: #fff;
+}
+.afb-table .slds-input:focus, .afb-table .slds-select:focus {
+  box-shadow: 0 0 0 2px rgba(34,189,193,0.2);
+  border-color: var(--primary-dark);
+}
+
+/* Modal content */
+.slds-modal__content { max-height: 70vh; overflow: auto; }
+
+/* Pills */
+.pill {
+  border-radius: 12px;
+  padding: .1rem .5rem;
+  font-size: .65rem;
+  border: 1px solid var(--border-subtle);
+  background: #fff; margin-left: .25rem;
+}
+.pill--status { background: rgba(34,189,193,0.12); color: var(--primary-dark); border-color: rgba(34,189,193,0.25); }
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .afb-container { padding-left: .5rem; padding-right: .5rem; }
+  .afb-hero { padding: .75rem .9rem; }
+  .action-buttons-container { flex-wrap: wrap; }
+  .afb-table thead th, .afb-table td { padding: .4rem; }
+  .small { width: 64px; }
+}
+@media (max-width: 480px) {
+  .title-row { word-break: break-word; }
+  .pill { font-size: .6rem; }
+}

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520">
+  <style>
+    .title{font:700 24px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;fill:#1d1d1f}
+    .label{font:600 16px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;fill:#1d1d1f}
+    .note{font:500 14px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;fill:#6e6e73}
+  </style>
+  <rect x="10" y="10" width="960" height="500" rx="12" fill="#fff" stroke="#e5e7eb"/>
+  <rect x="10" y="10" width="960" height="64" rx="12" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="30" y="50" class="title">AI Form Builder</text>
+
+  <rect x="510" y="22" width="440" height="40" rx="8" fill="#f0fdfa" stroke="#99f6e4"/>
+  <text x="525" y="48" class="label">Template Id: a2GExxxxxxxxxxxxx</text>
+
+  <rect x="30" y="100" width="280" height="360" rx="12" fill="#fbfbfd" stroke="#e5e7eb"/>
+  <text x="40" y="130" class="label">Form Templates</text>
+  <rect x="40" y="150" width="260" height="40" rx="10" fill="#fff" stroke="#e5e7eb"/>
+  <rect x="40" y="200" width="260" height="40" rx="10" fill="#fff" stroke="#e5e7eb"/>
+  <rect x="40" y="250" width="260" height="40" rx="10" fill="#fff" stroke="#e5e7eb"/>
+
+  <rect x="330" y="100" width="620" height="360" rx="12" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="350" y="130" class="label">Upload • Extract • Review • Publish</text>
+  <rect x="350" y="150" width="200" height="32" rx="8" fill="#eff6ff" stroke="#dbeafe"/>
+  <text x="360" y="171" class="note">Upload Form</text>
+  <rect x="560" y="150" width="200" height="32" rx="8" fill="#ecfeff" stroke="#a5f3fc"/>
+  <text x="570" y="171" class="note">Run AI Extraction</text>
+  <rect x="770" y="150" width="160" height="32" rx="8" fill="#ecfccb" stroke="#bef264"/>
+  <text x="780" y="171" class="note">Publish</text>
+
+  <text x="512" y="84" class="note">Copy this Id to use in the page property</text>
+</svg>
+

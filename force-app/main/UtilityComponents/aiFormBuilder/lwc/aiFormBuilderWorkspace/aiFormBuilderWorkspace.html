@@ -1,0 +1,28 @@
+<template>
+    <section class="hero">
+        <div class="hero__content">
+            <div class="hero__title">AI Form Builder</div>
+            <div class="hero__subtitle">Upload → Extract → Review → Publish. Beautiful, fast, and native.</div>
+            <div class="hero__actions"></div>
+        </div>
+    </section>
+
+    <template if:true={diag}>
+        <div class="diag slds-box slds-theme_default slds-m-bottom_small">
+            <div class="diag__header">
+                <span class="diag__title">AI Extraction Diagnostics</span>
+                <lightning-button-icon icon-name="utility:copy" alternative-text="Copy" onclick={copyDiag} class="slds-m-left_x-small"></lightning-button-icon>
+            </div>
+            <pre class="diag__pre">{diagAsJson}</pre>
+        </div>
+    </template>
+
+    <div class="wrap slds-grid slds-gutters">
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+            <c-form-template-list selected-id={selectedId} onopen={onOpen} ondeleted={onDeleted}></c-form-template-list>
+        </div>
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3">
+            <c-ai-form-builder-app template-id={selectedId} ondiagnostics={onDiagnostics} ondeleted={onDeleted}></c-ai-form-builder-app>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520">
+  <style>
+    .title{font:700 22px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;fill:#1d1d1f}
+    .label{font:600 16px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;fill:#1d1d1f}
+    .note{font:500 14px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;fill:#6e6e73}
+  </style>
+  <rect x="10" y="10" width="960" height="500" rx="12" fill="#fff" stroke="#e5e7eb"/>
+  <text x="30" y="44" class="title">Lightning App Builder</text>
+
+  <!-- Left palette -->
+  <rect x="30" y="70" width="240" height="420" rx="12" fill="#fbfbfd" stroke="#e5e7eb"/>
+  <text x="45" y="100" class="label">Components</text>
+  <rect x="40" y="120" width="220" height="36" rx="8" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="52" y="143" class="note">Dynamic Form Renderer</text>
+  <rect x="40" y="166" width="220" height="36" rx="8" fill="#ffffff" stroke="#e5e7eb"/>
+  <rect x="40" y="212" width="220" height="36" rx="8" fill="#ffffff" stroke="#e5e7eb"/>
+
+  <!-- Canvas -->
+  <rect x="290" y="70" width="430" height="420" rx="12" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="305" y="100" class="label">App Page Canvas</text>
+  <rect x="310" y="120" width="390" height="260" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="322" y="145" class="note">Drop "Dynamic Form Renderer" here</text>
+
+  <!-- Right properties -->
+  <rect x="730" y="70" width="220" height="420" rx="12" fill="#fbfbfd" stroke="#e5e7eb"/>
+  <text x="745" y="100" class="label">Properties</text>
+  <rect x="740" y="120" width="200" height="32" rx="8" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="750" y="142" class="note">Template Id</text>
+  <rect x="740" y="152" width="200" height="36" rx="8" fill="#ecfeff" stroke="#a5f3fc"/>
+  <text x="750" y="175" class="note">Paste a2GExxxxxxxxxxxx</text>
+
+  <text x="40" y="480" class="note">Drag the component from Components → drop into Canvas → set Template Id → Save</text>
+</svg>
+

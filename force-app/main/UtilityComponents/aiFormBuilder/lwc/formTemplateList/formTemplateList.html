@@ -1,0 +1,84 @@
+<template>
+    <lightning-card title="Form Templates" icon-name="utility:table">
+        <div slot="actions" class="header-actions">
+            <lightning-button label="New Template" onclick={toggleCreate} variant="brand-outline"></lightning-button>
+        </div>
+        <div class="slds-p-around_small">
+            <template if:true={showCreate}>
+                <div class="create-row">
+                    <lightning-input class="create-input" type="text" label="Template Name" value={newName} onchange={handleNameChange}></lightning-input>
+                    <div class="create-actions">
+                        <lightning-button label="Create" variant="brand" onclick={createNew} disabled={disableCreate}></lightning-button>
+                        <lightning-button class="slds-m-left_x-small" label="Cancel" onclick={toggleCreate}></lightning-button>
+                    </div>
+                </div>
+            </template>
+            <template if:true={loading}>
+                <div class="list-loading">
+                    <lightning-spinner size="small" alternative-text="Loading templates"></lightning-spinner>
+                </div>
+            </template>
+            <div class="toolbar slds-m-bottom_small">
+                <lightning-input class="toolbar__search" type="search" label="Search" variant="label-hidden" placeholder="Search by name" value={searchQuery} onchange={handleSearchChange}></lightning-input>
+                <lightning-combobox class="toolbar__filter" label="Status" value={filterStatus} options={statusOptions} onchange={handleFilterChange}></lightning-combobox>
+                <lightning-combobox class="toolbar__sort" label="Sort By" value={sortBy} options={sortOptions} onchange={handleSortChange}></lightning-combobox>
+            </div>
+            <template if:true={hasActiveFilters}>
+                <div class="active-filters slds-m-bottom_small">
+                    <span class="chip">Search: "{searchQuery}"</span>
+                    <template if:true={filterStatusLabel}>
+                        <span class="chip">Status: {filterStatusLabel}</span>
+                    </template>
+                    <template if:true={sortByLabel}>
+                        <span class="chip">Sort: {sortByLabel}</span>
+                    </template>
+                    <button class="chip chip--clear" onclick={clearAllFilters} title="Clear all">Clear all</button>
+                </div>
+            </template>
+            <template if:true={rows.length}>
+                <div class="list" role="listbox" tabindex="0" onkeydown={handleKeydown} aria-label="Form templates">
+                    <template for:each={rows} for:item="r">
+                        <div key={r.id} class={r._cardClass} data-id={r.id} onclick={open} role="option" aria-selected={r._ariaSelected} tabindex="0">
+                            <div class="template-card__name" title={r.name}>{r.name}</div>
+                            <div class="template-card__meta">
+                                <span class={r._statusClass}>{r.status}</span>
+                                <span class="pill" title="Version">v{r.version}</span>
+                                <span class="pill" title="Confidence">{r._confidencePct}</span>
+                                <div class="template-card__actions">
+                                    <lightning-button-icon icon-name="utility:new_window" alternative-text="Open" title="Open" data-id={r.id} onclick={handleOpenClick}></lightning-button-icon>
+                                    <lightning-button-icon icon-name="utility:delete" alternative-text="Delete" title="Delete" data-id={r.id} onclick={handleDeleteClick} class="slds-m-left_x-small"></lightning-button-icon>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+            <template if:false={rows.length}>
+                <template if:true={loading}>
+                    <div class="list">
+                        <template for:each={skeletons} for:item="s">
+                            <div key={s} class="skeleton-card"></div>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={loading}>
+                    <template if:true={hasAnyTemplates}>
+                        <div class="empty-state">
+                            <div class="empty-title">No matching templates</div>
+                            <div class="empty-sub">Try a different search or adjust filters.</div>
+                        </div>
+                    </template>
+                    <template if:false={hasAnyTemplates}>
+                        <div class="empty-state">
+                            <div class="empty-title">No templates yet</div>
+                            <div class="empty-sub">Create your first form template to get started.</div>
+                            <div class="empty-actions">
+                                <lightning-button label="Create Template" variant="brand" onclick={toggleCreate}></lightning-button>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </template>
+        </div>
+    </lightning-card>
+</template>
